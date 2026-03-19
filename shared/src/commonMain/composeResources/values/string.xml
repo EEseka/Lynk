@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="search">Search</string>
+    <string name="search_placeholder">Search...</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="discover">Discover</string>
+    <string name="profile">Profile</string>
+    <string name="confirm_date">Confirm Date</string>
+    <string name="confirm_time">Confirm Time</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+</resources>
