@@ -56,13 +56,21 @@ fun LynkDialog(
             onDismissRequest = onDismissRequest,
             modifier = modifier,
             containerColor = LynkTheme.colors.surface,
-            titleContentColor = LynkTheme.colors.textMain,
-            textContentColor = LynkTheme.colors.textMuted,
+            titleContentColor = LynkTheme.colors.onSurface,
+            textContentColor = LynkTheme.colors.onSurfaceVariant,
             title = {
-                LynkText(text = title, style = LynkTheme.LynkTypography.titleLarge)
+                LynkText(
+                    text = title,
+                    style = LynkTheme.Typography.titleLarge,
+                    color = LynkTheme.colors.onSurface
+                )
             },
             text = {
-                LynkText(text = message, style = LynkTheme.LynkTypography.bodyMedium)
+                LynkText(
+                    text = message,
+                    style = LynkTheme.Typography.bodyMedium,
+                    color = LynkTheme.colors.onSurfaceVariant
+                )
             },
             confirmButton = {
                 LynkButton(

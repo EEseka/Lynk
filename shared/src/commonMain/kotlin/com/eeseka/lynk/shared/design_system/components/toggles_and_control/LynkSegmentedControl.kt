@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -40,8 +39,11 @@ data class LynkSegmentedItem(
 )
 
 enum class LynkSegmentedStyle {
-    SCROLLABLE_CHIPS, // For feed filters (Infinite scrolling)
-    FIXED_BAR // For settings (Bounded size, equal width items)
+    /** Horizontally scrolling chips — for feed filters, tags, categories */
+    SCROLLABLE_CHIPS,
+
+    /** Full-width pill with animated thumb — for settings, binary/ternary mode switches */
+    FIXED_BAR
 }
 
 @Composable
@@ -62,14 +64,20 @@ fun LynkSegmentedControl(
         ) {
             itemsIndexed(items) { index, item ->
                 val isSelected = selectedIndex == index
-                val containerColor = if (isSelected) LynkTheme.colors.secondary else LynkTheme.colors.surfaceVariant.copy(alpha = 0.5f)
-                val contentColor = if (isSelected) Color.White else LynkTheme.colors.textMain
+                val containerColor = if (isSelected) LynkTheme.colors.secondary
+                else LynkTheme.colors.surfaceVariant.copy(alpha = 0.5f)
+                val contentColor = if (isSelected) LynkTheme.colors.onSecondary
+                else LynkTheme.colors.onSurfaceVariant
 
                 Row(
                     modifier = Modifier
                         .clip(LynkTheme.shapes.pill)
                         .background(containerColor)
-                        .clickable { onItemSelected(index) }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { onItemSelected(index) }
+                        )
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
@@ -85,7 +93,7 @@ fun LynkSegmentedControl(
                     }
                     LynkText(
                         text = item.title,
-                        style = LynkTheme.LynkTypography.labelMedium,
+                        style = LynkTheme.Typography.labelLarge,
                         color = contentColor
                     )
                 }
@@ -118,21 +126,15 @@ fun LynkSegmentedControl(
                             LynkTheme.colors.outlineVariant.copy(alpha = 0.3f),
                             LynkTheme.shapes.pill
                         )
-                        .background(
-                            LynkTheme.colors.surface,
-                            LynkTheme.shapes.pill
-                        )
+                        .background(LynkTheme.colors.surface, LynkTheme.shapes.pill)
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 items.forEachIndexed { index, item ->
                     val isSelected = selectedIndex == index
-                    val contentColor =
-                        if (isSelected) LynkTheme.colors.textMain else LynkTheme.colors.textMuted
+                    val contentColor = if (isSelected) LynkTheme.colors.onSurface
+                    else LynkTheme.colors.onSurfaceVariant
 
                     Row(
                         modifier = Modifier
@@ -157,7 +159,7 @@ fun LynkSegmentedControl(
                         }
                         LynkText(
                             text = item.title,
-                            style = LynkTheme.LynkTypography.labelMedium,
+                            style = LynkTheme.Typography.labelMedium,
                             color = contentColor
                         )
                     }

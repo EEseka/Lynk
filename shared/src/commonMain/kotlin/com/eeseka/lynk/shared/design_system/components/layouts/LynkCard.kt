@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Card
@@ -11,6 +12,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -20,9 +22,9 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 
 enum class LynkCardStyle {
-    FILLED, // Standard flat card with a subtle background (Modern Social App style)
+    FILLED,   // Subtle tinted background — standard social feed card
     OUTLINED, // Surface background with a thin crisp border
-    ELEVATED // Casts a shadow (Use sparingly!)
+    ELEVATED  // Casts a shadow — use sparingly
 }
 
 @Composable
@@ -50,12 +52,18 @@ fun LynkCard(
             .clip(shape)
             .background(containerColor)
             .let { if (borderStroke != null) it.border(borderStroke, shape) else it }
-            .let { if (onClick != null) it.clickable { onClick() } else it }
+            .let {
+                if (onClick != null) {
+                    it.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onClick
+                    )
+                } else it
+            }
 
-        Column(
-            modifier = baseModifier,
-            content = content
-        )
+        Column(modifier = baseModifier, content = content)
+
     } else {
         when (style) {
             LynkCardStyle.FILLED -> {
@@ -80,16 +88,14 @@ fun LynkCard(
             }
 
             LynkCardStyle.OUTLINED -> {
+                val border = borderStroke ?: BorderStroke(1.dp, LynkTheme.colors.outlineVariant)
                 if (onClick != null) {
                     OutlinedCard(
                         onClick = onClick,
                         modifier = modifier,
                         shape = shape,
                         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-                        border = borderStroke ?: BorderStroke(
-                            1.dp,
-                            LynkTheme.colors.outlineVariant
-                        ),
+                        border = border,
                         content = content
                     )
                 } else {
@@ -97,10 +103,7 @@ fun LynkCard(
                         modifier = modifier,
                         shape = shape,
                         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-                        border = borderStroke ?: BorderStroke(
-                            1.dp,
-                            LynkTheme.colors.outlineVariant
-                        ),
+                        border = border,
                         content = content
                     )
                 }

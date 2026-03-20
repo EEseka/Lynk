@@ -10,8 +10,7 @@ import com.slapps.cupertino.InternalCupertinoApi
 
 /**
  * The Haptic Dictionary
- * These are the semantic physical feedbacks your app supports.
- * We abstract this so your UI never knows about platform-specific implementations.
+ * Semantic physical feedbacks your app supports — platform-agnostic.
  */
 enum class AppHaptic {
     Success,
@@ -24,20 +23,19 @@ enum class AppHaptic {
 }
 
 /**
- * The Unified Haptic Hook
- * Call this inside your Composables to get a platform-aware haptic trigger.
+ * Unified haptic hook — returns a platform-aware trigger function.
+ * Use inside any Composable: val haptic = rememberAppHaptic()
+ * Then call: haptic(AppHaptic.Selection)
  */
 @OptIn(InternalCupertinoApi::class)
 @Composable
 fun rememberAppHaptic(): (AppHaptic) -> Unit {
     val hapticFeedback = LocalHapticFeedback.current
-
     val isIosPlatform = isIOS()
 
     return remember(hapticFeedback, isIosPlatform) {
         { hapticType ->
             if (isIosPlatform) {
-                // Map to the exact Cupertino haptics from the library
                 val cupertinoType = when (hapticType) {
                     AppHaptic.Success -> CupertinoHapticFeedback.Success
                     AppHaptic.Warning -> CupertinoHapticFeedback.Warning
@@ -49,14 +47,12 @@ fun rememberAppHaptic(): (AppHaptic) -> Unit {
                 }
                 hapticFeedback.performHapticFeedback(cupertinoType)
             } else {
-                // Map to the closest Material 3 Android equivalents
                 val materialType = when (hapticType) {
                     AppHaptic.Success -> HapticFeedbackType.Confirm
                     AppHaptic.Warning, AppHaptic.Error -> HapticFeedbackType.Reject
                     AppHaptic.Selection -> HapticFeedbackType.TextHandleMove
                     AppHaptic.ImpactLight -> HapticFeedbackType.ContextClick
-                    AppHaptic.ImpactMedium -> HapticFeedbackType.LongPress
-                    AppHaptic.ImpactHeavy -> HapticFeedbackType.LongPress
+                    AppHaptic.ImpactMedium, AppHaptic.ImpactHeavy -> HapticFeedbackType.LongPress
                 }
                 hapticFeedback.performHapticFeedback(materialType)
             }

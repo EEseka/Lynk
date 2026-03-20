@@ -1,6 +1,7 @@
 package com.eeseka.lynk.shared.design_system.components.modals_and_overlays
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,11 +11,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -22,6 +23,9 @@ import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.slapps.cupertino.AlertActionStyle
 import com.slapps.cupertino.CupertinoActionSheetNative
 import com.slapps.cupertino.ExperimentalCupertinoApi
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.cancel
+import org.jetbrains.compose.resources.stringResource
 
 data class LynkActionSheetItem(
     val text: String,
@@ -38,7 +42,7 @@ fun LynkActionSheet(
     items: List<LynkActionSheetItem>,
     title: String? = null,
     message: String? = null,
-    cancelText: String = "Cancel"
+    cancelText: String = stringResource(Res.string.cancel)
 ) {
     if (isIOS()) {
         CupertinoActionSheetNative(
@@ -82,23 +86,28 @@ fun LynkActionSheet(
                     if (title != null) {
                         LynkText(
                             text = title,
-                            style = LynkTheme.LynkTypography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = LynkTheme.colors.textMuted,
+                            style = LynkTheme.Typography.titleMedium,
+                            color = LynkTheme.colors.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
 
                     items.forEach { item ->
-                        val contentColor =
-                            if (item.isDestructive) LynkTheme.colors.error else LynkTheme.colors.textMain
+                        val contentColor = if (item.isDestructive) LynkTheme.colors.error
+                        else LynkTheme.colors.onSurface
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(LynkTheme.shapes.medium)
-                                .clickable {
-                                    item.onClick()
-                                    onDismissRequest()
-                                }
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        item.onClick()
+                                        onDismissRequest()
+                                    }
+                                )
                                 .padding(vertical = 16.dp, horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -112,7 +121,7 @@ fun LynkActionSheet(
                             }
                             LynkText(
                                 text = item.text,
-                                style = LynkTheme.LynkTypography.titleMedium,
+                                style = LynkTheme.Typography.titleMedium,
                                 color = contentColor
                             )
                         }

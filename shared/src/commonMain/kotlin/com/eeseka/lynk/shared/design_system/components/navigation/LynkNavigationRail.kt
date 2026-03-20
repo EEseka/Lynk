@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
@@ -39,6 +38,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.eeseka.lynk.shared.navigation.LynkNavigationItem
+import com.slapps.cupertino.LocalContentColor
 
 @Composable
 fun LynkNavigationRail(
@@ -78,8 +78,8 @@ private fun LynkNavigationRailCupertino(
             ) {
                 LynkNavigationItem.entries.forEach { item ->
                     val isSelected = selectedItem == item
-                    val contentColor =
-                        if (isSelected) LynkTheme.colors.primary else LynkTheme.colors.textMain
+                    val contentColor = if (isSelected) LynkTheme.colors.primary
+                        else LynkTheme.colors.onSurfaceVariant
                     val currentIcon = if (isSelected) item.selectedIcon else item.unselectedIcon
 
                     CupertinoRailItem(
@@ -96,7 +96,7 @@ private fun LynkNavigationRailCupertino(
                         label = {
                             LynkText(
                                 text = item.title.asString(),
-                                style = LynkTheme.LynkTypography.labelSmall,
+                                style = LynkTheme.Typography.labelSmall,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = false,
@@ -111,7 +111,9 @@ private fun LynkNavigationRailCupertino(
         VerticalDivider(
             thickness = 1.dp,
             color = LynkTheme.colors.outlineVariant.copy(alpha = 0.2f),
-            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
+            modifier = Modifier.windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)
+            )
         )
     }
 }
@@ -126,8 +128,7 @@ private fun CupertinoRailItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-
-    val alpha = if (pressed && !selected) 0.5f else 1f
+    val effectiveAlpha = if (pressed && !selected) 0.5f else 1f
 
     Column(
         modifier = Modifier
@@ -143,7 +144,10 @@ private fun CupertinoRailItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor.copy(alpha = alpha)) {
+        val pressedColor = contentColor.copy(alpha = contentColor.alpha * effectiveAlpha)
+        CompositionLocalProvider(
+            LocalContentColor provides pressedColor
+        ) {
             icon()
             label()
         }
@@ -177,7 +181,7 @@ private fun LynkNavigationRailMaterial3(
                     label = {
                         LynkText(
                             text = item.title.asString(),
-                            style = LynkTheme.LynkTypography.labelSmall,
+                            style = LynkTheme.Typography.labelSmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             softWrap = false
@@ -185,10 +189,10 @@ private fun LynkNavigationRailMaterial3(
                     },
                     colors = NavigationRailItemDefaults.colors(
                         indicatorColor = LynkTheme.colors.primaryContainer,
-                        selectedIconColor = Color.White,
-                        selectedTextColor = LynkTheme.colors.textMain,
-                        unselectedIconColor = LynkTheme.colors.textMuted,
-                        unselectedTextColor = LynkTheme.colors.textMuted
+                        selectedIconColor = LynkTheme.colors.onPrimaryContainer,
+                        selectedTextColor = LynkTheme.colors.onSurface,
+                        unselectedIconColor = LynkTheme.colors.onSurfaceVariant,
+                        unselectedTextColor = LynkTheme.colors.onSurfaceVariant
                     )
                 )
             }
@@ -196,7 +200,10 @@ private fun LynkNavigationRailMaterial3(
 
         VerticalDivider(
             thickness = 1.dp,
-            color = LynkTheme.colors.outlineVariant.copy(alpha = 0.2f)
+            color = LynkTheme.colors.outlineVariant.copy(alpha = 0.2f),
+            modifier = Modifier.windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)
+            )
         )
     }
 }

@@ -22,14 +22,14 @@ fun LynkTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     containerColor: Color = LynkTheme.colors.surface,
-    contentColor: Color = LynkTheme.colors.textMain
+    contentColor: Color = LynkTheme.colors.onSurface
 ) {
     if (isIOS()) {
         CupertinoTopAppBar(
             title = {
                 LynkText(
                     text = title,
-                    style = LynkTheme.LynkTypography.titleMedium,
+                    style = LynkTheme.Typography.titleMedium,
                     color = contentColor
                 )
             },
@@ -46,7 +46,11 @@ fun LynkTopAppBar(
     } else {
         TopAppBar(
             title = {
-                LynkText(text = title, style = LynkTheme.LynkTypography.titleLarge)
+                LynkText(
+                    text = title,
+                    style = LynkTheme.Typography.titleLarge,
+                    color = contentColor
+                )
             },
             modifier = modifier,
             navigationIcon = navigationIcon,
@@ -54,8 +58,8 @@ fun LynkTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = containerColor,
                 titleContentColor = contentColor,
-                navigationIconContentColor = contentColor,
-                actionIconContentColor = contentColor
+                navigationIconContentColor = LynkTheme.colors.primary,
+                actionIconContentColor = LynkTheme.colors.primary
             )
         )
     }

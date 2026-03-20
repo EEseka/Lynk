@@ -73,26 +73,27 @@ fun LynkTimePicker(
             modifier = modifier,
             containerColor = LynkTheme.colors.surface,
             text = {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     TimePicker(
                         state = timePickerState,
                         colors = TimePickerDefaults.colors(
                             clockDialColor = LynkTheme.colors.surfaceVariant.copy(alpha = 0.5f),
-                            clockDialSelectedContentColor = LynkTheme.colors.surface,
-                            clockDialUnselectedContentColor = LynkTheme.colors.textMain,
+                            clockDialSelectedContentColor = LynkTheme.colors.onPrimary,
+                            clockDialUnselectedContentColor = LynkTheme.colors.onSurface,
                             selectorColor = LynkTheme.colors.primary,
                             containerColor = LynkTheme.colors.surface,
                             periodSelectorBorderColor = LynkTheme.colors.outlineVariant,
-                            periodSelectorSelectedContainerColor = LynkTheme.colors.primary.copy(
-                                alpha = 0.2f
-                            ),
+                            periodSelectorSelectedContainerColor = LynkTheme.colors.primaryContainer,
                             periodSelectorUnselectedContainerColor = LynkTheme.colors.surface,
-                            periodSelectorSelectedContentColor = LynkTheme.colors.primary,
-                            periodSelectorUnselectedContentColor = LynkTheme.colors.textMain,
-                            timeSelectorSelectedContainerColor = LynkTheme.colors.primary.copy(alpha = 0.2f),
+                            periodSelectorSelectedContentColor = LynkTheme.colors.onPrimaryContainer,
+                            periodSelectorUnselectedContentColor = LynkTheme.colors.onSurface,
+                            timeSelectorSelectedContainerColor = LynkTheme.colors.primaryContainer,
                             timeSelectorUnselectedContainerColor = LynkTheme.colors.surfaceVariant,
-                            timeSelectorSelectedContentColor = LynkTheme.colors.primary,
-                            timeSelectorUnselectedContentColor = LynkTheme.colors.textMain
+                            timeSelectorSelectedContentColor = LynkTheme.colors.onPrimaryContainer,
+                            timeSelectorUnselectedContentColor = LynkTheme.colors.onSurface
                         )
                     )
                 }

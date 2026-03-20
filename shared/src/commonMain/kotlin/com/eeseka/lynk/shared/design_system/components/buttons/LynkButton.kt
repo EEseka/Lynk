@@ -18,14 +18,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
@@ -59,42 +57,32 @@ fun LynkButton(
     val isEffectivelyEnabled = enabled && !isLoading
     val m3Modifier = modifier.fillMaxWidth()
 
+    val isDark = LynkTheme.colors.isDark
+
     if (isIOS()) {
         val shape = LynkTheme.shapes.pill
 
         val buttonColors = when (style) {
             LynkButtonStyle.PRIMARY -> CupertinoButtonDefaults.filledButtonColors(
                 containerColor = LynkTheme.colors.primary,
-                contentColor = Color.White
+                contentColor = LynkTheme.colors.onPrimary
             )
 
             LynkButtonStyle.DESTRUCTIVE_PRIMARY -> CupertinoButtonDefaults.filledButtonColors(
                 containerColor = LynkTheme.colors.error,
-                contentColor = Color.White
+                contentColor = LynkTheme.colors.onError
             )
 
             LynkButtonStyle.SECONDARY, LynkButtonStyle.TEXT -> {
-                val containerColor =
-                    if (!MaterialTheme.colorScheme.primary.isLight()) {
-                        LynkTheme.colors.primary.copy(alpha = 0.08f)
-                    } else {
-                        Color.Transparent
-                    }
                 CupertinoButtonDefaults.plainButtonColors(
-                    containerColor = containerColor,
-                    contentColor = LynkTheme.colors.primary
+                    containerColor = Color.Transparent,
+                    contentColor = if (isDark) LynkTheme.colors.onSurface else LynkTheme.colors.primary
                 )
             }
 
             LynkButtonStyle.DESTRUCTIVE_SECONDARY -> {
-                val containerColor =
-                    if (!MaterialTheme.colorScheme.primary.isLight()) {
-                        LynkTheme.colors.error.copy(alpha = 0.08f)
-                    } else {
-                        Color.Transparent
-                    }
                 CupertinoButtonDefaults.plainButtonColors(
-                    containerColor = containerColor,
+                    containerColor = Color.Transparent,
                     contentColor = LynkTheme.colors.error
                 )
             }
@@ -102,8 +90,8 @@ fun LynkButton(
 
         val cupertinoModifier =
             if (style == LynkButtonStyle.SECONDARY || style == LynkButtonStyle.DESTRUCTIVE_SECONDARY) {
-                val borderColor =
-                    if (style == LynkButtonStyle.SECONDARY) LynkTheme.colors.primary else LynkTheme.colors.error
+                val borderColor = if (style == LynkButtonStyle.SECONDARY) LynkTheme.colors.primary
+                else LynkTheme.colors.error
                 m3Modifier.border(
                     width = 1.dp,
                     color = if (isEffectivelyEnabled) borderColor else LynkTheme.colors.outlineVariant,
@@ -123,9 +111,12 @@ fun LynkButton(
         ) {
             LynkButtonContent(text, isLoading, loadingText, icon)
         }
+
     } else {
         val shape = CircleShape
         val elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp)
+        val disabledContainer = LynkTheme.colors.onSurface.copy(alpha = 0.12f)
+        val disabledContent = LynkTheme.colors.onSurface.copy(alpha = 0.38f)
 
         when (style) {
             LynkButtonStyle.PRIMARY -> {
@@ -136,10 +127,10 @@ fun LynkButton(
                     shape = shape,
                     elevation = elevation,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        containerColor = LynkTheme.colors.primary,
+                        contentColor = LynkTheme.colors.onPrimary,
+                        disabledContainerColor = disabledContainer,
+                        disabledContentColor = disabledContent
                     )
                 ) {
                     LynkButtonContent(text, isLoading, loadingText, icon)
@@ -154,10 +145,10 @@ fun LynkButton(
                     shape = shape,
                     elevation = elevation,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError,
-                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        containerColor = LynkTheme.colors.error,
+                        contentColor = LynkTheme.colors.onError,
+                        disabledContainerColor = disabledContainer,
+                        disabledContentColor = disabledContent
                     )
                 ) {
                     LynkButtonContent(text, isLoading, loadingText, icon)
@@ -165,7 +156,6 @@ fun LynkButton(
             }
 
             LynkButtonStyle.SECONDARY -> {
-                val isDark = !MaterialTheme.colorScheme.primary.isLight()
                 OutlinedButton(
                     onClick = onClick,
                     enabled = isEffectivelyEnabled,
@@ -173,14 +163,13 @@ fun LynkButton(
                     shape = shape,
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isEffectivelyEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.12f
-                        )
+                        color = if (isEffectivelyEnabled) LynkTheme.colors.primary
+                        else LynkTheme.colors.onSurface.copy(alpha = 0.12f)
                     ),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (isDark) MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f) else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.secondary,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        containerColor = Color.Transparent,
+                        contentColor = if (isDark) LynkTheme.colors.onSurface else LynkTheme.colors.primary,
+                        disabledContentColor = disabledContent
                     )
                 ) {
                     LynkButtonContent(text, isLoading, loadingText, icon)
@@ -188,7 +177,6 @@ fun LynkButton(
             }
 
             LynkButtonStyle.DESTRUCTIVE_SECONDARY -> {
-                val isDark = !MaterialTheme.colorScheme.primary.isLight()
                 OutlinedButton(
                     onClick = onClick,
                     enabled = isEffectivelyEnabled,
@@ -196,14 +184,13 @@ fun LynkButton(
                     shape = shape,
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isEffectivelyEnabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.12f
-                        )
+                        color = if (isEffectivelyEnabled) LynkTheme.colors.error
+                        else LynkTheme.colors.onSurface.copy(alpha = 0.12f)
                     ),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (isDark) MaterialTheme.colorScheme.error.copy(alpha = 0.08f) else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.error,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        containerColor = Color.Transparent,
+                        contentColor = LynkTheme.colors.error,
+                        disabledContentColor = disabledContent
                     )
                 ) {
                     LynkButtonContent(text, isLoading, loadingText, icon)
@@ -211,16 +198,15 @@ fun LynkButton(
             }
 
             LynkButtonStyle.TEXT -> {
-                val isDark = !MaterialTheme.colorScheme.primary.isLight()
                 TextButton(
                     onClick = onClick,
                     enabled = isEffectivelyEnabled,
                     modifier = m3Modifier,
                     shape = shape,
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        containerColor = Color.Transparent,
+                        contentColor = if (isDark) LynkTheme.colors.onSurface else LynkTheme.colors.primary,
+                        disabledContentColor = disabledContent
                     ),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
@@ -229,11 +215,6 @@ fun LynkButton(
             }
         }
     }
-}
-
-private fun Color.isLight(): Boolean {
-    val luminance = 0.2126f * red + 0.7152f * green + 0.0722f * blue
-    return luminance > 0.5f
 }
 
 @Composable
@@ -256,10 +237,12 @@ private fun LynkButtonContent(
                 label = "LynkButtonIconTransition"
             ) { loading ->
                 if (loading) {
+                    val color =
+                        if (isIOS()) com.slapps.cupertino.LocalContentColor.current else LocalContentColor.current
                     LynkProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color = LocalContentColor.current
+                        color = color
                     )
                 } else {
                     icon?.invoke()
@@ -272,10 +255,9 @@ private fun LynkButtonContent(
 
         LynkText(
             text = displayText,
-            fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = LynkTheme.LynkTypography.titleMedium
+            style = LynkTheme.Typography.titleMedium
         )
     }
 }

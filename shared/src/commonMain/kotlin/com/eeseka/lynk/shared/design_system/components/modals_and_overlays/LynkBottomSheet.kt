@@ -31,8 +31,8 @@ fun LynkBottomSheet(
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         containerColor = LynkTheme.colors.surface,
-        contentColor = LynkTheme.colors.textMain,
-        scrimColor = LynkTheme.colors.textMain.copy(alpha = 0.32f),
+        contentColor = LynkTheme.colors.onSurface,
+        scrimColor = LynkTheme.colors.scrim.copy(alpha = 0.32f),
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -40,10 +40,9 @@ fun LynkBottomSheet(
                     .width(36.dp)
                     .height(5.dp)
                     .clip(LynkTheme.shapes.pill)
-                    .background(LynkTheme.colors.outlineVariant)
+                    .background(LynkTheme.colors.outline)
             )
         },
         content = content
     )
 }
-

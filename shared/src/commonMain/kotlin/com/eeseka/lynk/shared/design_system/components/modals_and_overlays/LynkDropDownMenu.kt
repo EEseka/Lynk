@@ -2,7 +2,9 @@ package com.eeseka.lynk.shared.design_system.components.modals_and_overlays
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +16,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -47,23 +50,27 @@ fun LynkDropDownMenu(
             modifier = modifier
         ) {
             items.forEachIndexed { index, item ->
-                val contentColor =
-                    if (item.isDestructive) LynkTheme.colors.error else LynkTheme.colors.textMain
+                val contentColor = if (item.isDestructive) LynkTheme.colors.error
+                    else LynkTheme.colors.onSurface
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            item.onClick()
-                            onDismissRequest()
-                        }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                item.onClick()
+                                onDismissRequest()
+                            }
+                        )
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LynkText(
                         text = item.title,
-                        style = LynkTheme.LynkTypography.bodyLarge,
+                        style = LynkTheme.Typography.bodyLarge,
                         color = contentColor
                     )
 
@@ -101,8 +108,8 @@ fun LynkDropDownMenu(
             shadowElevation = 8.dp
         ) {
             items.forEachIndexed { index, item ->
-                val contentColor =
-                    if (item.isDestructive) LynkTheme.colors.error else LynkTheme.colors.textMain
+                val contentColor = if (item.isDestructive) LynkTheme.colors.error
+                    else LynkTheme.colors.onSurface
 
                 DropdownMenuItem(
                     text = {
@@ -113,7 +120,7 @@ fun LynkDropDownMenu(
                         ) {
                             LynkText(
                                 text = item.title,
-                                style = LynkTheme.LynkTypography.bodyLarge,
+                                style = LynkTheme.Typography.bodyLarge,
                                 color = contentColor
                             )
 
@@ -131,6 +138,7 @@ fun LynkDropDownMenu(
                         item.onClick()
                         onDismissRequest()
                     },
+                    contentPadding = PaddingValues(horizontal = 16.dp),
                     colors = MenuDefaults.itemColors(
                         textColor = contentColor,
                         leadingIconColor = contentColor,

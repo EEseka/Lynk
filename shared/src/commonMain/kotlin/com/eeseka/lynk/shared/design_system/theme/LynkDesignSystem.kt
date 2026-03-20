@@ -12,23 +12,51 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.slapps.cupertino.theme.CupertinoTheme
 
-// All the colors I will realistically need for custom layouts
 data class LynkColors(
+    // Brand
     val primary: Color,
+    val onPrimary: Color,
     val primaryContainer: Color,
+    val onPrimaryContainer: Color,
+
     val secondary: Color,
+    val onSecondary: Color,
     val secondaryContainer: Color,
+    val onSecondaryContainer: Color,
+
     val tertiary: Color,
+    val onTertiary: Color,
     val tertiaryContainer: Color,
+    val onTertiaryContainer: Color,
+
+    // Neutrals
     val background: Color,
+    val onBackground: Color,
+
     val surface: Color,
+    val onSurface: Color,
+
     val surfaceVariant: Color,
-    val textMain: Color,
-    val textMuted: Color,
+    val onSurfaceVariant: Color,
+
+    // Elevation surfaces (cards, sheets, dialogs)
+    val surfaceContainerLow: Color,   // cards, list items
+    val surfaceContainerHigh: Color,  // bottom sheets, modals, dialogs
+
+    // Utility
     val outline: Color,
     val outlineVariant: Color,
+    val scrim: Color,
+
+    // Error
     val error: Color,
-    val errorContainer: Color
+    val onError: Color,
+    val errorContainer: Color,
+    val onErrorContainer: Color,
+
+    // Theme flag
+    // Consumed by components (e.g. LynkButton) that need to adapt content colors for dark theme without inspecting individual color luminance values.
+    val isDark: Boolean
 )
 
 data class LynkShapes(
@@ -42,41 +70,85 @@ data class LynkShapes(
 
 val LynkLightColors = LynkColors(
     primary = primaryLight,
+    onPrimary = onPrimaryLight,
     primaryContainer = primaryContainerLight,
+    onPrimaryContainer = onPrimaryContainerLight,
+
     secondary = secondaryLight,
+    onSecondary = onSecondaryLight,
     secondaryContainer = secondaryContainerLight,
+    onSecondaryContainer = onSecondaryContainerLight,
+
     tertiary = tertiaryLight,
+    onTertiary = onTertiaryLight,
     tertiaryContainer = tertiaryContainerLight,
+    onTertiaryContainer = onTertiaryContainerLight,
+
     background = backgroundLight,
+    onBackground = onBackgroundLight,
+
     surface = surfaceLight,
+    onSurface = onSurfaceLight,
+
     surfaceVariant = surfaceVariantLight,
-    textMain = onBackgroundLight,
-    textMuted = outlineLight,
+    onSurfaceVariant = onSurfaceVariantLight,
+
+    surfaceContainerLow = surfaceContainerLowLight,
+    surfaceContainerHigh = surfaceContainerHighLight,
+
     outline = outlineLight,
     outlineVariant = outlineVariantLight,
+    scrim = scrimLight,
+
     error = errorLight,
-    errorContainer = errorContainerLight
+    onError = onErrorLight,
+    errorContainer = errorContainerLight,
+    onErrorContainer = onErrorContainerLight,
+
+    isDark = false
 )
 
 val LynkDarkColors = LynkColors(
     primary = primaryDark,
+    onPrimary = onPrimaryDark,
     primaryContainer = primaryContainerDark,
+    onPrimaryContainer = onPrimaryContainerDark,
+
     secondary = secondaryDark,
+    onSecondary = onSecondaryDark,
     secondaryContainer = secondaryContainerDark,
+    onSecondaryContainer = onSecondaryContainerDark,
+
     tertiary = tertiaryDark,
+    onTertiary = onTertiaryDark,
     tertiaryContainer = tertiaryContainerDark,
+    onTertiaryContainer = onTertiaryContainerDark,
+
     background = backgroundDark,
+    onBackground = onBackgroundDark,
+
     surface = surfaceDark,
+    onSurface = onSurfaceDark,
+
     surfaceVariant = surfaceVariantDark,
-    textMain = onBackgroundDark,
-    textMuted = outlineDark,
+    onSurfaceVariant = onSurfaceVariantDark,
+
+    surfaceContainerLow = surfaceContainerLowDark,
+    surfaceContainerHigh = surfaceContainerHighDark,
+
     outline = outlineDark,
     outlineVariant = outlineVariantDark,
+    scrim = scrimDark,
+
     error = errorDark,
-    errorContainer = errorContainerDark
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+
+    isDark = true
 )
 
-val LocalLynkColors = staticCompositionLocalOf<LynkColors> { error("No colors provided") }
+val LocalLynkColors = staticCompositionLocalOf<LynkColors> { error("No LynkColors provided") }
 val LocalLynkShapes = staticCompositionLocalOf { LynkShapes() }
 
 object LynkTheme {
@@ -90,45 +162,66 @@ object LynkTheme {
         @ReadOnlyComposable
         get() = LocalLynkShapes.current
 
-    object LynkTypography {
+    object Typography {
+
+        /** Largest display text — hero sections, splash screens */
         val displayLarge: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.largeTitle else MaterialTheme.typography.displayLarge
+            get() = if (isIOS()) CupertinoTheme.typography.largeTitle
+            else MaterialTheme.typography.displayLarge
 
+        /** Primary screen headings */
         val headlineLarge: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.title1 else MaterialTheme.typography.headlineLarge
+            get() = if (isIOS()) CupertinoTheme.typography.title1
+            else MaterialTheme.typography.headlineLarge
 
+        /** Section headings */
         val headlineMedium: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.title2 else MaterialTheme.typography.headlineMedium
+            get() = if (isIOS()) CupertinoTheme.typography.title2
+            else MaterialTheme.typography.headlineMedium
 
+        /** Card / sheet titles */
         val titleLarge: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.title3 else MaterialTheme.typography.titleLarge
+            get() = if (isIOS()) CupertinoTheme.typography.title3
+            else MaterialTheme.typography.titleLarge
 
+        /** List item primary text, emphasized UI labels */
         val titleMedium: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.headline else MaterialTheme.typography.titleMedium
+            get() = if (isIOS()) CupertinoTheme.typography.headline
+            else MaterialTheme.typography.titleMedium
 
+        /** Primary body copy */
         val bodyLarge: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.body else MaterialTheme.typography.bodyLarge
+            get() = if (isIOS()) CupertinoTheme.typography.body
+            else MaterialTheme.typography.bodyLarge
 
+        /** Secondary body copy, list item supporting text */
         val bodyMedium: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.subhead else MaterialTheme.typography.bodyMedium
+            get() = if (isIOS()) CupertinoTheme.typography.subhead
+            else MaterialTheme.typography.bodyMedium
 
+        /** Button labels, prominent tags */
         val labelLarge: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.callout else MaterialTheme.typography.labelLarge
+            get() = if (isIOS()) CupertinoTheme.typography.callout
+            else MaterialTheme.typography.labelLarge
 
+        /** Captions, metadata, secondary tags */
         val labelMedium: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.footnote else MaterialTheme.typography.labelMedium
+            get() = if (isIOS()) CupertinoTheme.typography.footnote
+            else MaterialTheme.typography.labelMedium
 
+        /** Fine print, timestamps, badges */
         val labelSmall: TextStyle
             @Composable @ReadOnlyComposable
-            get() = if (isIOS()) CupertinoTheme.typography.caption1 else MaterialTheme.typography.labelSmall
+            get() = if (isIOS()) CupertinoTheme.typography.caption1
+            else MaterialTheme.typography.labelSmall
     }
 }

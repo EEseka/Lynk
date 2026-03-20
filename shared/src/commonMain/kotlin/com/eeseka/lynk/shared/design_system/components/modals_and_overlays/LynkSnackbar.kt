@@ -12,13 +12,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -33,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleAlert
@@ -76,19 +74,18 @@ suspend fun SnackbarHostState.showFlashMessage(
         )
     )
 }
+
 @Composable
 fun LynkFlashMessageHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     val currentData = hostState.currentSnackbarData
-
     var displayedData by remember { mutableStateOf(currentData) }
 
     LaunchedEffect(currentData) {
         if (currentData != null) {
             displayedData = currentData
-
             val timeout = when (currentData.visuals.duration) {
                 SnackbarDuration.Short -> 3000L
                 SnackbarDuration.Long -> 5000L
@@ -123,9 +120,7 @@ fun LynkFlashMessageHost(
                 type = type,
                 modifier = Modifier.pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
-                        if (dragAmount < -5f) {
-                            currentData?.dismiss()
-                        }
+                        if (dragAmount < -5f) currentData?.dismiss()
                     }
                 }
             )
@@ -158,8 +153,10 @@ private fun LynkFlashPill(
     }
 
     val contentColor = when (type) {
-        LynkFlashType.Info -> LynkTheme.colors.textMain
-        else -> Color.White
+        LynkFlashType.Info -> LynkTheme.colors.onSurface
+        LynkFlashType.Success -> LynkTheme.colors.onPrimary
+        LynkFlashType.Error -> LynkTheme.colors.onError
+        LynkFlashType.Warning -> LynkTheme.colors.onSecondary
     }
 
     val icon = when (type) {
@@ -169,34 +166,28 @@ private fun LynkFlashPill(
         LynkFlashType.Info -> Lucide.Info
     }
 
-    Box(
+    Row(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .widthIn(max = 480.dp)
             .shadow(elevation = 8.dp, shape = LynkTheme.shapes.pill)
             .clip(LynkTheme.shapes.pill)
             .background(containerColor)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .wrapContentSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(20.dp)
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            LynkText(
-                text = message,
-                color = contentColor,
-                modifier = Modifier.weight(1f, fill = false),
-                style = LynkTheme.LynkTypography.bodyMedium
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        LynkText(
+            text = message,
+            color = contentColor,
+            style = LynkTheme.Typography.bodyMedium
+        )
     }
 }

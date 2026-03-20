@@ -47,15 +47,15 @@ fun LynkTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     val shape = LynkTheme.shapes.medium
-    val typedTextStyle = LynkTheme.LynkTypography.bodyLarge.copy(color = LynkTheme.colors.textMain)
+    val typedTextStyle = LynkTheme.Typography.bodyLarge.copy(color = LynkTheme.colors.onSurface)
 
     if (isIOS()) {
         Column(modifier = modifier.fillMaxWidth()) {
             if (label != null) {
                 LynkText(
                     text = label,
-                    style = LynkTheme.LynkTypography.labelMedium,
-                    color = if (isError) LynkTheme.colors.error else LynkTheme.colors.textMuted
+                    style = LynkTheme.Typography.labelLarge,
+                    color = if (isError) LynkTheme.colors.error else LynkTheme.colors.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             }
@@ -74,7 +74,13 @@ fun LynkTextField(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 textStyle = typedTextStyle,
                 placeholder = placeholder?.let {
-                    { LynkText(it, color = LynkTheme.colors.textMuted) }
+                    {
+                        LynkText(
+                            text = it,
+                            style = LynkTheme.Typography.bodyLarge,
+                            color = LynkTheme.colors.onSurfaceVariant
+                        )
+                    }
                 },
                 leadingIcon = leadingIcon,
                 trailingIcon = trailingIcon,
@@ -84,8 +90,8 @@ fun LynkTextField(
                 visualTransformation = visualTransformation,
                 colors = CupertinoTextFieldDefaults.colors(
                     cursorColor = if (isError) LynkTheme.colors.error else LynkTheme.colors.primary,
-                    focusedTextColor = LynkTheme.colors.textMain,
-                    unfocusedTextColor = LynkTheme.colors.textMain
+                    focusedTextColor = LynkTheme.colors.onSurface,
+                    unfocusedTextColor = LynkTheme.colors.onSurface
                 )
             )
 
@@ -101,8 +107,8 @@ fun LynkTextField(
                     Spacer(modifier = Modifier.height(4.dp))
                     LynkText(
                         text = if (isError) errorMessage ?: "" else helperText ?: "",
-                        style = LynkTheme.LynkTypography.labelSmall,
-                        color = if (isError) LynkTheme.colors.error else LynkTheme.colors.textMuted
+                        style = LynkTheme.Typography.labelSmall,
+                        color = if (isError) LynkTheme.colors.error else LynkTheme.colors.onSurfaceVariant
                     )
                 }
             }
@@ -113,16 +119,34 @@ fun LynkTextField(
             onValueChange = onValueChange,
             modifier = modifier.fillMaxWidth(),
             textStyle = typedTextStyle,
-            label = label?.let { { LynkText(it) } },
-            placeholder = placeholder?.let { { LynkText(it) } },
+            label = label?.let {
+                { LynkText(text = it, style = LynkTheme.Typography.labelLarge) }
+            },
+            placeholder = placeholder?.let {
+                {
+                    LynkText(
+                        text = it,
+                        style = LynkTheme.Typography.bodyLarge,
+                        color = LynkTheme.colors.onSurfaceVariant
+                    )
+                }
+            },
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
             isError = isError,
             supportingText = {
                 if (isError && errorMessage != null) {
-                    LynkText(text = errorMessage)
+                    LynkText(
+                        text = errorMessage,
+                        style = LynkTheme.Typography.labelSmall,
+                        color = LynkTheme.colors.error
+                    )
                 } else if (helperText != null) {
-                    LynkText(text = helperText)
+                    LynkText(
+                        text = helperText,
+                        style = LynkTheme.Typography.labelSmall,
+                        color = LynkTheme.colors.onSurfaceVariant
+                    )
                 }
             },
             singleLine = singleLine,
@@ -135,11 +159,13 @@ fun LynkTextField(
                 unfocusedBorderColor = LynkTheme.colors.outline,
                 errorBorderColor = LynkTheme.colors.error,
                 focusedLabelColor = LynkTheme.colors.primary,
+                unfocusedLabelColor = LynkTheme.colors.onSurfaceVariant,
                 errorLabelColor = LynkTheme.colors.error,
                 cursorColor = LynkTheme.colors.primary,
+                errorCursorColor = LynkTheme.colors.error,
                 errorSupportingTextColor = LynkTheme.colors.error,
-                focusedTextColor = LynkTheme.colors.textMain,
-                unfocusedTextColor = LynkTheme.colors.textMain
+                focusedTextColor = LynkTheme.colors.onSurface,
+                unfocusedTextColor = LynkTheme.colors.onSurface
             )
         )
     }

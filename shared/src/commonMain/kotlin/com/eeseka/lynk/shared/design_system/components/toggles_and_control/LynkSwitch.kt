@@ -35,10 +35,14 @@ fun LynkSwitch(
             modifier = modifier,
             enabled = enabled,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = LynkTheme.colors.surface,
+                checkedThumbColor = LynkTheme.colors.onPrimary,
                 checkedTrackColor = LynkTheme.colors.primary,
-                uncheckedThumbColor = LynkTheme.colors.outline,
-                uncheckedTrackColor = LynkTheme.colors.surfaceVariant
+                uncheckedThumbColor = LynkTheme.colors.onSurfaceVariant,
+                uncheckedTrackColor = LynkTheme.colors.surfaceVariant,
+                disabledCheckedThumbColor = LynkTheme.colors.onPrimary.copy(alpha = 0.38f),
+                disabledCheckedTrackColor = LynkTheme.colors.primary.copy(alpha = 0.38f),
+                disabledUncheckedThumbColor = LynkTheme.colors.onSurfaceVariant.copy(alpha = 0.38f),
+                disabledUncheckedTrackColor = LynkTheme.colors.surfaceVariant.copy(alpha = 0.38f)
             )
         )
     }

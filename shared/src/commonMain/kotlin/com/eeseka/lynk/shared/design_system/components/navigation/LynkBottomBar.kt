@@ -6,7 +6,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -43,8 +42,8 @@ private fun LynkBottomBarCupertino(
     ) {
         LynkNavigationItem.entries.forEach { item ->
             val isSelected = selectedItem == item
-            val contentColor =
-                if (isSelected) LynkTheme.colors.primary else LynkTheme.colors.textMain
+            val contentColor = if (isSelected) LynkTheme.colors.primary
+                else LynkTheme.colors.onSurfaceVariant
             val currentIcon = if (isSelected) item.selectedIcon else item.unselectedIcon
 
             CupertinoNavigationBarItem(
@@ -61,7 +60,7 @@ private fun LynkBottomBarCupertino(
                 label = {
                     LynkText(
                         text = item.title.asString(),
-                        style = LynkTheme.LynkTypography.labelSmall,
+                        style = LynkTheme.Typography.labelSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         softWrap = false,
@@ -70,9 +69,9 @@ private fun LynkBottomBarCupertino(
                 },
                 colors = CupertinoNavigationBarDefaults.itemColors(
                     selectedIconColor = LynkTheme.colors.primary,
-                    unselectedIconColor = LynkTheme.colors.textMain,
+                    unselectedIconColor = LynkTheme.colors.onSurfaceVariant,
                     selectedTextColor = LynkTheme.colors.primary,
-                    unselectedTextColor = LynkTheme.colors.textMain
+                    unselectedTextColor = LynkTheme.colors.onSurfaceVariant
                 )
             )
         }
@@ -105,7 +104,7 @@ private fun LynkBottomBarMaterial3(
                 label = {
                     LynkText(
                         text = item.title.asString(),
-                        style = LynkTheme.LynkTypography.labelSmall,
+                        style = LynkTheme.Typography.labelSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         softWrap = false
@@ -113,10 +112,10 @@ private fun LynkBottomBarMaterial3(
                 },
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = LynkTheme.colors.primaryContainer,
-                    selectedIconColor = Color.White,
-                    selectedTextColor = LynkTheme.colors.textMain,
-                    unselectedIconColor = LynkTheme.colors.textMuted,
-                    unselectedTextColor = LynkTheme.colors.textMuted
+                    selectedIconColor = LynkTheme.colors.onPrimaryContainer,
+                    selectedTextColor = LynkTheme.colors.onSurface,
+                    unselectedIconColor = LynkTheme.colors.onSurfaceVariant,
+                    unselectedTextColor = LynkTheme.colors.onSurfaceVariant
                 )
             )
         }

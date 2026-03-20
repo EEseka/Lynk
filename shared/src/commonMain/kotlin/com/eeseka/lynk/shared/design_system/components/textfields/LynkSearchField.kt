@@ -38,7 +38,7 @@ fun LynkSearchField(
     enabled: Boolean = true,
     onSearch: (() -> Unit)? = null
 ) {
-    val typedTextStyle = LynkTheme.LynkTypography.bodyLarge.copy(color = LynkTheme.colors.textMain)
+    val typedTextStyle = LynkTheme.Typography.bodyLarge.copy(color = LynkTheme.colors.onSurface)
 
     if (isIOS()) {
         CupertinoSearchTextField(
@@ -47,7 +47,13 @@ fun LynkSearchField(
             enabled = enabled,
             modifier = modifier.fillMaxWidth(),
             textStyle = typedTextStyle,
-            placeholder = { LynkText(placeholder, color = LynkTheme.colors.textMuted) },
+            placeholder = {
+                LynkText(
+                    text = placeholder,
+                    style = LynkTheme.Typography.bodyLarge,
+                    color = LynkTheme.colors.onSurfaceVariant
+                )
+            },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
             colors = CupertinoSearchTextFieldDefaults.colors(
@@ -59,7 +65,7 @@ fun LynkSearchField(
                         Icon(
                             imageVector = Lucide.CircleX,
                             contentDescription = stringResource(Res.string.clear_search),
-                            tint = LynkTheme.colors.textMuted,
+                            tint = LynkTheme.colors.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -73,12 +79,19 @@ fun LynkSearchField(
             enabled = enabled,
             modifier = modifier.fillMaxWidth(),
             textStyle = typedTextStyle,
-            placeholder = { LynkText(placeholder, color = LynkTheme.colors.textMuted) },
+            placeholder = {
+                LynkText(
+                    text = placeholder,
+                    style = LynkTheme.Typography.bodyLarge,
+                    color = LynkTheme.colors.onSurfaceVariant
+                )
+            },
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Search,
                     contentDescription = stringResource(Res.string.search),
-                    tint = LynkTheme.colors.textMuted
+                    tint = LynkTheme.colors.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             },
             trailingIcon = if (query.isNotEmpty()) {
@@ -87,7 +100,8 @@ fun LynkSearchField(
                         Icon(
                             imageVector = Lucide.CircleX,
                             contentDescription = stringResource(Res.string.clear_search),
-                            tint = LynkTheme.colors.textMuted
+                            tint = LynkTheme.colors.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -103,8 +117,8 @@ fun LynkSearchField(
                 unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = Color.Transparent,
                 cursorColor = LynkTheme.colors.primary,
-                focusedTextColor = LynkTheme.colors.textMain,
-                unfocusedTextColor = LynkTheme.colors.textMain
+                focusedTextColor = LynkTheme.colors.onSurface,
+                unfocusedTextColor = LynkTheme.colors.onSurface
             )
         )
     }

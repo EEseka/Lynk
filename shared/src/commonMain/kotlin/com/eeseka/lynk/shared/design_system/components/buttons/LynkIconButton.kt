@@ -30,8 +30,8 @@ fun LynkIconButton(
             shape = CircleShape,
             contentPadding = PaddingValues(0.dp),
             colors = CupertinoButtonDefaults.plainButtonColors(
-                contentColor = LynkTheme.colors.textMain,
-                disabledContentColor = LynkTheme.colors.textMain.copy(alpha = 0.38f)
+                contentColor = LynkTheme.colors.onSurface,
+                disabledContentColor = LynkTheme.colors.onSurface.copy(alpha = 0.38f)
             )
         ) {
             content()
@@ -42,8 +42,8 @@ fun LynkIconButton(
             modifier = modifier.size(48.dp),
             enabled = enabled,
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = LynkTheme.colors.textMain,
-                disabledContentColor = LynkTheme.colors.textMain.copy(alpha = 0.38f)
+                contentColor = LynkTheme.colors.onSurface,
+                disabledContentColor = LynkTheme.colors.onSurface.copy(alpha = 0.38f)
             )
         ) {
             content()

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashMessageHost
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -33,11 +34,10 @@ fun LynkScaffold(
     bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable (() -> Unit)? = null,
     containerColor: Color = LynkTheme.colors.background,
-    contentColor: Color = LynkTheme.colors.textMain,
+    contentColor: Color = LynkTheme.colors.onBackground,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets.union(WindowInsets.ime),
     content: @Composable (PaddingValues) -> Unit
 ) {
-    // Master Box that holds the Scaffold + The Top-Down Flash Message
     Box(modifier = modifier.fillMaxSize()) {
         if (isIOS()) {
             CupertinoScaffold(
@@ -49,16 +49,16 @@ fun LynkScaffold(
                 contentWindowInsets = contentWindowInsets
             ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize()) {
-
-                    // Render Screen Content
                     content(paddingValues)
 
-                    // Manually Overlay the FAB for iOS
                     if (floatingActionButton != null) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .padding(paddingValues)
+                                .padding(
+                                    bottom = paddingValues.calculateBottomPadding(),
+                                    end = paddingValues.calculateRightPadding(LayoutDirection.Ltr)
+                                )
                                 .padding(16.dp)
                         ) {
                             floatingActionButton()
@@ -84,7 +84,9 @@ fun LynkScaffold(
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout))
+                    .windowInsetsPadding(
+                        WindowInsets.statusBars.union(WindowInsets.displayCutout)
+                    )
             )
         }
     }

@@ -19,8 +19,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 
 /**
- * An adaptive overlay that renders as a Bottom Sheet on phones,
- * and a centered "Form Sheet" (Dialog) on tablets/desktops.
+ * Adaptive overlay — bottom sheet on phones, centered dialog on tablets/desktops.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,9 +48,7 @@ fun LynkAdaptiveSheet(
             content()
         }
     } else {
-        Dialog(
-            onDismissRequest = onDismissRequest
-        ) {
+        Dialog(onDismissRequest = onDismissRequest) {
             Box(
                 modifier = modifier
                     .widthIn(max = 480.dp)

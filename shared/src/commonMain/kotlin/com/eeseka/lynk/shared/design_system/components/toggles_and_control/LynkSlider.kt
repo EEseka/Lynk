@@ -18,7 +18,8 @@ fun LynkSlider(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    steps: Int = 0
+    steps: Int = 0,
+    onValueChangeFinished: (() -> Unit)? = null
 ) {
     if (isIOS()) {
         CupertinoSlider(
@@ -28,6 +29,7 @@ fun LynkSlider(
             enabled = enabled,
             valueRange = valueRange,
             steps = steps,
+            onValueChangeFinished = onValueChangeFinished,
             colors = CupertinoSliderDefaults.colors(
                 activeTrackColor = LynkTheme.colors.primary
             )
@@ -40,10 +42,11 @@ fun LynkSlider(
             enabled = enabled,
             valueRange = valueRange,
             steps = steps,
+            onValueChangeFinished = onValueChangeFinished,
             colors = SliderDefaults.colors(
                 thumbColor = LynkTheme.colors.primary,
                 activeTrackColor = LynkTheme.colors.primary,
-                inactiveTrackColor = LynkTheme.colors.surfaceVariant.copy(alpha = 0.5f)
+                inactiveTrackColor = LynkTheme.colors.surfaceContainerHigh
             )
         )
     }
