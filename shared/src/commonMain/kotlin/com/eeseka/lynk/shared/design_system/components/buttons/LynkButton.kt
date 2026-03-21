@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalContentColor
@@ -113,7 +112,7 @@ fun LynkButton(
         }
 
     } else {
-        val shape = CircleShape
+        val shape = LynkTheme.shapes.pill
         val elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp)
         val disabledContainer = LynkTheme.colors.onSurface.copy(alpha = 0.12f)
         val disabledContent = LynkTheme.colors.onSurface.copy(alpha = 0.38f)

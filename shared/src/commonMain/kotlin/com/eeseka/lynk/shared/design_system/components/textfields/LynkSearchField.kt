@@ -2,7 +2,6 @@ package com.eeseka.lynk.shared.design_system.components.textfields
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -107,7 +106,7 @@ fun LynkSearchField(
                 }
             } else null,
             singleLine = true,
-            shape = CircleShape,
+            shape = LynkTheme.shapes.pill,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
             colors = OutlinedTextFieldDefaults.colors(

@@ -2,7 +2,6 @@ package com.eeseka.lynk.shared.design_system.components.buttons
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
@@ -27,7 +26,7 @@ fun LynkIconButton(
             onClick = onClick,
             modifier = modifier.size(48.dp),
             enabled = enabled,
-            shape = CircleShape,
+            shape = LynkTheme.shapes.pill,
             contentPadding = PaddingValues(0.dp),
             colors = CupertinoButtonDefaults.plainButtonColors(
                 contentColor = LynkTheme.colors.onSurface,

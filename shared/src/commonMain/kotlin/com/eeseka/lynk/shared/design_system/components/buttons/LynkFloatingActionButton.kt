@@ -2,7 +2,6 @@ package com.eeseka.lynk.shared.design_system.components.buttons
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.runtime.Composable
@@ -27,7 +26,7 @@ fun LynkFloatingActionButton(
             onClick = onClick,
             modifier = modifier.size(56.dp),
             enabled = enabled,
-            shape = CircleShape,
+            shape = LynkTheme.shapes.pill,
             contentPadding = PaddingValues(0.dp),
             colors = CupertinoButtonDefaults.filledButtonColors(
                 containerColor = LynkTheme.colors.primary,
@@ -42,11 +41,11 @@ fun LynkFloatingActionButton(
         FloatingActionButton(
             onClick = { if (enabled) onClick() },
             modifier = modifier,
-            shape = CircleShape,
+            shape = LynkTheme.shapes.pill,
             containerColor = if (enabled) LynkTheme.colors.primary
-                else LynkTheme.colors.onSurface.copy(alpha = 0.12f),
+            else LynkTheme.colors.onSurface.copy(alpha = 0.12f),
             contentColor = if (enabled) LynkTheme.colors.onPrimary
-                else LynkTheme.colors.onSurface.copy(alpha = 0.38f),
+            else LynkTheme.colors.onSurface.copy(alpha = 0.38f),
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp
