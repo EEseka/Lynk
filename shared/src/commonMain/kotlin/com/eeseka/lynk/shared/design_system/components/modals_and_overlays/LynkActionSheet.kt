@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,15 +19,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
-import com.slapps.cupertino.AlertActionStyle
-import com.slapps.cupertino.CupertinoActionSheetNative
-import com.slapps.cupertino.ExperimentalCupertinoApi
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveBasicAlertDialog
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
+import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
+import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
 
+@Immutable
 data class LynkActionSheetItem(
     val text: String,
     val onClick: () -> Unit,
@@ -34,43 +38,43 @@ data class LynkActionSheetItem(
     val isDestructive: Boolean = false
 )
 
-@OptIn(ExperimentalCupertinoApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
 fun LynkActionSheet(
-    visible: Boolean,
     onDismissRequest: () -> Unit,
     items: List<LynkActionSheetItem>,
     title: String? = null,
     message: String? = null,
     cancelText: String = stringResource(Res.string.cancel)
 ) {
-    if (isIOS()) {
-        CupertinoActionSheetNative(
-            visible = visible,
-            onDismissRequest = onDismissRequest,
-            title = title,
-            message = message
-        ) {
-            items.forEach { item ->
-                action(
-                    onClick = {
-                        item.onClick()
-                        onDismissRequest()
-                    },
-                    style = if (item.isDestructive) AlertActionStyle.Destructive else AlertActionStyle.Default,
-                    title = item.text
-                )
-            }
+    val scheme = MaterialTheme.colorScheme
 
-            action(
-                onClick = onDismissRequest,
-                style = AlertActionStyle.Cancel,
-                title = cancelText
+    val iosProperties = rememberAlertDialogIosProperties(
+        title = title ?: "",
+        text = message ?: "",
+        style = AlertDialogIosStyle.ActionSheet,
+        actions = items.map { item ->
+            AlertDialogIosAction(
+                title = item.text,
+                style = if (item.isDestructive) AlertDialogIosActionStyle.Destructive
+                else AlertDialogIosActionStyle.Default,
+                onClick = {
+                    item.onClick()
+                    onDismissRequest()
+                }
             )
-        }
-    } else {
-        if (visible) {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        } + AlertDialogIosAction(
+            title = cancelText,
+            style = AlertDialogIosActionStyle.Cancel,
+            onClick = onDismissRequest
+        )
+    )
+
+    AdaptiveBasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+        iosProperties = iosProperties,
+        materialContent = {
+            val sheetState = rememberAdaptiveSheetState(skipPartiallyExpanded = true)
 
             LynkBottomSheet(
                 onDismissRequest = onDismissRequest,
@@ -86,20 +90,20 @@ fun LynkActionSheet(
                     if (title != null) {
                         LynkText(
                             text = title,
-                            style = LynkTheme.Typography.titleMedium,
-                            color = LynkTheme.colors.onSurfaceVariant,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = scheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
 
                     items.forEach { item ->
-                        val contentColor = if (item.isDestructive) LynkTheme.colors.error
-                        else LynkTheme.colors.onSurface
+                        val contentColor = if (item.isDestructive) scheme.error
+                        else scheme.onSurface
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(LynkTheme.shapes.medium)
+                                .clip(MaterialTheme.shapes.medium)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
@@ -116,12 +120,14 @@ fun LynkActionSheet(
                                     imageVector = item.icon,
                                     contentDescription = null,
                                     tint = contentColor,
-                                    modifier = Modifier.padding(end = 16.dp).size(20.dp)
+                                    modifier = Modifier
+                                        .padding(end = 16.dp)
+                                        .size(20.dp)
                                 )
                             }
                             LynkText(
                                 text = item.text,
-                                style = LynkTheme.Typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium,
                                 color = contentColor
                             )
                         }
@@ -129,5 +135,5 @@ fun LynkActionSheet(
                 }
             }
         }
-    }
+    )
 }

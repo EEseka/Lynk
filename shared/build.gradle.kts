@@ -94,7 +94,6 @@ kotlin {
 
             // -- Icons --
             implementation(libs.icons.lucide.cmp)
-            implementation(libs.jetbrains.compose.material.icons.extended)
 
             // --- Data & State ---
             implementation(libs.kotlinx.coroutines.core)
@@ -113,10 +112,8 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
-            // Cupertino
-            implementation(libs.cupertino)
-            implementation(libs.cupertino.icons.extended)
-            implementation(libs.cupertino.native)
+            // Adaptive Ui (Material3, Cupertino and Liquid Glass)
+            implementation(libs.adaptive.ui)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

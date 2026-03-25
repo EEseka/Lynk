@@ -1,11 +1,35 @@
 package com.eeseka.lynk.shared.design_system.theme
 
-import androidx.compose.material3.darkColorScheme as materialDarkColorScheme
-import androidx.compose.material3.lightColorScheme as materialLightColorScheme
-import com.slapps.cupertino.theme.darkColorScheme as cupertinoDarkColorScheme
-import com.slapps.cupertino.theme.lightColorScheme as cupertinoLightColorScheme
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 
-val MaterialLightScheme = materialLightColorScheme(
+val LocalExtendedColors = staticCompositionLocalOf { LightExtendedColors }
+
+val ColorScheme.extended: ExtendedColors
+    @ReadOnlyComposable
+    @Composable
+    get() = LocalExtendedColors.current
+
+@Immutable
+data class ExtendedColors(
+    val neutralSurface: Color
+)
+
+val LightExtendedColors = ExtendedColors(
+    neutralSurface = neutralSurfaceLight
+)
+
+val DarkExtendedColors = ExtendedColors(
+    neutralSurface = neutralSurfaceDark
+)
+
+val LightScheme = lightColorScheme(
     primary = primaryLight,
     onPrimary = onPrimaryLight,
     primaryContainer = primaryContainerLight,
@@ -40,10 +64,11 @@ val MaterialLightScheme = materialLightColorScheme(
     surfaceContainerLow = surfaceContainerLowLight,
     surfaceContainer = surfaceContainerLight,
     surfaceContainerHigh = surfaceContainerHighLight,
-    surfaceContainerHighest = surfaceContainerHighestLight
-)
+    surfaceContainerHighest = surfaceContainerHighestLight,
 
-val MaterialDarkScheme = materialDarkColorScheme(
+    )
+
+val DarkScheme = darkColorScheme(
     primary = primaryDark,
     onPrimary = onPrimaryDark,
     primaryContainer = primaryContainerDark,
@@ -79,48 +104,4 @@ val MaterialDarkScheme = materialDarkColorScheme(
     surfaceContainer = surfaceContainerDark,
     surfaceContainerHigh = surfaceContainerHighDark,
     surfaceContainerHighest = surfaceContainerHighestDark
-)
-
-val CupertinoLightScheme = cupertinoLightColorScheme(
-    accent = primaryLight,
-    systemBackground = backgroundLight,
-    secondarySystemBackground = surfaceContainerLowLight,
-    tertiarySystemBackground = surfaceVariantLight,
-    label = onBackgroundLight,
-    secondaryLabel = onSurfaceVariantLight,
-    tertiaryLabel = outlineVariantLight,
-    quaternaryLabel = outlineVariantLight.copy(alpha = 0.5f),
-    systemFill = surfaceVariantLight,
-    secondarySystemFill = surfaceContainerHighestLight,
-    tertiarySystemFill = surfaceContainerHighLight,
-    quaternarySystemFill = surfaceContainerLight,
-    placeholderText = onSurfaceVariantLight,
-    separator = outlineVariantLight,
-    opaqueSeparator = outlineVariantLight,
-    link = primaryLight,
-    systemGroupedBackground = surfaceContainerLowestLight,
-    secondarySystemGroupedBackground = surfaceLight,
-    tertiarySystemGroupedBackground = surfaceVariantLight
-)
-
-val CupertinoDarkScheme = cupertinoDarkColorScheme(
-    accent = primaryDark,
-    systemBackground = backgroundDark,
-    secondarySystemBackground = surfaceContainerLowDark,
-    tertiarySystemBackground = surfaceVariantDark,
-    label = onBackgroundDark,
-    secondaryLabel = onSurfaceVariantDark,
-    tertiaryLabel = outlineVariantDark,
-    quaternaryLabel = outlineVariantDark.copy(alpha = 0.5f),
-    systemFill = surfaceVariantDark,
-    secondarySystemFill = surfaceContainerHighestDark,
-    tertiarySystemFill = surfaceContainerHighDark,
-    quaternarySystemFill = surfaceContainerDark,
-    placeholderText = onSurfaceVariantDark,
-    separator = outlineVariantDark,
-    opaqueSeparator = outlineVariantDark,
-    link = primaryDark,
-    systemGroupedBackground = surfaceContainerLowestDark,
-    secondarySystemGroupedBackground = surfaceDark,
-    tertiarySystemGroupedBackground = surfaceVariantDark
 )

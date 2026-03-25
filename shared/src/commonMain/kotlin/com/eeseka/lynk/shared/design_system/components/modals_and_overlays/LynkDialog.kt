@@ -1,18 +1,13 @@
 package com.eeseka.lynk.shared.design_system.components.modals_and_overlays
 
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
-import com.slapps.cupertino.AlertActionStyle
-import com.slapps.cupertino.CupertinoAlertDialogNative
-import com.slapps.cupertino.ExperimentalCupertinoApi
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 
-@OptIn(ExperimentalCupertinoApi::class)
 @Composable
 fun LynkDialog(
     onDismissRequest: () -> Unit,
@@ -25,75 +20,51 @@ fun LynkDialog(
     onDismiss: (() -> Unit)? = null,
     isDestructive: Boolean = false,
 ) {
-    if (isIOS()) {
-        CupertinoAlertDialogNative(
-            onDismissRequest = onDismissRequest,
-            title = title,
-            message = message
-        ) {
-            if (dismissText != null) {
-                action(
-                    onClick = {
-                        onDismiss?.invoke()
-                        onDismissRequest()
-                    },
-                    style = AlertActionStyle.Cancel,
-                    title = dismissText
-                )
-            }
-
-            action(
+    AdaptiveAlertDialog(
+        onConfirm = {
+            onConfirm()
+            onDismissRequest()
+        },
+        onDismiss = {
+            onDismiss?.invoke()
+            onDismissRequest()
+        },
+        confirmText = confirmText,
+        dismissText = dismissText ?: "",
+        title = title,
+        text = message,
+        modifier = modifier,
+        iosConfirmButtonStyle = if (isDestructive) AlertDialogIosActionStyle.Destructive
+            else AlertDialogIosActionStyle.Default,
+        iosDismissButtonStyle = AlertDialogIosActionStyle.Cancel,
+        materialConfirmButton = {
+            TextButton(
                 onClick = {
                     onConfirm()
                     onDismissRequest()
-                },
-                style = if (isDestructive) AlertActionStyle.Destructive else AlertActionStyle.Default,
-                title = confirmText
-            )
-        }
-    } else {
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            modifier = modifier,
-            containerColor = LynkTheme.colors.surface,
-            titleContentColor = LynkTheme.colors.onSurface,
-            textContentColor = LynkTheme.colors.onSurfaceVariant,
-            title = {
+                }
+            ) {
                 LynkText(
-                    text = title,
-                    style = LynkTheme.Typography.titleLarge,
-                    color = LynkTheme.colors.onSurface
-                )
-            },
-            text = {
-                LynkText(
-                    text = message,
-                    style = LynkTheme.Typography.bodyMedium,
-                    color = LynkTheme.colors.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                LynkButton(
                     text = confirmText,
-                    onClick = {
-                        onConfirm()
-                        onDismissRequest()
-                    },
-                    style = if (isDestructive) LynkButtonStyle.DESTRUCTIVE_SECONDARY else LynkButtonStyle.PRIMARY
+                    color = if (isDestructive) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.primary
                 )
-            },
-            dismissButton = if (dismissText != null) {
-                {
-                    LynkButton(
+            }
+        },
+        materialDismissButton = {
+            if (dismissText != null) {
+                TextButton(
+                    onClick = {
+                        onDismiss?.invoke()
+                        onDismissRequest()
+                    }
+                ) {
+                    LynkText(
                         text = dismissText,
-                        onClick = {
-                            onDismiss?.invoke()
-                            onDismissRequest()
-                        },
-                        style = LynkButtonStyle.TEXT
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } else null
-        )
-    }
+            }
+        }
+    )
 }

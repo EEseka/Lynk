@@ -1,123 +1,73 @@
 package com.eeseka.lynk.shared.design_system.components.navigation
 
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.eeseka.lynk.shared.navigation.LynkNavigationItem
-import com.slapps.cupertino.CupertinoNavigationBar
-import com.slapps.cupertino.CupertinoNavigationBarDefaults
-import com.slapps.cupertino.CupertinoNavigationBarItem
-import com.slapps.cupertino.ExperimentalCupertinoApi
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
+import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
+@OptIn(ExperimentalCalfUiApi::class)
 @Composable
 fun LynkBottomBar(
     selectedItem: LynkNavigationItem,
     onItemSelected: (LynkNavigationItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (isIOS()) {
-        LynkBottomBarCupertino(selectedItem, onItemSelected, modifier)
-    } else {
-        LynkBottomBarMaterial3(selectedItem, onItemSelected, modifier)
-    }
-}
+    val entries = LynkNavigationItem.entries
+    val selectedIndex = entries.indexOf(selectedItem)
 
-@OptIn(ExperimentalCupertinoApi::class)
-@Composable
-private fun LynkBottomBarCupertino(
-    selectedItem: LynkNavigationItem,
-    onItemSelected: (LynkNavigationItem) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    CupertinoNavigationBar(
+    val scheme = MaterialTheme.colorScheme
+
+    AdaptiveNavigationBar(
         modifier = modifier,
-        containerColor = LynkTheme.colors.surface
-    ) {
-        LynkNavigationItem.entries.forEach { item ->
-            val isSelected = selectedItem == item
-            val contentColor = if (isSelected) LynkTheme.colors.primary
-                else LynkTheme.colors.onSurfaceVariant
-            val currentIcon = if (isSelected) item.selectedIcon else item.unselectedIcon
-
-            CupertinoNavigationBarItem(
-                selected = isSelected,
-                onClick = { onItemSelected(item) },
-                pressIndicationEnabled = true,
-                icon = {
-                    Icon(
-                        imageVector = currentIcon,
-                        contentDescription = item.title.asString(),
-                        tint = contentColor
-                    )
-                },
-                label = {
-                    LynkText(
-                        text = item.title.asString(),
-                        style = LynkTheme.Typography.labelSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false,
-                        color = contentColor
-                    )
-                },
-                colors = CupertinoNavigationBarDefaults.itemColors(
-                    selectedIconColor = LynkTheme.colors.primary,
-                    unselectedIconColor = LynkTheme.colors.onSurfaceVariant,
-                    selectedTextColor = LynkTheme.colors.primary,
-                    unselectedTextColor = LynkTheme.colors.onSurfaceVariant
-                )
+        iosItems = entries.map { item ->
+            val uiKitImageSystemName = when (item) {
+                LynkNavigationItem.DISCOVER -> "map.fill"
+                LynkNavigationItem.PROFILE -> "person.crop.circle.fill"
+            }
+            UIKitUITabBarItem(
+                title = item.title.asString(),
+                image = UIKitImage.SystemName(uiKitImageSystemName)
             )
-        }
-    }
-}
+        },
+        iosSelectedIndex = selectedIndex,
+        iosOnItemSelected = { index -> onItemSelected(entries[index]) },
+        content = {
+            entries.forEach { item ->
+                val isSelected = selectedItem == item
 
-@Composable
-private fun LynkBottomBarMaterial3(
-    selectedItem: LynkNavigationItem,
-    onItemSelected: (LynkNavigationItem) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    NavigationBar(
-        modifier = modifier,
-        containerColor = LynkTheme.colors.surface
-    ) {
-        LynkNavigationItem.entries.forEach { item ->
-            val isSelected = selectedItem == item
-            val currentIcon = if (isSelected) item.selectedIcon else item.unselectedIcon
-
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = { onItemSelected(item) },
-                icon = {
-                    Icon(
-                        imageVector = currentIcon,
-                        contentDescription = item.title.asString()
+                NavigationBarItem(
+                    selected = isSelected,
+                    onClick = { onItemSelected(item) },
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.title.asString()
+                        )
+                    },
+                    label = {
+                        LynkText(
+                            text = item.title.asString(),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = false
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = scheme.onPrimaryContainer,
+                        selectedTextColor = scheme.primary,
+                        indicatorColor = scheme.primaryContainer
                     )
-                },
-                label = {
-                    LynkText(
-                        text = item.title.asString(),
-                        style = LynkTheme.Typography.labelSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = LynkTheme.colors.primaryContainer,
-                    selectedIconColor = LynkTheme.colors.onPrimaryContainer,
-                    selectedTextColor = LynkTheme.colors.onSurface,
-                    unselectedIconColor = LynkTheme.colors.onSurfaceVariant,
-                    unselectedTextColor = LynkTheme.colors.onSurfaceVariant
                 )
-            )
+            }
         }
-    }
+    )
 }

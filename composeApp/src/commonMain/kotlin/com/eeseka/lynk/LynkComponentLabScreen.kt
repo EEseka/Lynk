@@ -1,23 +1,36 @@
 package com.eeseka.lynk
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Calendar
@@ -63,6 +75,8 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkD
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkBottomBar
+import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
+import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosDropDownMenuItem
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkNavigationRail
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
@@ -76,16 +90,12 @@ import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkS
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.navigation.LynkNavigationItem
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Lab tab model — 5 tabs, maps 1:1 to app's 5 LynkNavigationItems by ordinal
-// ─────────────────────────────────────────────────────────────────────────────
 private enum class LabTab(val label: String) {
     BUTTONS("Buttons"),
     TYPE_COLOR("Type & Color"),
@@ -94,9 +104,6 @@ private enum class LabTab(val label: String) {
     OVERLAYS("Overlays")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Root — portrait = BottomBar, landscape = NavigationRail
-// ─────────────────────────────────────────────────────────────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkComponentLabScreen() {
@@ -126,61 +133,93 @@ fun LynkComponentLabScreen() {
                 LynkIconButton(onClick = { haptic(AppHaptic.ImpactLight) }) {
                     Icon(
                         imageVector = Lucide.ChevronLeft,
-                        contentDescription = null,
-                        tint = LynkTheme.colors.primary   // TINT: explicit, slot doesn't inherit
+                        contentDescription = null
                     )
                 }
             },
             actions = {
-                Box {
-                    LynkIconButton(onClick = {
-                        haptic(AppHaptic.ImpactLight); showDropDown = true
-                    }) {
-                        Icon(
-                            imageVector = Lucide.EllipsisVertical,
-                            contentDescription = null,
-                            tint = LynkTheme.colors.onSurface   // TINT: explicit
-                        )
-                    }
-                    LynkDropDownMenu(
-                        expanded = showDropDown,
-                        onDismissRequest = { showDropDown = false },
-                        items = listOf(
-                            LynkDropDownItem("Share", icon = Lucide.Share2, onClick = {
-                                haptic(AppHaptic.Selection)
-                                scope.launch {
-                                    snackbarHostState.showFlashMessage(
-                                        "Shared!",
-                                        LynkFlashType.Info
-                                    )
-                                }
-                            }),
-                            LynkDropDownItem(
-                                "Delete", icon = Lucide.Trash2, isDestructive = true,
-                                onClick = { haptic(AppHaptic.Error) })
+                LynkDropDownMenu(
+                    expanded = showDropDown,
+                    onDismissRequest = { showDropDown = false },
+                    anchor = {
+                        LynkIconButton(onClick = {
+                            haptic(AppHaptic.ImpactLight)
+                            showDropDown = true
+                        }) {
+                            Icon(
+                                imageVector = Lucide.EllipsisVertical,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    items = listOf(
+                        LynkDropDownItem("Share", icon = Lucide.Share2, onClick = {
+                            haptic(AppHaptic.Selection)
+                            scope.launch {
+                                snackbarHostState.showFlashMessage("Shared!", LynkFlashType.Info)
+                            }
+                        }),
+                        LynkDropDownItem(
+                            "Delete", icon = Lucide.Trash2, isDestructive = true,
+                            onClick = { haptic(AppHaptic.Error) }
                         )
                     )
-                }
+                )
+            },
+            iosLeadingItems = remember {
+                listOf(LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = {}))
+            },
+            iosTrailingItems = remember {
+                listOf(
+                    LynkIosBarButtonItem(
+                        sfSymbol = "ellipsis.circle",
+                        menuItems = listOf(
+                            LynkIosDropDownMenuItem(
+                                title = "Share",
+                                sfSymbol = "square.and.arrow.up",
+                                onClick = {
+                                    scope.launch {
+                                        snackbarHostState.showFlashMessage(
+                                            "Shared!", LynkFlashType.Info
+                                        )
+                                    }
+                                }
+                            ),
+                            LynkIosDropDownMenuItem(
+                                title = "Delete",
+                                sfSymbol = "trash",
+                                isDestructive = true,
+                                onClick = {}
+                            )
+                        )
+                    )
+                )
             }
         )
     }
 
     if (isLandscape) {
-        LynkScaffold(
-            snackbarHostState = snackbarHostState,
-            topBar = topBar,
-            contentWindowInsets = WindowInsets(0)
-        ) { padding ->
-            Row(modifier = Modifier.fillMaxSize()) {
-                Spacer(Modifier.width(padding.calculateLeftPadding(LayoutDirection.Ltr)))
-                LynkNavigationRail(
-                    selectedItem = selectedNavItem,
-                    onItemSelected = ::onNavItemSelected
-                )
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LabContent(selectedTab, snackbarHostState, haptic, scope)
+        Row(modifier = Modifier.fillMaxSize()) {
+            LynkNavigationRail(
+                selectedItem = selectedNavItem,
+                onItemSelected = ::onNavItemSelected
+            )
+            LynkScaffold(
+                modifier = Modifier.weight(1f).fillMaxHeight()
+                    .consumeWindowInsets(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
+                    .consumeWindowInsets(WindowInsets.systemBars.only(WindowInsetsSides.Start)),
+                snackbarHostState = snackbarHostState,
+                topBar = topBar,
+            ) { padding ->
+                AnimatedContent(
+                    targetState = selectedTab,
+                    transitionSpec = {
+                        fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                    },
+                    label = "LabTabContent"
+                ) { tab ->
+                    LabContent(tab, padding, snackbarHostState, haptic, scope)
                 }
-                Spacer(Modifier.width(padding.calculateRightPadding(LayoutDirection.Ltr)))
             }
         }
     } else {
@@ -205,56 +244,61 @@ fun LynkComponentLabScreen() {
                         }
                     }
                 ) {
-                    Icon(
-                        imageVector = Lucide.Plus,
-                        contentDescription = null,
-                        tint = LynkTheme.colors.onPrimary   // TINT: explicit, slot doesn't inherit
-                    )
+                    Icon(imageVector = Lucide.Plus, contentDescription = null)
                 }
             }
         ) { padding ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                Spacer(Modifier.height(padding.calculateTopPadding()))
-                LabContent(selectedTab, snackbarHostState, haptic, scope)
-                Spacer(Modifier.height(padding.calculateBottomPadding()))
+            AnimatedContent(
+                targetState = selectedTab,
+                transitionSpec = {
+                    fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                },
+                modifier = Modifier.fillMaxSize(),
+                label = "LabTabContent"
+            ) { tab ->
+                LabContent(tab, padding, snackbarHostState, haptic, scope)
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tab router
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun LabContent(
     tab: LabTab,
+    paddingValues: PaddingValues,
     snackbarHostState: SnackbarHostState,
     haptic: (AppHaptic) -> Unit,
     scope: CoroutineScope
 ) {
     when (tab) {
-        LabTab.BUTTONS -> ButtonsTab(haptic, snackbarHostState, scope)
-        LabTab.TYPE_COLOR -> TypeColorTab()
-        LabTab.FORMS -> FormsTab(haptic)
-        LabTab.CARDS -> CardsTab(haptic)
-        LabTab.OVERLAYS -> OverlaysTab(haptic, snackbarHostState, scope)
+        LabTab.BUTTONS -> ButtonsTab(paddingValues, haptic, snackbarHostState, scope)
+        LabTab.TYPE_COLOR -> TypeColorTab(paddingValues)
+        LabTab.FORMS -> FormsTab(paddingValues, haptic)
+        LabTab.CARDS -> CardsTab(paddingValues, haptic)
+        LabTab.OVERLAYS -> OverlaysTab(paddingValues, haptic, snackbarHostState, scope)
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun LabScrollColumn(content: @Composable () -> Unit) {
+private fun LabScrollColumn(
+    paddingValues: PaddingValues,
+    content: @Composable () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        Spacer(Modifier.height(8.dp))
         content()
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -263,14 +307,14 @@ private fun LabSection(title: String, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         LynkText(
             text = title.uppercase(),
-            style = LynkTheme.Typography.labelSmall,
-            color = LynkTheme.colors.primary
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary
         )
         content()
         HorizontalDivider(
             modifier = Modifier.padding(top = 4.dp),
             thickness = 0.5.dp,
-            color = LynkTheme.colors.outlineVariant
+            color = MaterialTheme.colorScheme.outlineVariant
         )
     }
 }
@@ -278,8 +322,10 @@ private fun LabSection(title: String, content: @Composable () -> Unit) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 1 — Buttons & Controls
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
 private fun ButtonsTab(
+    paddingValues: PaddingValues,
     haptic: (AppHaptic) -> Unit,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope
@@ -288,22 +334,26 @@ private fun ButtonsTab(
     var segmentFixed by remember { mutableIntStateOf(0) }
     var segmentChip by remember { mutableIntStateOf(0) }
 
-    LabScrollColumn {
+    LabScrollColumn(paddingValues) {
         LabSection("LynkButton — All 5 styles + states") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LynkButton("Primary", onClick = { haptic(AppHaptic.ImpactMedium) })
                 LynkButton(
-                    "Secondary Outlined", style = LynkButtonStyle.SECONDARY,
-                    onClick = { haptic(AppHaptic.ImpactLight) })
+                    "Secondary", style = LynkButtonStyle.SECONDARY,
+                    onClick = { haptic(AppHaptic.ImpactLight) }
+                )
                 LynkButton(
                     "Destructive Primary", style = LynkButtonStyle.DESTRUCTIVE_PRIMARY,
-                    onClick = { haptic(AppHaptic.Error) })
+                    onClick = { haptic(AppHaptic.Error) }
+                )
                 LynkButton(
                     "Destructive Secondary", style = LynkButtonStyle.DESTRUCTIVE_SECONDARY,
-                    onClick = { haptic(AppHaptic.Warning) })
+                    onClick = { haptic(AppHaptic.Warning) }
+                )
                 LynkButton(
                     "Text Button", style = LynkButtonStyle.TEXT,
-                    onClick = { haptic(AppHaptic.Selection) })
+                    onClick = { haptic(AppHaptic.Selection) }
+                )
                 LynkButton("Disabled", enabled = false, onClick = {})
                 LynkButton(
                     text = "Loading (tap me)",
@@ -321,12 +371,11 @@ private fun ButtonsTab(
                 )
                 LynkButton(
                     text = "With Icon",
-                    icon = {
+                    leadingIcon = {
                         Icon(
                             imageVector = Lucide.Heart,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = LynkTheme.colors.onPrimary   // TINT: explicit, slot doesn't inherit
+                            modifier = Modifier.size(18.dp)
                         )
                     },
                     onClick = { haptic(AppHaptic.ImpactLight) }
@@ -337,28 +386,16 @@ private fun ButtonsTab(
         LabSection("LynkIconButton — enabled + disabled") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 LynkIconButton(onClick = { haptic(AppHaptic.ImpactLight) }) {
-                    Icon(
-                        Lucide.Search, "Search",
-                        tint = LynkTheme.colors.onSurface
-                    )          // TINT: explicit
+                    Icon(Lucide.Search, contentDescription = "Search")
                 }
                 LynkIconButton(onClick = { haptic(AppHaptic.ImpactLight) }) {
-                    Icon(
-                        Lucide.Bell, "Bell",
-                        tint = LynkTheme.colors.onSurface
-                    )
+                    Icon(Lucide.Bell, contentDescription = "Bell")
                 }
                 LynkIconButton(onClick = { haptic(AppHaptic.ImpactLight) }) {
-                    Icon(
-                        Lucide.Share2, "Share",
-                        tint = LynkTheme.colors.onSurface
-                    )
+                    Icon(Lucide.Share2, contentDescription = "Share")
                 }
                 LynkIconButton(enabled = false, onClick = {}) {
-                    Icon(
-                        Lucide.Trash2, "Trash (disabled)",
-                        tint = LynkTheme.colors.onSurface.copy(alpha = 0.38f)
-                    )
+                    Icon(Lucide.Trash2, contentDescription = "Trash (disabled)")
                 }
             }
         }
@@ -385,7 +422,7 @@ private fun ButtonsTab(
                 selectedIndex = segmentChip,
                 onItemSelected = { segmentChip = it; haptic(AppHaptic.Selection) },
                 style = LynkSegmentedStyle.SCROLLABLE_CHIPS,
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 0.dp)
+                contentPadding = PaddingValues(horizontal = 0.dp)
             )
         }
 
@@ -397,16 +434,16 @@ private fun ButtonsTab(
                 LynkProgressIndicator(modifier = Modifier.size(24.dp))
                 LynkProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = LynkTheme.colors.secondary
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 LynkProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = LynkTheme.colors.tertiary
+                    color = MaterialTheme.colorScheme.tertiary
                 )
                 LynkText(
                     "primary / secondary / tertiary",
-                    style = LynkTheme.Typography.bodyMedium,
-                    color = LynkTheme.colors.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -415,22 +452,25 @@ private fun ButtonsTab(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
-                        "Success" to AppHaptic.Success, "Warning" to AppHaptic.Warning,
+                        "Success" to AppHaptic.Success,
+                        "Warning" to AppHaptic.Warning,
                         "Error" to AppHaptic.Error
                     ).forEach { (l, t) ->
                         LynkButton(
-                            l, modifier = Modifier.weight(1f), style = LynkButtonStyle.SECONDARY,
-                            onClick = { haptic(t) })
+                            l, modifier = Modifier.weight(1f),
+                            style = LynkButtonStyle.SECONDARY, onClick = { haptic(t) })
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
-                        "Light" to AppHaptic.ImpactLight, "Medium" to AppHaptic.ImpactMedium,
-                        "Heavy" to AppHaptic.ImpactHeavy, "Select" to AppHaptic.Selection
+                        "Light" to AppHaptic.ImpactLight,
+                        "Medium" to AppHaptic.ImpactMedium,
+                        "Heavy" to AppHaptic.ImpactHeavy,
+                        "Select" to AppHaptic.Selection
                     ).forEach { (l, t) ->
                         LynkButton(
-                            l, modifier = Modifier.weight(1f), style = LynkButtonStyle.TEXT,
-                            onClick = { haptic(t) })
+                            l, modifier = Modifier.weight(1f),
+                            style = LynkButtonStyle.TEXT, onClick = { haptic(t) })
                     }
                 }
             }
@@ -441,100 +481,111 @@ private fun ButtonsTab(
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 2 — Typography & Color Palette
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun TypeColorTab() {
-    LabScrollColumn {
+private fun TypeColorTab(paddingValues: PaddingValues) {
+    LabScrollColumn(paddingValues) {
         LabSection("Typography — All 10 slots") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                LynkText(
-                    "Display Large — SpaceGrotesk Bold",
-                    style = LynkTheme.Typography.displayLarge
-                )
-                LynkText(
-                    "Headline Large — SpaceGrotesk Bold",
-                    style = LynkTheme.Typography.headlineLarge
-                )
-                LynkText(
-                    "Headline Medium — SpaceGrotesk Bold",
-                    style = LynkTheme.Typography.headlineMedium
-                )
-                LynkText("Title Large — PlusJakarta Bold", style = LynkTheme.Typography.titleLarge)
-                LynkText(
-                    "Title Medium — PlusJakarta Bold",
-                    style = LynkTheme.Typography.titleMedium
-                )
-                LynkText("Body Large — PlusJakarta Regular", style = LynkTheme.Typography.bodyLarge)
-                LynkText(
-                    "Body Medium — PlusJakarta Medium",
-                    style = LynkTheme.Typography.bodyMedium
-                )
-                LynkText(
-                    "Label Large — PlusJakarta Medium",
-                    style = LynkTheme.Typography.labelLarge
-                )
-                LynkText("Label Medium — JetBrains Mono", style = LynkTheme.Typography.labelMedium)
-                LynkText("Label Small — JetBrains Mono", style = LynkTheme.Typography.labelSmall)
+                LynkText("Display Large", style = MaterialTheme.typography.displayLarge)
+                LynkText("Headline Large", style = MaterialTheme.typography.headlineLarge)
+                LynkText("Headline Medium", style = MaterialTheme.typography.headlineMedium)
+                LynkText("Title Large", style = MaterialTheme.typography.titleLarge)
+                LynkText("Title Medium", style = MaterialTheme.typography.titleMedium)
+                LynkText("Body Large", style = MaterialTheme.typography.bodyLarge)
+                LynkText("Body Medium", style = MaterialTheme.typography.bodyMedium)
+                LynkText("Label Large", style = MaterialTheme.typography.labelLarge)
+                LynkText("Label Medium", style = MaterialTheme.typography.labelMedium)
+                LynkText("Label Small", style = MaterialTheme.typography.labelSmall)
             }
         }
 
-        LabSection("Brand tokens — bg / on* text") {
+        LabSection("Brand tokens") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                PaletteRow("primary", LynkTheme.colors.primary, LynkTheme.colors.onPrimary)
+                PaletteRow(
+                    "primary",
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.onPrimary
+                )
                 PaletteRow(
                     "primaryContainer",
-                    LynkTheme.colors.primaryContainer,
-                    LynkTheme.colors.onPrimaryContainer
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                PaletteRow("secondary", LynkTheme.colors.secondary, LynkTheme.colors.onSecondary)
+                PaletteRow(
+                    "secondary",
+                    MaterialTheme.colorScheme.secondary,
+                    MaterialTheme.colorScheme.onSecondary
+                )
                 PaletteRow(
                     "secondaryContainer",
-                    LynkTheme.colors.secondaryContainer,
-                    LynkTheme.colors.onSecondaryContainer
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                PaletteRow("tertiary", LynkTheme.colors.tertiary, LynkTheme.colors.onTertiary)
+                PaletteRow(
+                    "tertiary",
+                    MaterialTheme.colorScheme.tertiary,
+                    MaterialTheme.colorScheme.onTertiary
+                )
                 PaletteRow(
                     "tertiaryContainer",
-                    LynkTheme.colors.tertiaryContainer,
-                    LynkTheme.colors.onTertiaryContainer
+                    MaterialTheme.colorScheme.tertiaryContainer,
+                    MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
 
         LabSection("Surface tokens") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                PaletteRow("background", LynkTheme.colors.background, LynkTheme.colors.onBackground)
-                PaletteRow("surface", LynkTheme.colors.surface, LynkTheme.colors.onSurface)
+                PaletteRow(
+                    "background",
+                    MaterialTheme.colorScheme.background,
+                    MaterialTheme.colorScheme.onBackground
+                )
+                PaletteRow(
+                    "surface",
+                    MaterialTheme.colorScheme.surface,
+                    MaterialTheme.colorScheme.onSurface
+                )
                 PaletteRow(
                     "surfaceVariant",
-                    LynkTheme.colors.surfaceVariant,
-                    LynkTheme.colors.onSurfaceVariant
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 PaletteRow(
                     "surfaceContainerLow",
-                    LynkTheme.colors.surfaceContainerLow,
-                    LynkTheme.colors.onSurface
+                    MaterialTheme.colorScheme.surfaceContainerLow,
+                    MaterialTheme.colorScheme.onSurface
                 )
                 PaletteRow(
                     "surfaceContainerHigh",
-                    LynkTheme.colors.surfaceContainerHigh,
-                    LynkTheme.colors.onSurface
+                    MaterialTheme.colorScheme.surfaceContainerHigh,
+                    MaterialTheme.colorScheme.onSurface
                 )
             }
         }
 
         LabSection("Utility tokens") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                PaletteRow("error", LynkTheme.colors.error, LynkTheme.colors.onError)
+                PaletteRow(
+                    "error",
+                    MaterialTheme.colorScheme.error,
+                    MaterialTheme.colorScheme.onError
+                )
                 PaletteRow(
                     "errorContainer",
-                    LynkTheme.colors.errorContainer,
-                    LynkTheme.colors.onErrorContainer
+                    MaterialTheme.colorScheme.errorContainer,
+                    MaterialTheme.colorScheme.onErrorContainer
                 )
-                PaletteRow("outline", LynkTheme.colors.outline, LynkTheme.colors.onSurface)
+                PaletteRow(
+                    "outline",
+                    MaterialTheme.colorScheme.outline,
+                    MaterialTheme.colorScheme.onSurface
+                )
                 PaletteRow(
                     "outlineVariant",
-                    LynkTheme.colors.outlineVariant,
-                    LynkTheme.colors.onSurface
+                    MaterialTheme.colorScheme.outlineVariant,
+                    MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -547,20 +598,21 @@ private fun PaletteRow(name: String, bg: Color, fg: Color) {
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
-            .clip(LynkTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
             .background(bg)
             .padding(horizontal = 14.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        LynkText(name, style = LynkTheme.Typography.labelMedium, color = fg)
+        LynkText(name, style = MaterialTheme.typography.labelMedium, color = fg)
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 3 — Forms & Inputs
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun FormsTab(haptic: (AppHaptic) -> Unit) {
+private fun FormsTab(paddingValues: PaddingValues, haptic: (AppHaptic) -> Unit) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -573,7 +625,7 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
     var pickedTime by remember { mutableStateOf("Not selected") }
     var pickedDate by remember { mutableStateOf("Not selected") }
 
-    LabScrollColumn {
+    LabScrollColumn(paddingValues) {
         LabSection("LynkSearchField") {
             LynkSearchField(query = query, onQueryChange = { query = it })
         }
@@ -601,21 +653,21 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
         LabSection("LynkSwitch — on / off / disabled") {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                    LynkText("Push Notifications", style = LynkTheme.Typography.bodyLarge)
+                    LynkText("Push Notifications", style = MaterialTheme.typography.bodyLarge)
                     LynkSwitch(checked = switchOn, onCheckedChange = {
                         switchOn = it; haptic(AppHaptic.Selection)
                     })
                 }
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                    LynkText("Dark Mode Override", style = LynkTheme.Typography.bodyLarge)
+                    LynkText("Dark Mode Override", style = MaterialTheme.typography.bodyLarge)
                     LynkSwitch(checked = switchOff, onCheckedChange = {
                         switchOff = it; haptic(AppHaptic.Selection)
                     })
                 }
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
                     LynkText(
-                        "Disabled", style = LynkTheme.Typography.bodyLarge,
-                        color = LynkTheme.colors.onSurfaceVariant
+                        "Disabled", style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     LynkSwitch(checked = true, onCheckedChange = {}, enabled = false)
                 }
@@ -625,11 +677,11 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
         LabSection("LynkSlider") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                    LynkText("Volume", style = LynkTheme.Typography.bodyLarge)
+                    LynkText("Volume", style = MaterialTheme.typography.bodyLarge)
                     LynkText(
                         "${(sliderValue * 100).toInt()}%",
-                        style = LynkTheme.Typography.labelMedium,
-                        color = LynkTheme.colors.primary
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 LynkSlider(value = sliderValue, onValueChange = { sliderValue = it })
@@ -645,19 +697,17 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
                 ) {
                     LynkButton(
                         "Pick Date",
-                        icon = {
-                            Icon(
-                                Lucide.Calendar, null, Modifier.size(18.dp),
-                                tint = LynkTheme.colors.onBackground
-                            )   // TINT: explicit
+                        leadingIcon = {
+                            Icon(Lucide.Calendar, null, Modifier.size(18.dp))
                         },
                         modifier = Modifier.weight(1f),
                         style = LynkButtonStyle.SECONDARY,
                         onClick = { showDatePicker = true }
                     )
                     LynkText(
-                        pickedDate, style = LynkTheme.Typography.labelMedium,
-                        color = LynkTheme.colors.onSurfaceVariant,
+                        pickedDate,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -668,19 +718,17 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
                 ) {
                     LynkButton(
                         "Pick Time",
-                        icon = {
-                            Icon(
-                                Lucide.Clock, null, Modifier.size(18.dp),
-                                tint = LynkTheme.colors.onBackground
-                            )   // TINT: explicit
+                        leadingIcon = {
+                            Icon(Lucide.Clock, null, Modifier.size(18.dp))
                         },
                         modifier = Modifier.weight(1f),
                         style = LynkButtonStyle.SECONDARY,
                         onClick = { showTimePicker = true }
                     )
                     LynkText(
-                        pickedTime, style = LynkTheme.Typography.labelMedium,
-                        color = LynkTheme.colors.onSurfaceVariant,
+                        pickedTime,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -693,7 +741,6 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
             onDismissRequest = { showDatePicker = false },
             onDateSelected = { millis ->
                 pickedDate = millis?.let {
-                    // Proleptic Gregorian calendar — pure Kotlin stdlib, no java/kotlinx-datetime
                     var days = (it / 86_400_000L).toInt()
                     days += 719_468
                     val era = (if (days >= 0) days else days - 146_096) / 146_097
@@ -724,9 +771,10 @@ private fun FormsTab(haptic: (AppHaptic) -> Unit) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 4 — Cards & Layouts
 // ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun CardsTab(haptic: (AppHaptic) -> Unit) {
-    LabScrollColumn {
+private fun CardsTab(paddingValues: PaddingValues, haptic: (AppHaptic) -> Unit) {
+    LabScrollColumn(paddingValues) {
         LabSection("LynkCard — FILLED (default)") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LynkCard(Modifier.fillMaxWidth()) {
@@ -734,11 +782,11 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
                         Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        LynkText("Filled — static", style = LynkTheme.Typography.titleMedium)
+                        LynkText("Filled — static", style = MaterialTheme.typography.titleMedium)
                         LynkText(
                             "surfaceVariant@50% background.",
-                            style = LynkTheme.Typography.bodyMedium,
-                            color = LynkTheme.colors.onSurfaceVariant
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -747,11 +795,11 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
                         Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        LynkText("Filled — clickable", style = LynkTheme.Typography.titleMedium)
+                        LynkText("Filled — clickable", style = MaterialTheme.typography.titleMedium)
                         LynkText(
                             "Tap me. Ripple contained inside shape.",
-                            style = LynkTheme.Typography.bodyMedium,
-                            color = LynkTheme.colors.onSurfaceVariant
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -761,11 +809,11 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
         LabSection("LynkCard — OUTLINED") {
             LynkCard(Modifier.fillMaxWidth(), style = LynkCardStyle.OUTLINED) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    LynkText("Outlined", style = LynkTheme.Typography.titleMedium)
+                    LynkText("Outlined", style = MaterialTheme.typography.titleMedium)
                     LynkText(
                         "Surface + outlineVariant border.",
-                        style = LynkTheme.Typography.bodyMedium,
-                        color = LynkTheme.colors.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -774,11 +822,11 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
         LabSection("LynkCard — ELEVATED") {
             LynkCard(Modifier.fillMaxWidth(), style = LynkCardStyle.ELEVATED) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    LynkText("Elevated", style = LynkTheme.Typography.titleMedium)
+                    LynkText("Elevated", style = MaterialTheme.typography.titleMedium)
                     LynkText(
                         "4dp shadow. Use sparingly.",
-                        style = LynkTheme.Typography.bodyMedium,
-                        color = LynkTheme.colors.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -786,18 +834,25 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
 
         LabSection("LynkCard — custom shape + nested") {
             LynkCard(
-                Modifier.fillMaxWidth(), shape = LynkTheme.shapes.extraLarge,
+                Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge,
                 style = LynkCardStyle.OUTLINED
             ) {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LynkText("extraLarge shape override", style = LynkTheme.Typography.titleMedium)
+                    LynkText(
+                        "extraLarge shape override",
+                        style = MaterialTheme.typography.titleMedium
+                    )
                     LynkCard(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp)) {
-                            LynkText("Nested filled card", style = LynkTheme.Typography.bodyLarge)
+                            LynkText(
+                                "Nested filled card",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                             LynkText(
                                 "Elevation hierarchy correct.",
-                                style = LynkTheme.Typography.bodyMedium,
-                                color = LynkTheme.colors.onSurfaceVariant
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -810,9 +865,10 @@ private fun CardsTab(haptic: (AppHaptic) -> Unit) {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 5 — Overlays & Modals
 // ─────────────────────────────────────────────────────────────────────────────
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun OverlaysTab(
+    paddingValues: PaddingValues,
     haptic: (AppHaptic) -> Unit,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope
@@ -822,9 +878,11 @@ private fun OverlaysTab(
     var showInfoDialog by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var showAdaptiveSheet by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var dropDownExpanded by remember { mutableStateOf(false) }
 
-    LabScrollColumn {
+    LabScrollColumn(paddingValues) {
         LabSection("LynkFlashMessageHost — All 4 types") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
@@ -849,117 +907,127 @@ private fun OverlaysTab(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 LynkButton(
                     "Destructive Dialog", style = LynkButtonStyle.DESTRUCTIVE_SECONDARY,
-                    onClick = { haptic(AppHaptic.Warning); showDestructiveDialog = true })
+                    onClick = { haptic(AppHaptic.Warning); showDestructiveDialog = true }
+                )
                 LynkButton(
                     "Info Dialog", style = LynkButtonStyle.SECONDARY,
-                    onClick = { haptic(AppHaptic.ImpactMedium); showInfoDialog = true })
+                    onClick = { haptic(AppHaptic.ImpactMedium); showInfoDialog = true }
+                )
             }
         }
 
         LabSection("LynkActionSheet") {
             LynkButton(
                 "Open Action Sheet", style = LynkButtonStyle.SECONDARY,
-                onClick = { haptic(AppHaptic.ImpactMedium); showActionSheet = true })
+                onClick = { haptic(AppHaptic.ImpactMedium); showActionSheet = true }
+            )
         }
 
-        LabSection("LynkBottomSheet") {
-            LynkButton(
-                "Open Bottom Sheet", style = LynkButtonStyle.SECONDARY,
-                onClick = { haptic(AppHaptic.ImpactHeavy); showBottomSheet = true })
-        }
-
-        LabSection("LynkAdaptiveSheet") {
+        LabSection("LynkBottomSheet & LynkAdaptiveSheet") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 LynkButton(
+                    "Open Bottom Sheet", style = LynkButtonStyle.SECONDARY,
+                    onClick = { haptic(AppHaptic.ImpactHeavy); showBottomSheet = true }
+                )
+                LynkButton(
                     "Open Adaptive Sheet", style = LynkButtonStyle.SECONDARY,
-                    onClick = { haptic(AppHaptic.ImpactMedium); showAdaptiveSheet = true })
+                    onClick = { haptic(AppHaptic.ImpactMedium); showAdaptiveSheet = true }
+                )
                 LynkText(
-                    "BottomSheet on phone · centered dialog on tablet",
-                    style = LynkTheme.Typography.labelMedium,
-                    color = LynkTheme.colors.onSurfaceVariant
+                    "Adaptive: BottomSheet on phone · centered dialog on tablet",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        LabSection("LynkDatePicker & LynkTimePicker") {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LynkButton(
+                    "Open Date Picker", style = LynkButtonStyle.SECONDARY,
+                    onClick = { haptic(AppHaptic.ImpactMedium); showDatePicker = true }
+                )
+                LynkButton(
+                    "Open Time Picker", style = LynkButtonStyle.SECONDARY,
+                    onClick = { haptic(AppHaptic.ImpactMedium); showTimePicker = true }
                 )
             }
         }
 
         LabSection("LynkDropDownMenu") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                LynkText("Tap the icon →", style = LynkTheme.Typography.bodyLarge)
+                LynkText("Tap the icon →", style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.width(12.dp))
-                Box {
-                    LynkIconButton(onClick = {
-                        haptic(AppHaptic.ImpactLight); dropDownExpanded = true
-                    }) {
-                        Icon(
-                            Lucide.EllipsisVertical, "Menu",
-                            tint = LynkTheme.colors.onSurface
-                        )   // TINT: explicit
-                    }
-                    LynkDropDownMenu(
-                        expanded = dropDownExpanded,
-                        onDismissRequest = { dropDownExpanded = false },
-                        items = listOf(
-                            LynkDropDownItem("Share", icon = Lucide.Share2, onClick = {
-                                haptic(AppHaptic.Selection)
+                LynkDropDownMenu(
+                    expanded = dropDownExpanded,
+                    onDismissRequest = { dropDownExpanded = false },
+                    anchor = {
+                        LynkIconButton(onClick = {
+                            haptic(AppHaptic.ImpactLight); dropDownExpanded = true
+                        }) {
+                            Icon(Lucide.EllipsisVertical, contentDescription = "Menu")
+                        }
+                    },
+                    items = listOf(
+                        LynkDropDownItem("Share", icon = Lucide.Share2, onClick = {
+                            haptic(AppHaptic.Selection)
+                            scope.launch {
+                                snackbarHostState.showFlashMessage("Shared!", LynkFlashType.Info)
+                            }
+                        }),
+                        LynkDropDownItem("Favourite", icon = Lucide.Heart, onClick = {
+                            haptic(AppHaptic.Success)
+                            scope.launch {
+                                snackbarHostState.showFlashMessage("Saved", LynkFlashType.Success)
+                            }
+                        }),
+                        LynkDropDownItem(
+                            "Delete", icon = Lucide.Trash2, isDestructive = true,
+                            onClick = {
+                                haptic(AppHaptic.Error)
                                 scope.launch {
                                     snackbarHostState.showFlashMessage(
-                                        "Shared!",
-                                        LynkFlashType.Info
+                                        "Deleted",
+                                        LynkFlashType.Error
                                     )
                                 }
-                            }),
-                            LynkDropDownItem("Favourite", icon = Lucide.Heart, onClick = {
-                                haptic(AppHaptic.Success)
-                                scope.launch {
-                                    snackbarHostState.showFlashMessage(
-                                        "Saved",
-                                        LynkFlashType.Success
-                                    )
-                                }
-                            }),
-                            LynkDropDownItem(
-                                "Delete", icon = Lucide.Trash2, isDestructive = true,
-                                onClick = {
-                                    haptic(AppHaptic.Error)
-                                    scope.launch {
-                                        snackbarHostState.showFlashMessage(
-                                            "Deleted",
-                                            LynkFlashType.Error
-                                        )
-                                    }
-                                })
+                            }
                         )
                     )
-                }
+                )
             }
         }
     }
 
-    // ── Overlays (outside scroll column) ─────────────────────────────────────
+    // ── Overlays ─────────────────────────────────────────────────────────────
 
-    LynkActionSheet(
-        visible = showActionSheet,
-        onDismissRequest = { showActionSheet = false },
-        title = "What would you like to do?",
-        items = listOf(
-            LynkActionSheetItem("Edit", icon = Lucide.Search, onClick = {
-                haptic(AppHaptic.Selection)
-                scope.launch {
-                    snackbarHostState.showFlashMessage(
-                        "Edit tapped",
-                        LynkFlashType.Info
-                    )
-                }
-            }),
-            LynkActionSheetItem(
-                "Share",
-                icon = Lucide.Share2,
-                onClick = { haptic(AppHaptic.Selection) }),
-            LynkActionSheetItem("Delete", icon = Lucide.Trash2, isDestructive = true, onClick = {
-                haptic(AppHaptic.Error)
-                scope.launch { snackbarHostState.showFlashMessage("Deleted", LynkFlashType.Error) }
-            })
+    if (showActionSheet) {
+        LynkActionSheet(
+            onDismissRequest = { showActionSheet = false },
+            title = "What would you like to do?",
+            items = listOf(
+                LynkActionSheetItem("Edit", icon = Lucide.Search, onClick = {
+                    haptic(AppHaptic.Selection)
+                    scope.launch {
+                        snackbarHostState.showFlashMessage("Edit tapped", LynkFlashType.Info)
+                    }
+                }),
+                LynkActionSheetItem(
+                    "Share", icon = Lucide.Share2,
+                    onClick = { haptic(AppHaptic.Selection) }),
+                LynkActionSheetItem(
+                    "Delete",
+                    icon = Lucide.Trash2,
+                    isDestructive = true,
+                    onClick = {
+                        haptic(AppHaptic.Error)
+                        scope.launch {
+                            snackbarHostState.showFlashMessage("Deleted", LynkFlashType.Error)
+                        }
+                    })
+            )
         )
-    )
+    }
 
     if (showDestructiveDialog) {
         LynkDialog(
@@ -1007,11 +1075,11 @@ private fun OverlaysTab(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                LynkText("LynkBottomSheet", style = LynkTheme.Typography.titleLarge)
+                LynkText("LynkBottomSheet", style = MaterialTheme.typography.titleLarge)
                 LynkText(
-                    "Drag handle = outline token (4.49:1 light, 4.43:1 dark). Scrim = black@32%.",
-                    style = LynkTheme.Typography.bodyMedium,
-                    color = LynkTheme.colors.onSurfaceVariant
+                    "Drag handle = outline token. Scrim = black@32%.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 LynkButton(
                     "Close",
@@ -1028,17 +1096,45 @@ private fun OverlaysTab(
                 modifier = Modifier.fillMaxWidth().padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                LynkText("LynkAdaptiveSheet", style = LynkTheme.Typography.titleLarge)
+                LynkText("LynkAdaptiveSheet", style = MaterialTheme.typography.titleLarge)
                 LynkText(
                     "Bottom sheet on phone · 480×540dp centered dialog on tablet.",
-                    style = LynkTheme.Typography.bodyMedium,
-                    color = LynkTheme.colors.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 LynkButton(
-                    "Close", onClick = { showAdaptiveSheet = false },
+                    "Close",
+                    onClick = { showAdaptiveSheet = false },
                     style = LynkButtonStyle.PRIMARY
                 )
             }
         }
+    }
+
+    if (showDatePicker) {
+        LynkDatePicker(
+            onDismissRequest = { showDatePicker = false },
+            onDateSelected = { millis ->
+                scope.launch {
+                    snackbarHostState.showFlashMessage(
+                        "Date: ${millis ?: "None"}", LynkFlashType.Info
+                    )
+                }
+            }
+        )
+    }
+
+    if (showTimePicker) {
+        LynkTimePicker(
+            onDismissRequest = { showTimePicker = false },
+            onTimeSelected = { h, m ->
+                scope.launch {
+                    snackbarHostState.showFlashMessage(
+                        "Time: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}",
+                        LynkFlashType.Info
+                    )
+                }
+            }
+        )
     }
 }

@@ -2,65 +2,127 @@ package com.eeseka.lynk.shared.design_system.components.navigation
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
-import com.slapps.cupertino.CupertinoTopAppBar
-import com.slapps.cupertino.CupertinoTopAppBarDefaults
-import com.slapps.cupertino.ExperimentalCupertinoApi
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
+import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCupertinoApi::class)
+@Immutable
+data class LynkIosBarButtonItem(
+    val title: String? = null,
+    val sfSymbol: String? = null,
+    val enabled: Boolean = true,
+    val onClick: () -> Unit = {},
+    val menuItems: List<LynkIosDropDownMenuItem> = emptyList(),
+    val menuSections: List<LynkIosDropDownMenuSection> = emptyList(),
+)
+
+@Immutable
+data class LynkIosDropDownMenuItem(
+    val title: String,
+    val sfSymbol: String? = null,
+    val isDestructive: Boolean = false,
+    val isDisabled: Boolean = false,
+    val onClick: () -> Unit = {},
+)
+
+@Immutable
+data class LynkIosDropDownMenuSection(
+    val title: String? = null,
+    val items: List<LynkIosDropDownMenuItem> = emptyList(),
+)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
 fun LynkTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
-    containerColor: Color = LynkTheme.colors.surface,
-    contentColor: Color = LynkTheme.colors.onSurface
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    iosLeadingItems: List<LynkIosBarButtonItem> = emptyList(),
+    iosTrailingItems: List<LynkIosBarButtonItem> = emptyList(),
 ) {
-    if (isIOS()) {
-        CupertinoTopAppBar(
-            title = {
-                LynkText(
-                    text = title,
-                    style = LynkTheme.Typography.titleMedium,
-                    color = contentColor
-                )
-            },
-            modifier = modifier,
-            navigationIcon = navigationIcon,
-            actions = actions,
-            colors = CupertinoTopAppBarDefaults.topAppBarColors(
-                containerColor = containerColor,
-                titleContentColor = contentColor,
-                actionIconContentColor = LynkTheme.colors.primary,
-                navigationIconContentColor = LynkTheme.colors.primary
-            )
+    val mappedLeading = remember(iosLeadingItems) { iosLeadingItems.toUIKitItems() }
+    val mappedTrailing = remember(iosTrailingItems) { iosTrailingItems.toUIKitItems() }
+
+    AdaptiveTopBar(
+        title = {
+            LynkText(text = title)
+        },
+        modifier = modifier,
+        navigationIcon = navigationIcon,
+        actions = actions,
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = containerColor,
+            titleContentColor = contentColor,
+            navigationIconContentColor = contentColor,
+            actionIconContentColor = contentColor
+        ),
+        iosTitle = title,
+        iosLeadingItems = mappedLeading,
+        iosTrailingItems = mappedTrailing,
+    )
+}
+
+private fun List<LynkIosBarButtonItem>.toUIKitItems(): List<UIKitUIBarButtonItem> =
+    map { it.toUIKitItem() }
+
+private fun LynkIosBarButtonItem.toUIKitItem(): UIKitUIBarButtonItem {
+    val image = sfSymbol?.let { UIKitImage.SystemName(it) }
+
+    return when {
+        menuItems.isNotEmpty() || menuSections.isNotEmpty() -> UIKitUIBarButtonItem.withMenu(
+            image = image ?: UIKitImage.SystemName("ellipsis.circle"),
+            menuItems = menuItems.toAdaptiveItems(),
+            menuSections = menuSections.toAdaptiveSections(),
         )
-    } else {
-        TopAppBar(
-            title = {
-                LynkText(
-                    text = title,
-                    style = LynkTheme.Typography.titleLarge,
-                    color = contentColor
-                )
-            },
-            modifier = modifier,
-            navigationIcon = navigationIcon,
-            actions = actions,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = containerColor,
-                titleContentColor = contentColor,
-                navigationIconContentColor = LynkTheme.colors.primary,
-                actionIconContentColor = LynkTheme.colors.primary
-            )
+
+        image != null -> UIKitUIBarButtonItem.image(
+            image = image,
+            enabled = enabled,
+            onClick = onClick
         )
+
+        title != null -> UIKitUIBarButtonItem.title(
+            title = title,
+            enabled = enabled,
+            onClick = onClick
+        )
+
+        else -> UIKitUIBarButtonItem.flexibleSpace()
     }
 }
+
+private fun List<LynkIosDropDownMenuItem>.toAdaptiveItems(): List<AdaptiveDropDownItem> =
+    map { item ->
+        AdaptiveDropDownItem(
+            title = item.title,
+            iosIcon = item.sfSymbol?.let { UIKitImage.SystemName(it) },
+            isDestructive = item.isDestructive,
+            isDisabled = item.isDisabled,
+            onClick = item.onClick
+        )
+    }
+
+private fun List<LynkIosDropDownMenuSection>.toAdaptiveSections(): List<AdaptiveDropDownSection> =
+    map { section ->
+        AdaptiveDropDownSection(
+            title = section.title ?: "",
+            items = section.items.toAdaptiveItems()
+        )
+    }

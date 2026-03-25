@@ -11801,25 +11801,9 @@
 			path = build;
 			sourceTree = "<group>";
 		};
-		475199662F4CA8AC0056AE40 /* components */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = components;
-			sourceTree = "<group>";
-		};
-		475199672F4CA8AC0056AE40 /* design_system */ = {
-			isa = PBXGroup;
-			children = (
-				475199662F4CA8AC0056AE40 /* components */,
-			);
-			path = design_system;
-			sourceTree = "<group>";
-		};
 		475199682F4CA8AC0056AE40 /* shared */ = {
 			isa = PBXGroup;
 			children = (
-				475199672F4CA8AC0056AE40 /* design_system */,
 			);
 			path = shared;
 			sourceTree = "<group>";

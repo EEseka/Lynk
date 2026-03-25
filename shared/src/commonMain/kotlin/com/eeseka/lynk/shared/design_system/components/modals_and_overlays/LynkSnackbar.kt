@@ -1,6 +1,6 @@
 package com.eeseka.lynk.shared.design_system.components.modals_and_overlays
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -9,7 +9,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -18,21 +21,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleAlert
 import com.composables.icons.lucide.CircleCheck
@@ -42,14 +46,10 @@ import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import kotlinx.coroutines.delay
 
 enum class LynkFlashType {
-    Success,
-    Error,
-    Warning,
-    Info
+    Success, Error, Warning, Info
 }
 
 class LynkFlashVisuals(
@@ -81,11 +81,9 @@ fun LynkFlashMessageHost(
     modifier: Modifier = Modifier
 ) {
     val currentData = hostState.currentSnackbarData
-    var displayedData by remember { mutableStateOf(currentData) }
 
     LaunchedEffect(currentData) {
         if (currentData != null) {
-            displayedData = currentData
             val timeout = when (currentData.visuals.duration) {
                 SnackbarDuration.Short -> 3000L
                 SnackbarDuration.Long -> 5000L
@@ -96,22 +94,24 @@ fun LynkFlashMessageHost(
         }
     }
 
-    AnimatedVisibility(
-        visible = currentData != null,
-        enter = slideInVertically(
-            initialOffsetY = { fullHeight -> -fullHeight },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        ) + fadeIn(),
-        exit = slideOutVertically(
-            targetOffsetY = { fullHeight -> -fullHeight },
-            animationSpec = tween(250, easing = FastOutSlowInEasing)
-        ) + fadeOut(),
-        modifier = modifier
-    ) {
-        displayedData?.let { data ->
+    AnimatedContent(
+        targetState = currentData,
+        transitionSpec = {
+            (slideInVertically(
+                initialOffsetY = { -it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ) + fadeIn()) togetherWith (slideOutVertically(
+                targetOffsetY = { -it },
+                animationSpec = tween(250, easing = FastOutSlowInEasing)
+            ) + fadeOut())
+        },
+        modifier = modifier,
+        label = "FlashMessageAnimation"
+    ) { data ->
+        if (data != null) {
             val visuals = data.visuals as? LynkFlashVisuals
             val type = visuals?.type ?: LynkFlashType.Info
 
@@ -120,7 +120,7 @@ fun LynkFlashMessageHost(
                 type = type,
                 modifier = Modifier.pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
-                        if (dragAmount < -5f) currentData?.dismiss()
+                        if (dragAmount < -5f) data.dismiss()
                     }
                 }
             )
@@ -134,6 +134,7 @@ private fun LynkFlashPill(
     type: LynkFlashType,
     modifier: Modifier = Modifier
 ) {
+    val scheme = MaterialTheme.colorScheme
     val triggerHaptic = rememberAppHaptic()
 
     LaunchedEffect(type) {
@@ -146,17 +147,17 @@ private fun LynkFlashPill(
     }
 
     val containerColor = when (type) {
-        LynkFlashType.Success -> LynkTheme.colors.primary
-        LynkFlashType.Error -> LynkTheme.colors.error
-        LynkFlashType.Warning -> LynkTheme.colors.secondary
-        LynkFlashType.Info -> LynkTheme.colors.surfaceVariant
+        LynkFlashType.Success -> scheme.primaryContainer
+        LynkFlashType.Error -> scheme.errorContainer
+        LynkFlashType.Warning -> scheme.secondaryContainer
+        LynkFlashType.Info -> scheme.inverseSurface
     }
 
     val contentColor = when (type) {
-        LynkFlashType.Info -> LynkTheme.colors.onSurface
-        LynkFlashType.Success -> LynkTheme.colors.onPrimary
-        LynkFlashType.Error -> LynkTheme.colors.onError
-        LynkFlashType.Warning -> LynkTheme.colors.onSecondary
+        LynkFlashType.Success -> scheme.onPrimaryContainer
+        LynkFlashType.Error -> scheme.onErrorContainer
+        LynkFlashType.Warning -> scheme.onSecondaryContainer
+        LynkFlashType.Info -> scheme.inverseOnSurface
     }
 
     val icon = when (type) {
@@ -170,8 +171,14 @@ private fun LynkFlashPill(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .widthIn(max = 480.dp)
-            .shadow(elevation = 8.dp, shape = LynkTheme.shapes.pill)
-            .clip(LynkTheme.shapes.pill)
+            // Added semantic label so screen readers announce it instantly
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .shadow(elevation = 8.dp, shape = CircleShape)
+            .border(
+                BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.2f)),
+                CircleShape
+            )
+            .clip(CircleShape)
             .background(containerColor)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -187,7 +194,7 @@ private fun LynkFlashPill(
         LynkText(
             text = message,
             color = contentColor,
-            style = LynkTheme.Typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
