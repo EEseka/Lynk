@@ -16,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.eeseka.lynk.shared.navigation.LynkNavigationItem
 import kotlinx.coroutines.flow.Flow
@@ -83,4 +85,26 @@ private class NoRippleInteractionSource : MutableInteractionSource {
     override val interactions: Flow<Interaction> = emptyFlow()
     override suspend fun emit(interaction: Interaction) {}
     override fun tryEmit(interaction: Interaction) = true
+}
+
+@Preview
+@Composable
+private fun LynkNavigationRailPreview() {
+    LynkTheme {
+        LynkNavigationRail(
+            selectedItem = LynkNavigationItem.PROFILE,
+            onItemSelected = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkNavigationRailPreviewDark() {
+    LynkTheme(true) {
+        LynkNavigationRail(
+            selectedItem = LynkNavigationItem.PROFILE,
+            onItemSelected = {}
+        )
+    }
 }

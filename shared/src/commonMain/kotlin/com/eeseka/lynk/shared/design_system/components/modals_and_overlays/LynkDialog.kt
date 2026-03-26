@@ -4,7 +4,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 
@@ -35,7 +37,7 @@ fun LynkDialog(
         text = message,
         modifier = modifier,
         iosConfirmButtonStyle = if (isDestructive) AlertDialogIosActionStyle.Destructive
-            else AlertDialogIosActionStyle.Default,
+        else AlertDialogIosActionStyle.Default,
         iosDismissButtonStyle = AlertDialogIosActionStyle.Cancel,
         materialConfirmButton = {
             TextButton(
@@ -67,4 +69,68 @@ fun LynkDialog(
             }
         }
     )
+}
+
+@Preview
+@Composable
+private fun LynkDialogPreview() {
+    LynkTheme {
+        LynkDialog(
+            onDismissRequest = {},
+            title = "Enable Notifications",
+            message = "Get notified when someone likes your post, follows you, or sends a message.",
+            confirmText = "Enable",
+            dismissText = "Not Now",
+            onConfirm = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDialogPreviewDark() {
+    LynkTheme(true) {
+        LynkDialog(
+            onDismissRequest = {},
+            title = "Enable Notifications",
+            message = "Get notified when someone likes your post, follows you, or sends a message.",
+            confirmText = "Enable",
+            dismissText = "Not Now",
+            onConfirm = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDestructiveDialogPreview() {
+    LynkTheme {
+        LynkDialog(
+            onDismissRequest = { },
+            title = "Delete Account?",
+            message = "This action cannot be undone. All your data will be permanently removed from Lynk.",
+            confirmText = "Delete",
+            dismissText = "Cancel",
+            isDestructive = true,
+            onConfirm = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDestructiveDialogPreviewDark() {
+    LynkTheme(true) {
+        LynkDialog(
+            onDismissRequest = { },
+            title = "Delete Account?",
+            message = "This action cannot be undone. All your data will be permanently removed from Lynk.",
+            confirmText = "Delete",
+            dismissText = "Cancel",
+            isDestructive = true,
+            onConfirm = {},
+            onDismiss = {}
+        )
+    }
 }

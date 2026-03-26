@@ -7,7 +7,9 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.navigation.LynkNavigationItem
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
@@ -70,4 +72,26 @@ fun LynkBottomBar(
             }
         }
     )
+}
+
+@Preview
+@Composable
+private fun LynkBottomBarPreview() {
+    LynkTheme {
+        LynkBottomBar(
+            selectedItem = LynkNavigationItem.DISCOVER,
+            onItemSelected = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkBottomBarPreviewDark() {
+    LynkTheme(true) {
+        LynkBottomBar(
+            selectedItem = LynkNavigationItem.DISCOVER,
+            onItemSelected = {}
+        )
+    }
 }

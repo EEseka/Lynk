@@ -11,13 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.User
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 
 @Composable
 fun LynkTextField(
@@ -76,4 +81,76 @@ fun LynkTextField(
         visualTransformation = visualTransformation,
         shape = MaterialTheme.shapes.medium
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkTextFieldPreview() {
+    LynkTheme {
+        LynkTextField(
+            value = "Emmanuel",
+            onValueChange = {},
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.User,
+                    contentDescription = null
+                )
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkTextFieldPreviewDark() {
+    LynkTheme(true) {
+        LynkTextField(
+            value = "Emmanuel",
+            onValueChange = {},
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.User,
+                    contentDescription = null
+                )
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkErrorTextFieldPreview() {
+    LynkTheme {
+        LynkTextField(
+            value = "Emmanuel",
+            onValueChange = {},
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.User,
+                    contentDescription = null
+                )
+            },
+            isError = true,
+            errorMessage = "Invalid name"
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkErrorTextFieldPreviewDark() {
+    LynkTheme(true) {
+        LynkTextField(
+            value = "Emmanuel",
+            onValueChange = {},
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.User,
+                    contentDescription = null
+                )
+            },
+            isError = true,
+            errorMessage = "Invalid name"
+        )
+    }
 }

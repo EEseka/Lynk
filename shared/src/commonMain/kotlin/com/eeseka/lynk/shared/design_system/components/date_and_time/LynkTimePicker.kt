@@ -8,10 +8,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkBottomSheet
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import lynk.shared.generated.resources.Res
@@ -55,5 +57,27 @@ fun LynkTimePicker(
                 style = LynkButtonStyle.PRIMARY
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkTimePickerPreview() {
+    LynkTheme {
+        LynkTimePicker(
+            onDismissRequest = {},
+            onTimeSelected = { _, _ -> }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkTimePickerPreviewDark() {
+    LynkTheme(true) {
+        LynkTimePicker(
+            onDismissRequest = {},
+            onTimeSelected = { _, _ -> }
+        )
     }
 }

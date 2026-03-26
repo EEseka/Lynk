@@ -66,6 +66,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.compose.ui.tooling)
         }
         commonMain.dependencies {
             // --- UI Essentials ---

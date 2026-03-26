@@ -32,8 +32,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.gesture.adaptiveClickable
 
 @Immutable
@@ -72,9 +74,9 @@ fun LynkSegmentedControl(
                 itemsIndexed(items) { index, item ->
                     val isSelected = selectedIndex == index
                     val containerColor = if (isSelected) scheme.secondaryContainer
-                        else scheme.surfaceContainerLow
+                    else scheme.surfaceContainerLow
                     val contentColor = if (isSelected) scheme.onSecondaryContainer
-                        else scheme.onSurfaceVariant
+                    else scheme.onSurfaceVariant
 
                     Row(
                         modifier = Modifier
@@ -181,3 +183,61 @@ fun LynkSegmentedControl(
         }
     }
 }
+
+@Preview
+@Composable
+private fun LynkSegmentedControlPreview() {
+    LynkTheme {
+        LynkSegmentedControl(
+            items = previewItems,
+            selectedIndex = 0,
+            onItemSelected = {},
+            style = LynkSegmentedStyle.SCROLLABLE_CHIPS
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkSegmentedControlPreviewDark() {
+    LynkTheme(true) {
+        LynkSegmentedControl(
+            items = previewItems,
+            selectedIndex = 0,
+            onItemSelected = {},
+            style = LynkSegmentedStyle.SCROLLABLE_CHIPS
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkSegmentedControlFixedPreview() {
+    LynkTheme {
+        LynkSegmentedControl(
+            items = previewItems,
+            selectedIndex = 1,
+            onItemSelected = {},
+            style = LynkSegmentedStyle.FIXED_BAR
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkSegmentedControlFixedPreviewDark() {
+    LynkTheme(true) {
+        LynkSegmentedControl(
+            items = previewItems,
+            selectedIndex = 1,
+            onItemSelected = {},
+            style = LynkSegmentedStyle.FIXED_BAR
+        )
+    }
+}
+
+private val previewItems = listOf(
+    LynkSegmentedItem("All"),
+    LynkSegmentedItem("Unread"),
+    LynkSegmentedItem("Archived")
+)

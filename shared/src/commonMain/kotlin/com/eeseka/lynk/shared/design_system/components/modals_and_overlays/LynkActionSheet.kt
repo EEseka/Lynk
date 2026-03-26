@@ -17,8 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Trash2
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveBasicAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
@@ -137,3 +143,46 @@ fun LynkActionSheet(
         }
     )
 }
+
+@Preview
+@Composable
+private fun LynkActionSheetPreview() {
+    LynkTheme {
+        LynkActionSheet(
+            onDismissRequest = {},
+            title = "What would you like to do?",
+            items = previewItems
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkActionSheetPreviewDark() {
+    LynkTheme(true) {
+        LynkActionSheet(
+            onDismissRequest = {},
+            title = "What would you like to do?",
+            items = previewItems
+        )
+    }
+}
+
+private val previewItems = listOf(
+    LynkActionSheetItem(
+        text = "Edit",
+        icon = Lucide.Pencil,
+        onClick = {}
+    ),
+    LynkActionSheetItem(
+        text = "Share",
+        icon = Lucide.Share2,
+        onClick = {}
+    ),
+    LynkActionSheetItem(
+        text = "Delete",
+        icon = Lucide.Trash2,
+        isDestructive = true,
+        onClick = {}
+    )
+)

@@ -4,10 +4,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Plus
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.button.LiquidGlassButtonColors
 
@@ -40,5 +45,52 @@ fun LynkFloatingActionButton(
         contentPadding = PaddingValues(0.dp)
     ) {
         content()
+    }
+}
+
+@Preview
+@Composable
+private fun LynkFloatingActionButtonPreview() {
+    LynkTheme {
+        LynkFloatingActionButton(
+            onClick = {}
+        ) {
+            Icon(
+                imageVector = Lucide.Plus,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkDisabledFloatingActionButtonPreview() {
+    LynkTheme {
+        LynkFloatingActionButton(
+            onClick = {},
+            enabled = false
+        ) {
+            Icon(
+                imageVector = Lucide.Plus,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDisabledFloatingActionButtonPreviewDark() {
+    LynkTheme(true) {
+        LynkFloatingActionButton(
+            onClick = {},
+            enabled = false
+        ) {
+            Icon(
+                imageVector = Lucide.Plus,
+                contentDescription = null
+            )
+        }
     }
 }

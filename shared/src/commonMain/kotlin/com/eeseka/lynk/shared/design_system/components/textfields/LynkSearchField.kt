@@ -12,10 +12,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleX
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.clear_search
 import lynk.shared.generated.resources.search
@@ -67,4 +69,50 @@ fun LynkSearchField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkSearchFieldPreview() {
+    LynkTheme {
+        LynkSearchField(
+            query = "Kotlin",
+            onQueryChange = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkSearchFieldPreviewDark() {
+    LynkTheme(true) {
+        LynkSearchField(
+            query = "",
+            onQueryChange = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkDisabledSearchFieldPreview() {
+    LynkTheme {
+        LynkSearchField(
+            query = "Kotlin",
+            onQueryChange = {},
+            enabled = false
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDisabledSearchFieldPreviewDark() {
+    LynkTheme(true) {
+        LynkSearchField(
+            query = "",
+            onQueryChange = {},
+            enabled = false
+        )
+    }
 }

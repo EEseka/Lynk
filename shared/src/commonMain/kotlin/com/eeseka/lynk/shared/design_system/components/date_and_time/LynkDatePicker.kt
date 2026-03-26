@@ -8,10 +8,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkBottomSheet
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import lynk.shared.generated.resources.Res
@@ -55,5 +57,27 @@ fun LynkDatePicker(
                 style = LynkButtonStyle.PRIMARY
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkDatePickerPreview() {
+    LynkTheme {
+        LynkDatePicker(
+            onDismissRequest = {},
+            onDateSelected = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDatePickerPreviewDark() {
+    LynkTheme(true) {
+        LynkDatePicker(
+            onDismissRequest = {},
+            onDateSelected = {}
+        )
     }
 }

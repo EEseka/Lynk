@@ -2,6 +2,7 @@ package com.eeseka.lynk.shared.design_system.components.navigation
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -10,7 +11,13 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import com.composables.icons.lucide.ChevronLeft
+import com.composables.icons.lucide.EllipsisVertical
+import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
@@ -126,3 +133,99 @@ private fun List<LynkIosDropDownMenuSection>.toAdaptiveSections(): List<Adaptive
             items = section.items.toAdaptiveItems()
         )
     }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+private fun LynkTopAppBarPreview() {
+    LynkTheme {
+        LynkTopAppBar(
+            title = "Home",
+            navigationIcon = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.ChevronLeft,
+                        contentDescription = null
+                    )
+                }
+            },
+            actions = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.EllipsisVertical,
+                        contentDescription = null
+                    )
+                }
+            },
+            iosLeadingItems = listOf(
+                LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = {})
+            ),
+            iosTrailingItems = listOf(
+                LynkIosBarButtonItem(
+                    sfSymbol = "ellipsis.circle",
+                    menuItems = listOf(
+                        LynkIosDropDownMenuItem(
+                            title = "Share",
+                            sfSymbol = "square.and.arrow.up",
+                            onClick = {}
+                        ),
+                        LynkIosDropDownMenuItem(
+                            title = "Delete",
+                            sfSymbol = "trash",
+                            isDestructive = true,
+                            onClick = {}
+                        )
+                    )
+                )
+            )
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+private fun LynkTopAppBarPreviewDark() {
+    LynkTheme(true) {
+        LynkTopAppBar(
+            title = "Home",
+            navigationIcon = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.ChevronLeft,
+                        contentDescription = null
+                    )
+                }
+            },
+            actions = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.EllipsisVertical,
+                        contentDescription = null
+                    )
+                }
+            },
+            iosLeadingItems = listOf(
+                LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = {})
+            ),
+            iosTrailingItems = listOf(
+                LynkIosBarButtonItem(
+                    sfSymbol = "ellipsis.circle",
+                    menuItems = listOf(
+                        LynkIosDropDownMenuItem(
+                            title = "Share",
+                            sfSymbol = "square.and.arrow.up",
+                            onClick = {}
+                        ),
+                        LynkIosDropDownMenuItem(
+                            title = "Delete",
+                            sfSymbol = "trash",
+                            isDestructive = true,
+                            onClick = {}
+                        )
+                    )
+                )
+            )
+        )
+    }
+}

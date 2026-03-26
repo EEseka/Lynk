@@ -16,8 +16,15 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.EllipsisVertical
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Trash2
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
@@ -109,3 +116,48 @@ fun LynkDropDownMenu(
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun LynkDropDownMenuPreview() {
+    LynkTheme {
+        LynkDropDownMenu(
+            expanded = true,
+            onDismissRequest = {},
+            anchor = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.EllipsisVertical,
+                        contentDescription = null
+                    )
+                }
+            },
+            items = previewItems
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkDropDownMenuPreviewDark() {
+    LynkTheme(true) {
+        LynkDropDownMenu(
+            expanded = true,
+            onDismissRequest = {},
+            anchor = {
+                LynkIconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Lucide.EllipsisVertical,
+                        contentDescription = null
+                    )
+                }
+            },
+            items = previewItems
+        )
+    }
+}
+
+private val previewItems = listOf(
+    LynkDropDownItem(title = "Share", icon = Lucide.Share2, onClick = {}),
+    LynkDropDownItem(title = "Delete", icon = Lucide.Trash2, isDestructive = true, onClick = {})
+)

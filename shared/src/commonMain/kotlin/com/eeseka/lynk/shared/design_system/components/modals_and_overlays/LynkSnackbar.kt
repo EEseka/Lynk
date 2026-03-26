@@ -37,6 +37,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleAlert
 import com.composables.icons.lucide.CircleCheck
@@ -46,6 +47,7 @@ import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import kotlinx.coroutines.delay
 
 enum class LynkFlashType {
@@ -195,6 +197,61 @@ private fun LynkFlashPill(
             text = message,
             color = contentColor,
             style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkSuccessSnackbarPreview() {
+    LynkTheme {
+        LynkFlashPill(
+            message = "Something occurred successfully!",
+            type = LynkFlashType.Success
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkErrorSnackbarPreview() {
+    LynkTheme {
+        LynkFlashPill(
+            message = "Something went wrong!",
+            type = LynkFlashType.Error
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkWarningSnackbarPreview() {
+    LynkTheme {
+        LynkFlashPill(
+            message = "Something might go wrong!",
+            type = LynkFlashType.Warning
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkInfoSnackbarPreview() {
+    LynkTheme {
+        LynkFlashPill(
+            message = "Here is some information.",
+            type = LynkFlashType.Info
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkInfoSnackbarPreviewDark() {
+    LynkTheme(true) {
+        LynkFlashPill(
+            message = "Here is some information.",
+            type = LynkFlashType.Info
         )
     }
 }
