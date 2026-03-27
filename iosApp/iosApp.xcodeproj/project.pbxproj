@@ -1889,7 +1889,7 @@
 		4751988E2F4CA8AC0056AE40 /* sealed */ = {isa = PBXFileReference; lastKnownFileType = text; path = sealed; sourceTree = "<group>"; };
 		4751988F2F4CA8AC0056AE40 /* sourceToOutputs */ = {isa = PBXFileReference; lastKnownFileType = text; path = sourceToOutputs; sourceTree = "<group>"; };
 		475198902F4CA8AC0056AE40 /* symbols */ = {isa = PBXFileReference; lastKnownFileType = text; path = symbols; sourceTree = "<group>"; };
-		475198942F4CA8AC0056AE40 /* counters.tab */ = {isa = PBXFileReference; lastKnownFileType = file; path = counters.tab; sourceTree = "<group>"; };
+		475198942F4CA8AC0056AE40 /* counters.tab */ = {isa = PBXFileReference; lastKnownFileType = text; path = counters.tab; sourceTree = "<group>"; };
 		475198952F4CA8AC0056AE40 /* file-to-id.tab */ = {isa = PBXFileReference; lastKnownFileType = file; path = "file-to-id.tab"; sourceTree = "<group>"; };
 		475198962F4CA8AC0056AE40 /* file-to-id.tab_i */ = {isa = PBXFileReference; lastKnownFileType = file; path = "file-to-id.tab_i"; sourceTree = "<group>"; };
 		475198972F4CA8AC0056AE40 /* file-to-id.tab.keystream */ = {isa = PBXFileReference; lastKnownFileType = file; path = "file-to-id.tab.keystream"; sourceTree = "<group>"; };
@@ -1911,7 +1911,7 @@
 		475198A72F4CA8AC0056AE40 /* lookups.tab_i.len */ = {isa = PBXFileReference; lastKnownFileType = file; path = lookups.tab_i.len; sourceTree = "<group>"; };
 		475198A82F4CA8AC0056AE40 /* lookups.tab.keystream.len */ = {isa = PBXFileReference; lastKnownFileType = file; path = lookups.tab.keystream.len; sourceTree = "<group>"; };
 		475198A92F4CA8AC0056AE40 /* lookups.tab.values.at */ = {isa = PBXFileReference; lastKnownFileType = file; path = lookups.tab.values.at; sourceTree = "<group>"; };
-		475198AB2F4CA8AC0056AE40 /* caches.uptodate */ = {isa = PBXFileReference; lastKnownFileType = file; path = caches.uptodate; sourceTree = "<group>"; };
+		475198AB2F4CA8AC0056AE40 /* caches.uptodate */ = {isa = PBXFileReference; lastKnownFileType = text; path = caches.uptodate; sourceTree = "<group>"; };
 		475198AC2F4CA8AC0056AE40 /* sealed */ = {isa = PBXFileReference; lastKnownFileType = text; path = sealed; sourceTree = "<group>"; };
 		475198AD2F4CA8AC0056AE40 /* sourceToOutputs */ = {isa = PBXFileReference; lastKnownFileType = text; path = sourceToOutputs; sourceTree = "<group>"; };
 		475198AE2F4CA8AC0056AE40 /* symbols */ = {isa = PBXFileReference; lastKnownFileType = text; path = symbols; sourceTree = "<group>"; };
@@ -2008,7 +2008,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		34EB1E4660A20A6C8997A491 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		34EB1E4660A20A6C8997A491 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -2021,7 +2021,7 @@
 		4EC3A83BB435F4EAC0F9F363 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				34EB1E4660A20A6C8997A491 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				34EB1E4660A20A6C8997A491 /* Exceptions for "iosApp" folder in "iosApp" target */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -12256,6 +12256,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -12283,6 +12284,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
