@@ -13,7 +13,10 @@ composeMultiplatform = "1.10.3"
 junit = "4.13.2"
 kotlin = "2.3.20"
 material = "1.13.0"
-composeBom = "2026.03.00"
+composeBom = "2026.03.01"
+
+# For BackHandler
+composeNavigationEvent = "1.0.1"
 
 # Compose
 material3 = "1.9.0"
@@ -130,7 +133,7 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 
 # Navigation and backhandler
 jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
-jetbrains-compose-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
+compose-navigationevent = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "composeNavigationEvent" }
 
 # --- UI & Hardware ---
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
