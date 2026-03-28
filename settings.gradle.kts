@@ -29,5 +29,6 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":feature:onboarding")
 include(":androidApp")
 include(":shared")

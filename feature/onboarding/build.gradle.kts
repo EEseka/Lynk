@@ -1,15 +1,16 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidKmpLibrary) // It is a Library, not an App
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.androidKmpLibrary)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
     androidLibrary {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
-        namespace = "com.eeseka.lynk.composeapp"
+        namespace = "com.eeseka.lynk.onboarding"
         experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
     }
 
@@ -18,15 +19,12 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "Onboarding"
             isStatic = true
         }
     }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -37,12 +35,12 @@ kotlin {
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            
+
+            implementation(libs.compose.lottie.animations)
+
+            implementation(libs.compose.navigationevent)
+
             implementation(projects.shared)
-            implementation(projects.feature.onboarding)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

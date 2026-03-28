@@ -77,6 +77,8 @@ kotlin {
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
 
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+
             // -- Permission handling ---
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
@@ -89,7 +91,7 @@ kotlin {
             implementation(libs.bundles.koin.common)
             implementation(libs.bundles.ktor.common)
 
-            // --- Capabilities (ShelfLife Stack) ---
+            // --- Capabilities ---
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 

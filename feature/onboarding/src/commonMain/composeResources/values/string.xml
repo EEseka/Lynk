@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="stop_the_group_chat_debate">Stop the group chat debate</string>
+    <string name="end_the_debate">End the "where are we linking?" argument. Suggest spots and vote in real-time.</string>
+
+    <string name="find_the_perfect_spot">Find the perfect spot</string>
+    <string name="discover_trending_spots_nearby">Discover trending spots. We'll calculate the fairest meetup point for everyone.</string>
+
+    <string name="split_the_cost_instantly">Split the cost instantly</string>
+    <string name="secure_your_reservation">Split entry fees upfront. No more "I'll send it to you later."</string>
+
+    <string name="get_started">Get Started</string>
+    <string name="next">Next</string>
+</resources>
