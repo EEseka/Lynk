@@ -38,7 +38,11 @@ kotlin {
 
             implementation(libs.compose.lottie.animations)
 
-            implementation(libs.compose.navigationevent)
+            implementation(libs.compose.navigationevent) // Backhandler
+
+            implementation(libs.jetbrains.compose.navigation)
+
+            implementation(libs.bundles.koin.common)
 
             implementation(projects.shared)
         }

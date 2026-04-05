@@ -32,7 +32,7 @@ core-splashscreen = "1.2.0"
 
 # --- Architecture ---
 koin = "4.2.0"
-ktor = "3.4.1"
+ktor = "3.4.2"
 room = "2.8.4"
 sqlite = "2.6.2"
 datastore = "1.2.1"
@@ -54,7 +54,6 @@ coil = "3.4.0"
 auth = "2.3.1"
 
 iconsLucideCmp = "2.2.1"
-cupertino = "2.3.1"
 calf = "0.10.0"
 
 [libraries]
@@ -90,7 +89,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-# --- Android ---
+# Android
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 
 # Koin
@@ -105,6 +104,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 # Room
@@ -174,5 +174,6 @@ ktor-common = [
     "ktor-client-core",
     "ktor-client-content-negotiation",
     "ktor-serialization-kotlinx-json",
+    "ktor-client-auth",
     "ktor-client-logging"
 ]

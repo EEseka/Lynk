@@ -1,22 +1,29 @@
-package com.eeseka.androidapp
+package com.eeseka.lynk
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.ui.tooling.preview.Preview
-import com.eeseka.lynk.App
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        var shouldShowSplashScreen = true
+
+        installSplashScreen().setKeepOnScreenCondition {
+            shouldShowSplashScreen
+        }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            App(
+                onAuthenticationChecked = {
+                    shouldShowSplashScreen = false
+                }
+            )
         }
     }
 }

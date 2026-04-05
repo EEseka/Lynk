@@ -35,11 +35,11 @@ fun getAppTypography(): Typography {
     return Typography(
         displayLarge = baseline.displayLarge.copy(
             fontFamily = spaceGrotesk,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Bold
         ),
         displayMedium = baseline.displayMedium.copy(
             fontFamily = spaceGrotesk,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Medium
         ),
         displaySmall = baseline.displaySmall.copy(
             fontFamily = spaceGrotesk,
@@ -47,11 +47,11 @@ fun getAppTypography(): Typography {
         ),
         headlineLarge = baseline.headlineLarge.copy(
             fontFamily = spaceGrotesk,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Bold
         ),
         headlineMedium = baseline.headlineMedium.copy(
             fontFamily = spaceGrotesk,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Medium
         ),
         headlineSmall = baseline.headlineSmall.copy(
             fontFamily = spaceGrotesk,

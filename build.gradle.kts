@@ -8,6 +8,5 @@ plugins {
     alias(libs.plugins.androidKmpLibrary) apply false
     alias(libs.plugins.kotlinAndroid) apply false
 
-    // Serialization (JSON) - NEEDED for Ktor
     alias(libs.plugins.kotlinSerialization) apply false
 }
