@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- TODO: Remove this for production as its needed to use my custom backend locally -->
+    <!-- TODO: This is what to remove `android:usesCleartextTraffic="true"` -->
+    <!-- TODO: Do not forget to also remove IOS equivalent from Info.plist too -->
     <application
+            android:usesCleartextTraffic="true"
+
+            android:name=".LynkApplication"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"

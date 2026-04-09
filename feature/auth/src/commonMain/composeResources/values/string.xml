@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="lynk">Lynk</string>
+    <string name="auth_tagline">Stop arguing in the group chat.\nJust Lynk.</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="or"> or </string>
+    <string name="continue_as_guest">Continue as Guest</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="internet_connection_unavailable">Internet connection unavailable.</string>
+    <string name="sign_in_canceled">Sign in canceled.</string>
+    <string name="account_disabled">Your account has been disabled. Please contact support for assistance.</string>
+    <string name="unknown_error_occurred">Unknown error occurred.</string>
+    <string name="auth_success">Authentication successful!</string>
+    <string name="auth_disclosure">By continuing, you agree to our Terms &amp; Privacy Policy.</string>
+    <string name="apple_sign_in_coming_soon">Apple Sign In Coming Soon...</string>
+</resources>

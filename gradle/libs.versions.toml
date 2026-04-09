@@ -24,21 +24,18 @@ material3 = "1.9.0"
 # Extra Versions
 buildkonfig = "0.17.1"
 
-# --- Kotlin & Core ---
 ksp = "2.3.6"
 material-icons = "1.7.3"
 
 core-splashscreen = "1.2.0"
 
-# --- Architecture ---
 koin = "4.2.0"
-ktor = "3.4.1"
+ktor = "3.4.2"
 room = "2.8.4"
 sqlite = "2.6.2"
 datastore = "1.2.1"
 navigation = "2.9.2"
 
-# --- Utils ---
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
@@ -47,15 +44,16 @@ adaptive = "1.2.0"
 moko = "0.20.1"
 compottie = "2.1.0"
 
-# --- UI & Hardware ---
 coil = "3.4.0"
 
-# --- Auth ---
 auth = "2.3.1"
 
 iconsLucideCmp = "2.2.1"
-cupertino = "2.3.1"
-calf = "0.10.0"
+calf = "0.11.0"
+
+# Testing
+turbine = "1.2.1"
+assertk = "0.28.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -90,7 +88,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-# --- Android ---
+# Android
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 
 # Koin
@@ -105,6 +103,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 # Room
@@ -135,7 +134,7 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 compose-navigationevent = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "composeNavigationEvent" }
 
-# --- UI & Hardware ---
+# Async Image Loading
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
@@ -149,6 +148,11 @@ touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 # Material3, Cupertino and Liquid Glass adaptive ui
 adaptive-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+
+# Testing
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -174,5 +178,6 @@ ktor-common = [
     "ktor-client-core",
     "ktor-client-content-negotiation",
     "ktor-serialization-kotlinx-json",
+    "ktor-client-auth",
     "ktor-client-logging"
 ]

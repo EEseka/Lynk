@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.eeseka.androidapp"
+    namespace = "com.eeseka.lynk"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -53,4 +53,11 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation(libs.core.splashscreen)
+
+    // Needed for GoogleAuthProvider app initialization
+    implementation(libs.auth.google.kmp)
+
+    implementation(libs.bundles.koin.common)
+
+    implementation(projects.shared)
 }

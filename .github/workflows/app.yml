@@ -28,8 +28,17 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run KMP Unit Tests
+        run: ./gradlew testDebugUnitTest
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+
       - name: Compile and Build Android APK
         run: ./gradlew assembleDebug
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
 
       - name: Upload APK for Testing
         uses: actions/upload-artifact@v6

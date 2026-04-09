@@ -28,12 +28,12 @@ import com.eeseka.lynk.onboarding.presentation.components.OnboardingControls
 import com.eeseka.lynk.onboarding.presentation.components.OnboardingPageContent
 import com.eeseka.lynk.onboarding.presentation.model.OnboardingPageUi
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.onboarding.generated.resources.Res
 import lynk.feature.onboarding.generated.resources.discover_trending_spots_nearby
@@ -50,7 +50,11 @@ private const val ANIMATION_PAYMENT_SUCCESS = "payment_success.json"
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun OnboardingScreen() {
+fun OnboardingScreen(
+    events: Flow<OnboardingEvent>,
+    onAction: (OnboardingAction) -> Unit,
+    onOnboardingComplete: () -> Unit
+) {
     val config = currentDeviceConfiguration()
 
     val pages = listOf(
@@ -74,6 +78,15 @@ fun OnboardingScreen() {
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val hapticFeedback = rememberAppHaptic()
+
+    ObserveAsEvents(events) { event ->
+        when (event) {
+            OnboardingEvent.Success -> {
+                onOnboardingComplete()
+            }
+        }
+    }
 
     // If we are NOT on the first page, INTERCEPT the back button.
     NavigationBackHandler(
@@ -87,8 +100,6 @@ fun OnboardingScreen() {
         }
     )
 
-    val hapticFeedback = rememberAppHaptic()
-
     val onButtonClick: () -> Unit = {
         if (pagerState.currentPage < pages.size - 1) {
             hapticFeedback(AppHaptic.Selection)
@@ -96,13 +107,8 @@ fun OnboardingScreen() {
                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
             }
         } else {
-            hapticFeedback(AppHaptic.Success)
-            scope.launch {
-                snackbarHostState.showFlashMessage(
-                    message = "Onboarding Completed Successfully!",
-                    type = LynkFlashType.Success
-                )
-            }
+            hapticFeedback(AppHaptic.ImpactMedium)
+            onAction(OnboardingAction.OnGetStartedClick)
         }
     }
 

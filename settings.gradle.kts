@@ -28,6 +28,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":feature:auth")
 include(":composeApp")
 include(":feature:onboarding")
 include(":androidApp")

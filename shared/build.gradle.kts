@@ -23,7 +23,11 @@ if (localFile.exists()) {
 // Try to get from local.properties, fallback to System Environment (good for CI/CD)
 val webClientId: String = localProperties.getProperty("WEB_CLIENT_ID")
     ?: System.getenv("WEB_CLIENT_ID")
-    ?: "MISSING_API_KEY"
+    ?: throw GradleException("🚨 FATAL: WEB_CLIENT_ID not found in local.properties or environment variables!")
+
+val apiKey: String = localProperties.getProperty("API_KEY")
+    ?: System.getenv("API_KEY")
+    ?: throw GradleException("🚨 FATAL: API_KEY not found in local.properties or environment variables!")
 
 // --- GENERATE THE CONFIG ---
 buildkonfig {
@@ -33,6 +37,7 @@ buildkonfig {
 
     defaultConfigs {
         buildConfigField(STRING, "WEB_CLIENT_ID", webClientId)
+        buildConfigField(STRING, "API_KEY", apiKey)
     }
     // Debug builds
     defaultConfigs("debug") {
@@ -69,7 +74,6 @@ kotlin {
             implementation(libs.androidx.compose.ui.tooling)
         }
         commonMain.dependencies {
-            // --- UI Essentials ---
             implementation(libs.runtime)
             implementation(libs.foundation)
             implementation(libs.material3)
@@ -79,26 +83,19 @@ kotlin {
 
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // -- Permission handling ---
+            // Permission handling
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
             implementation(libs.moko.permissions.notifications)
 
-            // -- Logging --
+            // Logging
             implementation(libs.touchlab.kermit)
 
-            // --- Architecture ---
             implementation(libs.bundles.koin.common)
             implementation(libs.bundles.ktor.common)
 
-            // --- Capabilities ---
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
-
-            // -- Icons --
             implementation(libs.icons.lucide.cmp)
 
-            // --- Data & State ---
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(libs.kotlinx.datetime)
@@ -111,7 +108,7 @@ kotlin {
 
             implementation(libs.material3.adaptive)
 
-            // --- Database (Room) ---
+            // Database (Room)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
