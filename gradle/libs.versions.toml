@@ -24,13 +24,11 @@ material3 = "1.9.0"
 # Extra Versions
 buildkonfig = "0.17.1"
 
-# --- Kotlin & Core ---
 ksp = "2.3.6"
 material-icons = "1.7.3"
 
 core-splashscreen = "1.2.0"
 
-# --- Architecture ---
 koin = "4.2.0"
 ktor = "3.4.2"
 room = "2.8.4"
@@ -38,7 +36,6 @@ sqlite = "2.6.2"
 datastore = "1.2.1"
 navigation = "2.9.2"
 
-# --- Utils ---
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
@@ -47,14 +44,12 @@ adaptive = "1.2.0"
 moko = "0.20.1"
 compottie = "2.1.0"
 
-# --- UI & Hardware ---
 coil = "3.4.0"
 
-# --- Auth ---
 auth = "2.3.1"
 
 iconsLucideCmp = "2.2.1"
-calf = "0.10.0"
+calf = "0.11.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -135,7 +130,7 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 compose-navigationevent = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "composeNavigationEvent" }
 
-# --- UI & Hardware ---
+# Async Image Loading
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 

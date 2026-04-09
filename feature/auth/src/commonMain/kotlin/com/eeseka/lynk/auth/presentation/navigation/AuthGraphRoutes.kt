@@ -8,7 +8,4 @@ sealed interface AuthGraphRoutes {
 
     @Serializable
     data object Auth : AuthGraphRoutes
-
-    @Serializable
-    data object ProfileSetup : AuthGraphRoutes
 }

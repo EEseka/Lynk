@@ -3,6 +3,7 @@ package com.eeseka.lynk.shared.data.mappers
 import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
 import com.eeseka.lynk.shared.data.dto.UserSerializable
 import com.eeseka.lynk.shared.domain.auth.AuthInfo
+import com.eeseka.lynk.shared.domain.auth.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.User
 
 fun AuthInfoSerializable.toDomain(): AuthInfo {
@@ -22,47 +23,60 @@ fun AuthInfo.toSerializable(): AuthInfoSerializable {
 }
 
 fun UserSerializable.toDomain(): User {
-    return when (this) {
-        is UserSerializable.Guest -> User.Guest(
-            id = id
-        )
+    return when (authProvider) {
+        AuthProvider.GUEST -> User.Guest(id = id)
 
-        is UserSerializable.ProfileIncomplete -> User.ProfileIncomplete(
-            id = id,
-            email = email,
-            displayName = displayName,
-            profilePictureUrl = profilePictureUrl
-        )
+        AuthProvider.GOOGLE, AuthProvider.APPLE -> {
+            val safeEmail =
+                requireNotNull(email) { "Server violation: Email is null for non-guest" }
 
-        is UserSerializable.Authenticated -> User.Authenticated(
-            id = id,
-            email = email,
-            displayName = displayName,
-            username = username,
-            profilePictureUrl = profilePictureUrl
-        )
+            if (username == null) {
+                User.ProfileIncomplete(
+                    id = id,
+                    provider = authProvider,
+                    email = safeEmail,
+                    displayName = displayName,
+                    profilePictureUrl = profilePhotoUrl
+                )
+            } else {
+                val safeName =
+                    requireNotNull(displayName) { "Server violation: Display name missing for Authenticated user" }
+
+                User.Authenticated(
+                    id = id,
+                    provider = authProvider,
+                    email = safeEmail,
+                    displayName = safeName,
+                    username = username,
+                    profilePictureUrl = profilePhotoUrl
+                )
+            }
+        }
     }
 }
 
 fun User.toSerializable(): UserSerializable {
     return when (this) {
-        is User.Guest -> UserSerializable.Guest(
-            id = id
+        is User.Guest -> UserSerializable(
+            id = id,
+            authProvider = provider
         )
 
-        is User.ProfileIncomplete -> UserSerializable.ProfileIncomplete(
+        is User.ProfileIncomplete -> UserSerializable(
             id = id,
+            authProvider = provider,
             email = email,
             displayName = displayName,
-            profilePictureUrl = profilePictureUrl
+            profilePhotoUrl = profilePictureUrl
         )
 
-        is User.Authenticated -> UserSerializable.Authenticated(
+        is User.Authenticated -> UserSerializable(
             id = id,
+            authProvider = provider,
             email = email,
             displayName = displayName,
             username = username,
-            profilePictureUrl = profilePictureUrl
+            profilePhotoUrl = profilePictureUrl
         )
     }
 }

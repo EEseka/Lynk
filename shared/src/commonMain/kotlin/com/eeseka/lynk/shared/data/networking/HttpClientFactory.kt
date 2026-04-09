@@ -1,5 +1,6 @@
 package com.eeseka.lynk.shared.data.networking
 
+import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import com.eeseka.lynk.shared.domain.util.onFailure
@@ -19,6 +20,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.request.header
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -56,8 +58,7 @@ class HttpClientFactory(
                 pingIntervalMillis = 20_000L
             }
             defaultRequest {
-                //TODO: Set up your api key
-//                header("x-api-key", AppConfig.API_KEY)
+                header("x-api-key", AppConfig.API_KEY)
                 contentType(ContentType.Application.Json)
             }
 

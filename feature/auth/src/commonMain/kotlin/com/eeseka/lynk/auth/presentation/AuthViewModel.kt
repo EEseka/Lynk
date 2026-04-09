@@ -64,7 +64,6 @@ class AuthViewModel(
         _state.update {
             it.copy(isGuestSigningIn = true)
         }
-
         viewModelScope.launch {
             authService.continueAsGuest()
                 .onSuccess { authInfo ->

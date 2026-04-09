@@ -1,10 +1,11 @@
 package com.eeseka.lynk
 
+import com.eeseka.lynk.shared.domain.auth.User
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 
 data class MainState(
-    val isLoggedIn: Boolean = false,
     val isCheckingAuth: Boolean = true,
+    val hasSeenOnboarding: Boolean = false,
     val theme: AppTheme = AppTheme.SYSTEM,
-    val hasSeenOnboarding: Boolean = false
+    val user: User? = null
 )

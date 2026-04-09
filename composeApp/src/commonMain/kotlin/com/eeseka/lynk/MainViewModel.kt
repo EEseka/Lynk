@@ -59,7 +59,7 @@ class MainViewModel(
             _state.update {
                 it.copy(
                     isCheckingAuth = false,
-                    isLoggedIn = authInfo != null
+                    user = authInfo?.user
                 )
             }
         }
@@ -75,7 +75,7 @@ class MainViewModel(
                     sessionStorage.set(null)
                     _state.update {
                         it.copy(
-                            isLoggedIn = false
+                            user = null
                         )
                     }
                     eventChannel.send(MainEvent.OnSessionExpired)

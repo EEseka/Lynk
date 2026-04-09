@@ -13,7 +13,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.authGraph(
     navController: NavController,
-    onAuthSuccess: () -> Unit
+    onNavigateToProfileSetup: () -> Unit,
+    onNavigateToMain: () -> Unit,
 ) {
     navigation<AuthGraphRoutes.Graph>(
         startDestination = AuthGraphRoutes.Auth
@@ -28,22 +29,12 @@ fun NavGraphBuilder.authGraph(
                 onAction = viewModel::onAction,
                 onAuthSuccess = { user ->
                     if (user is User.ProfileIncomplete) {
-                        navController.navigate(AuthGraphRoutes.ProfileSetup)
+                        onNavigateToProfileSetup()
                     } else {
-                        onAuthSuccess()
+                        onNavigateToMain()
                     }
                 },
             )
-        }
-
-        composable<AuthGraphRoutes.ProfileSetup> {
-            // TODO: Call your ProfileSetupScreen composable here
-            // ProfileSetupScreen(
-            //     onProfileComplete = {
-            //         // Once they pick a username, send them to the main app!
-            //         onAuthSuccess()
-            //     }
-            // )
         }
     }
 }

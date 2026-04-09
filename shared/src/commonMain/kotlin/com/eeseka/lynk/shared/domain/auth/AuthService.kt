@@ -8,5 +8,5 @@ interface AuthService {
     suspend fun continueWithGoogle(idToken: String): Result<AuthInfo, DataError.Remote>
     suspend fun continueAsGuest(): Result<AuthInfo, DataError.Remote>
     suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote>
-    suspend fun deleteAccount(refreshToken: String): EmptyResult<DataError.Remote>
+    suspend fun deleteAccount(): EmptyResult<DataError.Remote>
 }

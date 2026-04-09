@@ -1,27 +1,14 @@
 package com.eeseka.lynk.shared.data.dto
 
+import com.eeseka.lynk.shared.domain.auth.AuthProvider
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface UserSerializable {
-    val id: String
-
-    data class Guest(
-        override val id: String
-    ) : UserSerializable
-
-    data class ProfileIncomplete(
-        override val id: String,
-        val email: String,
-        val displayName: String,
-        val profilePictureUrl: String? = null
-    ) : UserSerializable
-
-    data class Authenticated(
-        override val id: String,
-        val email: String,
-        val displayName: String,
-        val username: String,
-        val profilePictureUrl: String? = null
-    ) : UserSerializable
-}
+data class UserSerializable(
+    val id: String,
+    val authProvider: AuthProvider,
+    val email: String? = null,
+    val displayName: String? = null,
+    val username: String? = null,
+    val profilePhotoUrl: String? = null
+)

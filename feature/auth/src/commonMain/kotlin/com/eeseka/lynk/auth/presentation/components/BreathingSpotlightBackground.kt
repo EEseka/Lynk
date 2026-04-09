@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -14,6 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 
 @Composable
 fun BreathingSpotlightBackground(modifier: Modifier = Modifier) {
@@ -58,6 +61,16 @@ fun BreathingSpotlightBackground(modifier: Modifier = Modifier) {
                 center = Offset(centerX, centerY),
                 radius = animatedRadius
             )
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun BreathingSpotlightBackgroundPreview() {
+    LynkTheme {
+        BreathingSpotlightBackground(
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
 }

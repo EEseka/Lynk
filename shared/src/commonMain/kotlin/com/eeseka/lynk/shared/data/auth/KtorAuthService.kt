@@ -4,6 +4,7 @@ import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
 import com.eeseka.lynk.shared.data.dto.requests.GoogleAuthRequest
 import com.eeseka.lynk.shared.data.dto.requests.RefreshRequest
 import com.eeseka.lynk.shared.data.mappers.toDomain
+import com.eeseka.lynk.shared.data.networking.delete
 import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.domain.auth.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.AuthService
@@ -23,7 +24,7 @@ class KtorAuthService(
     override suspend fun continueWithGoogle(idToken: String): Result<AuthInfo, DataError.Remote> {
         return httpClient.post<GoogleAuthRequest, AuthInfoSerializable>(
             route = "/auth/google",
-            body = GoogleAuthRequest(idToken = idToken)
+            body = GoogleAuthRequest(token = idToken)
         ).map { authInfoSerializable ->
             authInfoSerializable.toDomain()
         }
@@ -41,16 +42,15 @@ class KtorAuthService(
     override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> {
         return httpClient.post<RefreshRequest, Unit>(
             route = "/auth/logout",
-            body = RefreshRequest(refreshToken)
+            body = RefreshRequest(refreshToken = refreshToken)
         ).onSuccess {
             httpClient.authProvider<BearerAuthProvider>()?.clearToken()
         }
     }
 
-    override suspend fun deleteAccount(refreshToken: String): EmptyResult<DataError.Remote> {
-        return httpClient.post<RefreshRequest, Unit>(
-            route = "/auth/delete",
-            body = RefreshRequest(refreshToken)
+    override suspend fun deleteAccount(): EmptyResult<DataError.Remote> {
+        return httpClient.delete<Unit>(
+            route = "/auth/account"
         ).onSuccess {
             httpClient.authProvider<BearerAuthProvider>()?.clearToken()
         }

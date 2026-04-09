@@ -45,7 +45,12 @@ fun NavigationRoot(
 
         authGraph(
             navController = navController,
-            onAuthSuccess = {
+            onNavigateToProfileSetup = {
+//                navController.navigate(ProfileGraphRoutes.Graph) {
+//                    popUpTo(AuthGraphRoutes.Graph) { inclusive = true }
+//                }
+            },
+            onNavigateToMain = {
                 navController.navigate(MainGraphRoutes.Graph) {
                     popUpTo(AuthGraphRoutes.Graph) { inclusive = true }
                 }
@@ -69,7 +74,7 @@ fun NavigationRoot(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         if (user != null) {
-                            LynkText(text = "Welcome back, ${user.displayName} with ID ${user.displayName}!")
+                            LynkText(text = "Welcome back, ${user.displayName} with ID ${user.id}!")
                             LynkText(text = "Email: ${user.email}")
                             LynkText(text = "PfpUrl: @${user.profilePictureUrl}")
                         }
