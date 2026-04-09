@@ -51,6 +51,10 @@ auth = "2.3.1"
 iconsLucideCmp = "2.2.1"
 calf = "0.11.0"
 
+# Testing
+turbine = "1.2.1"
+assertk = "0.28.1"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -144,6 +148,11 @@ touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 # Material3, Cupertino and Liquid Glass adaptive ui
 adaptive-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+
+# Testing
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
