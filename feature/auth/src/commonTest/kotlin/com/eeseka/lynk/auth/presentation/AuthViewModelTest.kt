@@ -5,8 +5,8 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import com.eeseka.lynk.auth.domain.FakeAuthService
-import com.eeseka.lynk.auth.domain.FakeSessionStorage
+import com.eeseka.lynk.auth.data.FakeAuthService
+import com.eeseka.lynk.auth.data.FakeSessionStorage
 import com.eeseka.lynk.shared.domain.util.DataError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

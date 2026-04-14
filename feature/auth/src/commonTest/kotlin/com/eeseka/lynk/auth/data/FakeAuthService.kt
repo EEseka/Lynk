@@ -1,4 +1,4 @@
-package com.eeseka.lynk.auth.domain
+package com.eeseka.lynk.auth.data
 
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.AuthService

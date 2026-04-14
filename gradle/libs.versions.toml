@@ -54,6 +54,7 @@ calf = "0.11.0"
 # Testing
 turbine = "1.2.1"
 assertk = "0.28.1"
+uiTest = "1.10.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -81,6 +82,7 @@ foundation = { module = "org.jetbrains.compose.foundation:foundation", version.r
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
+ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "uiTest" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 
 # Extra Libraries
