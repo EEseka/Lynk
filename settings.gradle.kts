@@ -31,5 +31,6 @@ dependencyResolutionManagement {
 include(":feature:auth")
 include(":composeApp")
 include(":feature:onboarding")
+include(":feature:profile_setup")
 include(":androidApp")
 include(":shared")

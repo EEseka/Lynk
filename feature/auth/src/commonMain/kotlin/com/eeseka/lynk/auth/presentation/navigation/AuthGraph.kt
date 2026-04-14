@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.eeseka.lynk.auth.presentation.AuthScreen
 import com.eeseka.lynk.auth.presentation.AuthViewModel
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.domain.auth.model.User
 import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.authGraph(

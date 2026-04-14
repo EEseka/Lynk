@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="error_username_blank">Username cannot be empty.</string>
+    <string name="error_username_too_short">Username must be at least 3 characters.</string>
+    <string name="error_username_too_long">Username cannot exceed 20 characters.</string>
+    <string name="error_username_taken">This username is already taken.</string>
+
+    <string name="error_display_name_blank">Display name cannot be empty.</string>
+    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
+
+    <string name="error_username_network_drop">No connection. Check your internet.</string>
+    <string name="error_username_rate_limit">Checking too fast! Please wait a moment.</string>
+    <string name="error_username_generic_verify">Verification failed. Please try again.</string>
+
+    <string name="profile_picture">Profile Picture</string>
+    <string name="choose">Choose</string>
+    <string name="remove">Remove</string>
+
+    <string name="choose_source">Choose Source</string>
+    <string name="choose_source_message">How would you like to select your profile picture?</string>
+
+    <string name="email">Email</string>
+    <string name="display_name">Display Name</string>
+    <string name="display_name_placeholder">e.g. John Doe</string>
+    <string name="username">Username</string>
+    <string name="username_placeholder">e.g. johndoe</string>
+
+    <string name="complete_profile">Complete Profile</string>
+    <string name="complete_profile_loading">Completing Profile...</string>
+    <string name="available">Available</string>
+    <string name="unavailable">Unavailable</string>
+
+    <string name="error_username_needs_letter">Username must contain at least one letter.</string>
+    <string name="error_username_edge_underscore">Cannot start or end with an underscore.</string>
+    <string name="error_username_consecutive_underscores">Cannot contain consecutive underscores.</string>
+    <string name="error_username_invalid_chars">Only letters, numbers, and underscores allowed.</string>
+
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_from_gallery">Choose from Gallery</string>
+
+    <string name="setup_profile_title">One Last Step</string>
+    <string name="setup_profile_subtitle">Choose your username carefully — it's permanent. Your photo and display name can be changed anytime.</string>
+
+    <string name="error_image_read_failure">Failed to read image file</string>
+</resources>

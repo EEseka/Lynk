@@ -18,15 +18,27 @@ val ColorScheme.extended: ExtendedColors
 
 @Immutable
 data class ExtendedColors(
-    val neutralSurface: Color
+    val neutralSurface: Color,
+    val successContainer: Color,
+    val onSuccessContainer: Color,
+    val success: Color,
+    val onSuccess: Color
 )
 
 val LightExtendedColors = ExtendedColors(
-    neutralSurface = neutralSurfaceLight
+    neutralSurface = neutralSurfaceLight,
+    successContainer = successContainerLight,
+    onSuccessContainer = onSuccessContainerLight,
+    success = successLight,
+    onSuccess = onSuccessLight
 )
 
 val DarkExtendedColors = ExtendedColors(
-    neutralSurface = neutralSurfaceDark
+    neutralSurface = neutralSurfaceDark,
+    successContainer = successContainerDark,
+    onSuccessContainer = onSuccessContainerDark,
+    success = successDark,
+    onSuccess = onSuccessDark
 )
 
 val LightScheme = lightColorScheme(

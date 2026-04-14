@@ -118,7 +118,7 @@ fun LynkActionSheet(
                                         onDismissRequest()
                                     }
                                 )
-                                .padding(vertical = 16.dp, horizontal = 16.dp),
+                                .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (item.icon != null) {

@@ -2,6 +2,7 @@ package com.eeseka.lynk.di
 
 import com.eeseka.lynk.auth.presentation.di.authPresentationModule
 import com.eeseka.lynk.onboarding.presentation.di.onboardingPresentationModule
+import com.eeseka.lynk.profile_setup.presentation.di.profileSetupPresentationModule
 import com.eeseka.lynk.shared.data.di.sharedDataModule
 import com.eeseka.lynk.shared.presentation.di.sharedPresentationModule
 import org.koin.core.context.startKoin
@@ -16,6 +17,7 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             sharedPresentationModule,
             onboardingPresentationModule,
             authPresentationModule,
+            profileSetupPresentationModule,
         )
     }
 }

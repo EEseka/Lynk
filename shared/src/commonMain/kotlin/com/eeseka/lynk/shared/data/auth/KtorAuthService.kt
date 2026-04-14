@@ -1,12 +1,12 @@
 package com.eeseka.lynk.shared.data.auth
 
-import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
-import com.eeseka.lynk.shared.data.dto.requests.GoogleAuthRequest
-import com.eeseka.lynk.shared.data.dto.requests.RefreshRequest
-import com.eeseka.lynk.shared.data.mappers.toDomain
+import com.eeseka.lynk.shared.data.auth.dto.AuthInfoSerializable
+import com.eeseka.lynk.shared.data.auth.dto.requests.GoogleAuthRequest
+import com.eeseka.lynk.shared.data.auth.dto.requests.RefreshRequest
+import com.eeseka.lynk.shared.data.auth.mappers.toDomain
 import com.eeseka.lynk.shared.data.networking.delete
 import com.eeseka.lynk.shared.data.networking.post
-import com.eeseka.lynk.shared.domain.auth.AuthInfo
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult

@@ -1,23 +1,20 @@
 package com.eeseka.lynk.shared.design_system.components.textfields
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
@@ -26,61 +23,74 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 
 @Composable
 fun LynkTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
+    state: TextFieldState,
     label: String? = null,
     placeholder: String? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
+    enabled: Boolean = true,
     errorMessage: String? = null,
     helperText: String? = null,
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    modifier: Modifier = Modifier
 ) {
     val scheme = MaterialTheme.colorScheme
 
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        label = label?.let {
-            { LynkText(text = it) }
-        },
-        placeholder = placeholder?.let {
-            { LynkText(text = it) }
-        },
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
+    LynkTextFieldLayout(
+        title = label,
         isError = isError,
-        supportingText = {
-            val showError = isError && errorMessage != null
-            val showHelper = !isError && helperText != null
+        errorMessage = errorMessage,
+        helperText = helperText,
+        enabled = enabled,
+        onFocusChanged = {},
+        modifier = modifier
+    ) { styleModifier, interactionSource ->
 
-            AnimatedVisibility(
-                visible = showError || showHelper,
-                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-            ) {
-                Column {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    LynkText(
-                        text = if (isError) errorMessage ?: "" else helperText ?: "",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (isError) scheme.error else scheme.onSurfaceVariant
-                    )
+        BasicTextField(
+            state = state,
+            enabled = enabled,
+            lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.Default,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
+            ),
+            keyboardOptions = keyboardOptions,
+            cursorBrush = SolidColor(if (isError) scheme.error else scheme.primary),
+            interactionSource = interactionSource,
+            modifier = styleModifier,
+            decorator = { innerBox ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (leadingIcon != null) {
+                        leadingIcon()
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (state.text.isEmpty() && placeholder != null) {
+                            LynkText(
+                                text = placeholder,
+                                color = scheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        innerBox()
+                    }
+
+                    if (trailingIcon != null) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        trailingIcon()
+                    }
                 }
             }
-        },
-        singleLine = singleLine,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        visualTransformation = visualTransformation,
-        shape = MaterialTheme.shapes.medium
-    )
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -88,8 +98,7 @@ fun LynkTextField(
 private fun LynkTextFieldPreview() {
     LynkTheme {
         LynkTextField(
-            value = "Emmanuel",
-            onValueChange = {},
+            state = TextFieldState("Emmanuel"),
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
@@ -105,8 +114,7 @@ private fun LynkTextFieldPreview() {
 private fun LynkTextFieldPreviewDark() {
     LynkTheme(true) {
         LynkTextField(
-            value = "Emmanuel",
-            onValueChange = {},
+            state = TextFieldState("Emmanuel"),
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
@@ -122,8 +130,7 @@ private fun LynkTextFieldPreviewDark() {
 private fun LynkErrorTextFieldPreview() {
     LynkTheme {
         LynkTextField(
-            value = "Emmanuel",
-            onValueChange = {},
+            state = TextFieldState("Emmanuel"),
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
@@ -141,8 +148,7 @@ private fun LynkErrorTextFieldPreview() {
 private fun LynkErrorTextFieldPreviewDark() {
     LynkTheme(true) {
         LynkTextField(
-            value = "Emmanuel",
-            onValueChange = {},
+            state = TextFieldState("Emmanuel"),
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
