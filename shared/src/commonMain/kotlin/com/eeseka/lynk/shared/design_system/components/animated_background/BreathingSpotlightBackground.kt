@@ -1,4 +1,4 @@
-package com.eeseka.lynk.auth.presentation.components
+package com.eeseka.lynk.shared.design_system.components.animated_background
 
 import androidx.compose.animation.core.EaseInOutSine
 import androidx.compose.animation.core.RepeatMode

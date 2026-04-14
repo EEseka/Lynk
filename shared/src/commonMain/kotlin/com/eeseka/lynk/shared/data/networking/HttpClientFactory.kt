@@ -5,9 +5,9 @@ import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
-import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
-import com.eeseka.lynk.shared.data.dto.requests.RefreshRequest
-import com.eeseka.lynk.shared.data.mappers.toDomain
+import com.eeseka.lynk.shared.data.auth.dto.AuthInfoSerializable
+import com.eeseka.lynk.shared.data.auth.dto.requests.RefreshRequest
+import com.eeseka.lynk.shared.data.auth.mappers.toDomain
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout

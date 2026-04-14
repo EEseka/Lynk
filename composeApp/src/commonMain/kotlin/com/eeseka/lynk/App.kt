@@ -11,8 +11,9 @@ import com.eeseka.lynk.auth.presentation.navigation.AuthGraphRoutes
 import com.eeseka.lynk.dummy.MainGraphRoutes
 import com.eeseka.lynk.navigation.NavigationRoot
 import com.eeseka.lynk.onboarding.presentation.navigation.OnboardingGraphRoutes
+import com.eeseka.lynk.profile_setup.presentation.navigation.ProfileSetupGraphRoutes
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,7 +55,7 @@ fun App(
         if (!state.isCheckingAuth) {
             val startDestination = when {
                 !state.hasSeenOnboarding -> OnboardingGraphRoutes.Graph
-//                state.user is User.ProfileIncomplete -> ProfileGraphRoutes.Graph
+                state.user is User.ProfileIncomplete -> ProfileSetupGraphRoutes.Graph
                 state.user != null -> MainGraphRoutes.Graph
                 else -> AuthGraphRoutes.Graph
             }

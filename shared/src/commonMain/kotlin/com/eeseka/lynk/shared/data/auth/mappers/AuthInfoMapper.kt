@@ -1,10 +1,10 @@
-package com.eeseka.lynk.shared.data.mappers
+package com.eeseka.lynk.shared.data.auth.mappers
 
-import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
-import com.eeseka.lynk.shared.data.dto.UserSerializable
-import com.eeseka.lynk.shared.domain.auth.AuthInfo
-import com.eeseka.lynk.shared.domain.auth.AuthProvider
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.data.auth.dto.AuthInfoSerializable
+import com.eeseka.lynk.shared.data.auth.dto.UserSerializable
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
+import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
+import com.eeseka.lynk.shared.domain.auth.model.User
 
 fun AuthInfoSerializable.toDomain(): AuthInfo {
     return AuthInfo(

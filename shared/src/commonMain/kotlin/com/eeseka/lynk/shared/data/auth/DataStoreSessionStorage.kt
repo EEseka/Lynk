@@ -4,10 +4,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.eeseka.lynk.shared.data.dto.AuthInfoSerializable
-import com.eeseka.lynk.shared.data.mappers.toDomain
-import com.eeseka.lynk.shared.data.mappers.toSerializable
-import com.eeseka.lynk.shared.domain.auth.AuthInfo
+import com.eeseka.lynk.shared.data.auth.dto.AuthInfoSerializable
+import com.eeseka.lynk.shared.data.auth.mappers.toDomain
+import com.eeseka.lynk.shared.data.auth.mappers.toSerializable
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.data.dto.requests
+package com.eeseka.lynk.shared.data.auth.dto.requests
 
 import kotlinx.serialization.Serializable
 

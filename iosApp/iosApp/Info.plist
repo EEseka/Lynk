@@ -19,6 +19,10 @@
         <string>547754562784-t5d14eqqqtlt93a9g3d2nqcuc5pu6t8a.apps.googleusercontent.com</string>
         <key>GIDServerClientID</key>
         <string>547754562784-lkagou01pi7bj0bsnn610ggh6sa6ndm1.apps.googleusercontent.com</string>
+        <key>NSCameraUsageDescription</key>
+        <string>Lynk needs camera access so you can take a profile picture.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>Lynk needs access to your photos so you can choose a profile picture.</string>
 
         <!-- TODO: Remove this for production as its needed to use my custom backend locally -->
         <key>NSAppTransportSecurity</key>
@@ -27,6 +31,5 @@
             <true />
         </dict>
         <!-- Remove ends here -->
-
     </dict>
 </plist>

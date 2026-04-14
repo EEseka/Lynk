@@ -1,6 +1,6 @@
 package com.eeseka.lynk
 
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 
 data class MainState(

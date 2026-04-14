@@ -49,6 +49,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.design_system.theme.extended
 import kotlinx.coroutines.delay
 
 enum class LynkFlashType {
@@ -150,14 +151,14 @@ private fun LynkFlashPill(
     }
 
     val containerColor = when (type) {
-        LynkFlashType.Success -> scheme.primaryContainer
+        LynkFlashType.Success -> scheme.extended.successContainer
         LynkFlashType.Error -> scheme.errorContainer
         LynkFlashType.Warning -> scheme.secondaryContainer
         LynkFlashType.Info -> scheme.inverseSurface
     }
 
     val contentColor = when (type) {
-        LynkFlashType.Success -> scheme.onPrimaryContainer
+        LynkFlashType.Success -> scheme.extended.onSuccessContainer
         LynkFlashType.Error -> scheme.onErrorContainer
         LynkFlashType.Warning -> scheme.onSecondaryContainer
         LynkFlashType.Info -> scheme.inverseOnSurface

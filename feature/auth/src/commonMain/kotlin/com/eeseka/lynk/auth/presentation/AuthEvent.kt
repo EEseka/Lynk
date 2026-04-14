@@ -1,6 +1,6 @@
 package com.eeseka.lynk.auth.presentation
 
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.domain.auth.model.User
 
 sealed interface AuthEvent {
     data class Success(val user: User) : AuthEvent

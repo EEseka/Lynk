@@ -26,22 +26,22 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.auth.presentation.components.AuthActions
 import com.eeseka.lynk.auth.presentation.components.AuthBranding
-import com.eeseka.lynk.auth.presentation.components.BreathingSpotlightBackground
+import com.eeseka.lynk.shared.design_system.components.animated_background.BreathingSpotlightBackground
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.domain.auth.User
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.auth.generated.resources.Res
-import lynk.feature.auth.generated.resources.auth_disclosure
 import lynk.feature.auth.generated.resources.apple_sign_in_coming_soon
+import lynk.feature.auth.generated.resources.auth_disclosure
 import org.jetbrains.compose.resources.stringResource
 
 private const val PRIVACY_URL = "https://example.com/privacy"

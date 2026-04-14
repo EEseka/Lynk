@@ -1,6 +1,6 @@
 package com.eeseka.lynk.auth.domain
 
-import com.eeseka.lynk.shared.domain.auth.AuthInfo
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf

@@ -48,6 +48,7 @@ kotlin {
             implementation(projects.shared)
             implementation(projects.feature.onboarding)
             implementation(projects.feature.auth)
+            implementation(projects.feature.profileSetup)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

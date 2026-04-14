@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.domain.auth
+package com.eeseka.lynk.shared.domain.auth.model
 
 sealed interface User {
     val id: String
