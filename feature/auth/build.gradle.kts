@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.turbine)
             implementation(libs.assertk)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ui.test)
         }
     }
 }

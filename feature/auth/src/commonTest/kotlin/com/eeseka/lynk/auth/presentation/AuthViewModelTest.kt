@@ -98,4 +98,38 @@ class AuthViewModelTest {
             assertThat(sessionStorage.get()).isEqualTo(authService.authInfoToReturn)
         }
     }
+
+    @Test
+    fun `empty Google token resets loading state without calling service`() = runTest {
+        viewModel.state.test {
+            skipItems(1)
+            viewModel.onAction(AuthAction.OnGoogleSignInClick)
+            assertThat(awaitItem().isGoogleSigningIn).isTrue()
+
+            viewModel.onAction(AuthAction.OnGoogleTokenReceived(""))
+            assertThat(awaitItem().isGoogleSigningIn).isFalse()
+        }
+    }
+
+    @Test
+    fun `failed Guest sign in emits Error event`() = runTest {
+        authService.shouldReturnError = true
+        authService.errorToReturn = DataError.Remote.SERVER_ERROR
+
+        viewModel.events.test {
+            viewModel.onAction(AuthAction.OnGuestClick)
+            val event = awaitItem()
+            assertThat(event is AuthEvent.Error).isTrue()
+        }
+    }
+
+    @Test
+    fun `clicking guest button toggles isGuestSigningIn state`() = runTest {
+        viewModel.state.test {
+            skipItems(1)
+            viewModel.onAction(AuthAction.OnGuestClick)
+            assertThat(awaitItem().isGuestSigningIn).isTrue()
+            assertThat(awaitItem().isGuestSigningIn).isFalse()
+        }
+    }
 }
