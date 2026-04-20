@@ -29,6 +29,7 @@ dependencyResolutionManagement {
 }
 
 include(":feature:auth")
+include(":feature:main_shell")
 include(":composeApp")
 include(":feature:onboarding")
 include(":feature:profile_setup")

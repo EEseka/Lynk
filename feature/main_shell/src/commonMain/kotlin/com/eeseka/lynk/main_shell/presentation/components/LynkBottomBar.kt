@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.design_system.components.navigation
+package com.eeseka.lynk.main_shell.presentation.components
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -8,11 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.navigation.LynkNavigationItem
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
@@ -33,6 +34,7 @@ fun LynkBottomBar(
         iosItems = entries.map { item ->
             val uiKitImageSystemName = when (item) {
                 LynkNavigationItem.DISCOVER -> "map.fill"
+                LynkNavigationItem.HANGOUTS -> "calendar"
                 LynkNavigationItem.PROFILE -> "person.crop.circle.fill"
             }
             UIKitUITabBarItem(
@@ -42,6 +44,7 @@ fun LynkBottomBar(
         },
         iosSelectedIndex = selectedIndex,
         iosOnItemSelected = { index -> onItemSelected(entries[index]) },
+        iosConfiguration = UIKitTabBarConfiguration(selectedItemColor = scheme.primary),
         content = {
             entries.forEach { item ->
                 val isSelected = selectedItem == item

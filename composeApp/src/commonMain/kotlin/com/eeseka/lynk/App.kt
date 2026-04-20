@@ -8,7 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.eeseka.lynk.auth.presentation.navigation.AuthGraphRoutes
-import com.eeseka.lynk.dummy.MainGraphRoutes
+import com.eeseka.lynk.main_shell.presentation.navigation.MainShellGraphRoutes
 import com.eeseka.lynk.navigation.NavigationRoot
 import com.eeseka.lynk.onboarding.presentation.navigation.OnboardingGraphRoutes
 import com.eeseka.lynk.profile_setup.presentation.navigation.ProfileSetupGraphRoutes
@@ -56,7 +56,7 @@ fun App(
             val startDestination = when {
                 !state.hasSeenOnboarding -> OnboardingGraphRoutes.Graph
                 state.user is User.ProfileIncomplete -> ProfileSetupGraphRoutes.Graph
-                state.user != null -> MainGraphRoutes.Graph
+                state.user != null -> MainShellGraphRoutes.Graph
                 else -> AuthGraphRoutes.Graph
             }
 
