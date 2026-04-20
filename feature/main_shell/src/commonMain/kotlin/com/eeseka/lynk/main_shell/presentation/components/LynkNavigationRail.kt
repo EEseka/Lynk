@@ -1,8 +1,9 @@
-package com.eeseka.lynk.shared.design_system.components.navigation
+package com.eeseka.lynk.main_shell.presentation.components
 
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,10 +18,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
-import com.eeseka.lynk.shared.navigation.LynkNavigationItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -30,21 +31,25 @@ fun LynkNavigationRail(
     onItemSelected: (LynkNavigationItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scheme = MaterialTheme.colorScheme
     val colors = if (isIOS()) {
         NavigationRailItemDefaults.colors(
             indicatorColor = Color.Transparent,
-            selectedIconColor = MaterialTheme.colorScheme.primary,
-            selectedTextColor = MaterialTheme.colorScheme.primary,
+            selectedIconColor = scheme.primary,
+            selectedTextColor = scheme.primary
         )
     } else {
         NavigationRailItemDefaults.colors(
-            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            selectedTextColor = MaterialTheme.colorScheme.onSurface
+            indicatorColor = scheme.primaryContainer,
+            selectedIconColor = scheme.onPrimaryContainer,
+            selectedTextColor = scheme.primary
         )
     }
     Row(modifier = modifier) {
-        NavigationRail(modifier = Modifier.fillMaxHeight()) {
+        NavigationRail(
+            modifier = Modifier.fillMaxHeight(),
+            windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
+        ) {
             LynkNavigationItem.entries.forEach { item ->
                 val isSelected = selectedItem == item
 
@@ -53,7 +58,7 @@ fun LynkNavigationRail(
                     onClick = { onItemSelected(item) },
                     icon = {
                         Icon(
-                            item.icon,
+                            imageVector = item.icon,
                             contentDescription = item.title.asString()
                         )
                     },
@@ -73,7 +78,7 @@ fun LynkNavigationRail(
         }
         VerticalDivider(
             thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+            color = scheme.outlineVariant.copy(alpha = 0.2f)
         )
     }
 }
