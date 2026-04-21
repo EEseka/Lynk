@@ -10,7 +10,7 @@ kotlin {
     androidLibrary {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
-        namespace = "com.eeseka.lynk.main_shell"
+        namespace = "com.eeseka.lynk.discover"
         experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
     }
 
@@ -19,7 +19,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "MainShell"
+            baseName = "Discover"
             isStatic = true
         }
     }
@@ -33,14 +33,13 @@ kotlin {
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
 
+            implementation(libs.bundles.koin.common)
+
             implementation(libs.jetbrains.compose.navigation)
 
-            implementation(libs.icons.lucide.cmp)
-
-            implementation(libs.adaptive.ui)
+//            implementation(libs.maplibre.compose)
 
             implementation(projects.shared)
-            implementation(projects.feature.discover)
         }
     }
 }
