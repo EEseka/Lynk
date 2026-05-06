@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,24 +20,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.mohamedrejeb.calf.ui.sheet.AdaptiveBottomSheet
-import com.mohamedrejeb.calf.ui.sheet.AdaptiveSheetState
-import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    sheetState: AdaptiveSheetState = rememberAdaptiveSheetState(skipPartiallyExpanded = false),
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
 
-    AdaptiveBottomSheet(
+    // There is a weird scroll issue on ios with adaptive bottom sheet, so I'll just use m3
+    ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
-        adaptiveSheetState = sheetState,
+        sheetState = sheetState,
         containerColor = scheme.surfaceContainerLow,
         contentColor = scheme.onSurface,
         scrimColor = scheme.scrim.copy(alpha = 0.32f),
@@ -52,13 +53,14 @@ fun LynkBottomSheet(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun LynkBottomSheetPreview() {
     LynkTheme {
         LynkBottomSheet(onDismissRequest = {}) {
             LynkText(
-                text = "Hello Word",
+                text = "Hello World",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(4.dp)
             )
@@ -72,13 +74,14 @@ private fun LynkBottomSheetPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun LynkBottomSheetPreviewDark() {
     LynkTheme(true) {
         LynkBottomSheet(onDismissRequest = {}) {
             LynkText(
-                text = "Hello Word",
+                text = "Hello World",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(4.dp)
             )

@@ -13,7 +13,7 @@ plugins {
     alias(libs.plugins.buildkonfig) // Storing secrets in local.properties
 }
 
-// --- SECURELY READ THE KEY ---
+// SECURELY READ THE KEY
 val localProperties = Properties()
 val localFile = rootProject.file("local.properties")
 if (localFile.exists()) {
@@ -29,7 +29,23 @@ val apiKey: String = localProperties.getProperty("API_KEY")
     ?: System.getenv("API_KEY")
     ?: throw GradleException("🚨 FATAL: API_KEY not found in local.properties or environment variables!")
 
-// --- GENERATE THE CONFIG ---
+val mapTilerApiKey: String = localProperties.getProperty("MAP_TILER_API_KEY")
+    ?: System.getenv("MAP_TILER_API_KEY")
+    ?: throw GradleException("🚨 FATAL: MAP_TILER_API_KEY not found in local.properties or environment variables!")
+
+val googlePlacesAndroidApiKey: String = localProperties.getProperty("GOOGLE_PLACES_ANDROID_API_KEY")
+    ?: System.getenv("GOOGLE_PLACES_ANDROID_API_KEY")
+    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_ANDROID_API_KEY not found in local.properties or environment variables!")
+
+val googlePlacesIosApiKey: String = localProperties.getProperty("GOOGLE_PLACES_IOS_API_KEY")
+    ?: System.getenv("GOOGLE_PLACES_IOS_API_KEY")
+    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_IOS_API_KEY not found in local.properties or environment variables!")
+
+val googlePlacesAndroidSHA1: String = localProperties.getProperty("GOOGLE_PLACES_ANDROID_SHA1")
+    ?: System.getenv("GOOGLE_PLACES_ANDROID_SHA1")
+    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_ANDROID_SHA1 not found in local.properties or environment variables!")
+
+// GENERATE THE CONFIG
 buildkonfig {
     packageName = "com.eeseka.lynk"
     objectName = "AppConfig"
@@ -38,6 +54,10 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(STRING, "WEB_CLIENT_ID", webClientId)
         buildConfigField(STRING, "API_KEY", apiKey)
+        buildConfigField(STRING, "MAP_TILER_API_KEY", mapTilerApiKey)
+        buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
+        buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
+        buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_SHA1", googlePlacesAndroidSHA1)
     }
     // Debug builds
     defaultConfigs("debug") {
@@ -87,6 +107,11 @@ kotlin {
             implementation(libs.moko.permissions)
             implementation(libs.moko.permissions.compose)
             implementation(libs.moko.permissions.notifications)
+            implementation(libs.moko.permissions.location)
+
+            // Geo Location
+            implementation(libs.moko.geo)
+            implementation(libs.moko.geo.compose)
 
             // Logging
             implementation(libs.touchlab.kermit)

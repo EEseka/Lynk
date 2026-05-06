@@ -102,7 +102,8 @@ private fun LynkTextFieldPreview() {
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         )
@@ -118,7 +119,8 @@ private fun LynkTextFieldPreviewDark() {
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         )
@@ -134,7 +136,8 @@ private fun LynkErrorTextFieldPreview() {
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             isError = true,
@@ -152,7 +155,8 @@ private fun LynkErrorTextFieldPreviewDark() {
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.User,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             isError = true,

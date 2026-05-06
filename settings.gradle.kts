@@ -28,6 +28,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":feature:discover")
 include(":feature:auth")
 include(":feature:main_shell")
 include(":composeApp")

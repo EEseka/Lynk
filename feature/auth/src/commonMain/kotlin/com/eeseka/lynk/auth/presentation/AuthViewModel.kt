@@ -55,7 +55,7 @@ class AuthViewModel(
                     _state.update {
                         it.copy(isGoogleSigningIn = false)
                     }
-                    eventChannel.send(AuthEvent.Error(error.toUiText().asStringAsync()))
+                    eventChannel.send(AuthEvent.Error(error.toUiText()))
                 }
         }
     }
@@ -76,7 +76,7 @@ class AuthViewModel(
                     _state.update {
                         it.copy(isGuestSigningIn = false)
                     }
-                    eventChannel.send(AuthEvent.Error(error.toUiText().asStringAsync()))
+                    eventChannel.send(AuthEvent.Error(error.toUiText()))
                 }
         }
     }

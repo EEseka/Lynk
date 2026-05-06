@@ -23,6 +23,10 @@
         <string>Lynk needs camera access so you can take a profile picture.</string>
         <key>NSPhotoLibraryUsageDescription</key>
         <string>Lynk needs access to your photos so you can choose a profile picture.</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>Lynk needs your location to show nearby spots and help you navigate to hangouts with your friends.</string>
+        <key>NSLocationUsageDescription</key>
+        <string>Lynk needs your location to show nearby spots and help you navigate to hangouts with your friends.</string>
 
         <!-- TODO: Remove this for production as its needed to use my custom backend locally -->
         <key>NSAppTransportSecurity</key>

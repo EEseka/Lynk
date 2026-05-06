@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.adaptive.ui)
 
             implementation(projects.shared)
+            implementation(projects.feature.discover)
         }
     }
 }

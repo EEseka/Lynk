@@ -3,7 +3,6 @@ package com.eeseka.lynk.main_shell.presentation.components
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,10 +45,7 @@ fun LynkNavigationRail(
         )
     }
     Row(modifier = modifier) {
-        NavigationRail(
-            modifier = Modifier.fillMaxHeight(),
-            windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
-        ) {
+        NavigationRail(modifier = Modifier.fillMaxHeight()) {
             LynkNavigationItem.entries.forEach { item ->
                 val isSelected = selectedItem == item
 

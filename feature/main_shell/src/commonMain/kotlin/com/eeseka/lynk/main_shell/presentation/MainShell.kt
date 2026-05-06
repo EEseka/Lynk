@@ -8,10 +8,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -27,10 +28,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
+import com.eeseka.lynk.discover.presentation.navigation.discoverGraph
 import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.main_shell.presentation.components.LynkBottomBar
 import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
-import com.eeseka.lynk.main_shell.presentation.navigation.DiscoverRoute
 import com.eeseka.lynk.main_shell.presentation.navigation.HangoutsRoute
 import com.eeseka.lynk.main_shell.presentation.navigation.ProfileRoute
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -87,11 +89,7 @@ fun MainShell() {
         }
     ) { paddingValues ->
         if (showRail) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
+            Row(modifier = Modifier.fillMaxSize()) {
                 AnimatedVisibility(
                     visible = isNavigationVisible,
                     enter = slideInHorizontally { -it } + fadeIn(),
@@ -105,6 +103,7 @@ fun MainShell() {
 
                 MainShellNavHost(
                     navController = innerNavController,
+                    paddingValues = PaddingValues(0.dp),
                     onToggleNavigation = { isNavigationVisible = it },
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
@@ -112,8 +111,9 @@ fun MainShell() {
         } else {
             MainShellNavHost(
                 navController = innerNavController,
+                paddingValues = paddingValues,
                 onToggleNavigation = { isNavigationVisible = it },
-                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -122,24 +122,23 @@ fun MainShell() {
 @Composable
 private fun MainShellNavHost(
     navController: NavHostController,
+    paddingValues: PaddingValues,
     onToggleNavigation: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = DiscoverRoute,
+        startDestination = DiscoverGraphRoutes.Graph,
         modifier = modifier,
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() },
         popEnterTransition = { fadeIn() },
         popExitTransition = { fadeOut() }
     ) {
-        composable<DiscoverRoute> {
-            // Temporary Placeholder
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Discover Screen")
-            }
-        }
+        discoverGraph(
+            navController = navController,
+            mainShellPadding = paddingValues
+        )
         composable<HangoutsRoute> {
             // Temporary Placeholder
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

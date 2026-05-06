@@ -2,6 +2,7 @@ package com.eeseka.lynk.onboarding.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -115,60 +116,66 @@ fun OnboardingScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState
     ) { paddingValues ->
-        when (config) {
-            DeviceConfiguration.MOBILE_LANDSCAPE -> {
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.weight(1f)
-                    ) { pageIndex ->
-                        OnboardingPageContent(page = pages[pageIndex], isLandscape = true)
-                    }
-
-                    Column(
-                        modifier = Modifier.weight(0.8f).fillMaxHeight(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            when (config) {
+                DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.weight(1f)
+                        ) { pageIndex ->
+                            OnboardingPageContent(page = pages[pageIndex], isLandscape = true)
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(0.8f).fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            OnboardingControls(
+                                currentPage = pagerState.currentPage,
+                                pageSize = pages.size,
+                                onOnboardingButtonClick = onButtonClick
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .then(
+                                if (config.isWideScreen || config == DeviceConfiguration.TABLET_PORTRAIT) {
+                                    Modifier.widthIn(max = 600.dp)
+                                } else Modifier.fillMaxWidth()
+                            )
+                            .padding(24.dp)
+                    ) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.weight(1f)
+                        ) { pageIndex ->
+                            OnboardingPageContent(page = pages[pageIndex], isLandscape = false)
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
                         OnboardingControls(
                             currentPage = pagerState.currentPage,
                             pageSize = pages.size,
                             onOnboardingButtonClick = onButtonClick
                         )
                     }
-                }
-            }
-
-            else -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .then(
-                            if (config.isWideScreen || config == DeviceConfiguration.TABLET_PORTRAIT) {
-                                Modifier.widthIn(max = 600.dp)
-                            } else Modifier.fillMaxWidth()
-                        )
-                        .padding(paddingValues)
-                        .padding(24.dp)
-                ) {
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.weight(1f)
-                    ) { pageIndex ->
-                        OnboardingPageContent(page = pages[pageIndex], isLandscape = false)
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    OnboardingControls(
-                        currentPage = pagerState.currentPage,
-                        pageSize = pages.size,
-                        onOnboardingButtonClick = onButtonClick
-                    )
                 }
             }
         }

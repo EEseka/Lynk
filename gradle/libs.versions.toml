@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.1"
+agp = "9.2.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -11,9 +11,9 @@ androidx-lifecycle = "2.10.0"
 androidx-testExt = "1.3.0"
 composeMultiplatform = "1.10.3"
 junit = "4.13.2"
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 material = "1.13.0"
-composeBom = "2026.03.01"
+composeBom = "2026.04.01"
 
 # For BackHandler
 composeNavigationEvent = "1.0.1"
@@ -30,7 +30,7 @@ material-icons = "1.7.3"
 core-splashscreen = "1.2.0"
 
 koin = "4.2.1"
-ktor = "3.4.2"
+ktor = "3.4.3"
 room = "2.8.4"
 sqlite = "2.6.2"
 datastore = "1.2.1"
@@ -50,6 +50,9 @@ auth = "2.3.1"
 
 iconsLucideCmp = "2.2.1"
 calf = "0.12.0"
+map = "0.12.1"
+moko-geo = "0.8.0"
+zoom = "1.4.0"
 
 # Testing
 turbine = "1.2.1"
@@ -144,12 +147,23 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
 moko-permissions-notifications = { module = "dev.icerock.moko:permissions-notifications", version.ref = "moko" }
+moko-permissions-location = { module = "dev.icerock.moko:permissions-location", version.ref = "moko" }
+
+# Geolocation
+moko-geo = { module = "dev.icerock.moko:geo", version.ref = "moko-geo" }
+moko-geo-compose = { module = "dev.icerock.moko:geo-compose", version.ref = "moko-geo" }
 
 # Logging
 touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 # Material3, Cupertino and Liquid Glass adaptive ui
 adaptive-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+
+# Map
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
+
+# Image Zoom
+zoomimage-compose-coil = {module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoom"}
 
 # Testing
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }

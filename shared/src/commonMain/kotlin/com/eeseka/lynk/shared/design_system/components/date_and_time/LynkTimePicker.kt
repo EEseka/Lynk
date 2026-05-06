@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkBottomSheet
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
@@ -30,7 +30,7 @@ fun LynkTimePicker(
     val state = rememberAdaptiveTimePickerState()
     val scheme = MaterialTheme.colorScheme
 
-    LynkBottomSheet(
+    LynkAdaptiveSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
