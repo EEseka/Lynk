@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		475C07FD2F7EFF4600CDD86D /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 475C07FC2F7EFF4600CDD86D /* GoogleSignIn */; };
 		475C07FF2F7EFF4600CDD86D /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 475C07FE2F7EFF4600CDD86D /* GoogleSignInSwift */; };
+		47C9B1212F97BC5C00DD00D6 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = 47C9B1202F97BC5C00DD00D6 /* MapLibre */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,7 +57,7 @@
 		47518E2E2F4CA8AC0056AE40 /* 0_buttons.knm */ = {isa = PBXFileReference; lastKnownFileType = file; path = 0_buttons.knm; sourceTree = "<group>"; };
 		47518E2F2F4CA8AC0056AE40 /* 1_buttons.knm */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1_buttons.knm; sourceTree = "<group>"; };
 		47518E312F4CA8AC0056AE40 /* 0_resources.knm */ = {isa = PBXFileReference; lastKnownFileType = file; path = 0_resources.knm; sourceTree = "<group>"; };
-		47518E322F4CA8AC0056AE40 /* 1_resources.knm */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1_resources.knm; sourceTree = "<group>"; };
+		47518E322F4CA8AC0056AE40 /* 1_resources.knm */ = {isa = PBXFileReference; lastKnownFileType = text; path = 1_resources.knm; sourceTree = "<group>"; };
 		47518E332F4CA8AC0056AE40 /* 2_resources.knm */ = {isa = PBXFileReference; lastKnownFileType = file; path = 2_resources.knm; sourceTree = "<group>"; };
 		47518E352F4CA8AC0056AE40 /* module */ = {isa = PBXFileReference; lastKnownFileType = text; path = module; sourceTree = "<group>"; };
 		47518E3C2F4CA8AC0056AE40 /* manifest */ = {isa = PBXFileReference; lastKnownFileType = text; path = manifest; sourceTree = "<group>"; };
@@ -2044,6 +2045,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				475C07FD2F7EFF4600CDD86D /* GoogleSignIn in Frameworks */,
+				47C9B1212F97BC5C00DD00D6 /* MapLibre in Frameworks */,
 				475C07FF2F7EFF4600CDD86D /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -12041,6 +12043,7 @@
 			packageProductDependencies = (
 				475C07FC2F7EFF4600CDD86D /* GoogleSignIn */,
 				475C07FE2F7EFF4600CDD86D /* GoogleSignInSwift */,
+				47C9B1202F97BC5C00DD00D6 /* MapLibre */,
 			);
 			productName = Lynk;
 			productReference = DAA8E04413786CFAD31B0C23 /* Lynk.app */;
@@ -12072,6 +12075,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				475C07FB2F7EFF4600CDD86D /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				47C9B11F2F97BC5C00DD00D6 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9353BB62194E4BFAAA2C3F83 /* Products */;
@@ -12341,6 +12345,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		47C9B11F2F97BC5C00DD00D6 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution.git";
+			requirement = {
+				kind = exactVersion;
+				version = 6.17.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -12353,6 +12365,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 475C07FB2F7EFF4600CDD86D /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		47C9B1202F97BC5C00DD00D6 /* MapLibre */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 47C9B11F2F97BC5C00DD00D6 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

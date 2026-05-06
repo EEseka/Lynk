@@ -49,6 +49,7 @@ import lynk.feature.profile_setup.generated.resources.error_username_rate_limit
 import lynk.feature.profile_setup.generated.resources.error_username_taken
 import lynk.feature.profile_setup.generated.resources.error_username_too_long
 import lynk.feature.profile_setup.generated.resources.error_username_too_short
+import kotlin.time.Duration.Companion.milliseconds
 
 class ProfileSetupViewModel(
     private val userService: UserService,
@@ -157,7 +158,7 @@ class ProfileSetupViewModel(
     private fun observeUsernameAvailability() {
         snapshotFlow { state.value.usernameTextState.text.toString() }
             .map { it.trim() }
-            .debounce(500L)
+            .debounce(500L.milliseconds)
             .distinctUntilChanged()
             .onEach { username ->
                 val validationState = UsernameValidator.validate(username)

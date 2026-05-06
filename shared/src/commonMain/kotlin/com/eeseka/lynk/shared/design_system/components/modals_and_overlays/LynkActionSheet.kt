@@ -31,7 +31,6 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
-import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
@@ -80,11 +79,8 @@ fun LynkActionSheet(
         onDismissRequest = onDismissRequest,
         iosProperties = iosProperties,
         materialContent = {
-            val sheetState = rememberAdaptiveSheetState(skipPartiallyExpanded = true)
-
-            LynkBottomSheet(
-                onDismissRequest = onDismissRequest,
-                sheetState = sheetState
+            LynkAdaptiveSheet(
+                onDismissRequest = onDismissRequest
             ) {
                 Column(
                     modifier = Modifier

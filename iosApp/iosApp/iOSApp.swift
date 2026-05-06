@@ -14,7 +14,6 @@ struct iOSApp: App {
    }
 }
 
-
 class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(

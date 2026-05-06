@@ -50,6 +50,7 @@ kotlin {
             implementation(projects.feature.auth)
             implementation(projects.feature.profileSetup)
             implementation(projects.feature.mainShell)
+            implementation(projects.feature.discover)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

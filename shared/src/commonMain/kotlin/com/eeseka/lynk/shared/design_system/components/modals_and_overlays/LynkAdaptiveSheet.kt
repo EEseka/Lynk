@@ -9,25 +9,26 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkAdaptiveSheet(
     onDismissRequest: () -> Unit,
+    skipBottomSheetPartiallyExpanded: Boolean = true,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val configuration = currentDeviceConfiguration()
 
     if (configuration.isMobile) {
-        val sheetState = rememberAdaptiveSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = skipBottomSheetPartiallyExpanded)
 
         LynkBottomSheet(
             onDismissRequest = onDismissRequest,

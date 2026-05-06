@@ -8,18 +8,29 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
 
-    <string name="error_disk_full">Oops, it looks like your storage is full!</string>
-    <string name="error_not_found">Couldn't find the requested item</string>
-    <string name="error_unknown">An unknown error happened</string>
-    <string name="error_bad_request">Bad request</string>
-    <string name="error_request_timeout">Your request has timed out</string>
-    <string name="error_unauthorized">Invalid credentials</string>
-    <string name="error_forbidden">You're not allowed to do that</string>
-    <string name="error_conflict">A conflict happened</string>
-    <string name="error_too_many_requests">You've hit the rate limit</string>
+    <string name="error_disk_full">Oops, it looks like your device storage is full.</string>
+    <string name="error_not_found">We couldn't find the requested item.</string>
+    <string name="error_unknown">An unknown error happened.</string>
+    <string name="error_bad_request">Something went wrong with this action. Please try again.</string>
+    <string name="error_request_timeout">Your connection has timed out.</string>
+    <string name="error_unauthorized">Invalid credentials. Please log in again.</string>
+    <string name="error_forbidden">You don't have permission to do this.</string>
+    <string name="error_conflict">Oops, a conflict happened.</string>
+    <string name="error_too_many_requests">You're making requests too quickly. Please slow down.</string>
     <string name="error_no_internet">Unable to connect. Please check your internet connection.</string>
-    <string name="error_payload_too_large">The file you've attached is too large</string>
-    <string name="error_server">Oops, a server-side error happened</string>
-    <string name="error_service_unavailable">Service unavailable, please try again later</string>
-    <string name="error_serialization">Serialization error</string>
+    <string name="error_payload_too_large">The file you attached is too large.</string>
+    <string name="error_server">Oops, a server error occurred on our end.</string>
+    <string name="error_service_unavailable">The service is currently unavailable. Please try again later.</string>
+    <string name="error_serialization">We had trouble loading this data. Please refresh.</string>
+
+    <string name="cheap">Cheap</string>
+    <string name="moderate">Moderate</string>
+    <string name="expensive">Expensive</string>
+    <string name="luxury">Luxury</string>
+    <string name="lounge">Lounge</string>
+    <string name="cafe">Cafe</string>
+    <string name="club">Club</string>
+    <string name="restaurant">Restaurant</string>
+    <string name="activity">Activity</string>
+    <string name="other">Other</string>
 </resources>

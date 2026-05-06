@@ -2,6 +2,7 @@ package com.eeseka.lynk.auth.presentation
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
+import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -32,7 +33,7 @@ class AuthScreenTest {
             val robot = AuthRobot(this)
             robot.setContent(events = eventFlow)
 
-            eventFlow.emit(AuthEvent.Error("Auth Failed"))
+            eventFlow.emit(AuthEvent.Error(UiText.DynamicString("Auth Failed")))
 
             robot.assertTextVisible("Auth Failed")
         }

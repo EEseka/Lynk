@@ -69,7 +69,7 @@ fun AuthScreen(
                 hapticFeedback(AppHaptic.Error)
 
                 snackbarHostState.showFlashMessage(
-                    message = event.message,
+                    message = event.error.asStringAsync(),
                     type = LynkFlashType.Error
                 )
             }
@@ -101,6 +101,7 @@ fun AuthScreen(
                         modifier = Modifier
                             .widthIn(max = 600.dp)
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {

@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ import lynk.shared.generated.resources.clear_search
 import lynk.shared.generated.resources.search
 import lynk.shared.generated.resources.search_placeholder
 import org.jetbrains.compose.resources.stringResource
+
 @Composable
 fun LynkSearchField(
     state: TextFieldState,
@@ -40,6 +43,8 @@ fun LynkSearchField(
     enabled: Boolean = true,
     onSearch: (() -> Unit)? = null
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val scheme = MaterialTheme.colorScheme
 
     LynkTextFieldLayout(
@@ -49,6 +54,7 @@ fun LynkSearchField(
         helperText = null,
         enabled = enabled,
         shape = CircleShape,
+        subtleFocus = true,
         onFocusChanged = {},
         modifier = modifier
     ) { styleModifier, interactionSource ->
@@ -61,8 +67,10 @@ fun LynkSearchField(
                 color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            onKeyboardAction = onSearch?.let { action ->
-                KeyboardActionHandler { action() }
+            onKeyboardAction = KeyboardActionHandler {
+                onSearch?.invoke()
+                keyboardController?.hide()
+                focusManager.clearFocus()
             },
             cursorBrush = SolidColor(scheme.primary),
             interactionSource = interactionSource,
@@ -75,8 +83,7 @@ fun LynkSearchField(
                     Icon(
                         imageVector = Lucide.Search,
                         contentDescription = stringResource(Res.string.search),
-                        tint = scheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                        tint = scheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(12.dp))
 
@@ -103,8 +110,7 @@ fun LynkSearchField(
                             Icon(
                                 imageVector = Lucide.CircleX,
                                 contentDescription = stringResource(Res.string.clear_search),
-                                tint = scheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
+                                tint = scheme.onSurfaceVariant
                             )
                         }
                     }
@@ -126,7 +132,7 @@ private fun LynkSearchFieldPreview() {
 @Composable
 private fun LynkSearchFieldPreviewDark() {
     LynkTheme(true) {
-        LynkSearchField(state = TextFieldState(""))
+        LynkSearchField(state = TextFieldState("Kotlin"))
     }
 }
 
@@ -135,7 +141,7 @@ private fun LynkSearchFieldPreviewDark() {
 private fun LynkDisabledSearchFieldPreview() {
     LynkTheme {
         LynkSearchField(
-            state = TextFieldState("Kotlin"),
+            state = TextFieldState(""),
             enabled = false
         )
     }

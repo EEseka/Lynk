@@ -35,6 +35,7 @@ fun LynkTextFieldLayout(
     helperText: String? = null,
     enabled: Boolean = true,
     shape: Shape = MaterialTheme.shapes.medium,
+    subtleFocus: Boolean = false,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     textField: @Composable (Modifier, MutableInteractionSource) -> Unit
@@ -51,17 +52,18 @@ fun LynkTextFieldLayout(
         .fillMaxWidth()
         .background(
             color = when {
-                isFocused -> scheme.primary.copy(alpha = 0.05f)
+                isFocused && !subtleFocus -> scheme.primary.copy(alpha = 0.05f)
                 enabled -> scheme.surface
                 else -> scheme.surfaceVariant.copy(alpha = 0.5f)
             },
             shape = shape
         )
         .border(
-            width = if (isFocused) 2.dp else 1.dp,
+            width = if (isFocused && !subtleFocus) 2.dp else 1.dp,
             color = when {
                 isError -> scheme.error
-                isFocused -> scheme.primary
+                isFocused && !subtleFocus -> scheme.primary
+                isFocused && subtleFocus -> scheme.outline
                 else -> scheme.outlineVariant
             },
             shape = shape
