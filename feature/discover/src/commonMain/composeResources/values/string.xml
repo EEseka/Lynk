@@ -10,7 +10,6 @@
     <string name="open_settings">Open Settings</string>
     <string name="not_now">Not Now</string>
     <string name="locate_me">Locate Me</string>
-    <string name="create_hangout">Create Hangout</string>
     <string name="location_fetch_error">We couldn't find your location. Please ensure Location Services are enabled.</string>
 
     <string name="map_data_label">Map Data</string>
@@ -35,4 +34,5 @@
     <string name="close_image">Close image</string>
     <string name="visit_website">Visit Website</string>
     <string name="open_in_google_maps">Open in Google Maps</string>
+    <string name="create_hangout_here">Create Hangout Here</string>
 </resources>

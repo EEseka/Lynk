@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import com.eeseka.lynk.discover.presentation.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import com.github.panpf.zoomimage.rememberCoilZoomState
 import lynk.feature.discover.generated.resources.Res
@@ -33,41 +36,15 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FullScreenImageViewer(
-    imageUrl: String,
+    rawUrls: List<String>,
+    initialIndex: Int,
     onDismiss: () -> Unit
 ) {
-    val imageRequest = rememberGoogleImageRequest(url = imageUrl)
     val hapticFeedback = rememberAppHaptic()
-    val zoomState = rememberCoilZoomState()
-
-    var hasHitMax by remember { mutableStateOf(false) }
-    var hasHitMin by remember { mutableStateOf(false) }
-
-    LaunchedEffect(zoomState) {
-        snapshotFlow { zoomState.zoomable.transform.scaleX }
-            .collect { currentScale ->
-                val maxScale = zoomState.zoomable.maxScale + 0.01f
-                val minScale = zoomState.zoomable.minScale - 0.01f
-
-                if (currentScale > maxScale) {
-                    if (!hasHitMax) {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        hasHitMax = true
-                    }
-                } else {
-                    hasHitMax = false
-                }
-
-                if (currentScale < minScale) {
-                    if (!hasHitMin) {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        hasHitMin = true
-                    }
-                } else {
-                    hasHitMin = false
-                }
-            }
-    }
+    val pagerState = rememberPagerState(
+        initialPage = initialIndex,
+        pageCount = { rawUrls.size }
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -82,15 +59,57 @@ fun FullScreenImageViewer(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            if (imageRequest != null) {
-                CoilZoomAsyncImage(
-                    model = imageRequest,
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    zoomState = zoomState,
-                    scrollBar = null,
-                    modifier = Modifier.fillMaxSize()
-                )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                key = { page -> rawUrls[page] }
+            ) { page ->
+
+                val fullUrl = remember(rawUrls[page]) {
+                    SpotPhotoUrlBuilder.build(rawUrls[page])
+                }
+                val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
+                val zoomState = rememberCoilZoomState()
+
+                var hasHitMax by remember { mutableStateOf(false) }
+                var hasHitMin by remember { mutableStateOf(false) }
+
+                LaunchedEffect(zoomState) {
+                    snapshotFlow { zoomState.zoomable.transform.scaleX }
+                        .collect { currentScale ->
+                            val maxScale = zoomState.zoomable.maxScale + 0.01f
+                            val minScale = zoomState.zoomable.minScale - 0.01f
+
+                            if (currentScale > maxScale) {
+                                if (!hasHitMax) {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    hasHitMax = true
+                                }
+                            } else {
+                                hasHitMax = false
+                            }
+
+                            if (currentScale < minScale) {
+                                if (!hasHitMin) {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    hasHitMin = true
+                                }
+                            } else {
+                                hasHitMin = false
+                            }
+                        }
+                }
+
+                if (imageRequest != null) {
+                    CoilZoomAsyncImage(
+                        model = imageRequest,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        zoomState = zoomState,
+                        scrollBar = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             LynkTonalIconButton(

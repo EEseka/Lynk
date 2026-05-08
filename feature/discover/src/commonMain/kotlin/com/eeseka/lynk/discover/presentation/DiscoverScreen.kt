@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,13 +36,11 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Plus
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.discover.presentation.components.DiscoverSearchSheet
 import com.eeseka.lynk.discover.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkFloatingActionButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
@@ -64,7 +61,6 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
-import lynk.feature.discover.generated.resources.create_hangout
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_fetch_error
 import lynk.feature.discover.generated.resources.location_required
@@ -296,47 +292,30 @@ fun DiscoverScreen(
                 }
             )
 
-            // Action Buttons
-            Column(
+            // Action Button
+            LynkTonalIconButton(
+                onClick = {
+                    if (permissionState == PermissionState.GRANTED) {
+                        scope.launch { fetchCurrentLocationAndShowOnMap() }
+                    } else {
+                        scope.launch {
+                            permissionState =
+                                permissionController.requestPermission(Permission.LOCATION)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
                     .padding(
                         bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
                         end = 16.dp
-                    ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    )
             ) {
-                LynkTonalIconButton(
-                    onClick = {
-                        if (permissionState == PermissionState.GRANTED) {
-                            scope.launch { fetchCurrentLocationAndShowOnMap() }
-                        } else {
-                            scope.launch {
-                                permissionState =
-                                    permissionController.requestPermission(Permission.LOCATION)
-                            }
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Lucide.Locate,
-                        contentDescription = stringResource(Res.string.locate_me)
-                    )
-                }
-
-                LynkFloatingActionButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactMedium)
-                        // TODO: Navigate to Create Hangout
-                    }
-                ) {
-                    Icon(
-                        imageVector = Lucide.Plus,
-                        contentDescription = stringResource(Res.string.create_hangout)
-                    )
-                }
+                Icon(
+                    imageVector = Lucide.Locate,
+                    contentDescription = stringResource(Res.string.locate_me)
+                )
             }
         }
 
@@ -361,6 +340,9 @@ fun DiscoverScreen(
                     spot = selectedSpot,
                     userLat = userPosition?.latitude,
                     userLng = userPosition?.longitude,
+                    onCreateHangoutClick = { spotId ->
+                        // TODO:
+                    },
                     onToggleSave = { spotId, isSaved ->
                         onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
                     },
