@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
@@ -23,40 +22,31 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkDatePicker(
-    onDismissRequest: () -> Unit,
     onDateSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state = rememberAdaptiveDatePickerState()
     val scheme = MaterialTheme.colorScheme
 
-    LynkAdaptiveSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            AdaptiveDatePicker(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = DatePickerDefaults.colors(
-                    containerColor = scheme.surfaceContainerLow
-                )
+    Column(modifier = modifier.fillMaxWidth()) {
+        AdaptiveDatePicker(
+            state = state,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            colors = DatePickerDefaults.colors(
+                containerColor = scheme.surfaceContainerHigh
             )
+        )
 
-            LynkButton(
-                text = stringResource(Res.string.confirm_date),
-                onClick = {
-                    onDateSelected(state.selectedDateMillis)
-                    onDismissRequest()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                style = LynkButtonStyle.PRIMARY
-            )
-        }
+        LynkButton(
+            text = stringResource(Res.string.confirm_date),
+            onClick = { onDateSelected(state.selectedDateMillis) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            style = LynkButtonStyle.TEXT
+        )
     }
 }
 
@@ -64,10 +54,7 @@ fun LynkDatePicker(
 @Composable
 private fun LynkDatePickerPreview() {
     LynkTheme {
-        LynkDatePicker(
-            onDismissRequest = {},
-            onDateSelected = {}
-        )
+        LynkDatePicker(onDateSelected = {})
     }
 }
 
@@ -75,9 +62,6 @@ private fun LynkDatePickerPreview() {
 @Composable
 private fun LynkDatePickerPreviewDark() {
     LynkTheme(true) {
-        LynkDatePicker(
-            onDismissRequest = {},
-            onDateSelected = {}
-        )
+        LynkDatePicker(onDateSelected = {})
     }
 }

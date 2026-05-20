@@ -129,6 +129,9 @@ kotlin {
             implementation(libs.datastore)
             implementation(libs.datastore.preferences)
 
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
             implementation(libs.jetbrains.compose.navigation)
 
             implementation(libs.material3.adaptive)

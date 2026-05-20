@@ -7,8 +7,13 @@ import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.util.UiText
 
+enum class GuestPromptContext { SAVE_SPOT, CREATE_HANGOUT }
+
 data class DiscoverState(
     val mapTheme: AppTheme = AppTheme.SYSTEM,
+
+    val isGuest: Boolean = false,
+    val guestPromptContext: GuestPromptContext? = null,
 
     // User Location
     val userLatitude: Double? = null,
@@ -22,7 +27,7 @@ data class DiscoverState(
     val selectedSpotId: String? = null,
 
     // Search Sheet Data (Pagination)
-    val searchTextFieldState: TextFieldState = TextFieldState(),
+    val searchTextState: TextFieldState = TextFieldState(),
     val searchResults: List<Spot> = emptyList(),
     val isSearchLoading: Boolean = false,
     val searchError: UiText? = null,
@@ -31,5 +36,9 @@ data class DiscoverState(
 
     // Search Filters
     val selectedCategory: SpotCategory? = null,
-    val selectedPriceLevel: PriceLevel? = null
+    val selectedPriceLevel: PriceLevel? = null,
+
+    // Sheet States
+    val showSearchSheet: Boolean = false,
+    val hangoutCreationSpotId: String? = null
 )

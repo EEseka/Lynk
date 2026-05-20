@@ -33,4 +33,18 @@
     <string name="restaurant">Restaurant</string>
     <string name="activity">Activity</string>
     <string name="other">Other</string>
+    <string name="food">Food</string>
+    <string name="drinks">Drinks</string>
+    <string name="gaming">Gaming</string>
+    <string name="active">Active</string>
+    <string name="chill">Chill</string>
+    <string name="party">Party</string>
+
+    <string name="km">km</string>
+    <string name="m">m</string>
+
+    <string name="guest_prompt_title">You're one step away</string>
+    <string name="guest_prompt_body">Create an account to %1$s, and do a lot more with the people that matter.</string>
+    <string name="guest_prompt_sign_in">Create Account</string>
+    <string name="guest_prompt_not_now">Not now</string>
 </resources>

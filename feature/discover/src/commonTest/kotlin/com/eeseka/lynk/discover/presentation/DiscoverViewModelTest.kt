@@ -99,7 +99,7 @@ class DiscoverViewModelTest {
             assertThat(initialState.searchResults).isEmpty()
 
             // Type query
-            viewModel.state.value.searchTextFieldState.setTextAndPlaceCursorAtEnd("Cafe")
+            viewModel.state.value.searchTextState.setTextAndPlaceCursorAtEnd("Cafe")
 
             // Advance time just before debounce finishes
             advanceTimeBy(400.milliseconds)

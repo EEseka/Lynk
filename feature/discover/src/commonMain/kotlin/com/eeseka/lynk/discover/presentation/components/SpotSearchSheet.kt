@@ -58,6 +58,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.spot.components.SpotDiscoverCard
 import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
@@ -75,7 +76,7 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun DiscoverSearchSheet(
+fun SpotSearchSheet(
     state: DiscoverState,
     onLoadNextSearchPage: () -> Unit,
     onSelectPriceLevel: (PriceLevel?) -> Unit,
@@ -103,7 +104,7 @@ fun DiscoverSearchSheet(
         resetKey = state.searchResetEpoch
     )
 
-    val isSearchActive = state.searchTextFieldState.text.toString().isNotBlank() ||
+    val isSearchActive = state.searchTextState.text.toString().isNotBlank() ||
             state.selectedCategory != null ||
             state.selectedPriceLevel != null
 
@@ -186,7 +187,7 @@ fun DiscoverSearchSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LynkSearchField(
-                        state = state.searchTextFieldState,
+                        state = state.searchTextState,
                         placeholder = stringResource(Res.string.search_spots_hint),
                         modifier = Modifier
                             .weight(1f)

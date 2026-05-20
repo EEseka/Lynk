@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -42,7 +42,6 @@ import com.composables.icons.lucide.Globe
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
-import com.eeseka.lynk.discover.presentation.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
@@ -55,6 +54,7 @@ import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
+import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import lynk.feature.discover.generated.resources.Res
 import lynk.feature.discover.generated.resources.about_this_spot
 import lynk.feature.discover.generated.resources.closed
@@ -105,31 +105,54 @@ fun SpotDetailSheet(
                     .padding(bottom = 16.dp)
             ) {
                 if (spot.photoUrls.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        itemsIndexed(spot.photoUrls) { index, rawUrl ->
-                            val fullUrl = remember(rawUrl) {
-                                SpotPhotoUrlBuilder.build(rawUrl)
-                            }
+                    if (spot.photoUrls.size == 1) {
+                        val fullUrl = remember(spot.photoUrls[0]) {
+                            SpotPhotoUrlBuilder.build(spot.photoUrls[0])
+                        }
+                        val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
+                        if (imageRequest != null) {
+                            AsyncImage(
+                                model = imageRequest,
+                                contentDescription = spot.name,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .clickable {
+                                        hapticFeedback(AppHaptic.Selection)
+                                        initialImageIndex = 0
+                                    }
+                            )
+                        }
+                    } else {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            itemsIndexed(spot.photoUrls) { index, rawUrl ->
+                                val fullUrl = remember(rawUrl) {
+                                    SpotPhotoUrlBuilder.build(rawUrl)
+                                }
 
-                            val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
+                                val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
 
-                            if (imageRequest != null) {
-                                AsyncImage(
-                                    model = imageRequest,
-                                    contentDescription = spot.name,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(width = 280.dp, height = 200.dp)
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .clickable {
-                                            hapticFeedback(AppHaptic.Selection)
-                                            initialImageIndex = index
-                                        }
-                                )
+                                if (imageRequest != null) {
+                                    AsyncImage(
+                                        model = imageRequest,
+                                        contentDescription = spot.name,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(width = 280.dp, height = 200.dp)
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .clickable {
+                                                hapticFeedback(AppHaptic.Selection)
+                                                initialImageIndex = index
+                                            }
+                                    )
+                                }
                             }
                         }
                     }
@@ -344,12 +367,14 @@ fun SpotDetailSheet(
                 }
 
                 if (spot.tags.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(spot.tags) { tag ->
+                        spot.tags.forEach { tag ->
                             val formattedTag = tag.replace("_", " ")
                                 .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 

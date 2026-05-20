@@ -6,8 +6,8 @@ import com.eeseka.lynk.shared.data.auth.dto.requests.RefreshRequest
 import com.eeseka.lynk.shared.data.auth.mappers.toDomain
 import com.eeseka.lynk.shared.data.networking.delete
 import com.eeseka.lynk.shared.data.networking.post
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.AuthService
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -27,6 +27,12 @@ class KtorAuthService(
             body = GoogleAuthRequest(token = idToken)
         ).map { authInfoSerializable ->
             authInfoSerializable.toDomain()
+        }.onSuccess {
+            // Guest token may be cached by Ktor's bearer plugin; clear it so the next
+            // request re-reads the newly stored authenticated token from SessionStorage.
+            // Basically happens when a guest user wants to create an account, so we send them to the authentication screen.
+            // Once they create an account, the old guest tokens are still cached so we now need to clear it
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
         }
     }
 

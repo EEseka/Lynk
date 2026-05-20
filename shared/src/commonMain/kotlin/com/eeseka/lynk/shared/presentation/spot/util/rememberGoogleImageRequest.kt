@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.util
+package com.eeseka.lynk.shared.presentation.spot.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -7,7 +7,6 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.eeseka.lynk.shared.presentation.spot.util.getGoogleApiHeaders
 
 @Composable
 fun rememberGoogleImageRequest(url: String): ImageRequest? {

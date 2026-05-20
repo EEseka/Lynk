@@ -9,20 +9,20 @@ androidx-core = "1.18.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.10.0"
 androidx-testExt = "1.3.0"
-composeMultiplatform = "1.10.3"
+composeMultiplatform = "1.11.0"
 junit = "4.13.2"
 kotlin = "2.3.21"
-material = "1.13.0"
-composeBom = "2026.04.01"
+material = "1.14.0"
+composeBom = "2026.05.00"
 
 # For BackHandler
-composeNavigationEvent = "1.0.1"
+composeNavigationEvent = "1.1.0"
 
 # Compose
 material3 = "1.9.0"
 
 # Extra Versions
-buildkonfig = "0.18.0"
+buildkonfig = "0.21.1"
 
 ksp = "2.3.6"
 material-icons = "1.7.3"
@@ -36,13 +36,13 @@ sqlite = "2.6.2"
 datastore = "1.2.1"
 navigation = "2.9.2"
 
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
-kotlinx-datetime = "0.7.1"
+kotlinx-datetime = "0.8.0"
 kermit = "2.1.0"
 adaptive = "1.2.0"
 moko = "0.20.1"
-compottie = "2.1.0"
+compottie = "2.2.0-beta01"
 
 coil = "3.4.0"
 
@@ -57,7 +57,7 @@ zoom = "1.4.0"
 # Testing
 turbine = "1.2.1"
 assertk = "0.28.1"
-uiTest = "1.10.3"
+uiTest = "1.11.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -163,7 +163,7 @@ adaptive-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref =
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
 
 # Image Zoom
-zoomimage-compose-coil = {module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoom"}
+zoomimage-compose-coil = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoom" }
 
 # Testing
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }

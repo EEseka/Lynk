@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_hangout_name_blank">Hangout name cannot be empty.</string>
+    <string name="error_hangout_name_too_long">Hangout name cannot exceed 50 characters.</string>
+    <string name="error_hangout_description_too_long">Hangout description cannot exceed 500 characters.</string>
+    <string name="error_hangout_date_missing">Hangout date cannot be empty.</string>
+    <string name="error_hangout_date_past">Hangout date cannot be in the past.</string>
+    <string name="error_hangout_time_missing">Hangout time cannot be empty.</string>
+    <string name="error_hangout_time_past">Hangout time cannot be in the past.</string>
+
+    <string name="the_basics">The Basics</string>
+    <string name="hangout_name">Hangout Name</string>
+    <string name="hangout_name_placeholder">e.g. Beach Night 🌊</string>
+    <string name="hangout_description">Hangout Description (Optional)</string>
+    <string name="hangout_description_placeholder">What are we doing?</string>
+    <string name="vibe">Vibe</string>
+    <string name="max_people">Max People</string>
+    <string name="people">People</string>
+    <string name="decrease_max_people">Decrease Max People</string>
+    <string name="increase_max_people">Increase Max People</string>
+    <string name="unlimited">Unlimited</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="pick_date">Pick a date</string>
+    <string name="pick_time">Pick a time</string>
+    <string name="next_pick_location">Next: Pick Location →</string>
+
+    <string name="pick_location">Pick Location</string>
+    <string name="let_the_group_decide">Let the group decide!</string>
+    <string name="let_the_group_decide_description">You're setting up a Group Vote hangout. Everyone invited will be able to search and vote for their favorite spots in the Lobby.</string>
+    <string name="search_spots_hint">Search for a spot...</string>
+    <string name="search_favorite_spots_hint">Search favorite spots...</string>
+    <string name="all_spots">All Spots</string>
+    <string name="favorites">Favorites</string>
+    <string name="empty_search_message">No spots found.</string>
+    <string name="empty_favorite_search_message">No favorite spots found.</string>
+    <string name="selected">Selected</string>
+    <string name="change_location">Change Location</string>
+    <string name="group_vote">Group Vote</string>
+    <string name="pick_a_spot">Pick a Spot</string>
+    <string name="next_review_and_confirm">Next: Review &amp; Confirm →</string>
+
+    <string name="review_and_confirm">Review &amp; Confirm</string>
+    <string name="review_and_confirm_description">Make sure everything looks good before proceeding.</string>
+    <string name="name_label">Name</string>
+    <string name="description_label">Description</string>
+    <string name="when_label">When</string>
+    <string name="group_size_label">Group Size</string>
+    <string name="location_label">Location</string>
+    <string name="unnamed_hangout">Unnamed Hangout</string>
+    <string name="tbd">TBD</string>
+    <string name="no_location_selected">No Location Selected</string>
+    <string name="create_hangout">Create Hangout</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="create_hangout_loading">Creating…</string>
+    <string name="save_changes_loading">Saving…</string>
+
+    <string name="go_back">Go Back</string>
+
+    <string name="km">km</string>
+    <string name="m">m</string>
+</resources>

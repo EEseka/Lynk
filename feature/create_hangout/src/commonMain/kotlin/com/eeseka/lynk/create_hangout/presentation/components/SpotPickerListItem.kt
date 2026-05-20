@@ -1,18 +1,14 @@
-package com.eeseka.lynk.discover.presentation.components
+package com.eeseka.lynk.create_hangout.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,31 +24,30 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
-import com.composables.icons.lucide.Star
-import com.eeseka.lynk.discover.presentation.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
+import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
-import lynk.feature.discover.generated.resources.Res
-import lynk.feature.discover.generated.resources.km
-import lynk.feature.discover.generated.resources.m
+import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import lynk.feature.create_hangout.generated.resources.Res
+import lynk.feature.create_hangout.generated.resources.km
+import lynk.feature.create_hangout.generated.resources.m
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SpotDiscoverCard(
+fun SpotPickerListItem(
     spotName: String,
     spotPhotos: List<String>,
     spotLatitude: Double,
     spotLongitude: Double,
     spotCategory: SpotCategory,
     spotPriceLevel: PriceLevel?,
-    spotRating: Double?,
     userLat: Double?,
     userLng: Double?,
     onClick: () -> Unit,
@@ -84,11 +78,17 @@ fun SpotDiscoverCard(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 3f)
+                    .size(56.dp)
+                    .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 if (imageRequest != null) {
@@ -99,43 +99,16 @@ fun SpotDiscoverCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-
-                if (spotRating != null) {
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.65f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Lucide.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = Color(0xFFFFB800)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        LynkText(
-                            text = spotRating.toString(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
             }
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 LynkText(
                     text = spotName,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -156,22 +129,20 @@ fun SpotDiscoverCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Distance Footer
                 if (distanceString != null) {
                     Row(
-                        modifier = Modifier.padding(top = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Icon(
                             imageVector = Lucide.MapPin,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         LynkText(
                             text = distanceString,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )
@@ -184,16 +155,15 @@ fun SpotDiscoverCard(
 
 @PreviewLightDark
 @Composable
-private fun SpotDiscoverCardPreview() {
-    LynkTheme {
-        SpotDiscoverCard(
+fun SpotPickerListItemPreview() {
+    LynkTheme { 
+        SpotPickerListItem(
             spotName = "Mega Chicken Substation",
             spotPhotos = listOf("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"),
             spotLatitude = 6.443,
             spotLongitude = 2.455,
             spotCategory = SpotCategory.RESTAURANT,
             spotPriceLevel = PriceLevel.MODERATE,
-            spotRating = 4.8,
             userLat = 3.33,
             userLng = 2.344,
             onClick = { }

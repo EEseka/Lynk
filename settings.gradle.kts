@@ -27,6 +27,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+include(":feature:create_hangout")
 
 include(":feature:discover")
 include(":feature:auth")

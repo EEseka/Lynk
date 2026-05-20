@@ -32,5 +32,8 @@ interface SpotService {
 
     suspend fun unsaveSpot(spotId: String): EmptyResult<DataError.Remote>
 
-    suspend fun getSavedSpots(before: String? = null): Result<List<Spot>, DataError.Remote>
+    suspend fun getSavedSpots(
+        query: String? = null,
+        before: String? = null
+    ): Result<List<Spot>, DataError.Remote>
 }

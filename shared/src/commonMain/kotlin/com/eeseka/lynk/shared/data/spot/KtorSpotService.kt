@@ -81,6 +81,7 @@ class KtorSpotService(
     }
 
     override suspend fun getSavedSpots(
+        query: String?,
         before: String?
     ): Result<List<Spot>, DataError.Remote> {
         return httpClient.get<List<SpotDto>>(
@@ -88,6 +89,7 @@ class KtorSpotService(
             queryParams = buildMap {
                 put("pageSize", SpotConstants.PAGE_SIZE)
                 before?.let { put("before", it) }
+                query?.let { put("query", it) }
             }
         ).map { savedSpots ->
             savedSpots.map { it.toDomain() }

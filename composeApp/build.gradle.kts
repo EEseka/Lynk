@@ -51,6 +51,7 @@ kotlin {
             implementation(projects.feature.profileSetup)
             implementation(projects.feature.mainShell)
             implementation(projects.feature.discover)
+            implementation(projects.feature.createHangout)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

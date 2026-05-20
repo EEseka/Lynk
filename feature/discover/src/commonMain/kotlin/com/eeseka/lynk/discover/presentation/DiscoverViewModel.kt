@@ -4,6 +4,8 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -35,6 +38,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class DiscoverViewModel(
     private val spotService: SpotService,
+    private val sessionStorage: SessionStorage,
     private val appPreferences: AppPreferences
 ) : ViewModel() {
 
@@ -57,6 +61,8 @@ class DiscoverViewModel(
     }
         .onStart {
             if (!hasLoadedInitialData) {
+                val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
+                _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
                 hasLoadedInitialData = true
             }
@@ -83,7 +89,12 @@ class DiscoverViewModel(
             is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
             is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
-            DiscoverAction.OnSearchQueryCleared -> _state.value.searchTextFieldState.clearText()
+            DiscoverAction.OnSearchQueryCleared -> _state.value.searchTextState.clearText()
+            DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
+            is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
+            DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
+
+            is DiscoverAction.OnHangoutCreationSelected -> _state.update { it.copy(hangoutCreationSpotId = action.spotId) }
         }
     }
 
@@ -98,7 +109,7 @@ class DiscoverViewModel(
     }
 
     private fun fetchTrendingSpots(latitude: Double, longitude: Double) {
-        if (state.value.isTrendingLoading) return
+        if (state.value.isTrendingLoading || state.value.trendingSpots.isNotEmpty()) return
 
         _state.update { it.copy(isTrendingLoading = true) }
 
@@ -155,7 +166,7 @@ class DiscoverViewModel(
 
     @OptIn(FlowPreview::class)
     private fun observeSearchFilters() {
-        val searchQueryFlow = snapshotFlow { _state.value.searchTextFieldState.text.toString() }
+        val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
             .debounce(500L.milliseconds)
             .distinctUntilChanged()
 

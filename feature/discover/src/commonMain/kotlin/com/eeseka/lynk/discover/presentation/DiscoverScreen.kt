@@ -37,9 +37,10 @@ import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.AppConfig
-import com.eeseka.lynk.discover.presentation.components.DiscoverSearchSheet
+import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
 import com.eeseka.lynk.discover.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
+import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -53,6 +54,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
@@ -70,6 +72,8 @@ import lynk.feature.discover.generated.resources.maptiler_attribution
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.osm_attribution
+import lynk.feature.discover.generated.resources.create_a_hangout
+import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
 import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.camera.rememberCameraState
@@ -93,7 +97,8 @@ fun DiscoverScreen(
     state: DiscoverState,
     events: Flow<DiscoverEvent>,
     onAction: (DiscoverAction) -> Unit,
-    mainShellPadding: PaddingValues
+    mainShellPadding: PaddingValues,
+    navigateToAuth: () -> Unit
 ) {
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
@@ -108,7 +113,6 @@ fun DiscoverScreen(
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
-    var showSearchSheet by remember { mutableStateOf(false) }
     var showAttributionMenu by remember { mutableStateOf(false) }
 
     val locationFetchError = stringResource(Res.string.location_fetch_error)
@@ -231,7 +235,7 @@ fun DiscoverScreen(
                     .widthIn(max = 480.dp)
             ) {
                 LynkSearchField(
-                    state = state.searchTextFieldState,
+                    state = state.searchTextState,
                     placeholder = stringResource(Res.string.search_spots_hint),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -242,7 +246,7 @@ fun DiscoverScreen(
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = { showSearchSheet = true }
+                            onClick = { onAction(DiscoverAction.ToggleShowSearchSheet) }
                         )
                 )
             }
@@ -320,17 +324,29 @@ fun DiscoverScreen(
         }
 
         // Overlays & Sheets
-        if (showSearchSheet) {
-            DiscoverSearchSheet(
+        if (state.guestPromptContext != null) {
+            val actionStr = when (state.guestPromptContext) {
+                GuestPromptContext.SAVE_SPOT -> stringResource(Res.string.save_this_spot)
+                GuestPromptContext.CREATE_HANGOUT -> stringResource(Res.string.create_a_hangout)
+            }
+            GuestPromptSheet(
+                actionStr = actionStr,
+                onSignInClick = navigateToAuth,
+                onDismissRequest = { onAction(DiscoverAction.HideGuestPrompt) }
+            )
+        }
+
+        if (state.showSearchSheet) {
+            SpotSearchSheet(
                 state = state,
                 onLoadNextSearchPage = { onAction(DiscoverAction.LoadNextSearchPage) },
                 onSelectPriceLevel = { onAction(DiscoverAction.OnPriceLevelSelected(it)) },
                 onSelectCategory = { onAction(DiscoverAction.OnCategorySelected(it)) },
-                onSpotClick = {
-                    showSearchSheet = false
-                    onAction(DiscoverAction.OnSpotSelected(it))
+                onSpotClick = { spotId ->
+                    onAction(DiscoverAction.ToggleShowSearchSheet)
+                    onAction(DiscoverAction.OnSpotSelected(spotId))
                 },
-                onDismissRequest = { showSearchSheet = false }
+                onDismissRequest = { onAction(DiscoverAction.ToggleShowSearchSheet) }
             )
         }
 
@@ -341,13 +357,38 @@ fun DiscoverScreen(
                     userLat = userPosition?.latitude,
                     userLng = userPosition?.longitude,
                     onCreateHangoutClick = { spotId ->
-                        // TODO:
+                        onAction(DiscoverAction.OnSpotSelected(null))
+                        if (state.isGuest) {
+                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
+                        } else {
+                            onAction(DiscoverAction.OnHangoutCreationSelected(spotId))
+                        }
                     },
                     onToggleSave = { spotId, isSaved ->
-                        onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
+                        if (state.isGuest) {
+                            onAction(DiscoverAction.OnSpotSelected(null))
+                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
+                        } else {
+                            onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
+                        }
                     },
                     onDismissRequest = {
                         onAction(DiscoverAction.OnSpotSelected(null))
+                    }
+                )
+            }
+        }
+
+        if (state.hangoutCreationSpotId != null) {
+            spotsToShow.find { it.id == state.hangoutCreationSpotId }?.let { hangoutSpot ->
+                CreateHangoutRoot(
+                    visible = true,
+                    spot = hangoutSpot,
+                    onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
+                    onSuccess = { newHangoutId ->
+                        onAction(DiscoverAction.OnHangoutCreationSelected(null))
+                        // TODO: Navigate to Hangout tab!
+                        // onAction(DiscoverAction.NavigateToHangout(newHangoutId))
                     }
                 )
             }

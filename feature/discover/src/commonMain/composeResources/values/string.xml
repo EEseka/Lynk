@@ -35,4 +35,7 @@
     <string name="visit_website">Visit Website</string>
     <string name="open_in_google_maps">Open in Google Maps</string>
     <string name="create_hangout_here">Create Hangout Here</string>
+
+    <string name="save_this_spot">save this spot</string>
+    <string name="create_a_hangout">create a hangout</string>
 </resources>

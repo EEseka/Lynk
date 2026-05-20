@@ -23,11 +23,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.X
-import com.eeseka.lynk.discover.presentation.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
+import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import com.github.panpf.zoomimage.rememberCoilZoomState
 import lynk.feature.discover.generated.resources.Res

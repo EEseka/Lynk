@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.zoomimage.compose.coil)
 
             implementation(projects.shared)
+            implementation(projects.feature.createHangout)
         }
 
         commonTest.dependencies {
