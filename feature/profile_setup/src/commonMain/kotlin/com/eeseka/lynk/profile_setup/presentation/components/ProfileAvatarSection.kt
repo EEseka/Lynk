@@ -38,7 +38,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProfileAvatarSection(
-    currentImagePayload: Any?,
+    currentImagePayload: String?,
     imageError: String?,
     isCompressingImage: Boolean,
     isUploadingImage: Boolean,

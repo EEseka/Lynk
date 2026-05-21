@@ -16,6 +16,7 @@ import com.eeseka.lynk.shared.domain.util.Paginator
 import com.eeseka.lynk.shared.domain.util.map
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -119,7 +120,7 @@ class DiscoverViewModel(
                     _state.update {
                         it.copy(
                             isTrendingLoading = false,
-                            trendingSpots = spots
+                            trendingSpots = spots.map { spot -> spot.toSpotUi() }
                         )
                     }
                 }
@@ -252,7 +253,7 @@ class DiscoverViewModel(
             onSuccess = { newSpots, newKey ->
                 _state.update {
                     it.copy(
-                        searchResults = it.searchResults + newSpots,
+                        searchResults = it.searchResults + newSpots.map { newSpot -> newSpot.toSpotUi() },
                         searchEndReached = newKey == null,
                         searchError = null
                     )

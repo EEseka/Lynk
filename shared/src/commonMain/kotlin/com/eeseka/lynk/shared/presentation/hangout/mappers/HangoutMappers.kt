@@ -10,7 +10,12 @@ import com.composables.icons.lucide.PartyPopper
 import com.composables.icons.lucide.Sofa
 import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
+import com.eeseka.lynk.shared.domain.hangout.model.Hangout
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.active
 import lynk.shared.generated.resources.chill
@@ -47,3 +52,30 @@ fun HangoutVibe.getIcon(): ImageVector {
         HangoutVibe.OTHER -> Lucide.Sparkles
     }
 }
+
+fun Hangout.toHangoutUi(): HangoutUi = HangoutUi(
+    id = id,
+    hostId = hostId,
+    name = name,
+    description = description,
+    vibe = vibe,
+    status = status,
+    scheduledAt = scheduledAt,
+    maxAttendees = maxAttendees,
+    chosenSpot = chosenSpot?.toSpotUi(),
+    totalCost = totalCost,
+    costPerPerson = costPerPerson,
+    participants = participants.map { it.toHangoutParticipantUi() },
+    createdAt = createdAt
+)
+
+fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
+    userId = userId,
+    username = username,
+    displayName = displayName,
+    initials = displayName.take(2).uppercase(),
+    profilePictureUrl = profilePictureUrl,
+    role = role,
+    rsvpStatus = rsvpStatus,
+    hasPaid = hasPaid
+)

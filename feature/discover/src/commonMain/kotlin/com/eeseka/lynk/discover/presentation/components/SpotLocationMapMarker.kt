@@ -27,8 +27,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
@@ -40,7 +40,7 @@ import org.maplibre.compose.util.ClickResult
 
 @Composable
 fun SpotLocationMapMarker(
-    spots: List<Spot>,
+    spots: List<SpotUi>,
     selectedSpotId: String?,
     onSpotClick: (String) -> Unit
 ) {
@@ -65,7 +65,7 @@ fun SpotLocationMapMarker(
 
 @Composable
 private fun AnimatedSelectedSpotLayer(
-    spot: Spot,
+    spot: SpotUi,
     onSpotClick: (String) -> Unit
 ) {
     val animatedScale by animateFloatAsState(
@@ -99,7 +99,7 @@ private fun AnimatedSelectedSpotLayer(
 
 @Composable
 private fun RenderSpotLayers(
-    spots: List<Spot>,
+    spots: List<SpotUi>,
     layerPrefix: String,
     scale: Float,
     offsetY: Float,

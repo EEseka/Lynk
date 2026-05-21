@@ -1,18 +1,20 @@
 package com.eeseka.lynk.create_hangout.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.Stable
 import com.eeseka.lynk.create_hangout.domain.HangoutFormMode
 import com.eeseka.lynk.create_hangout.domain.SearchTab
-import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
-import com.eeseka.lynk.shared.domain.spot.model.Spot
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
+@Stable
 data class CreateHangoutState(
     val mode: HangoutFormMode = HangoutFormMode.CREATE,
-    val originalHangout: Hangout? = null,
+    val originalHangout: HangoutUi? = null,
 
     val currentStep: Int = 1,
     val activeSearchTab: SearchTab = SearchTab.ALL_SPOTS,
@@ -36,23 +38,23 @@ data class CreateHangoutState(
     val canProceedToStepTwo: Boolean = false,
 
     val isVotingMode: Boolean = true,
-    val selectedSpot: Spot? = null,
+    val selectedSpot: SpotUi? = null,
 
     val userLatitude: Double? = null,
     val userLongitude: Double? = null,
 
     val spotSearchTextState: TextFieldState = TextFieldState(),
 
-    val trendingSpots: List<Spot> = emptyList(),
+    val trendingSpots: List<SpotUi> = emptyList(),
     val isTrendingLoading: Boolean = false,
 
-    val favoriteSpotSearchResults: List<Spot> = emptyList(),
+    val favoriteSpotSearchResults: List<SpotUi> = emptyList(),
     val isFavoriteSpotSearchLoading: Boolean = false,
     val favoriteSpotSearchError: UiText? = null,
     val favoriteSpotSearchEndReached: Boolean = false,
     val favoriteSearchResetEpoch: Int = 0,
 
-    val spotSearchResults: List<Spot> = emptyList(),
+    val spotSearchResults: List<SpotUi> = emptyList(),
     val isSpotSearchLoading: Boolean = false,
     val spotSearchError: UiText? = null,
     val spotSearchEndReached: Boolean = false,

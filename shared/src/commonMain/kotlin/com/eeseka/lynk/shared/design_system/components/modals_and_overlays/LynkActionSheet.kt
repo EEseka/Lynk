@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +34,6 @@ import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
 
-@Immutable
 data class LynkActionSheetItem(
     val text: String,
     val onClick: () -> Unit,

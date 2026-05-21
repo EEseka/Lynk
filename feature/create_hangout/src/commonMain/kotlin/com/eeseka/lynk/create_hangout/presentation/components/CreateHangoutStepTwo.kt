@@ -59,8 +59,8 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.change_location
@@ -80,7 +80,7 @@ fun CreateHangoutStepTwo(
     state: CreateHangoutState,
     onVotingModeChanged: (Boolean) -> Unit,
     onTabSelected: (SearchTab) -> Unit,
-    onSpotSelected: (Spot?) -> Unit,
+    onSpotSelected: (SpotUi?) -> Unit,
     onLoadNextSpotPage: () -> Unit,
     onLoadNextFavoritePage: () -> Unit,
     modifier: Modifier = Modifier
@@ -175,7 +175,7 @@ private fun VotingModeUI() {
 private fun SpotPickerUI(
     state: CreateHangoutState,
     onTabSelected: (SearchTab) -> Unit,
-    onSpotSelected: (Spot?) -> Unit,
+    onSpotSelected: (SpotUi?) -> Unit,
     onLoadNextSpotPage: () -> Unit,
     onLoadNextFavoritePage: () -> Unit
 ) {
@@ -346,8 +346,8 @@ private fun SpotPickerUI(
 
                         AnimatedVisibility(
                             visible = currentError != null,
-                            enter = expandVertically(),
-                            exit = shrinkVertically()
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
                         ) {
                             LynkText(
                                 text = currentError?.asString() ?: "",
@@ -381,11 +381,11 @@ private fun SpotPickerUI(
 @Composable
 private fun SpotPickerList(
     listState: LazyListState,
-    spots: List<Spot>,
+    spots: List<SpotUi>,
     isLoading: Boolean,
     showEmptyState: Boolean,
     emptyStateMessage: String,
-    onSpotSelected: (Spot) -> Unit,
+    onSpotSelected: (SpotUi) -> Unit,
     userLat: Double?,
     userLng: Double?
 ) {
@@ -487,7 +487,7 @@ private fun CreateHangoutStepTwoVotingPreview() {
 @Composable
 private fun CreateHangoutStepTwoSearchingPreview() {
     val dummySpots = listOf(
-        Spot(
+        SpotUi(
             id = "1",
             name = "Mama Cass Restaurant",
             photoUrls = emptyList(),
@@ -501,12 +501,11 @@ private fun CreateHangoutStepTwoSearchingPreview() {
             isOpenNow = true,
             shortAddress = "Victoria Island",
             tags = emptyList(),
-            savedAt = null,
             description = null,
             websiteUrl = null,
             googleMapsUrl = null
         ),
-        Spot(
+        SpotUi(
             id = "2",
             name = "Domino's Pizza VI",
             photoUrls = emptyList(),
@@ -520,7 +519,6 @@ private fun CreateHangoutStepTwoSearchingPreview() {
             isOpenNow = true,
             shortAddress = "Victoria Island",
             tags = emptyList(),
-            savedAt = null,
             description = null,
             websiteUrl = null,
             googleMapsUrl = null
@@ -553,7 +551,7 @@ private fun CreateHangoutStepTwoSearchingPreview() {
 @PreviewLightDark
 @Composable
 private fun CreateHangoutStepTwoSelectedPreview() {
-    val dummySpot = Spot(
+    val dummySpot = SpotUi(
         id = "1",
         name = "Mama Cass Restaurant",
         photoUrls = emptyList(),
@@ -567,7 +565,6 @@ private fun CreateHangoutStepTwoSelectedPreview() {
         isOpenNow = true,
         shortAddress = "Victoria Island",
         tags = emptyList(),
-        savedAt = null,
         description = null,
         websiteUrl = null,
         googleMapsUrl = null

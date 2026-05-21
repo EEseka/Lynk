@@ -16,7 +16,6 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
-import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.util.DataErrorException
@@ -24,6 +23,9 @@ import com.eeseka.lynk.shared.domain.util.Paginator
 import com.eeseka.lynk.shared.domain.util.map
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.FlowPreview
@@ -200,7 +202,7 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun initCreateMode(spot: Spot?) {
+    private fun initCreateMode(spot: SpotUi?) {
         if (state.value.selectedSpot != null) return // Already initialized
 
         _state.update {
@@ -212,7 +214,7 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun initEditMode(hangout: Hangout) {
+    private fun initEditMode(hangout: HangoutUi) {
         if (state.value.originalHangout != null) return // Already initialized
 
         _state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd(hangout.name)
@@ -246,7 +248,7 @@ class CreateHangoutViewModel(
                     _state.update {
                         it.copy(
                             isTrendingLoading = false,
-                            trendingSpots = spots
+                            trendingSpots = spots.map { spot -> spot.toSpotUi() }
                         )
                     }
                 }
@@ -342,7 +344,7 @@ class CreateHangoutViewModel(
             onSuccess = { newSpots, newKey ->
                 _state.update {
                     it.copy(
-                        spotSearchResults = it.spotSearchResults + newSpots,
+                        spotSearchResults = it.spotSearchResults + newSpots.map { newSpot -> newSpot.toSpotUi() },
                         spotSearchEndReached = newKey == null,
                         spotSearchError = null
                     )
@@ -372,11 +374,11 @@ class CreateHangoutViewModel(
                     }
                 }
             },
-            onSuccess = { spots, _ ->
+            onSuccess = { favoriteSpots, _ ->
                 _state.update {
                     it.copy(
-                        favoriteSpotSearchResults = it.favoriteSpotSearchResults + spots,
-                        favoriteSpotSearchEndReached = spots.isEmpty(),
+                        favoriteSpotSearchResults = it.favoriteSpotSearchResults + favoriteSpots.map { favoriteSpot -> favoriteSpot.toSpotUi() },
+                        favoriteSpotSearchEndReached = favoriteSpots.isEmpty(),
                         favoriteSpotSearchError = null
                     )
                 }

@@ -46,8 +46,8 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkA
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.domain.hangout.model.Hangout
-import com.eeseka.lynk.shared.domain.spot.model.Spot
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
@@ -73,8 +73,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun CreateHangoutRoot(
     visible: Boolean,
-    spot: Spot? = null,
-    originalHangout: Hangout? = null,
+    spot: SpotUi? = null,
+    originalHangout: HangoutUi? = null,
     onDismiss: () -> Unit,
     onSuccess: (hangoutId: String) -> Unit
 ) {
@@ -271,7 +271,11 @@ fun CreateHangoutSheet(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                AnimatedVisibility(visible = state.submitError != null && state.currentStep == 3) {
+                AnimatedVisibility(
+                    visible = state.submitError != null && state.currentStep == 3,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
                     LynkText(
                         text = state.submitError?.asString() ?: "",
                         style = MaterialTheme.typography.bodyMedium,

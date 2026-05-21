@@ -41,8 +41,8 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import kotlinx.datetime.LocalDate
@@ -322,7 +322,7 @@ private fun CreateHangoutStepThreeSpotSelectedPreview() {
                 hangoutTime = LocalTime(10, 30),
                 maxAttendees = 12,
                 isVotingMode = false,
-                selectedSpot = Spot(
+                selectedSpot = SpotUi(
                     id = "1",
                     name = "Landmark Beach Resort",
                     photoUrls = emptyList(),
@@ -336,7 +336,6 @@ private fun CreateHangoutStepThreeSpotSelectedPreview() {
                     isOpenNow = true,
                     shortAddress = "Victoria Island",
                     tags = emptyList(),
-                    savedAt = null,
                     description = null,
                     websiteUrl = null,
                     googleMapsUrl = null

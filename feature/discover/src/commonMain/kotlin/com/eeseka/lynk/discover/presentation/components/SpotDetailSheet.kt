@@ -49,8 +49,8 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.extended
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
@@ -72,7 +72,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SpotDetailSheet(
-    spot: Spot,
+    spot: SpotUi,
     userLat: Double?,
     userLng: Double?,
     onCreateHangoutClick: (String) -> Unit,

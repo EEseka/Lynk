@@ -10,8 +10,4 @@ data class HangoutParticipant(
     val role: ParticipantRole,
     val rsvpStatus: RsvpStatus,
     val hasPaid: Boolean // For the Paystack integration
-) {
-    // Quick UI helper for avatars that lack a profile picture
-    val initials: String
-        get() = displayName.take(2).uppercase()
-}
+)

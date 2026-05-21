@@ -7,7 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,29 +24,26 @@ import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
-@Immutable
 data class LynkIosBarButtonItem(
     val title: String? = null,
     val sfSymbol: String? = null,
     val enabled: Boolean = true,
     val onClick: () -> Unit = {},
     val menuItems: List<LynkIosDropDownMenuItem> = emptyList(),
-    val menuSections: List<LynkIosDropDownMenuSection> = emptyList(),
+    val menuSections: List<LynkIosDropDownMenuSection> = emptyList()
 )
 
-@Immutable
 data class LynkIosDropDownMenuItem(
     val title: String,
     val sfSymbol: String? = null,
     val isDestructive: Boolean = false,
     val isDisabled: Boolean = false,
-    val onClick: () -> Unit = {},
+    val onClick: () -> Unit = {}
 )
 
-@Immutable
 data class LynkIosDropDownMenuSection(
     val title: String? = null,
-    val items: List<LynkIosDropDownMenuItem> = emptyList(),
+    val items: List<LynkIosDropDownMenuItem> = emptyList()
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
