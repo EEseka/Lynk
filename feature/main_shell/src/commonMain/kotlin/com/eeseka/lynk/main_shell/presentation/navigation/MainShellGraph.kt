@@ -7,14 +7,13 @@ import androidx.navigation.compose.navigation
 import com.eeseka.lynk.main_shell.presentation.MainShell
 
 fun NavGraphBuilder.mainShellGraph(
-    navController: NavHostController,
-    navigateToAuth: () -> Unit
+    navController: NavHostController
 ) {
     navigation<MainShellGraphRoutes.Graph>(
         startDestination = MainShellGraphRoutes.MainShell
     ) {
         composable<MainShellGraphRoutes.MainShell> {
-            MainShell(navigateToAuth = navigateToAuth)
+            MainShell()
         }
     }
 }

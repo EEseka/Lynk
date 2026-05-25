@@ -35,8 +35,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun GuestPromptSheet(
     actionStr: String,
-    onSignInClick: () -> Unit,
+    onCreateAccountClick: () -> Unit,
     onDismissRequest: () -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     LynkAdaptiveSheet(
@@ -45,7 +46,8 @@ fun GuestPromptSheet(
     ) {
         GuestPromptSheetContent(
             actionStr = actionStr,
-            onSignInClick = onSignInClick,
+            isLoading = isLoading,
+            onCreateAccountClick = onCreateAccountClick,
             onDismissRequest = onDismissRequest
         )
     }
@@ -54,7 +56,8 @@ fun GuestPromptSheet(
 @Composable
 private fun GuestPromptSheetContent(
     actionStr: String,
-    onSignInClick: () -> Unit,
+    isLoading: Boolean,
+    onCreateAccountClick: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -103,7 +106,8 @@ private fun GuestPromptSheetContent(
 
         LynkButton(
             text = stringResource(Res.string.guest_prompt_sign_in),
-            onClick = onSignInClick
+            isLoading = isLoading,
+            onClick = onCreateAccountClick
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -124,7 +128,8 @@ private fun GuestPromptSheetPreview() {
     LynkTheme {
         GuestPromptSheetContent(
             actionStr = "save this spot",
-            onSignInClick = {},
+            isLoading = false,
+            onCreateAccountClick = {},
             onDismissRequest = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )

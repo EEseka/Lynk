@@ -97,8 +97,7 @@ fun DiscoverScreen(
     state: DiscoverState,
     events: Flow<DiscoverEvent>,
     onAction: (DiscoverAction) -> Unit,
-    mainShellPadding: PaddingValues,
-    navigateToAuth: () -> Unit
+    mainShellPadding: PaddingValues
 ) {
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
@@ -331,8 +330,9 @@ fun DiscoverScreen(
             }
             GuestPromptSheet(
                 actionStr = actionStr,
-                onSignInClick = navigateToAuth,
-                onDismissRequest = { onAction(DiscoverAction.HideGuestPrompt) }
+                onCreateAccountClick = { onAction(DiscoverAction.SignOutGuest) },
+                onDismissRequest = { onAction(DiscoverAction.HideGuestPrompt) },
+                isLoading = state.isGuestSigningOut
             )
         }
 

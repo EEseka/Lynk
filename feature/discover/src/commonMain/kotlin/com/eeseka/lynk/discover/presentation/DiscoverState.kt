@@ -16,6 +16,7 @@ data class DiscoverState(
 
     val isGuest: Boolean = false,
     val guestPromptContext: GuestPromptContext? = null,
+    val isGuestSigningOut: Boolean = false,
 
     // User Location
     val userLatitude: Double? = null,

@@ -54,12 +54,7 @@ fun NavigationRoot(
         )
 
         mainShellGraph(
-            navController = navController,
-            navigateToAuth = {
-                navController.navigate(AuthGraphRoutes.Graph) {
-                    popUpTo(MainShellGraphRoutes.Graph) { inclusive = true }
-                }
-            }
+            navController = navController
         )
     }
 }

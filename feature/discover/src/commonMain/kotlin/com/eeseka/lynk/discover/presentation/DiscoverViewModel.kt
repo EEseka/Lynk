@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -40,6 +42,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class DiscoverViewModel(
     private val spotService: SpotService,
     private val sessionStorage: SessionStorage,
+    private val authService: AuthService,
     private val appPreferences: AppPreferences
 ) : ViewModel() {
 
@@ -94,8 +97,30 @@ class DiscoverViewModel(
             DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
             is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
             DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
+            DiscoverAction.SignOutGuest -> signOutGuest()
 
             is DiscoverAction.OnHangoutCreationSelected -> _state.update { it.copy(hangoutCreationSpotId = action.spotId) }
+        }
+    }
+
+    private fun signOutGuest() {
+        _state.update { it.copy(isGuestSigningOut = true) }
+
+        viewModelScope.launch {
+            val authInfo = sessionStorage.observeAuthInfo().first()
+            val refreshToken = authInfo?.refreshToken ?: return@launch
+
+            authService.logout(refreshToken)
+                .onSuccess {
+                    _state.update { it.copy(isGuestSigningOut = false) }
+                }
+                .onFailure { _ ->
+                    _state.update { it.copy(isGuestSigningOut = false) }
+                }
+
+            // Clear local session regardless of backend result.
+            // MainViewModel.observeSession() detects the null and navigates to auth.
+            sessionStorage.set(null)
         }
     }
 

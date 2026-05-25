@@ -13,8 +13,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.discoverGraph(
     navController: NavController,
-    mainShellPadding: PaddingValues,
-    navigateToAuth: () -> Unit
+    mainShellPadding: PaddingValues
 ) {
     navigation<DiscoverGraphRoutes.Graph>(
         startDestination = DiscoverGraphRoutes.Discover
@@ -27,8 +26,7 @@ fun NavGraphBuilder.discoverGraph(
                 state = state,
                 events = viewModel.events,
                 onAction = viewModel::onAction,
-                mainShellPadding = mainShellPadding,
-                navigateToAuth = navigateToAuth
+                mainShellPadding = mainShellPadding
             )
         }
     }

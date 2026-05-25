@@ -27,12 +27,6 @@ class KtorAuthService(
             body = GoogleAuthRequest(token = idToken)
         ).map { authInfoSerializable ->
             authInfoSerializable.toDomain()
-        }.onSuccess {
-            // Guest token may be cached by Ktor's bearer plugin; clear it so the next
-            // request re-reads the newly stored authenticated token from SessionStorage.
-            // Basically happens when a guest user wants to create an account, so we send them to the authentication screen.
-            // Once they create an account, the old guest tokens are still cached so we now need to clear it
-            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
         }
     }
 

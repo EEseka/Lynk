@@ -40,7 +40,7 @@ import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 
 @Composable
-fun MainShell(navigateToAuth: () -> Unit) {
+fun MainShell() {
     val innerNavController = rememberNavController()
     val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -105,7 +105,6 @@ fun MainShell(navigateToAuth: () -> Unit) {
                     navController = innerNavController,
                     paddingValues = PaddingValues(0.dp),
                     onToggleNavigation = { isNavigationVisible = it },
-                    navigateToAuth = navigateToAuth,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
             }
@@ -114,7 +113,6 @@ fun MainShell(navigateToAuth: () -> Unit) {
                 navController = innerNavController,
                 paddingValues = paddingValues,
                 onToggleNavigation = { isNavigationVisible = it },
-                navigateToAuth = navigateToAuth,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -126,7 +124,6 @@ private fun MainShellNavHost(
     navController: NavHostController,
     paddingValues: PaddingValues,
     onToggleNavigation: (Boolean) -> Unit,
-    navigateToAuth: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -140,8 +137,7 @@ private fun MainShellNavHost(
     ) {
         discoverGraph(
             navController = navController,
-            mainShellPadding = paddingValues,
-            navigateToAuth = navigateToAuth
+            mainShellPadding = paddingValues
         )
         composable<HangoutsRoute> {
             // Temporary Placeholder

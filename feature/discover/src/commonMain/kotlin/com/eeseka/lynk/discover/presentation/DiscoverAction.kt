@@ -6,6 +6,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 sealed interface DiscoverAction {
     data class ShowGuestPrompt(val context: GuestPromptContext) : DiscoverAction
     data object HideGuestPrompt : DiscoverAction
+    data object SignOutGuest : DiscoverAction
     data object ToggleShowSearchSheet : DiscoverAction
 
     data class OnHangoutCreationSelected(val spotId: String?) : DiscoverAction
