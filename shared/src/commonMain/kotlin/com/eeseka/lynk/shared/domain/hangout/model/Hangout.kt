@@ -12,6 +12,7 @@ data class Hangout(
     val status: HangoutStatus,
     val scheduledAt: Instant,
     val maxAttendees: Int?, // null means unlimited
+    val participantCount: Int,
     val chosenSpot: Spot?, // NULL if they are still voting
     val totalCost: Double?, // Host enters this when they know the budget/bill
     val participants: List<HangoutParticipant>,

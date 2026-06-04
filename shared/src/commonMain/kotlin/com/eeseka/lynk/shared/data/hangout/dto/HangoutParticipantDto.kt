@@ -1,14 +1,13 @@
-package com.eeseka.lynk.shared.presentation.hangout.model
+package com.eeseka.lynk.shared.data.hangout.dto
 
-import androidx.compose.runtime.Stable
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import kotlinx.serialization.Serializable
 
-@Stable
-data class HangoutParticipantUi(
+@Serializable
+data class HangoutParticipantDto(
     val userId: String,
     val username: String,
     val displayName: String,
-    val initials: String,
     val profilePictureUrl: String?,
     val rsvpStatus: RsvpStatus,
     val hasPaid: Boolean

@@ -1,13 +1,13 @@
-package com.eeseka.lynk.shared.presentation.hangout.model
+package com.eeseka.lynk.shared.data.hangout.dto
 
-import androidx.compose.runtime.Stable
+import com.eeseka.lynk.shared.data.spot.dto.SpotDto
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
-@Stable
-data class HangoutUi(
+@Serializable
+data class HangoutDto(
     val id: String,
     val hostId: String,
     val name: String,
@@ -17,9 +17,8 @@ data class HangoutUi(
     val scheduledAt: Instant,
     val maxAttendees: Int?,
     val participantCount: Int,
-    val chosenSpot: SpotUi?,
+    val chosenSpot: SpotDto?,
     val totalCost: Double?,
-    val costPerPerson: Double?,
-    val participants: List<HangoutParticipantUi>,
+    val participants: List<HangoutParticipantDto>,
     val createdAt: Instant
 )

@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.data
+package com.eeseka.lynk.create_hangout.data
 
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.PaginatedSpots
@@ -14,7 +14,6 @@ class FakeSpotService : SpotService {
     var trendingSpotsList = mutableListOf<Spot>()
     var searchSpotsList = mutableListOf<Spot>()
     var savedSpotsList = mutableListOf<Spot>()
-    var savedSpots = mutableSetOf<String>()
 
     override suspend fun getTrendingSpots(
         latitude: Double,
@@ -35,47 +34,28 @@ class FakeSpotService : SpotService {
         nextPageToken: String?
     ): Result<PaginatedSpots, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
-
         val filtered = searchSpotsList.filter { spot ->
-            val matchesQuery = query == null || spot.name.contains(query, ignoreCase = true)
-            val matchesCategory = category == null || spot.category == category
-            val matchesPrice = priceLevel == null || spot.priceLevel == priceLevel
-            matchesQuery && matchesCategory && matchesPrice
+            query == null || spot.name.contains(query, ignoreCase = true)
         }
-
         return Result.Success(PaginatedSpots(spots = filtered, nextPageToken = null))
     }
 
-    override suspend fun getSpotDetails(spotId: String): Result<Spot, DataError.Remote> {
-        if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
+    override suspend fun getSpotDetails(spotId: String): Result<Spot, DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
 
-        val spot = trendingSpotsList.find { it.id == spotId }
-            ?: searchSpotsList.find { it.id == spotId }
+    override suspend fun saveSpot(spotId: String): EmptyResult<DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
 
-        return if (spot != null) {
-            Result.Success(spot)
-        } else {
-            Result.Failure(DataError.Remote.NOT_FOUND)
-        }
-    }
-
-    override suspend fun saveSpot(spotId: String): EmptyResult<DataError.Remote> {
-        if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
-        savedSpots.add(spotId)
-        return Result.Success(Unit)
-    }
-
-    override suspend fun unsaveSpot(spotId: String): EmptyResult<DataError.Remote> {
-        if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
-        savedSpots.remove(spotId)
-        return Result.Success(Unit)
-    }
+    override suspend fun unsaveSpot(spotId: String): EmptyResult<DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
 
     override suspend fun getSavedSpots(
         query: String?,
         before: String?
     ): Result<List<Spot>, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
-        return Result.Success(savedSpotsList)
+        val filtered = if (query.isNullOrBlank()) savedSpotsList
+        else savedSpotsList.filter { it.name.contains(query, ignoreCase = true) }
+        return Result.Success(filtered)
     }
 }

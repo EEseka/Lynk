@@ -7,13 +7,20 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
+import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.eeseka.lynk.discover.data.FakeAppPreferences
+import com.eeseka.lynk.discover.data.FakeAuthService
+import com.eeseka.lynk.discover.data.FakeSessionStorage
 import com.eeseka.lynk.discover.data.FakeSpotService
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
+import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,6 +37,8 @@ class DiscoverViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var spotService: FakeSpotService
+    private lateinit var sessionStorage: FakeSessionStorage
+    private lateinit var authService: FakeAuthService
     private lateinit var appPreferences: FakeAppPreferences
     private lateinit var viewModel: DiscoverViewModel
 
@@ -46,8 +55,10 @@ class DiscoverViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         spotService = FakeSpotService()
+        sessionStorage = FakeSessionStorage()
+        authService = FakeAuthService()
         appPreferences = FakeAppPreferences()
-        viewModel = DiscoverViewModel(spotService, appPreferences)
+        viewModel = DiscoverViewModel(spotService, sessionStorage, authService, appPreferences)
     }
 
     @AfterTest
@@ -69,7 +80,8 @@ class DiscoverViewModelTest {
 
             val state = expectMostRecentItem()
             assertThat(state.userLatitude).isEqualTo(6.5)
-            assertThat(state.trendingSpots).isEqualTo(listOf(dummySpot))
+            assertThat(state.trendingSpots.size).isEqualTo(1)
+            assertThat(state.trendingSpots.first().id).isEqualTo("1")
             assertThat(state.isTrendingLoading).isFalse()
         }
     }
@@ -110,7 +122,8 @@ class DiscoverViewModelTest {
             advanceUntilIdle()
 
             val finalState = expectMostRecentItem()
-            assertThat(finalState.searchResults).isEqualTo(listOf(dummySpot))
+            assertThat(finalState.searchResults.size).isEqualTo(1)
+            assertThat(finalState.searchResults.first().id).isEqualTo("1")
             assertThat(finalState.isSearchLoading).isFalse()
         }
     }
@@ -139,5 +152,58 @@ class DiscoverViewModelTest {
             // Backend recorded it
             assertThat(spotService.savedSpots.contains("1")).isTrue()
         }
+    }
+
+    @Test
+    fun `OnCategorySelected updates selectedCategory state`() = runTest {
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
+            assertThat(expectMostRecentItem().selectedCategory).isEqualTo(SpotCategory.CAFE)
+
+            viewModel.onAction(DiscoverAction.OnCategorySelected(null))
+            assertThat(expectMostRecentItem().selectedCategory).isNull()
+        }
+    }
+
+    @Test
+    fun `ShowGuestPrompt sets guestPromptContext`() = runTest {
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
+            assertThat(expectMostRecentItem().guestPromptContext).isEqualTo(GuestPromptContext.SAVE_SPOT)
+        }
+    }
+
+    @Test
+    fun `HideGuestPrompt clears guestPromptContext`() = runTest {
+        viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
+
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(DiscoverAction.HideGuestPrompt)
+            assertThat(expectMostRecentItem().guestPromptContext).isNull()
+        }
+    }
+
+    @Test
+    fun `SignOutGuest clears session and resets isGuestSigningOut`() = runTest {
+        val guestAuthInfo = AuthInfo(
+            accessToken = "access",
+            refreshToken = "refresh",
+            user = User.Guest(id = "guest_1", provider = AuthProvider.GUEST)
+        )
+        sessionStorage.set(guestAuthInfo)
+
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(DiscoverAction.SignOutGuest)
+            advanceUntilIdle()
+
+            val state = expectMostRecentItem()
+            assertThat(state.isGuestSigningOut).isFalse()
+        }
+
+        assertThat(sessionStorage.observeAuthInfo().first()).isNull()
     }
 }

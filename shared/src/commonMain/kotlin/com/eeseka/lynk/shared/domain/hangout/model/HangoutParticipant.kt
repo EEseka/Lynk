@@ -6,8 +6,7 @@ data class HangoutParticipant(
     val displayName: String,
     val profilePictureUrl: String?,
 
-    // Hangout-specific data0
-    val role: ParticipantRole,
+    // Hangout-specific data
     val rsvpStatus: RsvpStatus,
     val hasPaid: Boolean // For the Paystack integration
 )

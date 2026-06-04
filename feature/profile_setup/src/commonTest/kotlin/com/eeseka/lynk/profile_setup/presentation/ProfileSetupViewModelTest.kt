@@ -25,6 +25,7 @@ import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileSetupViewModelTest {
@@ -93,7 +94,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
 
             // Fast-forward virtual time to bypass the 500ms debounce
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             val finalState = expectMostRecentItem()
@@ -112,7 +113,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
             viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("taken_user")
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             val finalState = expectMostRecentItem()
@@ -130,7 +131,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
             viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("   ")
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             viewModel.onAction(ProfileSetupAction.OnSubmitClick)
@@ -154,7 +155,7 @@ class ProfileSetupViewModelTest {
 
             viewModel.onAction(ProfileSetupAction.OnImagePicked("local/path.jpg", "image/jpeg"))
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             viewModel.onAction(ProfileSetupAction.OnSubmitClick)
@@ -175,7 +176,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_username")
             viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             viewModel.onAction(ProfileSetupAction.OnSubmitClick)
@@ -239,7 +240,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
             viewModel.onAction(ProfileSetupAction.OnImagePicked("local/path.jpg", "image/jpeg"))
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             imageCompressor.shouldFailRead = true
@@ -262,7 +263,7 @@ class ProfileSetupViewModelTest {
             viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_username")
             viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
 
-            advanceTimeBy(501)
+            advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
             userService.shouldReturnError = true

@@ -1,7 +1,7 @@
 package com.eeseka.lynk.profile_setup.presentation
 
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
@@ -58,6 +58,26 @@ class ProfileSetupScreenTest {
             .setContent(state = ProfileSetupState())
             .clickAvatarCircle("Choose") // The content description on the camera icon
             .assertActionSheetVisible("Choose Source")
+    }
+
+    @Test
+    fun `username error message is visible when usernameError is set`() = runComposeUiTest {
+        val robot = ProfileSetupRobot(this)
+        robot.setContent(
+            state = ProfileSetupState(
+                usernameError = UiText.DynamicString("Username is taken")
+            )
+        ).assertErrorTextVisible("Username is taken")
+    }
+
+    @Test
+    fun `displayName error message is visible when displayNameError is set`() = runComposeUiTest {
+        val robot = ProfileSetupRobot(this)
+        robot.setContent(
+            state = ProfileSetupState(
+                displayNameError = UiText.DynamicString("Display name is too long")
+            )
+        ).assertErrorTextVisible("Display name is too long")
     }
 
     @Test

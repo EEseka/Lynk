@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +64,7 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
+import lynk.feature.discover.generated.resources.create_a_hangout
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_fetch_error
 import lynk.feature.discover.generated.resources.location_required
@@ -72,7 +74,6 @@ import lynk.feature.discover.generated.resources.maptiler_attribution
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.osm_attribution
-import lynk.feature.discover.generated.resources.create_a_hangout
 import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
 import org.jetbrains.compose.resources.stringResource
@@ -387,6 +388,13 @@ fun DiscoverScreen(
                     onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
                     onSuccess = { newHangoutId ->
                         onAction(DiscoverAction.OnHangoutCreationSelected(null))
+                        scope.launch {
+                            snackbarHostState.showFlashMessage(
+                                message = "Hangout With ID: $newHangoutId created successfully!",
+                                type = LynkFlashType.Info,
+                                duration = SnackbarDuration.Indefinite
+                            )
+                        }
                         // TODO: Navigate to Hangout tab!
                         // onAction(DiscoverAction.NavigateToHangout(newHangoutId))
                     }

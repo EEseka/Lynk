@@ -290,7 +290,7 @@ private fun SpotPickerUI(
                         val currentEndReached =
                             if (isSearchActive) state.spotSearchEndReached else true
                         val showEmptyState =
-                            spotsToShow.isEmpty() && !currentLoading && currentEndReached
+                            isSearchActive && spotsToShow.isEmpty() && !currentLoading && currentEndReached
 
                         SpotPickerList(
                             listState = allSpotsListState,

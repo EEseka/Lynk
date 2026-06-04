@@ -12,8 +12,10 @@ import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import lynk.shared.generated.resources.Res
@@ -53,7 +55,7 @@ fun HangoutVibe.getIcon(): ImageVector {
     }
 }
 
-fun Hangout.toHangoutUi(): HangoutUi = HangoutUi(
+fun Hangout.toHangoutUi() = HangoutUi(
     id = id,
     hostId = hostId,
     name = name,
@@ -62,6 +64,7 @@ fun Hangout.toHangoutUi(): HangoutUi = HangoutUi(
     status = status,
     scheduledAt = scheduledAt,
     maxAttendees = maxAttendees,
+    participantCount = participantCount,
     chosenSpot = chosenSpot?.toSpotUi(),
     totalCost = totalCost,
     costPerPerson = costPerPerson,
@@ -69,13 +72,29 @@ fun Hangout.toHangoutUi(): HangoutUi = HangoutUi(
     createdAt = createdAt
 )
 
+fun HangoutSummary.toHangoutSummaryUi(): HangoutSummaryUi {
+    return HangoutSummaryUi(
+        id = id,
+        hostId = hostId,
+        name = name,
+        description = description,
+        vibe = vibe,
+        status = status,
+        scheduledAt = scheduledAt,
+        maxAttendees = maxAttendees,
+        participantCount = participantCount,
+        hasChosenSpot = hasChosenSpot,
+        totalCost = totalCost,
+        createdAt = createdAt
+    )
+}
+
 fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
     userId = userId,
     username = username,
     displayName = displayName,
     initials = displayName.take(2).uppercase(),
     profilePictureUrl = profilePictureUrl,
-    role = role,
     rsvpStatus = rsvpStatus,
     hasPaid = hasPaid
 )
