@@ -6,7 +6,7 @@ import com.composables.icons.lucide.CircleUser
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
-import com.eeseka.lynk.main_shell.presentation.navigation.HangoutsRoute
+import com.eeseka.lynk.hangouts.presentation.navigation.HangoutsGraphRoutes
 import com.eeseka.lynk.main_shell.presentation.navigation.ProfileRoute
 import com.eeseka.lynk.shared.presentation.util.UiText
 import lynk.feature.main_shell.generated.resources.Res
@@ -25,7 +25,7 @@ enum class LynkNavigationItem(
         icon = Lucide.Map
     ),
     HANGOUTS(
-        route = HangoutsRoute,
+        route = HangoutsGraphRoutes.Graph,
         title = UiText.Resource(Res.string.hangouts),
         icon = Lucide.CalendarRange
     ),

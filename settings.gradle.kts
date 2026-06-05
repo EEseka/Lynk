@@ -30,6 +30,7 @@ dependencyResolutionManagement {
 include(":feature:create_hangout")
 
 include(":feature:discover")
+include(":feature:hangouts")
 include(":feature:auth")
 include(":feature:main_shell")
 include(":composeApp")

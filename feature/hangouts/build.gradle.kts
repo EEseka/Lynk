@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidKmpLibrary) // It is a Library, not an App
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kotlinSerialization)
 }
 
@@ -10,7 +10,7 @@ kotlin {
     androidLibrary {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
-        namespace = "com.eeseka.lynk.composeapp"
+        namespace = "com.eeseka.lynk.hangouts"
         experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
     }
 
@@ -19,15 +19,12 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "Hangouts"
             isStatic = true
         }
     }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -39,23 +36,24 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation(libs.jetbrains.compose.navigation)
             implementation(libs.bundles.koin.common)
 
-            // Needed for GoogleAuthProvider app initialization
-            implementation(libs.auth.google.kmp)
-            
+            implementation(libs.jetbrains.compose.navigation)
+
+            implementation(libs.icons.lucide.cmp)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
             implementation(projects.shared)
-            implementation(projects.feature.onboarding)
-            implementation(projects.feature.auth)
-            implementation(projects.feature.profileSetup)
-            implementation(projects.feature.mainShell)
-            implementation(projects.feature.discover)
-            implementation(projects.feature.createHangout)
-            implementation(projects.feature.hangouts)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.turbine)
+            implementation(libs.assertk)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ui.test)
         }
     }
 }

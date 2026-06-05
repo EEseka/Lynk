@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -98,6 +97,7 @@ fun DiscoverScreen(
     state: DiscoverState,
     events: Flow<DiscoverEvent>,
     onAction: (DiscoverAction) -> Unit,
+    navigateToHangouts: (String) -> Unit,
     mainShellPadding: PaddingValues
 ) {
     val permissionController = rememberPermissionController()
@@ -388,15 +388,7 @@ fun DiscoverScreen(
                     onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
                     onSuccess = { newHangoutId ->
                         onAction(DiscoverAction.OnHangoutCreationSelected(null))
-                        scope.launch {
-                            snackbarHostState.showFlashMessage(
-                                message = "Hangout With ID: $newHangoutId created successfully!",
-                                type = LynkFlashType.Info,
-                                duration = SnackbarDuration.Indefinite
-                            )
-                        }
-                        // TODO: Navigate to Hangout tab!
-                        // onAction(DiscoverAction.NavigateToHangout(newHangoutId))
+                        navigateToHangouts(newHangoutId)
                     }
                 )
             }

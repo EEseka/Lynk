@@ -17,13 +17,15 @@ class DiscoverRobot(private val composeTestRule: ComposeUiTest) {
     fun setContent(
         state: DiscoverState = DiscoverState(),
         events: Flow<DiscoverEvent> = emptyFlow(),
-        onAction: (DiscoverAction) -> Unit = {}
+        onAction: (DiscoverAction) -> Unit = {},
+        navigateToHangouts: (String) -> Unit = {}
     ) = apply {
         composeTestRule.setContent {
             DiscoverScreen(
                 state = state,
                 events = events,
                 onAction = onAction,
+                navigateToHangouts = navigateToHangouts,
                 mainShellPadding = PaddingValues(0.dp)
             )
         }

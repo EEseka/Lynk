@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -30,10 +31,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
 import com.eeseka.lynk.discover.presentation.navigation.discoverGraph
+import com.eeseka.lynk.hangouts.presentation.navigation.HangoutsGraphRoutes
+import com.eeseka.lynk.hangouts.presentation.navigation.hangoutsGraph
 import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.main_shell.presentation.components.LynkBottomBar
 import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
-import com.eeseka.lynk.main_shell.presentation.navigation.HangoutsRoute
 import com.eeseka.lynk.main_shell.presentation.navigation.ProfileRoute
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
@@ -52,13 +54,12 @@ fun MainShell() {
     // Controls visibility of the navigation components (bottom bar and nav rail)
     var isNavigationVisible by remember { mutableStateOf(true) }
 
-    // Robustly determine the selected item based on the Type-Safe serialization routes
     val selectedItem = remember(currentDestination) {
-        LynkNavigationItem.entries.find { item ->
-            currentDestination?.hierarchy?.any {
-                it.route?.contains(item.route::class.simpleName ?: "") == true
-            } == true
-        } ?: LynkNavigationItem.DISCOVER
+        when {
+            currentDestination?.hierarchy?.any { it.hasRoute(HangoutsGraphRoutes.Graph::class) } == true -> LynkNavigationItem.HANGOUTS
+            currentDestination?.hierarchy?.any { it.hasRoute(ProfileRoute::class) } == true -> LynkNavigationItem.PROFILE
+            else -> LynkNavigationItem.DISCOVER
+        }
     }
 
     // Common navigation action passed to both Rail and BottomBar
@@ -137,14 +138,15 @@ private fun MainShellNavHost(
     ) {
         discoverGraph(
             navController = navController,
+            mainShellPadding = paddingValues,
+            navigateToHangouts = { hangoutId ->
+                navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId))
+            }
+        )
+        hangoutsGraph(
+            navController = navController,
             mainShellPadding = paddingValues
         )
-        composable<HangoutsRoute> {
-            // Temporary Placeholder
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Hangouts Screen")
-            }
-        }
         composable<ProfileRoute> {
             // Temporary Placeholder
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
