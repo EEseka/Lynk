@@ -12,6 +12,7 @@ import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
@@ -20,12 +21,17 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.active
+import lynk.shared.generated.resources.cancelled
 import lynk.shared.generated.resources.chill
+import lynk.shared.generated.resources.completed
 import lynk.shared.generated.resources.drinks
 import lynk.shared.generated.resources.food
 import lynk.shared.generated.resources.gaming
+import lynk.shared.generated.resources.ongoing
 import lynk.shared.generated.resources.other
 import lynk.shared.generated.resources.party
+import lynk.shared.generated.resources.scheduled
+import lynk.shared.generated.resources.voting
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -55,6 +61,19 @@ fun HangoutVibe.getIcon(): ImageVector {
     }
 }
 
+@Composable
+fun HangoutStatus.getTitle(): String {
+    return stringResource(
+        when (this) {
+            HangoutStatus.VOTING -> Res.string.voting
+            HangoutStatus.SCHEDULED -> Res.string.scheduled
+            HangoutStatus.ONGOING -> Res.string.ongoing
+            HangoutStatus.COMPLETED -> Res.string.completed
+            HangoutStatus.CANCELLED -> Res.string.cancelled
+        }
+    )
+}
+
 fun Hangout.toHangoutUi() = HangoutUi(
     id = id,
     hostId = hostId,
@@ -77,14 +96,11 @@ fun HangoutSummary.toHangoutSummaryUi(): HangoutSummaryUi {
         id = id,
         hostId = hostId,
         name = name,
-        description = description,
         vibe = vibe,
         status = status,
         scheduledAt = scheduledAt,
         maxAttendees = maxAttendees,
         participantCount = participantCount,
-        hasChosenSpot = hasChosenSpot,
-        totalCost = totalCost,
         createdAt = createdAt
     )
 }

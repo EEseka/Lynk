@@ -45,7 +45,17 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
+            implementation(libs.material3.adaptive.layout)
+            implementation(libs.material3.adaptive.navigation)
+
+            implementation(libs.compose.navigationevent)
+
+            implementation(libs.kotlinx.datetime)
+
+            implementation(libs.compose.lottie.animations)
+
             implementation(projects.shared)
+            implementation(projects.feature.createHangout)
         }
 
         commonTest.dependencies {

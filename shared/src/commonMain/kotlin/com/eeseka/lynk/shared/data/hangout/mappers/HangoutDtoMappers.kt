@@ -42,14 +42,11 @@ fun HangoutSummaryDto.toDomain(): HangoutSummary {
         id = id,
         hostId = hostId,
         name = name,
-        description = description,
         vibe = vibe,
         status = status,
         scheduledAt = scheduledAt,
         maxAttendees = maxAttendees,
         participantCount = participantCount,
-        hasChosenSpot = hasChosenSpot,
-        totalCost = totalCost,
         createdAt = createdAt
     )
 }

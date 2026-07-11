@@ -1,3 +1,37 @@
 <resources>
+    <string name="hangouts">Hangouts</string>
 
+    <string name="upcoming">Upcoming</string>
+    <string name="ongoing">Ongoing</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+
+    <string name="search_hangouts_hint">Search hangouts…</string>
+    <string name="create_hangout">Create Hangout</string>
+    <string name="create_a_hangout">create a hangout</string>
+    <string name="filter_vibe">Filter by vibe</string>
+    <string name="any_vibe">Any Vibe</string>
+
+    <string name="participants_format">%1$d going</string>
+    <string name="participants_max_format">%1$d / %2$d going</string>
+    <string name="participants_attended_format">%1$d attended</string>
+    <string name="participants_attended_max_format">%1$d / %2$d attended</string>
+
+    <string name="empty_hangouts_upcoming_title">No upcoming hangouts</string>
+    <string name="empty_hangouts_upcoming_message">Tap + to plan something with your crew.</string>
+
+    <string name="empty_hangouts_ongoing_title">Nothing happening now</string>
+    <string name="empty_hangouts_ongoing_message">You have no active hangouts at the moment.</string>
+
+    <string name="empty_hangouts_completed_title">No past hangouts</string>
+    <string name="empty_hangouts_completed_message">Hangouts you've finished will appear here.</string>
+
+    <string name="empty_hangouts_cancelled_title">No canceled hangouts</string>
+    <string name="empty_hangouts_cancelled_message">Nothing to see here right now.</string>
+
+    <string name="empty_search_title">No hangouts found</string>
+    <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
+
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
 </resources>

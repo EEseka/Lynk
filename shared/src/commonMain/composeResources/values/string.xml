@@ -47,4 +47,10 @@
     <string name="guest_prompt_body">Create an account to %1$s, and do a lot more with the people that matter.</string>
     <string name="guest_prompt_sign_in">Create Account</string>
     <string name="guest_prompt_not_now">Not now</string>
+
+    <string name="voting">Voting</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="ongoing">Ongoing</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
 </resources>

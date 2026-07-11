@@ -45,7 +45,7 @@ import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Users
 import com.composables.icons.lucide.X
-import com.eeseka.lynk.create_hangout.domain.SearchTab
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutState
 import com.eeseka.lynk.create_hangout.presentation.mappers.getIcon
 import com.eeseka.lynk.create_hangout.presentation.mappers.getTitle

@@ -21,5 +21,4 @@ sealed interface DiscoverAction {
     data class OnCategorySelected(val category: SpotCategory?) : DiscoverAction
     data class OnPriceLevelSelected(val priceLevel: PriceLevel?) : DiscoverAction
     data object LoadNextSearchPage : DiscoverAction
-    data object OnSearchQueryCleared : DiscoverAction
 }

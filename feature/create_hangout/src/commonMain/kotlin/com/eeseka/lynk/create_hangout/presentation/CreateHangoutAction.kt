@@ -1,6 +1,6 @@
 package com.eeseka.lynk.create_hangout.presentation
 
-import com.eeseka.lynk.create_hangout.domain.SearchTab
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi

@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.create_hangout.domain.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepOne
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepThree
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepTwo

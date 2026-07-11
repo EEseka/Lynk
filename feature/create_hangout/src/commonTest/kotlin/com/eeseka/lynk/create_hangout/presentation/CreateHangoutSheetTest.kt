@@ -2,7 +2,7 @@ package com.eeseka.lynk.create_hangout.presentation
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.eeseka.lynk.create_hangout.domain.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest

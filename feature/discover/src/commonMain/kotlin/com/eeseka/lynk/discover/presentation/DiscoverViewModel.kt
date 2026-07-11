@@ -1,6 +1,5 @@
 package com.eeseka.lynk.discover.presentation
 
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -93,7 +92,6 @@ class DiscoverViewModel(
             is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
             is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
-            DiscoverAction.OnSearchQueryCleared -> _state.value.searchTextState.clearText()
             DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
             is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
             DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }

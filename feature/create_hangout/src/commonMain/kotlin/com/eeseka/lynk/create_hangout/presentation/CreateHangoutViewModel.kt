@@ -5,8 +5,8 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.create_hangout.domain.HangoutFormMode
-import com.eeseka.lynk.create_hangout.domain.SearchTab
+import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDescriptionValidationState
@@ -261,7 +261,7 @@ class CreateHangoutViewModel(
 
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { state.value.spotSearchTextState.text.toString() }
-            .debounce(500.milliseconds)
+            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .distinctUntilChanged()
 
         val tabFlow = state.map { it.activeSearchTab }.distinctUntilChanged()

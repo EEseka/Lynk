@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.composables.icons.lucide.Bookmark
 import com.composables.icons.lucide.Globe
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.create_hangout.domain.SearchTab
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.all_spots
 import lynk.feature.create_hangout.generated.resources.favorites

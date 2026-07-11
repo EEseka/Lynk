@@ -11,7 +11,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.eeseka.lynk.create_hangout.data.FakeHangoutService
 import com.eeseka.lynk.create_hangout.data.FakeSpotService
-import com.eeseka.lynk.create_hangout.domain.SearchTab
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
