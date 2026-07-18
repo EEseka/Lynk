@@ -6,10 +6,14 @@
     <string name="completed">Completed</string>
     <string name="cancelled">Cancelled</string>
 
-    <string name="search_hangouts_hint">Search hangouts…</string>
+    <string name="search_upcoming_hangouts_hint">Search upcoming hangouts…</string>
+    <string name="search_ongoing_hangouts_hint">Search ongoing hangouts…</string>
+    <string name="search_completed_hangouts_hint">Search completed hangouts…</string>
+    <string name="search_cancelled_hangouts_hint">Search canceled hangouts…</string>
     <string name="create_hangout">Create Hangout</string>
-    <string name="create_a_hangout">create a hangout</string>
+    <string name="create_a_hangout">Create a hangout</string>
     <string name="filter_vibe">Filter by vibe</string>
+    <string name="host_badge_description">You are the host</string>
     <string name="any_vibe">Any Vibe</string>
 
     <string name="participants_format">%1$d going</string>

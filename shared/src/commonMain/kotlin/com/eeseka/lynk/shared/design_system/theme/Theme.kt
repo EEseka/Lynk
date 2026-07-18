@@ -22,7 +22,9 @@ data class ExtendedColors(
     val successContainer: Color,
     val onSuccessContainer: Color,
     val success: Color,
-    val onSuccess: Color
+    val onSuccess: Color,
+    val gold: Color,
+    val onGold: Color
 )
 
 val LightExtendedColors = ExtendedColors(
@@ -30,7 +32,9 @@ val LightExtendedColors = ExtendedColors(
     successContainer = successContainerLight,
     onSuccessContainer = onSuccessContainerLight,
     success = successLight,
-    onSuccess = onSuccessLight
+    onSuccess = onSuccessLight,
+    gold = goldLight,
+    onGold = onGoldLight
 )
 
 val DarkExtendedColors = ExtendedColors(
@@ -38,7 +42,9 @@ val DarkExtendedColors = ExtendedColors(
     successContainer = successContainerDark,
     onSuccessContainer = onSuccessContainerDark,
     success = successDark,
-    onSuccess = onSuccessDark
+    onSuccess = onSuccessDark,
+    gold = goldDark,
+    onGold = onGoldDark
 )
 
 val LightScheme = lightColorScheme(

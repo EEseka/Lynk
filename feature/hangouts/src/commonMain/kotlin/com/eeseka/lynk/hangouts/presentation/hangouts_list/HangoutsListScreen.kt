@@ -93,7 +93,10 @@ import lynk.feature.hangouts.generated.resources.empty_search_message
 import lynk.feature.hangouts.generated.resources.empty_search_title
 import lynk.feature.hangouts.generated.resources.filter_vibe
 import lynk.feature.hangouts.generated.resources.hangouts
-import lynk.feature.hangouts.generated.resources.search_hangouts_hint
+import lynk.feature.hangouts.generated.resources.search_cancelled_hangouts_hint
+import lynk.feature.hangouts.generated.resources.search_completed_hangouts_hint
+import lynk.feature.hangouts.generated.resources.search_ongoing_hangouts_hint
+import lynk.feature.hangouts.generated.resources.search_upcoming_hangouts_hint
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
@@ -177,6 +180,7 @@ fun HangoutsListScreen(
                             HangoutSummaryCard(
                                 hangout = hangout,
                                 isSelected = hangout.id == state.selectedHangoutId,
+                                isHost = hangout.hostId == state.currentUserId,
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactMedium)
                                     onAction(HangoutsListAction.OnSelectHangout(hangout.id))
@@ -218,7 +222,12 @@ fun HangoutsListScreen(
                 ) {
                     LynkSearchField(
                         state = state.searchTextState,
-                        placeholder = stringResource(Res.string.search_hangouts_hint),
+                        placeholder = when (state.selectedStatusFilter) {
+                            HangoutStatusFilter.UPCOMING -> stringResource(Res.string.search_upcoming_hangouts_hint)
+                            HangoutStatusFilter.ONGOING -> stringResource(Res.string.search_ongoing_hangouts_hint)
+                            HangoutStatusFilter.COMPLETED -> stringResource(Res.string.search_completed_hangouts_hint)
+                            HangoutStatusFilter.CANCELLED -> stringResource(Res.string.search_cancelled_hangouts_hint)
+                        },
                         modifier = Modifier.weight(1f)
                     )
 

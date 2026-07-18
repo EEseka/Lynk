@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,6 +32,7 @@ import com.composables.icons.lucide.Star
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
@@ -115,7 +115,7 @@ fun SpotDiscoverCard(
                             imageVector = Lucide.Star,
                             contentDescription = null,
                             modifier = Modifier.size(12.dp),
-                            tint = Color(0xFFFFB800)
+                            tint = MaterialTheme.colorScheme.extended.gold
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         LynkText(

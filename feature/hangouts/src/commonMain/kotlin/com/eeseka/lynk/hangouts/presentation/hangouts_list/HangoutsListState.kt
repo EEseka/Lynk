@@ -10,6 +10,7 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 data class HangoutsListState(
     val isGuest: Boolean = false,
     val isGuestSigningOut: Boolean = false,
+    val currentUserId: String? = null,
 
     val hangouts: List<HangoutSummaryUi> = emptyList(),
     val isSearchLoading: Boolean = false,

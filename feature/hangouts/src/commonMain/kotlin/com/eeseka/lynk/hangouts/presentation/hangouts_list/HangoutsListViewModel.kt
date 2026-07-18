@@ -53,7 +53,12 @@ class HangoutsListViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
-                _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
+                _state.update {
+                    it.copy(
+                        isGuest = authInfo?.user is User.Guest,
+                        currentUserId = authInfo?.user?.id
+                    )
+                }
                 observeFilters()
                 hasLoadedInitialData = true
             }

@@ -1,6 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Users
 import com.eeseka.lynk.hangouts.presentation.util.toHangoutDisplayDate
@@ -33,6 +35,7 @@ import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.host_badge_description
 import lynk.feature.hangouts.generated.resources.participants_attended_format
 import lynk.feature.hangouts.generated.resources.participants_attended_max_format
 import lynk.feature.hangouts.generated.resources.participants_format
@@ -44,6 +47,7 @@ import kotlin.time.Instant
 fun HangoutSummaryCard(
     hangout: HangoutSummaryUi,
     isSelected: Boolean,
+    isHost: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,18 +97,40 @@ fun HangoutSummaryCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(scheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = hangout.vibe.getIcon(),
-                    contentDescription = null,
-                    tint = scheme.onSurfaceVariant
-                )
+            Box {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(scheme.surfaceVariant)
+                        .border(1.dp, scheme.outlineVariant, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = hangout.vibe.getIcon(),
+                        contentDescription = null,
+                        tint = scheme.onSurfaceVariant
+                    )
+                }
+
+                if (isHost) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(scheme.extended.gold)
+                            .border(2.dp, scheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Lucide.Crown,
+                            contentDescription = stringResource(Res.string.host_badge_description),
+                            tint = scheme.extended.onGold,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
             }
 
             Column(
@@ -194,6 +220,7 @@ private fun HangoutSummaryCardPreview() {
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
             isSelected = false,
+            isHost = true,
             onClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
@@ -217,6 +244,7 @@ private fun HangoutSummaryCardSelectedPreview() {
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
             isSelected = true,
+            isHost = false,
             onClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )

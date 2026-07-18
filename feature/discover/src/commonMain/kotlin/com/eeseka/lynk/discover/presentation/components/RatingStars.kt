@@ -13,12 +13,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.design_system.theme.extended
 import kotlin.math.roundToInt
 
 @Composable
@@ -32,7 +32,7 @@ fun RatingStars(
 
     val displayRating = ((rating * 10.0).roundToInt() / 10.0).toString()
 
-    val starTint = Color(0xFFFFB800)
+    val starTint = MaterialTheme.colorScheme.extended.gold
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         repeat(fullStars) {
