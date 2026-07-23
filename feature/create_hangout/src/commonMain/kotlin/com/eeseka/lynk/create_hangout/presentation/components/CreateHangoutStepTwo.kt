@@ -396,7 +396,7 @@ private fun SpotPickerList(
             start = 16.dp,
             end = 16.dp,
             top = 140.dp,
-            bottom = 120.dp
+            bottom = 48.dp
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
