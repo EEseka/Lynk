@@ -49,7 +49,7 @@ data class LynkIosDropDownMenuSection(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
 fun LynkTopAppBar(
-    title: String,
+    title: String? = null,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
@@ -64,7 +64,7 @@ fun LynkTopAppBar(
 
     AdaptiveTopBar(
         title = {
-            LynkText(text = title)
+            title?.let { LynkText(text = it) }
         },
         modifier = modifier,
         navigationIcon = navigationIcon,
@@ -76,7 +76,7 @@ fun LynkTopAppBar(
             navigationIconContentColor = contentColor,
             actionIconContentColor = contentColor
         ),
-        iosTitle = title,
+        iosTitle = title.orEmpty(),
         iosLeadingItems = mappedLeading,
         iosTrailingItems = mappedTrailing,
     )
