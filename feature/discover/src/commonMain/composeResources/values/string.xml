@@ -22,19 +22,6 @@
     <string name="empty_search_title">No spots found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
 
-    <string name="open_now">Open now</string>
-    <string name="closed">Closed</string>
-    <string name="reviews_count">(%1$d reviews)</string>
-    <string name="distance_m">%1$d m away</string>
-    <string name="distance_km">%.1f km away</string>
-    <string name="about_this_spot">About this spot</string>
-    <string name="no_description_available">No description available for this spot.</string>
-    <string name="save_spot">Save spot</string>
-    <string name="unsave_spot">Remove saved spot</string>
-    <string name="close_image">Close image</string>
-    <string name="visit_website">Visit Website</string>
-    <string name="open_in_google_maps">Open in Google Maps</string>
-    <string name="create_hangout_here">Create Hangout Here</string>
 
     <string name="save_this_spot">save this spot</string>
     <string name="create_a_hangout">create a hangout</string>

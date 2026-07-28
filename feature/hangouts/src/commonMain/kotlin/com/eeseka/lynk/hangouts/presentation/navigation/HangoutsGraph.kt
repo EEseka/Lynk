@@ -14,7 +14,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.hangoutsGraph(
     navController: NavController,
-    mainShellPadding: PaddingValues
+    mainShellPadding: PaddingValues,
+    onToggleNavigation: (Boolean) -> Unit
 ) {
     navigation<HangoutsGraphRoutes.Graph>(
         startDestination = HangoutsGraphRoutes.HangoutListDetail()
@@ -29,6 +30,7 @@ fun NavGraphBuilder.hangoutsGraph(
                 sharedState = state,
                 events = viewModel.events,
                 onAction = viewModel::onAction,
+                onToggleNavigation = onToggleNavigation,
                 mainShellPadding = mainShellPadding
             )
         }

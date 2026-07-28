@@ -34,6 +34,7 @@ data class CreateHangoutState(
     val hangoutTimeError: UiText? = null,
 
     val maxAttendees: Int? = null,
+    val minAttendees: Int = 2,
 
     val canProceedToStepTwo: Boolean = false,
 

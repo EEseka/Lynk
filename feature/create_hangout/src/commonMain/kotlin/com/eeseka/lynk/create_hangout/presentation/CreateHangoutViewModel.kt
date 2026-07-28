@@ -5,8 +5,6 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
-import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDescriptionValidationState
@@ -15,7 +13,11 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidationSta
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
+import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
+import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.util.DataErrorException
@@ -28,6 +30,7 @@ import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +40,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -59,7 +63,7 @@ import lynk.feature.create_hangout.generated.resources.error_hangout_time_past
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class CreateHangoutViewModel(
     private val hangoutService: HangoutService,
     private val spotService: SpotService
@@ -183,15 +187,17 @@ class CreateHangoutViewModel(
 
             CreateHangoutAction.IncrementAttendees -> {
                 val current = state.value.maxAttendees
-                val nextValue = if (current == null) 2 else current + 1
-                if (nextValue <= 50) _state.update { it.copy(maxAttendees = nextValue) }
+                val nextValue = if (current == null) state.value.minAttendees else current + 1
+                if (nextValue <= MAX_ATTENDEES) _state.update { it.copy(maxAttendees = nextValue) }
             }
 
             CreateHangoutAction.DecrementAttendees -> {
                 val current = state.value.maxAttendees
                 if (current != null) {
                     val nextValue = current - 1
-                    _state.update { it.copy(maxAttendees = if (nextValue < 2) null else nextValue) }
+                    _state.update {
+                        it.copy(maxAttendees = if (nextValue < it.minAttendees) null else nextValue)
+                    }
                 }
             }
 
@@ -223,6 +229,9 @@ class CreateHangoutViewModel(
         )
 
         val localDateTime = hangout.scheduledAt.toLocalDateTime(TimeZone.currentSystemDefault())
+        val activeCount = hangout.participants.count {
+            it.rsvpStatus == RsvpStatus.ATTENDING || it.rsvpStatus == RsvpStatus.PENDING
+        }
         _state.update {
             it.copy(
                 mode = HangoutFormMode.EDIT,
@@ -231,6 +240,7 @@ class CreateHangoutViewModel(
                 hangoutDate = localDateTime.date,
                 hangoutTime = localDateTime.time,
                 maxAttendees = hangout.maxAttendees,
+                minAttendees = maxOf(2, activeCount),
                 isVotingMode = hangout.chosenSpot == null,
                 selectedSpot = hangout.chosenSpot
             )
@@ -260,13 +270,15 @@ class CreateHangoutViewModel(
     }
 
     private fun observeSearchFilters() {
-        val searchQueryFlow = snapshotFlow { state.value.spotSearchTextState.text.toString() }
+        val searchQueryFlow = snapshotFlow { _state.value.spotSearchTextState.text.toString() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .distinctUntilChanged()
 
         val tabFlow = state.map { it.activeSearchTab }.distinctUntilChanged()
 
         combine(searchQueryFlow, tabFlow) { query, activeTab ->
+            query to activeTab
+        }.mapLatest { (query, activeTab) ->
             when (activeTab) {
                 SearchTab.FAVORITES -> {
                     setupFavoriteSpotSearchPaginator(query.takeIf { it.isNotBlank() })
@@ -277,7 +289,7 @@ class CreateHangoutViewModel(
                             favoriteSearchResetEpoch = it.favoriteSearchResetEpoch + 1
                         )
                     }
-                    loadNextFavoriteSpotSearchPage()
+                    favoriteSpotSearchPaginator?.loadNextItems()
                 }
 
                 SearchTab.ALL_SPOTS -> {
@@ -302,7 +314,7 @@ class CreateHangoutViewModel(
                                     spotSearchResetEpoch = it.spotSearchResetEpoch + 1
                                 )
                             }
-                            loadNextSpotSearchPage()
+                            spotSearchPaginator?.loadNextItems()
                         }
                     }
                 }

@@ -43,6 +43,7 @@ import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkS
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
@@ -243,7 +244,7 @@ fun CreateHangoutStepOne(
                         hapticFeedback(AppHaptic.Selection)
                         onIncrementAttendees()
                     },
-                    enabled = state.maxAttendees == null || state.maxAttendees < 50
+                    enabled = state.maxAttendees == null || state.maxAttendees < MAX_ATTENDEES
                 ) {
                     Icon(
                         imageVector = Lucide.Plus,

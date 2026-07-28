@@ -1,7 +1,5 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,16 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.SlidersHorizontal
-import com.composables.icons.lucide.UserRoundSearch
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutSummaryCard
+import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutsEmptyState
+import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutsSearchEmptyState
 import com.eeseka.lynk.hangouts.presentation.mappers.getTitle
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkFloatingActionButton
@@ -56,7 +53,6 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showF
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -71,26 +67,12 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
-import io.github.alexzhirkevich.compottie.Compottie
-import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.rememberLottieComposition
-import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.any_vibe
 import lynk.feature.hangouts.generated.resources.create_a_hangout
 import lynk.feature.hangouts.generated.resources.create_hangout
-import lynk.feature.hangouts.generated.resources.empty_hangouts_cancelled_message
-import lynk.feature.hangouts.generated.resources.empty_hangouts_cancelled_title
-import lynk.feature.hangouts.generated.resources.empty_hangouts_completed_message
-import lynk.feature.hangouts.generated.resources.empty_hangouts_completed_title
-import lynk.feature.hangouts.generated.resources.empty_hangouts_ongoing_message
-import lynk.feature.hangouts.generated.resources.empty_hangouts_ongoing_title
-import lynk.feature.hangouts.generated.resources.empty_hangouts_upcoming_message
-import lynk.feature.hangouts.generated.resources.empty_hangouts_upcoming_title
-import lynk.feature.hangouts.generated.resources.empty_search_message
-import lynk.feature.hangouts.generated.resources.empty_search_title
 import lynk.feature.hangouts.generated.resources.filter_vibe
 import lynk.feature.hangouts.generated.resources.hangouts
 import lynk.feature.hangouts.generated.resources.search_cancelled_hangouts_hint
@@ -99,8 +81,6 @@ import lynk.feature.hangouts.generated.resources.search_ongoing_hangouts_hint
 import lynk.feature.hangouts.generated.resources.search_upcoming_hangouts_hint
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
-
-private const val ANIMATION_BORED_MAN = "bored_man.json"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -330,116 +310,7 @@ fun HangoutsListScreen(
     }
 }
 
-@Composable
-private fun HangoutsEmptyState(
-    currentFilter: HangoutStatusFilter,
-    modifier: Modifier = Modifier
-) {
-    val composition by rememberLottieComposition {
-        LottieCompositionSpec.JsonString(
-            Res.readBytes("files/$ANIMATION_BORED_MAN").decodeToString()
-        )
-    }
-
-    val titleRes = when (currentFilter) {
-        HangoutStatusFilter.UPCOMING -> Res.string.empty_hangouts_upcoming_title
-        HangoutStatusFilter.ONGOING -> Res.string.empty_hangouts_ongoing_title
-        HangoutStatusFilter.COMPLETED -> Res.string.empty_hangouts_completed_title
-        HangoutStatusFilter.CANCELLED -> Res.string.empty_hangouts_cancelled_title
-    }
-
-    val messageRes = when (currentFilter) {
-        HangoutStatusFilter.UPCOMING -> Res.string.empty_hangouts_upcoming_message
-        HangoutStatusFilter.ONGOING -> Res.string.empty_hangouts_ongoing_message
-        HangoutStatusFilter.COMPLETED -> Res.string.empty_hangouts_completed_message
-        HangoutStatusFilter.CANCELLED -> Res.string.empty_hangouts_cancelled_message
-    }
-
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = rememberLottiePainter(
-                    composition = composition,
-                    iterations = Compottie.IterateForever
-                ),
-                contentDescription = null,
-                modifier = Modifier.size(300.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            LynkText(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LynkText(
-                text = stringResource(messageRes),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun HangoutsSearchEmptyState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Lucide.UserRoundSearch,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            LynkText(
-                text = stringResource(Res.string.empty_search_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LynkText(
-                text = stringResource(Res.string.empty_search_message),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
-        }
-    }
-}
-
-internal val previewHangouts = listOf(
+private val previewNames = listOf(
     "Late Night Drinks" to HangoutVibe.DRINKS,
     "Sunday BBQ" to HangoutVibe.FOOD,
     "Chill at Mine" to HangoutVibe.CHILL,
@@ -450,26 +321,38 @@ internal val previewHangouts = listOf(
     "Brunch Run" to HangoutVibe.FOOD,
     "Go-Kart Race" to HangoutVibe.ACTIVE,
     "Movie Night" to HangoutVibe.CHILL
-).mapIndexed { index, (name, vibe) ->
-    HangoutSummaryUi(
-        id = "preview-$index",
-        hostId = "host-1",
-        name = name,
-        vibe = vibe,
-        status = HangoutStatus.entries[index % HangoutStatus.entries.size],
-        scheduledAt = Instant.fromEpochSeconds(1_800_000_000L + index * 86_400L),
-        maxAttendees = if (index % 3 == 0) null else 4 + index % 8,
-        participantCount = 1 + index % 5,
-        createdAt = Instant.fromEpochSeconds(1_790_000_000L + index * 86_400L)
-    )
+)
+
+private fun previewHangouts(filter: HangoutStatusFilter): List<HangoutSummaryUi> {
+    val statuses = when (filter) {
+        HangoutStatusFilter.UPCOMING -> listOf(HangoutStatus.VOTING, HangoutStatus.SCHEDULED)
+        HangoutStatusFilter.ONGOING -> listOf(HangoutStatus.ONGOING)
+        HangoutStatusFilter.COMPLETED -> listOf(HangoutStatus.COMPLETED)
+        HangoutStatusFilter.CANCELLED -> listOf(HangoutStatus.CANCELLED)
+    }
+    return previewNames.mapIndexed { index, (name, vibe) ->
+        HangoutSummaryUi(
+            id = "preview-$index",
+            hostId = "host-1",
+            name = name,
+            vibe = vibe,
+            status = statuses[index % statuses.size],
+            scheduledAt = Instant.fromEpochSeconds(1_800_000_000L + index * 86_400L),
+            maxAttendees = if (index % 3 == 0) null else 4 + index % 8,
+            participantCount = 1 + index % 5,
+            createdAt = Instant.fromEpochSeconds(1_790_000_000L + index * 86_400L)
+        )
+    }
 }
 
-@PreviewLightDark
 @Composable
-private fun HangoutsListScreenFilledPreview() {
+private fun HangoutsListScreenPreview(filter: HangoutStatusFilter) {
     LynkTheme {
         HangoutsListScreen(
-            state = HangoutsListState(hangouts = previewHangouts),
+            state = HangoutsListState(
+                hangouts = previewHangouts(filter),
+                selectedStatusFilter = filter
+            ),
             events = emptyFlow(),
             onCreateHangoutClick = {},
             onAction = {},
@@ -480,19 +363,15 @@ private fun HangoutsListScreenFilledPreview() {
 
 @PreviewLightDark
 @Composable
-private fun HangoutsEmptyStatePreview() {
-    LynkTheme {
-        HangoutsEmptyState(
-            currentFilter = HangoutStatusFilter.UPCOMING,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
+private fun HangoutsListScreenUpcomingPreview() =
+    HangoutsListScreenPreview(HangoutStatusFilter.UPCOMING)
 
 @PreviewLightDark
 @Composable
-private fun HangoutsSearchEmptyStatePreview() {
-    LynkTheme {
-        HangoutsSearchEmptyState(modifier = Modifier.background(MaterialTheme.colorScheme.background))
-    }
-}
+private fun HangoutsListScreenOngoingPreview() =
+    HangoutsListScreenPreview(HangoutStatusFilter.ONGOING)
+
+@PreviewLightDark
+@Composable
+private fun HangoutsListScreenCompletedPreview() =
+    HangoutsListScreenPreview(HangoutStatusFilter.COMPLETED)

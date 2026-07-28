@@ -6,6 +6,7 @@ import lynk.shared.generated.resources.error_bad_request
 import lynk.shared.generated.resources.error_conflict
 import lynk.shared.generated.resources.error_disk_full
 import lynk.shared.generated.resources.error_forbidden
+import lynk.shared.generated.resources.error_lobby_send_failed
 import lynk.shared.generated.resources.error_no_internet
 import lynk.shared.generated.resources.error_not_found
 import lynk.shared.generated.resources.error_payload_too_large
@@ -35,6 +36,8 @@ fun DataError.toUiText(): UiText {
         DataError.Remote.SERVICE_UNAVAILABLE -> Res.string.error_service_unavailable
         DataError.Remote.SERIALIZATION -> Res.string.error_serialization
         DataError.Remote.UNKNOWN -> Res.string.error_unknown
+        DataError.Connection.NOT_CONNECTED -> Res.string.error_no_internet
+        DataError.Connection.MESSAGE_SEND_FAILED -> Res.string.error_lobby_send_failed
     }
     return UiText.Resource(resource)
 }

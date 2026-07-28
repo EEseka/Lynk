@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.components
+package com.eeseka.lynk.shared.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -55,19 +55,19 @@ import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
-import lynk.feature.discover.generated.resources.Res
-import lynk.feature.discover.generated.resources.about_this_spot
-import lynk.feature.discover.generated.resources.closed
-import lynk.feature.discover.generated.resources.create_hangout_here
-import lynk.feature.discover.generated.resources.km
-import lynk.feature.discover.generated.resources.m
-import lynk.feature.discover.generated.resources.no_description_available
-import lynk.feature.discover.generated.resources.open_in_google_maps
-import lynk.feature.discover.generated.resources.open_now
-import lynk.feature.discover.generated.resources.reviews_count
-import lynk.feature.discover.generated.resources.save_spot
-import lynk.feature.discover.generated.resources.unsave_spot
-import lynk.feature.discover.generated.resources.visit_website
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.about_this_spot
+import lynk.shared.generated.resources.closed
+import lynk.shared.generated.resources.create_hangout_here
+import lynk.shared.generated.resources.km
+import lynk.shared.generated.resources.m
+import lynk.shared.generated.resources.no_description_available
+import lynk.shared.generated.resources.open_in_google_maps
+import lynk.shared.generated.resources.open_now
+import lynk.shared.generated.resources.reviews_count
+import lynk.shared.generated.resources.save_spot
+import lynk.shared.generated.resources.unsave_spot
+import lynk.shared.generated.resources.visit_website
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -75,9 +75,9 @@ fun SpotDetailSheet(
     spot: SpotUi,
     userLat: Double?,
     userLng: Double?,
-    onCreateHangoutClick: (String) -> Unit,
-    onToggleSave: (String, Boolean) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onCreateHangoutClick: ((String) -> Unit)? = null,
+    onToggleSave: ((String, Boolean) -> Unit)? = null
 ) {
     val hapticFeedback = rememberAppHaptic()
     var initialImageIndex by remember { mutableStateOf<Int?>(null) }
@@ -188,21 +188,23 @@ fun SpotDetailSheet(
                         modifier = Modifier.weight(1f)
                     )
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    onToggleSave?.let { toggleSave ->
+                        Spacer(modifier = Modifier.width(16.dp))
 
-                    val isSaved = spot.isSaved
-                    LynkTonalIconButton(
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onToggleSave(spot.id, isSaved)
-                        },
-                        containerColor = if (isSaved) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = if (isSaved) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
-                    ) {
-                        Icon(
-                            imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                            contentDescription = stringResource(if (isSaved) Res.string.unsave_spot else Res.string.save_spot)
-                        )
+                        val isSaved = spot.isSaved
+                        LynkTonalIconButton(
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                toggleSave(spot.id, isSaved)
+                            },
+                            containerColor = if (isSaved) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = if (isSaved) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+                        ) {
+                            Icon(
+                                imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                contentDescription = stringResource(if (isSaved) Res.string.unsave_spot else Res.string.save_spot)
+                            )
+                        }
                     }
                 }
 
@@ -347,7 +349,7 @@ fun SpotDetailSheet(
                                 leadingIcon = Lucide.Globe,
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
-                                    uriHandler.openUri(spot.websiteUrl!!)
+                                    uriHandler.openUri(spot.websiteUrl)
                                 }
                             )
                         }
@@ -358,7 +360,7 @@ fun SpotDetailSheet(
                                 leadingIcon = Lucide.Map,
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
-                                    uriHandler.openUri(spot.googleMapsUrl!!)
+                                    uriHandler.openUri(spot.googleMapsUrl)
                                 }
                             )
                         }
@@ -425,14 +427,16 @@ fun SpotDetailSheet(
                 }
             }
 
-            LynkButton(
-                modifier = Modifier.padding(16.dp),
-                text = stringResource(Res.string.create_hangout_here),
-                onClick = {
-                    hapticFeedback(AppHaptic.ImpactMedium)
-                    onCreateHangoutClick(spot.id)
-                }
-            )
+            onCreateHangoutClick?.let { createHangout ->
+                LynkButton(
+                    modifier = Modifier.padding(16.dp),
+                    text = stringResource(Res.string.create_hangout_here),
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactMedium)
+                        createHangout(spot.id)
+                    }
+                )
+            }
         }
     }
 }

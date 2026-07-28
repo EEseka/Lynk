@@ -82,7 +82,9 @@ fun CreateHangoutRoot(
     val locationController = rememberLocationController()
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(visible) {
+        if (!visible) return@LaunchedEffect
+
         permissionState = permissionController.getPermissionState(Permission.LOCATION)
         if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
             permissionState = permissionController.requestPermission(Permission.LOCATION)
@@ -94,30 +96,22 @@ fun CreateHangoutRoot(
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         LaunchedEffect(permissionState) {
-            if (permissionState == PermissionState.GRANTED) {
-                locationController.startTracking()
-                val coordinate = locationController.getCurrentLocation()
-                locationController.stopTracking()
-                viewModel.onAction(
-                    CreateHangoutAction.OnLocationFetched(
-                        coordinate.latitude,
-                        coordinate.longitude
-                    )
-                )
-            }
-        }
+            if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
 
-        LaunchedEffect(spot) {
+            val coordinate = locationController.getCurrentLocation() ?: return@LaunchedEffect
             viewModel.onAction(
-                CreateHangoutAction.InitCreateMode(spot)
+                CreateHangoutAction.OnLocationFetched(
+                    coordinate.latitude,
+                    coordinate.longitude
+                )
             )
         }
 
-        LaunchedEffect(originalHangout) {
+        LaunchedEffect(spot, originalHangout) {
             if (originalHangout != null) {
-                viewModel.onAction(
-                    CreateHangoutAction.InitEditMode(originalHangout)
-                )
+                viewModel.onAction(CreateHangoutAction.InitEditMode(originalHangout))
+            } else {
+                viewModel.onAction(CreateHangoutAction.InitCreateMode(spot))
             }
         }
 

@@ -41,14 +41,11 @@ kotlin {
             implementation(libs.jetbrains.compose.navigation)
 
             implementation(libs.icons.lucide.cmp)
-            implementation(libs.jetbrains.compose.material.icons.extended)
 
             implementation(libs.maplibre.compose)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
-
-            implementation(libs.zoomimage.compose.coil)
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)

@@ -3,9 +3,7 @@ package com.eeseka.lynk.main_shell.presentation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,8 +49,8 @@ fun MainShell() {
 
     val showRail = config.isWideScreen || config == DeviceConfiguration.MOBILE_LANDSCAPE
 
-    // Controls visibility of the navigation components (bottom bar and nav rail)
-    var isNavigationVisible by remember { mutableStateOf(true) }
+    // Controls visibility of the bottom bar only.
+    var isBottomBarVisible by remember { mutableStateOf(true) }
 
     val selectedItem = remember(currentDestination) {
         when {
@@ -77,7 +75,7 @@ fun MainShell() {
         bottomBar = {
             if (!showRail) {
                 AnimatedVisibility(
-                    visible = isNavigationVisible,
+                    visible = isBottomBarVisible,
                     enter = slideInVertically { it } + fadeIn(),
                     exit = slideOutVertically { it } + fadeOut()
                 ) {
@@ -91,21 +89,15 @@ fun MainShell() {
     ) { paddingValues ->
         if (showRail) {
             Row(modifier = Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    visible = isNavigationVisible,
-                    enter = slideInHorizontally { -it } + fadeIn(),
-                    exit = slideOutHorizontally { -it } + fadeOut()
-                ) {
-                    LynkNavigationRail(
-                        selectedItem = selectedItem,
-                        onItemSelected = onNavigate
-                    )
-                }
+                LynkNavigationRail(
+                    selectedItem = selectedItem,
+                    onItemSelected = onNavigate
+                )
 
                 MainShellNavHost(
                     navController = innerNavController,
                     paddingValues = PaddingValues(0.dp),
-                    onToggleNavigation = { isNavigationVisible = it },
+                    onToggleBottomBar = { isBottomBarVisible = it },
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
             }
@@ -113,7 +105,7 @@ fun MainShell() {
             MainShellNavHost(
                 navController = innerNavController,
                 paddingValues = paddingValues,
-                onToggleNavigation = { isNavigationVisible = it },
+                onToggleBottomBar = { isBottomBarVisible = it },
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -124,7 +116,7 @@ fun MainShell() {
 private fun MainShellNavHost(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    onToggleNavigation: (Boolean) -> Unit,
+    onToggleBottomBar: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -145,7 +137,8 @@ private fun MainShellNavHost(
         )
         hangoutsGraph(
             navController = navController,
-            mainShellPadding = paddingValues
+            mainShellPadding = paddingValues,
+            onToggleNavigation = onToggleBottomBar
         )
         composable<ProfileRoute> {
             // Temporary Placeholder

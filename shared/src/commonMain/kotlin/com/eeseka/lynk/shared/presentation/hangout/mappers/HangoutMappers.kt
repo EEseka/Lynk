@@ -12,12 +12,16 @@ import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPreviewUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.active
@@ -105,12 +109,44 @@ fun HangoutSummary.toHangoutSummaryUi(): HangoutSummaryUi {
     )
 }
 
+fun HangoutPreview.toHangoutPreviewUi() = HangoutPreviewUi(
+    id = id,
+    hostId = hostId,
+    name = name,
+    description = description,
+    vibe = vibe,
+    status = status,
+    scheduledAt = scheduledAt,
+    maxAttendees = maxAttendees,
+    participantCount = participantCount,
+    chosenSpot = chosenSpot?.toSpotUi(),
+    attendees = attendees.map { it.toHangoutUserUi() },
+    createdAt = createdAt
+)
+
+fun HangoutUser.toHangoutUserUi() = HangoutUserUi(
+    userId = userId,
+    username = username,
+    displayName = displayName,
+    initials = displayName.toInitials(),
+    profilePictureUrl = profilePictureUrl
+)
+
 fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
     userId = userId,
     username = username,
     displayName = displayName,
-    initials = displayName.take(2).uppercase(),
+    initials = displayName.toInitials(),
     profilePictureUrl = profilePictureUrl,
     rsvpStatus = rsvpStatus,
     hasPaid = hasPaid
 )
+
+private fun String.toInitials(): String {
+    val words = trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    return when {
+        words.isEmpty() -> ""
+        words.size == 1 -> words.first().take(2).uppercase()
+        else -> "${words.first().first()}${words.last().first()}".uppercase()
+    }
+}

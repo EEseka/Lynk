@@ -105,6 +105,24 @@ suspend inline fun <reified Response : Any> HttpClient.patch(
     }
 }
 
+suspend inline fun <reified Request, reified Response : Any> HttpClient.patch(
+    route: String,
+    body: Request,
+    queryParams: Map<String, Any> = mapOf(),
+    crossinline builder: HttpRequestBuilder.() -> Unit = {}
+): Result<Response, DataError.Remote> {
+    return safeCall {
+        patch {
+            url(constructRoute(route))
+            queryParams.forEach { (key, value) ->
+                parameter(key, value)
+            }
+            setBody(body)
+            builder()
+        }
+    }
+}
+
 suspend inline fun <reified T> safeCall(
     noinline execute: suspend () -> HttpResponse
 ): Result<T, DataError.Remote> {

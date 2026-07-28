@@ -2,9 +2,12 @@ package com.eeseka.lynk.create_hangout.data
 
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -74,5 +77,26 @@ class FakeHangoutService : HangoutService {
         Result.Failure(DataError.Remote.SERVER_ERROR)
 
     override suspend fun completeHangout(hangoutId: String): EmptyResult<DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun getHangoutPreview(hangoutId: String): Result<HangoutPreview, DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun inviteParticipant(
+        hangoutId: String,
+        userId: String
+    ): Result<HangoutParticipant, DataError.Remote> = Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun updateRsvp(
+        hangoutId: String,
+        rsvpStatus: RsvpStatus
+    ): Result<HangoutParticipant, DataError.Remote> = Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun removeParticipant(
+        hangoutId: String,
+        userId: String
+    ): EmptyResult<DataError.Remote> = Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun leaveHangout(hangoutId: String): EmptyResult<DataError.Remote> =
         Result.Failure(DataError.Remote.SERVER_ERROR)
 }

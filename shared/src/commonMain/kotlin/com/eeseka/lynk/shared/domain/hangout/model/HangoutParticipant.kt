@@ -10,3 +10,5 @@ data class HangoutParticipant(
     val rsvpStatus: RsvpStatus,
     val hasPaid: Boolean // For the Paystack integration
 )
+
+// TODO: Later maybe model HangoutParticipant well by storing HangoutUser as that contains the first four data

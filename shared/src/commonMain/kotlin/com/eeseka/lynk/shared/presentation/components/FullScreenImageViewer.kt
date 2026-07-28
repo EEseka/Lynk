@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.components
+package com.eeseka.lynk.shared.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,8 +30,8 @@ import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import com.github.panpf.zoomimage.rememberCoilZoomState
-import lynk.feature.discover.generated.resources.Res
-import lynk.feature.discover.generated.resources.close_image
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.close_image
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

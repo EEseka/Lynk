@@ -1,9 +1,12 @@
 package com.eeseka.lynk.shared.domain.hangout
 
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -45,6 +48,12 @@ interface HangoutService {
      */
     suspend fun getHangoutDetails(hangoutId: String): Result<Hangout, DataError.Remote>
 
+    /**
+     * The glimpse a PENDING invitee sees before accepting — lighter than full details,
+     * attendees are ATTENDING-only social proof.
+     */
+    suspend fun getHangoutPreview(hangoutId: String): Result<HangoutPreview, DataError.Remote>
+
     suspend fun getHangouts(
         query: String? = null,
         status: HangoutStatus? = null,
@@ -55,4 +64,21 @@ interface HangoutService {
     suspend fun cancelHangout(hangoutId: String): EmptyResult<DataError.Remote>
 
     suspend fun completeHangout(hangoutId: String): EmptyResult<DataError.Remote>
+
+    suspend fun inviteParticipant(
+        hangoutId: String,
+        userId: String
+    ): Result<HangoutParticipant, DataError.Remote>
+
+    suspend fun updateRsvp(
+        hangoutId: String,
+        rsvpStatus: RsvpStatus
+    ): Result<HangoutParticipant, DataError.Remote>
+
+    suspend fun removeParticipant(
+        hangoutId: String,
+        userId: String
+    ): EmptyResult<DataError.Remote>
+
+    suspend fun leaveHangout(hangoutId: String): EmptyResult<DataError.Remote>
 }

@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.components
+package com.eeseka.lynk.shared.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

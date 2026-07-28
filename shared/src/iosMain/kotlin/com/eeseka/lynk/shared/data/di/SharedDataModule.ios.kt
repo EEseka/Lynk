@@ -2,6 +2,9 @@ package com.eeseka.lynk.shared.data.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.eeseka.lynk.shared.data.lobby.lifecycle.AppLifecycleObserver
+import com.eeseka.lynk.shared.data.lobby.network.ConnectionErrorHandler
+import com.eeseka.lynk.shared.data.lobby.network.ConnectivityObserver
 import com.eeseka.lynk.shared.data.media.ImageCompressor
 import com.eeseka.lynk.shared.data.util.createDataStore
 import io.ktor.client.engine.HttpClientEngine
@@ -15,4 +18,7 @@ actual val platformSharedDataModule = module {
         createDataStore()
     }
     singleOf(::ImageCompressor)
+    singleOf(::AppLifecycleObserver)
+    singleOf(::ConnectivityObserver)
+    singleOf(::ConnectionErrorHandler)
 }

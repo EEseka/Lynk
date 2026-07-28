@@ -38,4 +38,106 @@
 
     <string name="am">AM</string>
     <string name="pm">PM</string>
+
+    <string name="connection_online">Connected</string>
+    <string name="connection_offline">Offline</string>
+    <string name="connection_connecting">Reconnecting…</string>
+    <string name="connection_network_error">No connection</string>
+    <string name="connection_unknown_error">Connection error</string>
+
+    <string name="detail_select_title">No hangout selected</string>
+    <string name="detail_select_message">Pick a hangout to see the crew and the full plan.</string>
+    <string name="detail_load_error_title">Couldn't load this hangout</string>
+    <string name="detail_retry">Retry</string>
+    <string name="detail_about">About</string>
+    <string name="detail_going">Going</string>
+    <string name="detail_going_count">%1$d going</string>
+    <string name="detail_going_count_max">%1$d / %2$d going</string>
+    <string name="detail_participants_overflow">+%1$d</string>
+    <string name="detail_see_all">See all</string>
+    <string name="detail_online">Online</string>
+    <string name="participants_sheet_title">Who's going</string>
+    <string name="detail_chosen_spot">Chosen spot</string>
+    <string name="detail_no_spot_title">No spot yet</string>
+    <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
+
+    <!-- Host actions -->
+    <string name="detail_complete">Complete hangout</string>
+    <string name="detail_completing">Completing…</string>
+    <string name="detail_cancel">Cancel hangout</string>
+    <string name="detail_update">Edit hangout</string>
+    <string name="detail_completed_message">Hangout completed</string>
+    <string name="detail_cancelled_message">Hangout cancelled</string>
+    <string name="detail_complete_confirm_title">Complete this hangout?</string>
+    <string name="detail_complete_confirm_message">Mark this hangout as done. This can't be undone.</string>
+    <string name="detail_complete_confirm_action">Complete</string>
+    <string name="detail_cancel_confirm_title">Cancel this hangout?</string>
+    <string name="detail_cancel_confirm_message">This cancels the hangout for everyone and can't be undone.</string>
+    <string name="detail_cancel_confirm_action">Cancel hangout</string>
+    <string name="detail_leave">Leave hangout</string>
+    <string name="detail_left_message">You left the hangout</string>
+    <string name="detail_leave_confirm_title">Leave this hangout?</string>
+    <string name="detail_leave_confirm_message">You'll be removed from this hangout and will need a new invite to rejoin.</string>
+    <string name="detail_leave_confirm_action">Leave</string>
+    <string name="detail_more_actions">More actions</string>
+    <string name="detail_dialog_dismiss">Never mind</string>
+
+    <!-- Participants sheet groups -->
+    <string name="detail_group_going">Going</string>
+    <string name="detail_group_pending">Pending</string>
+    <string name="detail_group_declined">Declined</string>
+    <string name="detail_withdraw">Withdraw</string>
+    <string name="detail_withdrawn_message">Invite withdrawn</string>
+
+    <!-- Invite flow -->
+    <string name="detail_invite">Invite participants</string>
+    <string name="detail_invited_message">Invitation sent</string>
+    <string name="invite_sheet_title">Invite participants</string>
+    <string name="invite_search_hint">Search by username</string>
+    <string name="invite_action">Invite</string>
+    <string name="invite_invited">Invited</string>
+    <string name="invite_host">Host</string>
+    <string name="invite_idle_title">Find your crew</string>
+    <string name="invite_idle_message">Search for a friend by their exact username.</string>
+    <string name="invite_not_found_title">No user found</string>
+    <string name="invite_not_found_message">Check the username and try again.</string>
+
+    <!-- Live lobby event snackbars -->
+    <string name="event_invited">%1$s was invited</string>
+    <string name="event_withdrawn">%1$s's invite was withdrawn</string>
+    <string name="event_left">%1$s left the hangout</string>
+    <string name="event_rsvp_in">%1$s is in</string>
+    <string name="event_rsvp_out">%1$s can't make it</string>
+    <string name="event_updated">%1$s updated the hangout</string>
+    <string name="event_completed">%1$s wrapped up the hangout</string>
+    <string name="event_cancelled">%1$s cancelled the hangout</string>
+
+    <!-- Voting -->
+    <string name="voting_title">Vote for a spot</string>
+    <string name="voting_propose">Propose</string>
+    <string name="voting_empty_title">No spots yet</string>
+    <string name="voting_empty_message">Propose a spot to kick off the vote.</string>
+    <string name="voting_close">Close voting</string>
+    <string name="voting_closing">Closing…</string>
+    <string name="voting_leading">Leading</string>
+    <string name="voting_your_pick">Your pick</string>
+    <string name="voting_remove_spot">Remove spot</string>
+    <string name="voting_tie_banner">It's a tie — tap a spot to decide the winner</string>
+    <string name="voting_tie_banner_guest">It's a tie — the host is picking the winner</string>
+    <string name="voting_tie_flash">It's a tie — pick the winner</string>
+    <string name="spot_suggested_message">Spot suggested</string>
+
+    <!-- Propose-spot sheet -->
+    <string name="propose_sheet_title">Propose a spot</string>
+    <string name="propose_search_hint">Search for a spot…</string>
+    <string name="propose_favorite_search_hint">Search favorite spots…</string>
+    <string name="propose_suggest_action">Suggest Spot</string>
+    <string name="propose_proposed">Added</string>
+    <string name="propose_empty_message">No spots found.</string>
+    <string name="propose_empty_favorite_message">No favorite spots found.</string>
+    <string name="all_spots">All Spots</string>
+    <string name="favorites">Favorites</string>
+    <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
+    <string name="km">km</string>
+    <string name="m">m</string>
 </resources>

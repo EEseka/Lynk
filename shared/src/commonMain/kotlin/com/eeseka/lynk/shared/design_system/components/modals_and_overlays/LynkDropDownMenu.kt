@@ -34,6 +34,7 @@ data class LynkDropDownItem(
     val icon: ImageVector? = null,
     val sfSymbol: String? = null,
     val isDestructive: Boolean = false,
+    val isDisabled: Boolean = false,
     val onClick: () -> Unit
 )
 
@@ -59,6 +60,7 @@ fun LynkDropDownMenu(
                     title = item.title,
                     iosIcon = item.sfSymbol?.let { UIKitImage.SystemName(it) },
                     isDestructive = item.isDestructive,
+                    isDisabled = item.isDisabled,
                     onClick = {
                         item.onClick()
                         onDismissRequest()
@@ -67,9 +69,14 @@ fun LynkDropDownMenu(
             },
             materialContent = {
                 items.forEachIndexed { index, item ->
-                    val contentColor = if (item.isDestructive) scheme.error else scheme.onSurface
+                    val contentColor = when {
+                        item.isDisabled -> scheme.onSurface.copy(alpha = 0.38f)
+                        item.isDestructive -> scheme.error
+                        else -> scheme.onSurface
+                    }
 
                     DropdownMenuItem(
+                        enabled = !item.isDisabled,
                         text = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

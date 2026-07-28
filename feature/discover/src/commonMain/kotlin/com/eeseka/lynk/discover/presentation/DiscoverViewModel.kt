@@ -18,6 +18,7 @@ import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -188,7 +190,7 @@ class DiscoverViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
             .debounce(500L.milliseconds)
@@ -205,30 +207,40 @@ class DiscoverViewModel(
             priceLevelFlow,
             locationFlow
         ) { query, category, priceLevel, location ->
-            val (lat, lng) = location
-            if (lat != null && lng != null) {
-                val isActivelySearching =
-                    query.isNotBlank() || category != null || priceLevel != null
+            SpotSearchFilters(
+                query = query,
+                category = category,
+                priceLevel = priceLevel,
+                latitude = location.first,
+                longitude = location.second
+            )
+        }.mapLatest { filters ->
+            val lat = filters.latitude
+            val lng = filters.longitude
+            if (lat == null || lng == null) return@mapLatest
 
-                if (isActivelySearching) {
-                    setupSearchPaginator(lat, lng, query, category, priceLevel)
-                    _state.update {
-                        it.copy(
-                            searchResults = emptyList(),
-                            searchEndReached = false,
-                            searchResetEpoch = it.searchResetEpoch + 1
-                        )
-                    }
-                    loadNextSearchPage()
-                } else {
-                    _state.update {
-                        it.copy(
-                            searchResults = emptyList(),
-                            searchEndReached = false,
-                            isSearchLoading = false,
-                            searchResetEpoch = it.searchResetEpoch + 1
-                        )
-                    }
+            val isActivelySearching = filters.query.isNotBlank() ||
+                    filters.category != null ||
+                    filters.priceLevel != null
+
+            if (isActivelySearching) {
+                setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        searchEndReached = false,
+                        searchResetEpoch = it.searchResetEpoch + 1
+                    )
+                }
+                searchPaginator?.loadNextItems()
+            } else {
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        searchEndReached = false,
+                        isSearchLoading = false,
+                        searchResetEpoch = it.searchResetEpoch + 1
+                    )
                 }
             }
         }.launchIn(viewModelScope)
@@ -291,3 +303,11 @@ class DiscoverViewModel(
         }
     }
 }
+
+private data class SpotSearchFilters(
+    val query: String,
+    val category: SpotCategory?,
+    val priceLevel: PriceLevel?,
+    val latitude: Double?,
+    val longitude: Double?
+)

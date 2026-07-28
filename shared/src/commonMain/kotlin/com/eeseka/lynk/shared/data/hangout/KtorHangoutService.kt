@@ -1,8 +1,12 @@
 package com.eeseka.lynk.shared.data.hangout
 
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutParticipantDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutPreviewDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutSummaryDto
 import com.eeseka.lynk.shared.data.hangout.dto.requests.CreateHangoutRequest
+import com.eeseka.lynk.shared.data.hangout.dto.requests.InviteParticipantRequest
+import com.eeseka.lynk.shared.data.hangout.dto.requests.RsvpRequest
 import com.eeseka.lynk.shared.data.hangout.dto.requests.UpdateHangoutRequest
 import com.eeseka.lynk.shared.data.hangout.mappers.toDomain
 import com.eeseka.lynk.shared.data.networking.delete
@@ -12,16 +16,18 @@ import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.data.networking.put
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
 import com.eeseka.lynk.shared.domain.util.map
 import io.ktor.client.HttpClient
 import kotlin.time.Instant
-
 
 class KtorHangoutService(
     private val httpClient: HttpClient
@@ -76,6 +82,12 @@ class KtorHangoutService(
         ).map { it.toDomain() }
     }
 
+    override suspend fun getHangoutPreview(hangoutId: String): Result<HangoutPreview, DataError.Remote> {
+        return httpClient.get<HangoutPreviewDto>(
+            route = "/hangouts/$hangoutId/preview"
+        ).map { it.toDomain() }
+    }
+
     override suspend fun getHangouts(
         query: String?,
         status: HangoutStatus?,
@@ -105,6 +117,41 @@ class KtorHangoutService(
     override suspend fun completeHangout(hangoutId: String): EmptyResult<DataError.Remote> {
         return httpClient.patch<Unit>(
             route = "/hangouts/$hangoutId/complete"
+        )
+    }
+
+    override suspend fun inviteParticipant(
+        hangoutId: String,
+        userId: String
+    ): Result<HangoutParticipant, DataError.Remote> {
+        return httpClient.post<InviteParticipantRequest, HangoutParticipantDto>(
+            route = "/hangouts/$hangoutId/participants",
+            body = InviteParticipantRequest(userId = userId)
+        ).map { it.toDomain() }
+    }
+
+    override suspend fun updateRsvp(
+        hangoutId: String,
+        rsvpStatus: RsvpStatus
+    ): Result<HangoutParticipant, DataError.Remote> {
+        return httpClient.patch<RsvpRequest, HangoutParticipantDto>(
+            route = "/hangouts/$hangoutId/rsvp",
+            body = RsvpRequest(rsvpStatus = rsvpStatus)
+        ).map { it.toDomain() }
+    }
+
+    override suspend fun removeParticipant(
+        hangoutId: String,
+        userId: String
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.delete<Unit>(
+            route = "/hangouts/$hangoutId/participants/$userId"
+        )
+    }
+
+    override suspend fun leaveHangout(hangoutId: String): EmptyResult<DataError.Remote> {
+        return httpClient.delete<Unit>(
+            route = "/hangouts/$hangoutId/leave"
         )
     }
 }

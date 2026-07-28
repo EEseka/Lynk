@@ -38,7 +38,7 @@ import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
-import com.eeseka.lynk.discover.presentation.components.SpotDetailSheet
+import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
@@ -130,29 +130,26 @@ fun DiscoverScreen(
     }
 
     val fetchCurrentLocationAndShowOnMap: suspend () -> Unit = {
-        try {
-            locationController.startTracking()
-            val coordinate = locationController.getCurrentLocation()
-            locationController.stopTracking()
-
-            userPosition = Position(
+        val coordinate = locationController.getCurrentLocation()
+        if (coordinate == null) {
+            snackbarHostState.showFlashMessage(
+                message = locationFetchError,
+                type = LynkFlashType.Error
+            )
+        } else {
+            val position = Position(
                 latitude = coordinate.latitude,
                 longitude = coordinate.longitude
             )
+            userPosition = position
 
             onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
             cameraState.animateTo(
                 finalPosition = cameraState.position.copy(
-                    target = userPosition!!,
+                    target = position,
                     zoom = 14.0
                 )
-            )
-        } catch (_: Exception) {
-            locationController.stopTracking()
-            snackbarHostState.showFlashMessage(
-                message = locationFetchError,
-                type = LynkFlashType.Error
             )
         }
     }
@@ -400,16 +397,8 @@ fun DiscoverScreen(
                 message = stringResource(Res.string.location_required_message),
                 confirmText = stringResource(Res.string.open_settings),
                 dismissText = stringResource(Res.string.not_now),
-                onConfirm = {
-                    permissionController.openAppSettings()
-                    showSettingsDialog = false
-                },
-                onDismissRequest = {
-                    showSettingsDialog = false
-                },
-                onDismiss = {
-                    showSettingsDialog = false
-                }
+                onConfirm = { permissionController.openAppSettings() },
+                onDismissRequest = { showSettingsDialog = false }
             )
         }
     }

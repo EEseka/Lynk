@@ -17,6 +17,7 @@ import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.hangout.mappers.toHangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +50,8 @@ class HangoutsListViewModel(
     private var hasLoadedInitialData = false
 
     private var hangoutsPaginator: Paginator<String?, HangoutSummary>? = null
+
+    private val refreshTrigger = MutableStateFlow(0)
 
     val state = _state
         .onStart {
@@ -110,7 +114,7 @@ class HangoutsListViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
@@ -119,34 +123,28 @@ class HangoutsListViewModel(
         val statusFilterFlow = state.map { it.selectedStatusFilter }.distinctUntilChanged()
         val vibeFlow = state.map { it.selectedVibe }.distinctUntilChanged()
 
-        combine(searchQueryFlow, statusFilterFlow, vibeFlow) { query, statusFilter, vibe ->
-            rebuildAndReload(query.takeIf { it.isNotBlank() }, statusFilter, vibe)
+        combine(
+            searchQueryFlow,
+            statusFilterFlow,
+            vibeFlow,
+            refreshTrigger
+        ) { query, statusFilter, vibe, _ ->
+            Triple(query.takeIf { it.isNotBlank() }, statusFilter, vibe)
+        }.mapLatest { (query, statusFilter, vibe) ->
+            setupHangoutsPaginator(query, statusFilter, vibe)
+            _state.update {
+                it.copy(
+                    hangouts = emptyList(),
+                    isSearchEndReached = false,
+                    searchResetEpoch = it.searchResetEpoch + 1
+                )
+            }
+            hangoutsPaginator?.loadNextItems()
         }.launchIn(viewModelScope)
     }
 
     private fun refresh() {
-        rebuildAndReload(
-            query = _state.value.searchTextState.text.toString().takeIf { it.isNotBlank() },
-            statusFilter = state.value.selectedStatusFilter,
-            vibe = state.value.selectedVibe
-        )
-    }
-
-    // Re-fetches page 1 with the given filters, wiping the current list.
-    private fun rebuildAndReload(
-        query: String?,
-        statusFilter: HangoutStatusFilter,
-        vibe: HangoutVibe?
-    ) {
-        setupHangoutsPaginator(query, statusFilter, vibe)
-        _state.update {
-            it.copy(
-                hangouts = emptyList(),
-                isSearchEndReached = false,
-                searchResetEpoch = it.searchResetEpoch + 1
-            )
-        }
-        loadNextPage()
+        refreshTrigger.update { it + 1 }
     }
 
     private fun setupHangoutsPaginator(
