@@ -1,10 +1,10 @@
 [versions]
-agp = "9.3.0"
+agp = "9.3.1"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
-androidx-appcompat = "1.7.1"
+androidx-appcompat = "1.8.0"
 androidx-core = "1.19.0"
 androidx-espresso = "3.7.0"
 compose-lifecycle = "2.11.0"
@@ -14,7 +14,7 @@ composeMultiplatform = "1.11.1"
 junit = "4.13.2"
 kotlin = "2.4.10"
 material = "1.14.0"
-composeBom = "2026.06.01"
+composeBom = "2026.08.00"
 
 # For BackHandler
 composeNavigationEvent = "1.1.0"
@@ -31,7 +31,7 @@ material-icons = "1.7.3"
 core-splashscreen = "1.2.0"
 
 koin = "4.2.2"
-ktor = "3.5.1"
+ktor = "3.5.2"
 room = "2.8.4"
 sqlite = "2.7.0"
 datastore = "1.2.1"
@@ -47,11 +47,11 @@ compottie = "2.2.4"
 
 coil = "3.5.0"
 
-auth = "2.3.1"
+auth = "3.0.5"
 
 iconsLucideCmp = "2.2.1"
-calf = "0.12.0"
-map = "0.13.0"
+calf = "0.13.0"
+map = "0.14.0"
 moko-geo = "0.8.0"
 zoom = "1.6.0"
 
@@ -160,6 +160,7 @@ touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 # Material3, Cupertino and Liquid Glass adaptive ui
 adaptive-ui = { group = "com.mohamedrejeb.calf", name = "calf-ui", version.ref = "calf" }
+adaptive-webview = { group = "com.mohamedrejeb.calf", name = "calf-webview", version.ref = "calf" }
 
 # Map
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
