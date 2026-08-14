@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
@@ -67,6 +68,7 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
+import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import lynk.feature.hangouts.generated.resources.Res
@@ -125,7 +127,13 @@ fun HangoutsListScreen(
             LynkTopAppBar(title = stringResource(Res.string.hangouts))
         }
     ) { scaffoldPadding ->
-        Box(modifier = Modifier.fillMaxSize().clearFocusOnTap()) {
+        val configuration = currentDeviceConfiguration()
+        val listMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
+
+        Box(
+            modifier = Modifier.fillMaxSize().clearFocusOnTap(),
+            contentAlignment = Alignment.TopCenter
+        ) {
             val isSearchActive =
                 state.searchTextState.text.toString().isNotBlank() || state.selectedVibe != null
             val showEmptyList =
@@ -142,7 +150,7 @@ fun HangoutsListScreen(
                     end = 16.dp,
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.widthIn(max = listMaxWidth).fillMaxSize()
             ) {
                 if (showEmptyList) {
                     item {
