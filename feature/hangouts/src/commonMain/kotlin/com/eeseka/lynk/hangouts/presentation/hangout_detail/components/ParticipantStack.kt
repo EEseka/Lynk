@@ -28,6 +28,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_online
 import lynk.feature.hangouts.generated.resources.detail_participants_overflow
@@ -52,10 +53,10 @@ fun ParticipantStack(
     ) {
         visible.forEachIndexed { index, participant ->
             ParticipantAvatar(
-                displayName = participant.displayName,
-                initials = participant.initials,
-                profilePictureUrl = participant.profilePictureUrl,
-                isOnline = participant.userId in presentUserIds,
+                displayName = participant.user.displayName,
+                initials = participant.user.initials,
+                profilePictureUrl = participant.user.profilePictureUrl,
+                isOnline = participant.user.userId in presentUserIds,
                 size = avatarSize,
                 modifier = Modifier.zIndex((visible.size - index).toFloat())
             )
@@ -155,11 +156,13 @@ private fun ParticipantStackPreview() {
         ParticipantStack(
             participants = List(7) { index ->
                 HangoutParticipantUi(
-                    userId = "$index",
-                    username = "user$index",
-                    displayName = "User $index",
-                    initials = "U$index",
-                    profilePictureUrl = null,
+                    user = HangoutUserUi(
+                        userId = "$index",
+                        username = "user$index",
+                        displayName = "User $index",
+                        initials = "U$index",
+                        profilePictureUrl = null
+                    ),
                     rsvpStatus = RsvpStatus.ATTENDING,
                     hasPaid = false
                 )

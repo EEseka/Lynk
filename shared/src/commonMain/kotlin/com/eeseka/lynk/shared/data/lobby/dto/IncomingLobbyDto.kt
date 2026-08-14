@@ -8,7 +8,11 @@ enum class IncomingLobbyMessageType {
     PARTICIPANT_INVITED,
     RSVP_UPDATED,
     INVITE_WITHDRAWN,
+    NON_PAYER_REMOVED,
     PARTICIPANT_LEFT,
+    PAYMENT_RECEIVED,
+    PAYMENT_DEADLINE_RESOLVED,
+    PAYOUT_OUTCOME,
     HANGOUT_UPDATED,
     HANGOUT_COMPLETED,
     HANGOUT_CANCELLED,
@@ -27,6 +31,17 @@ data class LobbyParticipantDto(
     val hangoutId: String,
     val userId: String,
     val displayName: String
+)
+
+@Serializable
+data class LobbyHangoutDto(
+    val hangoutId: String
+)
+
+@Serializable
+data class LobbyPayoutDto(
+    val hangoutId: String,
+    val succeeded: Boolean
 )
 
 @Serializable

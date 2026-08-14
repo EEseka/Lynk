@@ -12,12 +12,14 @@ import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPayment
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPreviewUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
@@ -89,10 +91,17 @@ fun Hangout.toHangoutUi() = HangoutUi(
     maxAttendees = maxAttendees,
     participantCount = participantCount,
     chosenSpot = chosenSpot?.toSpotUi(),
-    totalCost = totalCost,
-    costPerPerson = costPerPerson,
     participants = participants.map { it.toHangoutParticipantUi() },
+    payment = payment?.toHangoutPaymentUi(),
     createdAt = createdAt
+)
+
+fun HangoutPayment.toHangoutPaymentUi() = HangoutPaymentUi(
+    totalCostKobo = totalCostKobo,
+    costPerPersonKobo = costPerPersonKobo,
+    splitHeadcount = splitHeadcount,
+    deadline = deadline,
+    state = state
 )
 
 fun HangoutSummary.toHangoutSummaryUi(): HangoutSummaryUi {
@@ -133,11 +142,7 @@ fun HangoutUser.toHangoutUserUi() = HangoutUserUi(
 )
 
 fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
-    userId = userId,
-    username = username,
-    displayName = displayName,
-    initials = displayName.toInitials(),
-    profilePictureUrl = profilePictureUrl,
+    user = user.toHangoutUserUi(),
     rsvpStatus = rsvpStatus,
     hasPaid = hasPaid
 )

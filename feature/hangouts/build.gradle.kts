@@ -54,6 +54,8 @@ kotlin {
 
             implementation(libs.compose.lottie.animations)
 
+            implementation(libs.adaptive.webview)
+
             implementation(projects.shared)
             implementation(projects.feature.createHangout)
         }

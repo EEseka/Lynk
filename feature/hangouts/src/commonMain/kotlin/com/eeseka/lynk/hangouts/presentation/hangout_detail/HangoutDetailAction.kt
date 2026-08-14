@@ -1,6 +1,8 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail
 
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.SearchTab
+import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import kotlinx.datetime.LocalDate
 
 sealed interface HangoutDetailAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutDetailAction
@@ -35,4 +37,32 @@ sealed interface HangoutDetailAction {
     data class OnRemoveSpot(val spotId: String) : HangoutDetailAction
 
     data class OnToggleSaveSpot(val spotId: String, val isCurrentlySaved: Boolean) : HangoutDetailAction
+
+    // Enable payments (host)
+    data class OnCollectPaymentsToggled(val isOn: Boolean) : HangoutDetailAction
+    data object OnPaymentDeadlinePickerClick : HangoutDetailAction
+    data object OnDismissPaymentDeadlinePicker : HangoutDetailAction
+    data class OnPaymentDeadlineSelected(val date: LocalDate) : HangoutDetailAction
+    data object OnEnablePaymentsConfirmed : HangoutDetailAction
+
+    // Deadline (host)
+    data object OnChangeDeadlineClick : HangoutDetailAction
+    data object OnDismissDeadlinePicker : HangoutDetailAction
+    data class OnNewDeadlineSelected(val date: LocalDate) : HangoutDetailAction
+    data object OnDeadlineDecisionClick : HangoutDetailAction
+    data object OnDismissDeadlineDecisionSheet : HangoutDetailAction
+    data class OnDeadlineDecisionSelected(val decision: DeadlineDecision) : HangoutDetailAction
+    data object OnRetryPayoutClick : HangoutDetailAction
+
+    // Paying (guest)
+    data object OnPayClick : HangoutDetailAction
+    data object OnDismissPayConfirmSheet : HangoutDetailAction
+    data object OnConfirmPayment : HangoutDetailAction
+    data object OnCheckPaymentClick : HangoutDetailAction
+    data object OnDismissPaymentCheckout : HangoutDetailAction
+
+    // Bank picker
+    data object OnBankPickerClick : HangoutDetailAction
+    data object OnDismissBankPicker : HangoutDetailAction
+    data class OnBankSelected(val bankCode: String) : HangoutDetailAction
 }

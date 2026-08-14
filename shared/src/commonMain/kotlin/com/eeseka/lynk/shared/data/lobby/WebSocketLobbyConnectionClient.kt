@@ -6,8 +6,10 @@ import com.eeseka.lynk.shared.data.lobby.dto.CandidateRemovedDto
 import com.eeseka.lynk.shared.data.lobby.dto.CenterUpdateDto
 import com.eeseka.lynk.shared.data.lobby.dto.ErrorDto
 import com.eeseka.lynk.shared.data.lobby.dto.IncomingLobbyMessageType
+import com.eeseka.lynk.shared.data.lobby.dto.LobbyHangoutDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyHostActionDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyParticipantDto
+import com.eeseka.lynk.shared.data.lobby.dto.LobbyPayoutDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyRsvpDto
 import com.eeseka.lynk.shared.data.lobby.dto.PresenceDto
 import com.eeseka.lynk.shared.data.lobby.dto.VoteTallyDto
@@ -54,9 +56,29 @@ class WebSocketLobbyConnectionClient(
                 LobbyEvent.ParticipantInviteWithdrawn(dto.hangoutId, dto.userId, dto.displayName)
             }
 
+            IncomingLobbyMessageType.NON_PAYER_REMOVED -> {
+                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                LobbyEvent.NonPayerRemoved(dto.hangoutId, dto.userId, dto.displayName)
+            }
+
             IncomingLobbyMessageType.PARTICIPANT_LEFT -> {
                 val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
                 LobbyEvent.ParticipantLeft(dto.hangoutId, dto.userId, dto.displayName)
+            }
+
+            IncomingLobbyMessageType.PAYMENT_RECEIVED -> {
+                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                LobbyEvent.PaymentReceived(dto.hangoutId, dto.userId, dto.displayName)
+            }
+
+            IncomingLobbyMessageType.PAYMENT_DEADLINE_RESOLVED -> {
+                val dto = json.decodeFromString<LobbyHangoutDto>(message.payload)
+                LobbyEvent.PaymentDeadlineResolved(dto.hangoutId)
+            }
+
+            IncomingLobbyMessageType.PAYOUT_OUTCOME -> {
+                val dto = json.decodeFromString<LobbyPayoutDto>(message.payload)
+                LobbyEvent.PayoutOutcome(dto.hangoutId, dto.succeeded)
             }
 
             IncomingLobbyMessageType.RSVP_UPDATED -> {

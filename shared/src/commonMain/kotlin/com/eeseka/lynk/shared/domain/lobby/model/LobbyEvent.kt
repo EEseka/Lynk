@@ -16,10 +16,31 @@ sealed interface LobbyEvent {
         val displayName: String
     ) : LobbyEvent
 
+    data class NonPayerRemoved(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
     data class ParticipantLeft(
         val hangoutId: String,
         val userId: String,
         val displayName: String
+    ) : LobbyEvent
+
+    data class PaymentReceived(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class PaymentDeadlineResolved(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class PayoutOutcome(
+        val hangoutId: String,
+        val succeeded: Boolean
     ) : LobbyEvent
 
     data class RsvpUpdated(

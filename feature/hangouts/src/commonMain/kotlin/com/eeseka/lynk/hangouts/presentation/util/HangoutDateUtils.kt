@@ -1,6 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.util
 
 import androidx.compose.runtime.Composable
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -34,3 +35,27 @@ fun Instant.toHangoutDisplayDate(): String {
         }
     )
 }
+
+fun Instant.toDeadlineDisplayDate(): String =
+    toLocalDateTime(TimeZone.currentSystemDefault()).date.format(
+        LocalDate.Format {
+            dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
+            chars(" ")
+            day()
+            chars(" ")
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+        }
+    )
+
+fun Long.toLocalDate(): LocalDate =
+    Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
+
+fun LocalDate.toDeadlineLabel(): String = format(
+    LocalDate.Format {
+        day()
+        char(' ')
+        monthName(MonthNames.ENGLISH_ABBREVIATED)
+        char(' ')
+        year()
+    }
+)

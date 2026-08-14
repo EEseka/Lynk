@@ -25,6 +25,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_going_count
@@ -102,11 +103,13 @@ fun ParticipantsSection(
 
 private fun previewParticipants(count: Int) = List(count) { index ->
     HangoutParticipantUi(
-        userId = "$index",
-        username = "user$index",
-        displayName = "Guest $index",
-        initials = "G$index",
-        profilePictureUrl = null,
+        user = HangoutUserUi(
+            userId = "$index",
+            username = "user$index",
+            displayName = "Guest $index",
+            initials = "G$index",
+            profilePictureUrl = null
+        ),
         rsvpStatus = RsvpStatus.ATTENDING,
         hasPaid = false
     )
@@ -143,9 +146,10 @@ private fun ParticipantsSectionNoCapPreview() = ParticipantsSectionPreview(maxAt
 
 @PreviewLightDark
 @Composable
-private fun ParticipantsSectionOverflowPreview() = ParticipantsSectionPreview(
-    participants = previewParticipants(12),
-    participantCount = 12
+private fun ParticipantsSectionFullPreview() = ParticipantsSectionPreview(
+    participants = previewParticipants(10),
+    participantCount = 10,
+    maxAttendees = 10
 )
 
 @PreviewLightDark

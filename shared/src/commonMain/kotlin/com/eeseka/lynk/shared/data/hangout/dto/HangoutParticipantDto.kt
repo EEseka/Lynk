@@ -5,10 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class HangoutParticipantDto(
-    val userId: String,
-    val username: String,
-    val displayName: String,
-    val profilePictureUrl: String?,
+    val user: HangoutUserDto,
     val rsvpStatus: RsvpStatus,
     val hasPaid: Boolean
 )

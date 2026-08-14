@@ -2,13 +2,17 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.DeadlineChangeIntent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.SearchTab
-import com.eeseka.lynk.shared.domain.location.LocationCoordinates
+import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
+import kotlinx.datetime.LocalDate
 
 @Stable
 data class HangoutDetailState(
@@ -60,5 +64,46 @@ data class HangoutDetailState(
     val favoriteSearchResetEpoch: Int = 0,
 
     val proposingSpotIds: Set<String> = emptySet(),
-    val removingSpotIds: Set<String> = emptySet()
+    val removingSpotIds: Set<String> = emptySet(),
+
+    val isCollectPaymentsOn: Boolean = false,
+    val totalCostState: TextFieldState = TextFieldState(),
+    val totalCostError: UiText? = null,
+    val paymentDeadlineDate: LocalDate? = null,
+    val paymentDeadlineError: UiText? = null,
+    val isPaymentDeadlinePickerOpen: Boolean = false,
+    val isEnablingPayments: Boolean = false,
+
+    // Bank picker, opened from the inline setup form
+    val isBankPickerOpen: Boolean = false,
+    val bankSearchState: TextFieldState = TextFieldState(),
+    val allBanks: List<BankUi> = emptyList(),
+    val bankResults: List<BankUi> = emptyList(),
+    val isLoadingBanks: Boolean = false,
+    val bankLoadError: UiText? = null,
+    val selectedBank: BankUi? = null,
+
+    // Account resolution, which runs on its own once a bank and 10 digits are in
+    val accountNumberState: TextFieldState = TextFieldState(),
+    val resolvedAccountName: String? = null,
+    val isResolvingAccount: Boolean = false,
+    val accountResolutionError: UiText? = null,
+
+    val canEnablePayments: Boolean = false,
+
+    val pendingDeadlineChange: DeadlineChangeIntent? = null,
+
+    // The four-way answer the server waits for once a deadline lapses with people unpaid.
+    val isDeadlineDecisionSheetOpen: Boolean = false,
+
+    val isRetryingPayout: Boolean = false,
+
+    val isInitializingPayment: Boolean = false,
+    val paymentQuote: PaymentQuoteUi? = null,
+
+    // Paystack's checkout page.
+    val paymentCheckoutUrl: String? = null,
+
+    val isAwaitingPaymentReturn: Boolean = false,
+    val isVerifyingPayment: Boolean = false
 )

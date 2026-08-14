@@ -18,8 +18,7 @@ data class HangoutUi(
     val maxAttendees: Int?,
     val participantCount: Int,
     val chosenSpot: SpotUi?,
-    val totalCost: Double?,
-    val costPerPerson: Double?,
     val participants: List<HangoutParticipantUi>,
+    val payment: HangoutPaymentUi?,
     val createdAt: Instant
 )

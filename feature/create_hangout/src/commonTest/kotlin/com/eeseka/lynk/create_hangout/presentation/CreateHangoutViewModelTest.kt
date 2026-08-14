@@ -70,8 +70,9 @@ class CreateHangoutViewModelTest {
         vibe = HangoutVibe.FOOD, status = HangoutStatus.SCHEDULED,
         scheduledAt = futureInstant, maxAttendees = 10,
         participantCount = 3, chosenSpot = dummySpotUi,
-        totalCost = null, costPerPerson = null,
-        participants = emptyList(), createdAt = futureInstant
+        participants = emptyList(),
+        payment = null,
+        createdAt = futureInstant
     )
 
     @BeforeTest

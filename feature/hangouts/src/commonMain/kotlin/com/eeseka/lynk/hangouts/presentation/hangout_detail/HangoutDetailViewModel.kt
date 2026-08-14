@@ -4,9 +4,14 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.DeadlineChangeIntent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.SearchTab
+import com.eeseka.lynk.hangouts.presentation.mappers.toBankUi
+import com.eeseka.lynk.hangouts.presentation.util.toNairaString
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_COST_PER_PERSON_KOBO
 import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
@@ -16,6 +21,10 @@ import com.eeseka.lynk.shared.domain.lobby.LobbyService
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
+import com.eeseka.lynk.shared.domain.payment.PaymentConstants.NUBAN_LENGTH
+import com.eeseka.lynk.shared.domain.payment.PaymentService
+import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.util.DataError
@@ -50,6 +59,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_cancelled_message
 import lynk.feature.hangouts.generated.resources.detail_completed_message
@@ -60,13 +75,30 @@ import lynk.feature.hangouts.generated.resources.event_cancelled
 import lynk.feature.hangouts.generated.resources.event_completed
 import lynk.feature.hangouts.generated.resources.event_invited
 import lynk.feature.hangouts.generated.resources.event_left
+import lynk.feature.hangouts.generated.resources.event_non_payer_removed
+import lynk.feature.hangouts.generated.resources.event_payment_received
+import lynk.feature.hangouts.generated.resources.event_payout_failed
+import lynk.feature.hangouts.generated.resources.event_payout_sent
 import lynk.feature.hangouts.generated.resources.event_rsvp_in
 import lynk.feature.hangouts.generated.resources.event_rsvp_out
 import lynk.feature.hangouts.generated.resources.event_updated
 import lynk.feature.hangouts.generated.resources.event_withdrawn
+import lynk.feature.hangouts.generated.resources.payment_account_check_limit
+import lynk.feature.hangouts.generated.resources.payment_account_not_found
+import lynk.feature.hangouts.generated.resources.payment_deadline_after_hangout
+import lynk.feature.hangouts.generated.resources.payment_deadline_changed
+import lynk.feature.hangouts.generated.resources.payment_deadline_in_past
+import lynk.feature.hangouts.generated.resources.payment_decision_saved
+import lynk.feature.hangouts.generated.resources.payment_enabled_message
+import lynk.feature.hangouts.generated.resources.payment_not_completed
+import lynk.feature.hangouts.generated.resources.payment_payout_queued
+import lynk.feature.hangouts.generated.resources.payment_share_too_low
+import lynk.feature.hangouts.generated.resources.payment_still_processing
 import lynk.feature.hangouts.generated.resources.spot_suggested_message
 import lynk.feature.hangouts.generated.resources.voting_tie_flash
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 class HangoutDetailViewModel(
     private val hangoutService: HangoutService,
@@ -74,6 +106,7 @@ class HangoutDetailViewModel(
     private val spotService: SpotService,
     private val connectionClient: LobbyConnectionClient,
     private val lobbyService: LobbyService,
+    private val paymentService: PaymentService,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
     private val eventChannel = Channel<HangoutDetailEvent>()
@@ -83,8 +116,7 @@ class HangoutDetailViewModel(
     private var hasLoadedInitialData = false
 
     private val _hangoutId = MutableStateFlow<String?>(null)
-    private var enteredHangoutId: String? =
-        null // Which hangout's lobby this socket is currently marked "present" in (server-side).
+    private var enteredHangoutId: String? = null // Which hangout's lobby this socket is currently marked "present" in (server-side).
 
     private var spotSearchPaginator: Paginator<String?, Spot>? = null
     private var currentNextPageToken: String? = null
@@ -104,6 +136,9 @@ class HangoutDetailViewModel(
                 observeProposeSpotSheetSearchFilters()
                 observeLobbyEvents()
                 observeLobbyPresence()
+                observeBankSearch()
+                observeAccountResolution()
+                observeEnablePaymentsForm()
                 hasLoadedInitialData = true
             }
         }
@@ -131,7 +166,6 @@ class HangoutDetailViewModel(
                 action.latitude,
                 action.longitude
             )
-
             HangoutDetailAction.OnProposeSpotClick -> _state.update { it.copy(isProposeSpotSheetOpen = true) }
             HangoutDetailAction.OnDismissProposeSpotSheet -> dismissProposeSpotSheet()
             is HangoutDetailAction.OnTabSelected -> _state.update {
@@ -139,11 +173,42 @@ class HangoutDetailViewModel(
                     activeProposeSpotSheetSearchTab = action.tab
                 )
             }
-
             HangoutDetailAction.LoadNextSpotPage -> loadNextSpotSearchPage()
             HangoutDetailAction.LoadNextFavoriteSpotPage -> loadNextFavoriteSpotSearchPage()
             is HangoutDetailAction.OnProposeSpot -> proposeSpot(action.spotId)
             is HangoutDetailAction.OnRemoveSpot -> removeSpot(action.spotId)
+            is HangoutDetailAction.OnCollectPaymentsToggled -> toggleCollectPayments(action.isOn)
+            HangoutDetailAction.OnPaymentDeadlinePickerClick -> _state.update {
+                it.copy(isPaymentDeadlinePickerOpen = true)
+            }
+            HangoutDetailAction.OnDismissPaymentDeadlinePicker -> _state.update {
+                it.copy(isPaymentDeadlinePickerOpen = false)
+            }
+            is HangoutDetailAction.OnPaymentDeadlineSelected -> selectPaymentDeadline(action.date)
+            HangoutDetailAction.OnEnablePaymentsConfirmed -> enablePayments()
+            HangoutDetailAction.OnChangeDeadlineClick -> _state.update {
+                it.copy(pendingDeadlineChange = DeadlineChangeIntent.CHANGE)
+            }
+            HangoutDetailAction.OnDismissDeadlinePicker -> _state.update {
+                it.copy(pendingDeadlineChange = null)
+            }
+            is HangoutDetailAction.OnNewDeadlineSelected -> submitNewDeadline(action.date)
+            HangoutDetailAction.OnDeadlineDecisionClick -> _state.update {
+                it.copy(isDeadlineDecisionSheetOpen = true)
+            }
+            HangoutDetailAction.OnDismissDeadlineDecisionSheet -> _state.update {
+                it.copy(isDeadlineDecisionSheetOpen = false)
+            }
+            is HangoutDetailAction.OnDeadlineDecisionSelected -> selectDeadlineDecision(action.decision)
+            HangoutDetailAction.OnRetryPayoutClick -> retryPayout()
+            HangoutDetailAction.OnPayClick -> initializePayment()
+            HangoutDetailAction.OnDismissPayConfirmSheet -> dismissPayConfirmSheet()
+            HangoutDetailAction.OnConfirmPayment -> openPaymentPage()
+            HangoutDetailAction.OnCheckPaymentClick -> verifyPayment()
+            HangoutDetailAction.OnDismissPaymentCheckout -> dismissPaymentCheckout()
+            HangoutDetailAction.OnBankPickerClick -> _state.update { it.copy(isBankPickerOpen = true) }
+            HangoutDetailAction.OnDismissBankPicker -> dismissBankPicker()
+            is HangoutDetailAction.OnBankSelected -> selectBank(action.bankCode)
             is HangoutDetailAction.OnToggleSaveSpot -> toggleSaveSpot(
                 spotId = action.spotId,
                 isCurrentlySaved = action.isCurrentlySaved
@@ -230,6 +295,38 @@ class HangoutDetailViewModel(
                     Res.string.event_cancelled,
                     arrayOf(event.hostDisplayName)
                 ) to LynkFlashType.Warning
+            )
+
+            is LobbyEvent.PaymentReceived -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                // The payer just came back from Paystack and knows perfectly well that they paid.
+                snackbar = if (event.userId == state.value.currentUserId) null else UiText.Resource(
+                    Res.string.event_payment_received,
+                    arrayOf(event.displayName)
+                ) to LynkFlashType.Success
+            )
+
+            is LobbyEvent.NonPayerRemoved -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = UiText.Resource(
+                    Res.string.event_non_payer_removed,
+                    arrayOf(event.displayName)
+                ) to LynkFlashType.Warning
+            )
+
+            is LobbyEvent.PaymentDeadlineResolved -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = null
+            )
+
+            // Only ever delivered to the host, so this needs no isHost guard.
+            is LobbyEvent.PayoutOutcome -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = if (event.succeeded) {
+                    UiText.Resource(Res.string.event_payout_sent) to LynkFlashType.Success
+                } else {
+                    UiText.Resource(Res.string.event_payout_failed) to LynkFlashType.Error
+                }
             )
 
             is LobbyEvent.LobbyError -> {
@@ -343,6 +440,9 @@ class HangoutDetailViewModel(
             .connectionState
             .onEach { connectionState ->
                 _state.update { it.copy(connectionState = connectionState) }
+                if (connectionState == ConnectionState.CONNECTED) {
+                    _hangoutId.value?.let { reloadIfCurrent(it) }
+                }
             }.launchIn(viewModelScope)
     }
 
@@ -375,9 +475,12 @@ class HangoutDetailViewModel(
         _hangoutId.update { hangoutId }
 
         // A different hangout means a different lobby — drop presence, voting and the
-        // location-dependent spot search (trending is recomputed around the new group).
+        // location-dependent spot search (trending is recomputed around the new group), along with
+        // any payment this screen was still waiting on.
         _state.update {
             it.copy(
+                isAwaitingPaymentReturn = false,
+                paymentCheckoutUrl = null,
                 presentUserIds = emptySet(),
                 candidates = emptyList(),
                 votes = emptyMap(),
@@ -565,8 +668,8 @@ class HangoutDetailViewModel(
     @OptIn(FlowPreview::class)
     private fun observeInviteSearch() {
         snapshotFlow { _state.value.inviteQueryState.text.toString() }
-            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .distinctUntilChanged()
+            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .onEach { query ->
                 val trimmed = query.trim()
                 if (trimmed.isBlank()) {
@@ -737,8 +840,8 @@ class HangoutDetailViewModel(
     private fun observeProposeSpotSheetSearchFilters() {
         val searchQueryFlow =
             snapshotFlow { _state.value.proposeSpotSheetSearchTextState.text.toString() }
-                .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
                 .distinctUntilChanged()
+                .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
 
         val tabFlow = state.map { it.activeProposeSpotSheetSearchTab }.distinctUntilChanged()
 
@@ -911,6 +1014,422 @@ class HangoutDetailViewModel(
         }
     }
 
+    private fun toggleCollectPayments(isOn: Boolean) {
+        if (!isOn) {
+            resetCollectPaymentsForm()
+            return
+        }
+        _state.update { it.copy(isCollectPaymentsOn = true) }
+        // 262 banks in one unpaginated call, so it is fetched once when the form first opens.
+        if (state.value.allBanks.isEmpty()) loadBanks()
+    }
+
+    private fun selectPaymentDeadline(date: LocalDate) {
+        _state.update {
+            it.copy(
+                paymentDeadlineDate = date,
+                isPaymentDeadlinePickerOpen = false
+            )
+        }
+    }
+
+    private fun submitNewDeadline(date: LocalDate) {
+        val hangoutId = _hangoutId.value ?: return
+        val intent = state.value.pendingDeadlineChange ?: return
+        val scheduledAt = state.value.hangout?.scheduledAt ?: return
+
+        date.deadlineError()?.let { error ->
+            viewModelScope.launch {
+                eventChannel.send(HangoutDetailEvent.ShowMessage(error, LynkFlashType.Error))
+            }
+            return
+        }
+
+        val deadline = date.toDeadlineInstant(scheduledAt)
+        _state.update { it.copy(pendingDeadlineChange = null) }
+
+        viewModelScope.launch {
+            val result = when (intent) {
+                DeadlineChangeIntent.CHANGE -> paymentService.changeDeadline(hangoutId, deadline)
+                DeadlineChangeIntent.EXTEND -> paymentService.decideAtDeadline(
+                    hangoutId = hangoutId,
+                    decision = DeadlineDecision.EXTEND,
+                    newDeadline = deadline
+                )
+            }
+            result
+                .onSuccess {
+                    reloadIfCurrent(hangoutId)
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(
+                            UiText.Resource(Res.string.payment_deadline_changed),
+                            LynkFlashType.Success
+                        )
+                    )
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+        }
+    }
+
+    private fun selectDeadlineDecision(decision: DeadlineDecision) {
+        if (decision == DeadlineDecision.EXTEND) {
+            _state.update {
+                it.copy(
+                    isDeadlineDecisionSheetOpen = false,
+                    pendingDeadlineChange = DeadlineChangeIntent.EXTEND
+                )
+            }
+            return
+        }
+
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            paymentService
+                .decideAtDeadline(hangoutId = hangoutId, decision = decision)
+                .onSuccess {
+                    reloadIfCurrent(hangoutId)
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(
+                            UiText.Resource(Res.string.payment_decision_saved),
+                            LynkFlashType.Success
+                        )
+                    )
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+        }
+    }
+
+    private fun dismissBankPicker() {
+        _state.value.bankSearchState.clearText()
+        _state.update { it.copy(isBankPickerOpen = false) }
+    }
+
+    private fun selectBank(bankCode: String) {
+        val bank = state.value.allBanks.firstOrNull { it.code == bankCode } ?: return
+        _state.value.bankSearchState.clearText()
+        _state.update {
+            it.copy(
+                selectedBank = bank,
+                isBankPickerOpen = false,
+                // The old name belonged to the old bank, so it cannot stand while the new one resolves.
+                resolvedAccountName = null,
+                accountResolutionError = null
+            )
+        }
+    }
+
+    private fun loadBanks() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingBanks = true, bankLoadError = null) }
+            paymentService
+                .getBanks()
+                .onSuccess { banks ->
+                    val bankUis = banks.map { bank -> bank.toBankUi() }
+                    _state.update {
+                        it.copy(
+                            allBanks = bankUis,
+                            bankResults = bankUis,
+                            isLoadingBanks = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(bankLoadError = error.toUiText(), isLoadingBanks = false)
+                    }
+                }
+        }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeBankSearch() {
+        snapshotFlow { _state.value.bankSearchState.text.toString() }
+            .distinctUntilChanged()
+            .debounce { query -> if (query.isBlank()) 0.milliseconds else 200.milliseconds }
+            .onEach { query ->
+                val trimmed = query.trim()
+                _state.update { state ->
+                    state.copy(
+                        bankResults = if (trimmed.isBlank()) {
+                            state.allBanks
+                        } else {
+                            state.allBanks.filter { it.name.contains(trimmed, ignoreCase = true) }
+                        }
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    private fun observeAccountResolution() {
+        combine(
+            snapshotFlow { _state.value.accountNumberState.text.toString() },
+            state.map { it.selectedBank?.code }.distinctUntilChanged()
+        ) { accountNumber, bankCode ->
+            accountNumber.trim() to bankCode
+        }
+        .distinctUntilChanged()
+        .debounce(800.milliseconds)
+        .mapLatest { (accountNumber, bankCode) ->
+            if (bankCode == null || accountNumber.length != NUBAN_LENGTH) {
+                _state.update {
+                    it.copy(
+                        resolvedAccountName = null,
+                        accountResolutionError = null,
+                        isResolvingAccount = false
+                    )
+                }
+                return@mapLatest
+            }
+
+            _state.update {
+                it.copy(
+                    isResolvingAccount = true,
+                    resolvedAccountName = null,
+                    accountResolutionError = null
+                )
+            }
+            paymentService
+                .resolveBankAccount(accountNumber = accountNumber, bankCode = bankCode)
+                .onSuccess { account ->
+                    _state.update {
+                        it.copy(
+                            resolvedAccountName = account.accountName,
+                            isResolvingAccount = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    val resolutionError = when (error) {
+                        DataError.Remote.BAD_REQUEST -> {
+                            UiText.Resource(Res.string.payment_account_not_found)
+                        }
+
+                        DataError.Remote.TOO_MANY_REQUESTS -> {
+                            UiText.Resource(Res.string.payment_account_check_limit)
+                        }
+
+                        else -> error.toUiText()
+                    }
+
+                    _state.update {
+                        it.copy(
+                            accountResolutionError = resolutionError,
+                            isResolvingAccount = false
+                        )
+                    }
+                }
+        }
+        .launchIn(viewModelScope)
+    }
+
+    private fun observeEnablePaymentsForm() {
+        combine(
+            snapshotFlow { _state.value.totalCostState.text.toString() },
+            state.map {
+                Triple(it.paymentDeadlineDate, it.selectedBank?.code, it.resolvedAccountName)
+            }.distinctUntilChanged(),
+            state.map { currentState ->
+                currentState.hangout?.participants?.count {
+                    it.rsvpStatus == RsvpStatus.ATTENDING
+                } ?: 0
+            }.distinctUntilChanged()
+        ) { totalCost, (deadline, bankCode, accountName), attendingCount ->
+            val totalCostKobo = totalCost.toKoboOrNull()
+            val deadlineError = deadline?.deadlineError()
+
+            val isShareTooLow = totalCostKobo != null &&
+                    attendingCount > 0 &&
+                    totalCostKobo / attendingCount < MIN_COST_PER_PERSON_KOBO
+
+            _state.update {
+                it.copy(
+                    canEnablePayments = totalCostKobo != null &&
+                            !isShareTooLow &&
+                            deadline != null &&
+                            deadlineError == null &&
+                            bankCode != null &&
+                            accountName != null,
+                    totalCostError = if (isShareTooLow) {
+                        UiText.Resource(Res.string.payment_share_too_low)
+                    } else null,
+                    paymentDeadlineError = deadlineError
+                )
+            }
+        }
+        .launchIn(viewModelScope)
+    }
+
+    private fun enablePayments() {
+        val hangoutId = _hangoutId.value ?: return
+        val currentState = state.value
+        val scheduledAt = currentState.hangout?.scheduledAt ?: return
+        val totalCostKobo = currentState.totalCostState.text.toKoboOrNull() ?: return
+        val deadline = currentState.paymentDeadlineDate?.toDeadlineInstant(scheduledAt) ?: return
+        val bankCode = currentState.selectedBank?.code ?: return
+        val accountNumber = currentState.accountNumberState.text.toString().trim()
+
+        viewModelScope.launch {
+            _state.update { it.copy(isEnablingPayments = true) }
+            paymentService
+                .enablePayments(
+                    hangoutId = hangoutId,
+                    totalCostKobo = totalCostKobo,
+                    paymentDeadline = deadline,
+                    accountNumber = accountNumber,
+                    bankCode = bankCode
+                )
+                .onSuccess {
+                    reloadIfCurrent(hangoutId)
+                    resetCollectPaymentsForm()
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(
+                            UiText.Resource(Res.string.payment_enabled_message),
+                            LynkFlashType.Success
+                        )
+                    )
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+            _state.update { it.copy(isEnablingPayments = false) }
+        }
+    }
+
+    private fun resetCollectPaymentsForm() {
+        _state.value.totalCostState.clearText()
+        _state.value.accountNumberState.clearText()
+        _state.value.bankSearchState.clearText()
+        _state.update {
+            it.copy(
+                isCollectPaymentsOn = false,
+                isPaymentDeadlinePickerOpen = false,
+                isBankPickerOpen = false,
+                totalCostError = null,
+                paymentDeadlineDate = null,
+                paymentDeadlineError = null,
+                selectedBank = null,
+                resolvedAccountName = null,
+                accountResolutionError = null
+            )
+        }
+    }
+
+    private fun retryPayout() {
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isRetryingPayout = true) }
+            paymentService
+                .retryPayout(hangoutId)
+                .onSuccess {
+                    reloadIfCurrent(hangoutId)
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(
+                            UiText.Resource(Res.string.payment_payout_queued),
+                            LynkFlashType.Success
+                        )
+                    )
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+            _state.update { it.copy(isRetryingPayout = false) }
+        }
+    }
+
+    private fun initializePayment() {
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isInitializingPayment = true) }
+            paymentService
+                .initializePayment(hangoutId)
+                .onSuccess { initialization ->
+                    _state.update {
+                        it.copy(
+                            paymentQuote = PaymentQuoteUi(
+                                shareLabel = initialization.netAmountKobo.toNairaString(),
+                                chargeLabel = initialization.amountKobo.toNairaString(),
+                                authorizationUrl = initialization.authorizationUrl
+                            )
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+            _state.update { it.copy(isInitializingPayment = false) }
+        }
+    }
+
+    private fun openPaymentPage() {
+        val url = state.value.paymentQuote?.authorizationUrl ?: return
+        dismissPayConfirmSheet()
+        _state.update { it.copy(paymentCheckoutUrl = url, isAwaitingPaymentReturn = true) }
+    }
+
+    private fun dismissPaymentCheckout() {
+        _state.update { it.copy(paymentCheckoutUrl = null) }
+        verifyPayment()
+    }
+
+    private fun verifyPayment() {
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isVerifyingPayment = true) }
+            paymentService
+                .verifyPayment(hangoutId)
+                .onSuccess { status ->
+                    when (status) {
+                        PaymentStatus.SUCCESS -> {
+                            reloadIfCurrent(hangoutId)
+                            _state.update { it.copy(isAwaitingPaymentReturn = false) }
+                        }
+                        PaymentStatus.PENDING -> eventChannel.send(
+                            HangoutDetailEvent.ShowMessage(
+                                UiText.Resource(Res.string.payment_still_processing),
+                                LynkFlashType.Info
+                            )
+                        )
+                        PaymentStatus.FAILED, PaymentStatus.ABANDONED -> {
+                            _state.update { it.copy(isAwaitingPaymentReturn = false) }
+                            eventChannel.send(
+                                HangoutDetailEvent.ShowMessage(
+                                    UiText.Resource(Res.string.payment_not_completed),
+                                    LynkFlashType.Error
+                                )
+                            )
+                        }
+                    }
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        HangoutDetailEvent.ShowMessage(error.toUiText(), LynkFlashType.Error)
+                    )
+                }
+            _state.update { it.copy(isVerifyingPayment = false) }
+        }
+    }
+
+    // The quote belongs to one attempt at paying, so it leaves with the sheet.
+    private fun dismissPayConfirmSheet() {
+        _state.update { it.copy(paymentQuote = null) }
+    }
+
     private suspend fun reloadIfCurrent(hangoutId: String) {
         if (hangoutId != _hangoutId.value) return
         hangoutService.getHangoutDetails(hangoutId)
@@ -965,4 +1484,38 @@ class HangoutDetailViewModel(
         removingSpotIds = emptySet(),
         isClosingVoting = false
     )
+
+    private fun CharSequence.toKoboOrNull(): Long? {
+        val cleaned = filter { it.isDigit() || it == '.' }.toString()
+        // Two points is a typo, and there is no honest amount to guess from it.
+        if (cleaned.count { it == '.' } > 1) return null
+
+        val naira = cleaned.substringBefore('.').ifEmpty { "0" }.toLongOrNull() ?: return null
+        val kobo =
+            cleaned.substringAfter('.', "").take(2).padEnd(2, '0').toLongOrNull() ?: return null
+
+        if (naira > (Long.MAX_VALUE - kobo) / 100) return null
+
+        val totalKobo = naira * 100 + kobo
+        return if (totalKobo <= 0L) null else totalKobo
+    }
+
+    private fun LocalDate.toDeadlineInstant(scheduledAt: Instant): Instant {
+        val endOfDay = LocalDateTime(this, LocalTime(23, 59))
+            .toInstant(TimeZone.currentSystemDefault())
+        return if (endOfDay > scheduledAt) scheduledAt else endOfDay
+    }
+
+    private fun LocalDate.deadlineError(): UiText? {
+        val scheduledAt = state.value.hangout?.scheduledAt ?: return null
+        val timeZone = TimeZone.currentSystemDefault()
+        val today = Clock.System.now().toLocalDateTime(timeZone).date
+        val lastAllowedDate = scheduledAt.toLocalDateTime(timeZone).date
+
+        return when {
+            this < today -> UiText.Resource(Res.string.payment_deadline_in_past)
+            this > lastAllowedDate -> UiText.Resource(Res.string.payment_deadline_after_hangout)
+            else -> null
+        }
+    }
 }

@@ -39,6 +39,22 @@ suspend inline fun <reified Request, reified Response : Any> HttpClient.post(
     }
 }
 
+suspend inline fun <reified Response : Any> HttpClient.post(
+    route: String,
+    queryParams: Map<String, Any> = mapOf(),
+    crossinline builder: HttpRequestBuilder.() -> Unit = {}
+): Result<Response, DataError.Remote> {
+    return safeCall {
+        post {
+            url(constructRoute(route))
+            queryParams.forEach { (key, value) ->
+                parameter(key, value)
+            }
+            builder()
+        }
+    }
+}
+
 suspend inline fun <reified Response : Any> HttpClient.get(
     route: String,
     queryParams: Map<String, Any> = mapOf(),
@@ -152,6 +168,7 @@ suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<
         413 -> Result.Failure(DataError.Remote.PAYLOAD_TOO_LARGE)
         429 -> Result.Failure(DataError.Remote.TOO_MANY_REQUESTS)
         500 -> Result.Failure(DataError.Remote.SERVER_ERROR)
+        502 -> Result.Failure(DataError.Remote.SERVICE_UNAVAILABLE)
         503 -> Result.Failure(DataError.Remote.SERVICE_UNAVAILABLE)
         else -> Result.Failure(DataError.Remote.UNKNOWN)
     }

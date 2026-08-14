@@ -29,6 +29,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_group_declined
 import lynk.feature.hangouts.generated.resources.detail_group_going
@@ -45,6 +46,8 @@ fun ParticipantsSheet(
     onWithdraw: (String) -> Unit,
     withdrawingUserIds: Set<String>,
     presentUserIds: Set<String> = emptySet(),
+    arePaymentsOn: Boolean = false,
+    hostId: String? = null,
     modifier: Modifier = Modifier
 ) {
     LynkAdaptiveSheet(
@@ -57,6 +60,8 @@ fun ParticipantsSheet(
             onWithdraw = onWithdraw,
             withdrawingUserIds = withdrawingUserIds,
             presentUserIds = presentUserIds,
+            arePaymentsOn = arePaymentsOn,
+            hostId = hostId,
             modifier = modifier
         )
     }
@@ -69,6 +74,8 @@ private fun ParticipantsSheetContent(
     onWithdraw: (String) -> Unit,
     withdrawingUserIds: Set<String>,
     presentUserIds: Set<String>,
+    arePaymentsOn: Boolean,
+    hostId: String?,
     modifier: Modifier = Modifier
 ) {
     val going = participants.filter { it.rsvpStatus == RsvpStatus.ATTENDING }
@@ -79,7 +86,8 @@ private fun ParticipantsSheetContent(
         LynkText(
             text = stringResource(Res.string.participants_sheet_title),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         val goingTitle = stringResource(Res.string.detail_group_going)
@@ -88,14 +96,16 @@ private fun ParticipantsSheetContent(
 
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
+            contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             participantGroup(
                 title = goingTitle,
                 participants = going,
                 presentUserIds = presentUserIds,
-                showHeader = isHost
+                showHeader = isHost,
+                arePaymentsOn = arePaymentsOn,
+                hostId = hostId
             )
 
             if (isHost && pending.isNotEmpty()) {
@@ -104,8 +114,8 @@ private fun ParticipantsSheetContent(
                     participants = pending,
                     trailing = { participant ->
                         WithdrawControl(
-                            isLoading = participant.userId in withdrawingUserIds,
-                            onClick = { onWithdraw(participant.userId) }
+                            isLoading = participant.user.userId in withdrawingUserIds,
+                            onClick = { onWithdraw(participant.user.userId) }
                         )
                     }
                 )
@@ -126,6 +136,8 @@ private fun LazyListScope.participantGroup(
     participants: List<HangoutParticipantUi>,
     presentUserIds: Set<String> = emptySet(),
     showHeader: Boolean = true,
+    arePaymentsOn: Boolean = false,
+    hostId: String? = null,
     trailing: (@Composable (HangoutParticipantUi) -> Unit)? = null
 ) {
     if (participants.isEmpty()) return
@@ -139,11 +151,15 @@ private fun LazyListScope.participantGroup(
             )
         }
     }
-    items(items = participants, key = { it.userId }) { participant ->
+    items(items = participants, key = { it.user.userId }) { participant ->
         Box(modifier = Modifier.animateItem()) {
             ParticipantCard(
                 participant = participant,
-                isOnline = participant.userId in presentUserIds,
+                isOnline = participant.user.userId in presentUserIds,
+                showPaidBadge = arePaymentsOn &&
+                        participant.hasPaid &&
+                        participant.user.userId != hostId,
+                showHostBadge = participant.user.userId == hostId,
                 trailing = trailing?.let { { it(participant) } },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -186,20 +202,24 @@ private fun previewParticipant(
     name: String,
     username: String,
     initials: String,
-    status: RsvpStatus
+    status: RsvpStatus,
+    hasPaid: Boolean = false
 ) = HangoutParticipantUi(
-    userId = id,
-    username = username,
-    displayName = name,
-    initials = initials,
-    profilePictureUrl = null,
+    user = HangoutUserUi(
+        userId = id,
+        username = username,
+        displayName = name,
+        initials = initials,
+        profilePictureUrl = null
+    ),
     rsvpStatus = status,
-    hasPaid = false
+    hasPaid = hasPaid
 )
 
 private val previewRoster = listOf(
-    previewParticipant("1", "Eseka Emmanuel", "e.eseka", "EE", RsvpStatus.ATTENDING),
-    previewParticipant("2", "Ada Obi", "ada", "AO", RsvpStatus.ATTENDING),
+    // "1" is the host in the previews: marked paid by the server, but never badged.
+    previewParticipant("1", "Eseka Emmanuel", "e.eseka", "EE", RsvpStatus.ATTENDING, hasPaid = true),
+    previewParticipant("2", "Ada Obi", "ada", "AO", RsvpStatus.ATTENDING, hasPaid = true),
     previewParticipant("3", "Tunde Bello", "tunde", "TB", RsvpStatus.ATTENDING),
     previewParticipant("4", "Chidi Okafor", "chidi", "CO", RsvpStatus.PENDING),
     previewParticipant("5", "Zainab Musa", "zainab", "ZM", RsvpStatus.PENDING),
@@ -218,6 +238,8 @@ private fun ParticipantsSheetPreview(
             onWithdraw = {},
             withdrawingUserIds = withdrawingUserIds,
             presentUserIds = setOf("1", "3"),
+            arePaymentsOn = true,
+            hostId = "1",
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(vertical = 20.dp)

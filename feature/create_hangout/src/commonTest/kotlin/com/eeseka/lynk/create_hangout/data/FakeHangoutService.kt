@@ -31,8 +31,8 @@ class FakeHangoutService : HangoutService {
         maxAttendees = null,
         participantCount = 1,
         chosenSpot = null,
-        totalCost = null,
         participants = emptyList(),
+        payment = null,
         createdAt = now
     )
 
