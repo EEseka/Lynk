@@ -159,8 +159,9 @@ class ProfileSetupViewModel(
     private fun observeUsernameAvailability() {
         snapshotFlow { state.value.usernameTextState.text.toString() }
             .map { it.trim() }
-            .debounce(500L.milliseconds)
+            .onEach { _state.update { it.copy(isUsernameAvailable = null) } }
             .distinctUntilChanged()
+            .debounce(500L.milliseconds)
             .onEach { username ->
                 val validationState = UsernameValidator.validate(username)
 

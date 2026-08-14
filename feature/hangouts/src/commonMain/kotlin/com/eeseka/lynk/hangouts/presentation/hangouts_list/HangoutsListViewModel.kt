@@ -117,8 +117,8 @@ class HangoutsListViewModel(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
-            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .distinctUntilChanged()
+            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
 
         val statusFilterFlow = state.map { it.selectedStatusFilter }.distinctUntilChanged()
         val vibeFlow = state.map { it.selectedVibe }.distinctUntilChanged()

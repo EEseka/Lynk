@@ -193,8 +193,8 @@ class DiscoverViewModel(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
-            .debounce(500L.milliseconds)
             .distinctUntilChanged()
+            .debounce(500L.milliseconds)
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
