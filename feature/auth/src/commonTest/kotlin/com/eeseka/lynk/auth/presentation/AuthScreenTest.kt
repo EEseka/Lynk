@@ -1,7 +1,7 @@
 package com.eeseka.lynk.auth.presentation
 
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest

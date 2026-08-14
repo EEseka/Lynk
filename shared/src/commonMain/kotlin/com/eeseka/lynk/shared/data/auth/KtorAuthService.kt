@@ -6,8 +6,8 @@ import com.eeseka.lynk.shared.data.auth.dto.requests.RefreshRequest
 import com.eeseka.lynk.shared.data.auth.mappers.toDomain
 import com.eeseka.lynk.shared.data.networking.delete
 import com.eeseka.lynk.shared.data.networking.post
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.AuthService
+import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result

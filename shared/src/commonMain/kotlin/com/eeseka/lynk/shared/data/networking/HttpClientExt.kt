@@ -9,6 +9,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -33,6 +34,22 @@ suspend inline fun <reified Request, reified Response : Any> HttpClient.post(
                 parameter(key, value)
             }
             setBody(body)
+            builder()
+        }
+    }
+}
+
+suspend inline fun <reified Response : Any> HttpClient.post(
+    route: String,
+    queryParams: Map<String, Any> = mapOf(),
+    crossinline builder: HttpRequestBuilder.() -> Unit = {}
+): Result<Response, DataError.Remote> {
+    return safeCall {
+        post {
+            url(constructRoute(route))
+            queryParams.forEach { (key, value) ->
+                parameter(key, value)
+            }
             builder()
         }
     }
@@ -88,6 +105,40 @@ suspend inline fun <reified Request, reified Response : Any> HttpClient.put(
     }
 }
 
+suspend inline fun <reified Response : Any> HttpClient.patch(
+    route: String,
+    queryParams: Map<String, Any> = mapOf(),
+    crossinline builder: HttpRequestBuilder.() -> Unit = {}
+): Result<Response, DataError.Remote> {
+    return safeCall {
+        patch {
+            url(constructRoute(route))
+            queryParams.forEach { (key, value) ->
+                parameter(key, value)
+            }
+            builder()
+        }
+    }
+}
+
+suspend inline fun <reified Request, reified Response : Any> HttpClient.patch(
+    route: String,
+    body: Request,
+    queryParams: Map<String, Any> = mapOf(),
+    crossinline builder: HttpRequestBuilder.() -> Unit = {}
+): Result<Response, DataError.Remote> {
+    return safeCall {
+        patch {
+            url(constructRoute(route))
+            queryParams.forEach { (key, value) ->
+                parameter(key, value)
+            }
+            setBody(body)
+            builder()
+        }
+    }
+}
+
 suspend inline fun <reified T> safeCall(
     noinline execute: suspend () -> HttpResponse
 ): Result<T, DataError.Remote> {
@@ -117,6 +168,7 @@ suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<
         413 -> Result.Failure(DataError.Remote.PAYLOAD_TOO_LARGE)
         429 -> Result.Failure(DataError.Remote.TOO_MANY_REQUESTS)
         500 -> Result.Failure(DataError.Remote.SERVER_ERROR)
+        502 -> Result.Failure(DataError.Remote.SERVICE_UNAVAILABLE)
         503 -> Result.Failure(DataError.Remote.SERVICE_UNAVAILABLE)
         else -> Result.Failure(DataError.Remote.UNKNOWN)
     }

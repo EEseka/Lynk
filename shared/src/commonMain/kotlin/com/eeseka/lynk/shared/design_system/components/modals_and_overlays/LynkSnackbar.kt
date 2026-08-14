@@ -51,6 +51,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 enum class LynkFlashType {
     Success, Error, Warning, Info
@@ -93,7 +94,7 @@ fun LynkFlashMessageHost(
                 SnackbarDuration.Long -> 5000L
                 SnackbarDuration.Indefinite -> Long.MAX_VALUE
             }
-            delay(timeout)
+            delay(timeout.milliseconds)
             currentData.dismiss()
         }
     }

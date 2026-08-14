@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,13 +32,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.gesture.adaptiveClickable
 
-@Immutable
 data class LynkSegmentedItem(
     val title: String,
     val icon: ImageVector? = null
@@ -49,7 +48,10 @@ enum class LynkSegmentedStyle {
     SCROLLABLE_CHIPS,
 
     /** Full-width pill with animated thumb — for settings, binary/ternary mode switches */
-    FIXED_BAR
+    FIXED_BAR,
+
+    /** Wrapping flow row — for selectable grids like Vibes or multi-line categories */
+    WRAPPING_CHIPS
 }
 
 @Composable
@@ -181,12 +183,62 @@ fun LynkSegmentedControl(
                 }
             }
         }
+
+        LynkSegmentedStyle.WRAPPING_CHIPS -> {
+            FlowRow(
+                modifier = modifier.padding(contentPadding),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items.forEachIndexed { index, item ->
+                    val isSelected = selectedIndex == index
+                    val containerColor = if (isSelected) scheme.primaryContainer.copy(alpha = 0.3f)
+                    else scheme.surfaceContainerHighest
+                    val contentColor = if (isSelected) scheme.onSurface
+                    else scheme.onSurfaceVariant
+                    val borderColor = if (isSelected) scheme.primaryContainer
+                    else scheme.outlineVariant
+
+                    Row(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(containerColor)
+                            .border(1.dp, borderColor, CircleShape)
+                            .adaptiveClickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                role = Role.RadioButton,
+                                shape = CircleShape,
+                                onClick = { onItemSelected(index) }
+                            )
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (item.icon != null) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title,
+                                tint = contentColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        LynkText(
+                            text = item.title,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = contentColor
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
-private fun LynkSegmentedControlPreview() {
+private fun LynkSegmentedControlScrollablePreview() {
     LynkTheme {
         LynkSegmentedControl(
             items = previewItems,
@@ -197,20 +249,7 @@ private fun LynkSegmentedControlPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkSegmentedControlPreviewDark() {
-    LynkTheme(true) {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 0,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.SCROLLABLE_CHIPS
-        )
-    }
-}
-
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkSegmentedControlFixedPreview() {
     LynkTheme {
@@ -223,15 +262,15 @@ private fun LynkSegmentedControlFixedPreview() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
-private fun LynkSegmentedControlFixedPreviewDark() {
-    LynkTheme(true) {
+private fun LynkSegmentedControlWrappedPreview() {
+    LynkTheme {
         LynkSegmentedControl(
             items = previewItems,
             selectedIndex = 1,
             onItemSelected = {},
-            style = LynkSegmentedStyle.FIXED_BAR
+            style = LynkSegmentedStyle.WRAPPING_CHIPS
         )
     }
 }

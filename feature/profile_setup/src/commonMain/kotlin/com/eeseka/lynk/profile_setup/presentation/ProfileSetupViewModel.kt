@@ -83,9 +83,10 @@ class ProfileSetupViewModel(
         .map { UsernameValidator.validate(it) == UsernameValidationState.VALID }
         .distinctUntilChanged()
 
+    // Blank-check only — real validation (too long) runs on submit via validateFormInputs()
     private val isDisplayNameValidFlow =
         snapshotFlow { state.value.displayNameTextState.text.toString() }
-            .map { DisplayNameValidator.validate(it) == DisplayNameValidationState.VALID }
+            .map { it.isNotBlank() }
             .distinctUntilChanged()
 
     private val isUsernameAvailableFlow =
@@ -158,8 +159,9 @@ class ProfileSetupViewModel(
     private fun observeUsernameAvailability() {
         snapshotFlow { state.value.usernameTextState.text.toString() }
             .map { it.trim() }
-            .debounce(500L.milliseconds)
+            .onEach { _state.update { it.copy(isUsernameAvailable = null) } }
             .distinctUntilChanged()
+            .debounce(500L.milliseconds)
             .onEach { username ->
                 val validationState = UsernameValidator.validate(username)
 

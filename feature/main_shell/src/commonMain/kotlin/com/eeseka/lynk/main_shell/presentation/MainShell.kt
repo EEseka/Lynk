@@ -3,9 +3,7 @@ package com.eeseka.lynk.main_shell.presentation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -30,10 +29,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
 import com.eeseka.lynk.discover.presentation.navigation.discoverGraph
+import com.eeseka.lynk.hangouts.presentation.navigation.HangoutsGraphRoutes
+import com.eeseka.lynk.hangouts.presentation.navigation.hangoutsGraph
 import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.main_shell.presentation.components.LynkBottomBar
 import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
-import com.eeseka.lynk.main_shell.presentation.navigation.HangoutsRoute
 import com.eeseka.lynk.main_shell.presentation.navigation.ProfileRoute
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
@@ -49,16 +49,15 @@ fun MainShell() {
 
     val showRail = config.isWideScreen || config == DeviceConfiguration.MOBILE_LANDSCAPE
 
-    // Controls visibility of the navigation components (bottom bar and nav rail)
-    var isNavigationVisible by remember { mutableStateOf(true) }
+    // Controls visibility of the bottom bar only.
+    var isBottomBarVisible by remember { mutableStateOf(true) }
 
-    // Robustly determine the selected item based on the Type-Safe serialization routes
     val selectedItem = remember(currentDestination) {
-        LynkNavigationItem.entries.find { item ->
-            currentDestination?.hierarchy?.any {
-                it.route?.contains(item.route::class.simpleName ?: "") == true
-            } == true
-        } ?: LynkNavigationItem.DISCOVER
+        when {
+            currentDestination?.hierarchy?.any { it.hasRoute(HangoutsGraphRoutes.Graph::class) } == true -> LynkNavigationItem.HANGOUTS
+            currentDestination?.hierarchy?.any { it.hasRoute(ProfileRoute::class) } == true -> LynkNavigationItem.PROFILE
+            else -> LynkNavigationItem.DISCOVER
+        }
     }
 
     // Common navigation action passed to both Rail and BottomBar
@@ -76,7 +75,7 @@ fun MainShell() {
         bottomBar = {
             if (!showRail) {
                 AnimatedVisibility(
-                    visible = isNavigationVisible,
+                    visible = isBottomBarVisible,
                     enter = slideInVertically { it } + fadeIn(),
                     exit = slideOutVertically { it } + fadeOut()
                 ) {
@@ -90,21 +89,15 @@ fun MainShell() {
     ) { paddingValues ->
         if (showRail) {
             Row(modifier = Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    visible = isNavigationVisible,
-                    enter = slideInHorizontally { -it } + fadeIn(),
-                    exit = slideOutHorizontally { -it } + fadeOut()
-                ) {
-                    LynkNavigationRail(
-                        selectedItem = selectedItem,
-                        onItemSelected = onNavigate
-                    )
-                }
+                LynkNavigationRail(
+                    selectedItem = selectedItem,
+                    onItemSelected = onNavigate
+                )
 
                 MainShellNavHost(
                     navController = innerNavController,
                     paddingValues = PaddingValues(0.dp),
-                    onToggleNavigation = { isNavigationVisible = it },
+                    onToggleBottomBar = { isBottomBarVisible = it },
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
             }
@@ -112,7 +105,7 @@ fun MainShell() {
             MainShellNavHost(
                 navController = innerNavController,
                 paddingValues = paddingValues,
-                onToggleNavigation = { isNavigationVisible = it },
+                onToggleBottomBar = { isBottomBarVisible = it },
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -123,7 +116,7 @@ fun MainShell() {
 private fun MainShellNavHost(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    onToggleNavigation: (Boolean) -> Unit,
+    onToggleBottomBar: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -137,14 +130,16 @@ private fun MainShellNavHost(
     ) {
         discoverGraph(
             navController = navController,
-            mainShellPadding = paddingValues
-        )
-        composable<HangoutsRoute> {
-            // Temporary Placeholder
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Hangouts Screen")
+            mainShellPadding = paddingValues,
+            navigateToHangouts = { hangoutId ->
+                navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId))
             }
-        }
+        )
+        hangoutsGraph(
+            navController = navController,
+            mainShellPadding = paddingValues,
+            onToggleNavigation = onToggleBottomBar
+        )
         composable<ProfileRoute> {
             // Temporary Placeholder
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

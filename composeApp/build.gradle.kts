@@ -21,6 +21,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            binaryOption("bundleId", "com.eeseka.lynk.ComposeApp")
         }
     }
 
@@ -51,6 +52,8 @@ kotlin {
             implementation(projects.feature.profileSetup)
             implementation(projects.feature.mainShell)
             implementation(projects.feature.discover)
+            implementation(projects.feature.createHangout)
+            implementation(projects.feature.hangouts)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

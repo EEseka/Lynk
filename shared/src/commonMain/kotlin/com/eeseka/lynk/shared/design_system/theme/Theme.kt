@@ -22,7 +22,11 @@ data class ExtendedColors(
     val successContainer: Color,
     val onSuccessContainer: Color,
     val success: Color,
-    val onSuccess: Color
+    val onSuccess: Color,
+    val gold: Color,
+    val onGold: Color,
+    val searchBar: Color,
+    val onSearchBar: Color
 )
 
 val LightExtendedColors = ExtendedColors(
@@ -30,7 +34,11 @@ val LightExtendedColors = ExtendedColors(
     successContainer = successContainerLight,
     onSuccessContainer = onSuccessContainerLight,
     success = successLight,
-    onSuccess = onSuccessLight
+    onSuccess = onSuccessLight,
+    gold = goldLight,
+    onGold = onGoldLight,
+    searchBar = searchBarLight,
+    onSearchBar = onSearchBarLight
 )
 
 val DarkExtendedColors = ExtendedColors(
@@ -38,7 +46,11 @@ val DarkExtendedColors = ExtendedColors(
     successContainer = successContainerDark,
     onSuccessContainer = onSuccessContainerDark,
     success = successDark,
-    onSuccess = onSuccessDark
+    onSuccess = onSuccessDark,
+    gold = goldDark,
+    onGold = onGoldDark,
+    searchBar = searchBarDark,
+    onSearchBar = onSearchBarDark
 )
 
 val LightScheme = lightColorScheme(

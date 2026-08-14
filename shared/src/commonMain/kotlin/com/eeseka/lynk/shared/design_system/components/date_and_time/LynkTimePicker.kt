@@ -1,5 +1,6 @@
 package com.eeseka.lynk.shared.design_system.components.date_and_time
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,11 +9,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
@@ -23,61 +24,42 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkTimePicker(
-    onDismissRequest: () -> Unit,
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state = rememberAdaptiveTimePickerState()
     val scheme = MaterialTheme.colorScheme
 
-    LynkAdaptiveSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            AdaptiveTimePicker(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = TimePickerDefaults.colors(
-                    containerColor = scheme.surfaceContainerLow
-                )
+    Column(modifier = modifier.fillMaxWidth()) {
+        AdaptiveTimePicker(
+            state = state,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clip(MaterialTheme.shapes.medium),
+            colors = TimePickerDefaults.colors(
+                containerColor = scheme.surfaceContainerHigh
             )
+        )
 
-            LynkButton(
-                text = stringResource(Res.string.confirm_time),
-                onClick = {
-                    onTimeSelected(state.hour, state.minute)
-                    onDismissRequest()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                style = LynkButtonStyle.PRIMARY
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LynkTimePickerPreview() {
-    LynkTheme {
-        LynkTimePicker(
-            onDismissRequest = {},
-            onTimeSelected = { _, _ -> }
+        LynkButton(
+            text = stringResource(Res.string.confirm_time),
+            onClick = { onTimeSelected(state.hour, state.minute) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            style = LynkButtonStyle.TEXT
         )
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
-private fun LynkTimePickerPreviewDark() {
-    LynkTheme(true) {
+private fun LynkTimePickerPreview() {
+    LynkTheme {
         LynkTimePicker(
-            onDismissRequest = {},
-            onTimeSelected = { _, _ -> }
+            onTimeSelected = { _, _ -> },
+            modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(16.dp)
         )
     }
 }

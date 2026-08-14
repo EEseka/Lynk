@@ -1,9 +1,11 @@
 package com.eeseka.lynk.discover.presentation
 
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eeseka.lynk.shared.domain.auth.AuthService
+import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
@@ -14,7 +16,9 @@ import com.eeseka.lynk.shared.domain.util.Paginator
 import com.eeseka.lynk.shared.domain.util.map
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -24,8 +28,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -35,6 +42,8 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class DiscoverViewModel(
     private val spotService: SpotService,
+    private val sessionStorage: SessionStorage,
+    private val authService: AuthService,
     private val appPreferences: AppPreferences
 ) : ViewModel() {
 
@@ -57,6 +66,8 @@ class DiscoverViewModel(
     }
         .onStart {
             if (!hasLoadedInitialData) {
+                val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
+                _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
                 hasLoadedInitialData = true
             }
@@ -83,7 +94,33 @@ class DiscoverViewModel(
             is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
             is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
-            DiscoverAction.OnSearchQueryCleared -> _state.value.searchTextFieldState.clearText()
+            DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
+            is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
+            DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
+            DiscoverAction.SignOutGuest -> signOutGuest()
+
+            is DiscoverAction.OnHangoutCreationSelected -> _state.update { it.copy(hangoutCreationSpotId = action.spotId) }
+        }
+    }
+
+    private fun signOutGuest() {
+        _state.update { it.copy(isGuestSigningOut = true) }
+
+        viewModelScope.launch {
+            val authInfo = sessionStorage.observeAuthInfo().first()
+            val refreshToken = authInfo?.refreshToken ?: return@launch
+
+            authService.logout(refreshToken)
+                .onSuccess {
+                    _state.update { it.copy(isGuestSigningOut = false) }
+                }
+                .onFailure { _ ->
+                    _state.update { it.copy(isGuestSigningOut = false) }
+                }
+
+            // Clear local session regardless of backend result.
+            // MainViewModel.observeSession() detects the null and navigates to auth.
+            sessionStorage.set(null)
         }
     }
 
@@ -98,7 +135,7 @@ class DiscoverViewModel(
     }
 
     private fun fetchTrendingSpots(latitude: Double, longitude: Double) {
-        if (state.value.isTrendingLoading) return
+        if (state.value.isTrendingLoading || state.value.trendingSpots.isNotEmpty()) return
 
         _state.update { it.copy(isTrendingLoading = true) }
 
@@ -108,7 +145,7 @@ class DiscoverViewModel(
                     _state.update {
                         it.copy(
                             isTrendingLoading = false,
-                            trendingSpots = spots
+                            trendingSpots = spots.map { spot -> spot.toSpotUi() }
                         )
                     }
                 }
@@ -153,11 +190,11 @@ class DiscoverViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeSearchFilters() {
-        val searchQueryFlow = snapshotFlow { _state.value.searchTextFieldState.text.toString() }
-            .debounce(500L.milliseconds)
+        val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
             .distinctUntilChanged()
+            .debounce(500L.milliseconds)
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
@@ -170,30 +207,40 @@ class DiscoverViewModel(
             priceLevelFlow,
             locationFlow
         ) { query, category, priceLevel, location ->
-            val (lat, lng) = location
-            if (lat != null && lng != null) {
-                val isActivelySearching =
-                    query.isNotBlank() || category != null || priceLevel != null
+            SpotSearchFilters(
+                query = query,
+                category = category,
+                priceLevel = priceLevel,
+                latitude = location.first,
+                longitude = location.second
+            )
+        }.mapLatest { filters ->
+            val lat = filters.latitude
+            val lng = filters.longitude
+            if (lat == null || lng == null) return@mapLatest
 
-                if (isActivelySearching) {
-                    setupSearchPaginator(lat, lng, query, category, priceLevel)
-                    _state.update {
-                        it.copy(
-                            searchResults = emptyList(),
-                            searchEndReached = false,
-                            searchResetEpoch = it.searchResetEpoch + 1
-                        )
-                    }
-                    loadNextSearchPage()
-                } else {
-                    _state.update {
-                        it.copy(
-                            searchResults = emptyList(),
-                            searchEndReached = false,
-                            isSearchLoading = false,
-                            searchResetEpoch = it.searchResetEpoch + 1
-                        )
-                    }
+            val isActivelySearching = filters.query.isNotBlank() ||
+                    filters.category != null ||
+                    filters.priceLevel != null
+
+            if (isActivelySearching) {
+                setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        searchEndReached = false,
+                        searchResetEpoch = it.searchResetEpoch + 1
+                    )
+                }
+                searchPaginator?.loadNextItems()
+            } else {
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        searchEndReached = false,
+                        isSearchLoading = false,
+                        searchResetEpoch = it.searchResetEpoch + 1
+                    )
                 }
             }
         }.launchIn(viewModelScope)
@@ -241,7 +288,7 @@ class DiscoverViewModel(
             onSuccess = { newSpots, newKey ->
                 _state.update {
                     it.copy(
-                        searchResults = it.searchResults + newSpots,
+                        searchResults = it.searchResults + newSpots.map { newSpot -> newSpot.toSpotUi() },
                         searchEndReached = newKey == null,
                         searchError = null
                     )
@@ -256,3 +303,11 @@ class DiscoverViewModel(
         }
     }
 }
+
+private data class SpotSearchFilters(
+    val query: String,
+    val category: SpotCategory?,
+    val priceLevel: PriceLevel?,
+    val latitude: Double?,
+    val longitude: Double?
+)

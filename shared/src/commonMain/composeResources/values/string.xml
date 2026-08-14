@@ -5,23 +5,33 @@
     <string name="clear_search">Clear Search</string>
     <string name="confirm_date">Confirm Date</string>
     <string name="confirm_time">Confirm Time</string>
-    <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
 
     <string name="error_disk_full">Oops, it looks like your device storage is full.</string>
     <string name="error_not_found">We couldn't find the requested item.</string>
-    <string name="error_unknown">An unknown error happened.</string>
+    <string name="error_unknown">Something unexpected happened. Please try again.</string>
     <string name="error_bad_request">Something went wrong with this action. Please try again.</string>
-    <string name="error_request_timeout">Your connection has timed out.</string>
+    <string name="error_request_timeout">Your connection timed out. Please try again.</string>
     <string name="error_unauthorized">Invalid credentials. Please log in again.</string>
     <string name="error_forbidden">You don't have permission to do this.</string>
-    <string name="error_conflict">Oops, a conflict happened.</string>
+    <string name="error_conflict">That's not possible right now. Please refresh and try again.</string>
     <string name="error_too_many_requests">You're making requests too quickly. Please slow down.</string>
     <string name="error_no_internet">Unable to connect. Please check your internet connection.</string>
     <string name="error_payload_too_large">The file you attached is too large.</string>
     <string name="error_server">Oops, a server error occurred on our end.</string>
     <string name="error_service_unavailable">The service is currently unavailable. Please try again later.</string>
     <string name="error_serialization">We had trouble loading this data. Please refresh.</string>
+    <string name="error_lobby_send_failed">That didn't go through. Please try again.</string>
+
+    <string name="lobby_error_not_attending">You're not part of this hangout.</string>
+    <string name="lobby_error_voting_closed">Voting isn't open for this hangout.</string>
+    <string name="lobby_error_spot_not_found">We couldn't load that spot. Please try another.</string>
+    <string name="lobby_error_candidates_full">This hangout already has the maximum number of spots.</string>
+    <string name="lobby_error_not_host">Only the host can do that.</string>
+    <string name="lobby_error_not_a_candidate">That spot isn't up for voting.</string>
+    <string name="lobby_error_invalid_choice">Please pick one of the tied spots.</string>
+    <string name="lobby_error_no_votes">No votes have been cast yet.</string>
+    <string name="lobby_error_lock_failed">We couldn't lock in the spot. Please try again.</string>
 
     <string name="cheap">Cheap</string>
     <string name="moderate">Moderate</string>
@@ -33,4 +43,35 @@
     <string name="restaurant">Restaurant</string>
     <string name="activity">Activity</string>
     <string name="other">Other</string>
+    <string name="food">Food</string>
+    <string name="drinks">Drinks</string>
+    <string name="gaming">Gaming</string>
+    <string name="active">Active</string>
+    <string name="chill">Chill</string>
+    <string name="party">Party</string>
+
+    <string name="km">km</string>
+    <string name="m">m</string>
+
+    <string name="guest_prompt_title">You're one step away</string>
+    <string name="guest_prompt_body">Create an account to %1$s, and do a lot more with the people that matter.</string>
+    <string name="guest_prompt_sign_in">Create Account</string>
+    <string name="guest_prompt_not_now">Not now</string>
+
+    <string name="voting">Voting</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="ongoing">Ongoing</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="close_image">Close image</string>
+    <string name="open_now">Open now</string>
+    <string name="closed">Closed</string>
+    <string name="reviews_count">(%1$d reviews)</string>
+    <string name="about_this_spot">About this spot</string>
+    <string name="no_description_available">No description available for this spot.</string>
+    <string name="save_spot">Save spot</string>
+    <string name="unsave_spot">Remove saved spot</string>
+    <string name="visit_website">Visit Website</string>
+    <string name="open_in_google_maps">Open in Google Maps</string>
+    <string name="create_hangout_here">Create Hangout Here</string>
 </resources>

@@ -30,16 +30,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LynkTextFieldLayout(
     title: String? = null,
-    isError: Boolean = false,
     errorMessage: String? = null,
     helperText: String? = null,
     enabled: Boolean = true,
     shape: Shape = MaterialTheme.shapes.medium,
-    subtleFocus: Boolean = false,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     textField: @Composable (Modifier, MutableInteractionSource) -> Unit
 ) {
+    val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -52,18 +51,17 @@ fun LynkTextFieldLayout(
         .fillMaxWidth()
         .background(
             color = when {
-                isFocused && !subtleFocus -> scheme.primary.copy(alpha = 0.05f)
+                isFocused -> scheme.primary.copy(alpha = 0.05f)
                 enabled -> scheme.surface
                 else -> scheme.surfaceVariant.copy(alpha = 0.5f)
             },
             shape = shape
         )
         .border(
-            width = if (isFocused && !subtleFocus) 2.dp else 1.dp,
+            width = if (isFocused) 2.dp else 1.dp,
             color = when {
                 isError -> scheme.error
-                isFocused && !subtleFocus -> scheme.primary
-                isFocused && subtleFocus -> scheme.outline
+                isFocused -> scheme.primary
                 else -> scheme.outlineVariant
             },
             shape = shape
@@ -93,18 +91,17 @@ fun LynkTextFieldLayout(
             textField(textFieldStyleModifier, interactionSource)
         }
 
-        val showError = isError && errorMessage != null
         val showHelper = !isError && helperText != null
 
         AnimatedVisibility(
-            visible = showError || showHelper,
+            visible = isError || showHelper,
             enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
             exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
         ) {
             Column {
                 Spacer(modifier = Modifier.height(4.dp))
                 LynkText(
-                    text = if (isError) errorMessage ?: "" else helperText ?: "",
+                    text = errorMessage ?: helperText ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isError) scheme.error else scheme.onSurfaceVariant
                 )

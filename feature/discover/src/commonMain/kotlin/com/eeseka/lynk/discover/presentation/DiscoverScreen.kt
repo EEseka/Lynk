@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,13 +36,12 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Plus
 import com.eeseka.lynk.AppConfig
-import com.eeseka.lynk.discover.presentation.components.DiscoverSearchSheet
-import com.eeseka.lynk.discover.presentation.components.SpotDetailSheet
+import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
+import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
+import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkFloatingActionButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
@@ -56,6 +54,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
@@ -64,7 +63,7 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
-import lynk.feature.discover.generated.resources.create_hangout
+import lynk.feature.discover.generated.resources.create_a_hangout
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_fetch_error
 import lynk.feature.discover.generated.resources.location_required
@@ -74,6 +73,7 @@ import lynk.feature.discover.generated.resources.maptiler_attribution
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.osm_attribution
+import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
 import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.camera.rememberCameraState
@@ -97,6 +97,7 @@ fun DiscoverScreen(
     state: DiscoverState,
     events: Flow<DiscoverEvent>,
     onAction: (DiscoverAction) -> Unit,
+    navigateToHangouts: (String) -> Unit,
     mainShellPadding: PaddingValues
 ) {
     val permissionController = rememberPermissionController()
@@ -112,7 +113,6 @@ fun DiscoverScreen(
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
-    var showSearchSheet by remember { mutableStateOf(false) }
     var showAttributionMenu by remember { mutableStateOf(false) }
 
     val locationFetchError = stringResource(Res.string.location_fetch_error)
@@ -130,29 +130,26 @@ fun DiscoverScreen(
     }
 
     val fetchCurrentLocationAndShowOnMap: suspend () -> Unit = {
-        try {
-            locationController.startTracking()
-            val coordinate = locationController.getCurrentLocation()
-            locationController.stopTracking()
-
-            userPosition = Position(
+        val coordinate = locationController.getCurrentLocation()
+        if (coordinate == null) {
+            snackbarHostState.showFlashMessage(
+                message = locationFetchError,
+                type = LynkFlashType.Error
+            )
+        } else {
+            val position = Position(
                 latitude = coordinate.latitude,
                 longitude = coordinate.longitude
             )
+            userPosition = position
 
             onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
             cameraState.animateTo(
                 finalPosition = cameraState.position.copy(
-                    target = userPosition!!,
+                    target = position,
                     zoom = 14.0
                 )
-            )
-        } catch (_: Exception) {
-            locationController.stopTracking()
-            snackbarHostState.showFlashMessage(
-                message = locationFetchError,
-                type = LynkFlashType.Error
             )
         }
     }
@@ -235,7 +232,7 @@ fun DiscoverScreen(
                     .widthIn(max = 480.dp)
             ) {
                 LynkSearchField(
-                    state = state.searchTextFieldState,
+                    state = state.searchTextState,
                     placeholder = stringResource(Res.string.search_spots_hint),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -246,7 +243,7 @@ fun DiscoverScreen(
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = { showSearchSheet = true }
+                            onClick = { onAction(DiscoverAction.ToggleShowSearchSheet) }
                         )
                 )
             }
@@ -296,62 +293,58 @@ fun DiscoverScreen(
                 }
             )
 
-            // Action Buttons
-            Column(
+            // Action Button
+            LynkTonalIconButton(
+                onClick = {
+                    if (permissionState == PermissionState.GRANTED) {
+                        scope.launch { fetchCurrentLocationAndShowOnMap() }
+                    } else {
+                        scope.launch {
+                            permissionState =
+                                permissionController.requestPermission(Permission.LOCATION)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
                     .padding(
                         bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
                         end = 16.dp
-                    ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    )
             ) {
-                LynkTonalIconButton(
-                    onClick = {
-                        if (permissionState == PermissionState.GRANTED) {
-                            scope.launch { fetchCurrentLocationAndShowOnMap() }
-                        } else {
-                            scope.launch {
-                                permissionState =
-                                    permissionController.requestPermission(Permission.LOCATION)
-                            }
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Lucide.Locate,
-                        contentDescription = stringResource(Res.string.locate_me)
-                    )
-                }
-
-                LynkFloatingActionButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactMedium)
-                        // TODO: Navigate to Create Hangout
-                    }
-                ) {
-                    Icon(
-                        imageVector = Lucide.Plus,
-                        contentDescription = stringResource(Res.string.create_hangout)
-                    )
-                }
+                Icon(
+                    imageVector = Lucide.Locate,
+                    contentDescription = stringResource(Res.string.locate_me)
+                )
             }
         }
 
         // Overlays & Sheets
-        if (showSearchSheet) {
-            DiscoverSearchSheet(
+        if (state.guestPromptContext != null) {
+            val actionStr = when (state.guestPromptContext) {
+                GuestPromptContext.SAVE_SPOT -> stringResource(Res.string.save_this_spot)
+                GuestPromptContext.CREATE_HANGOUT -> stringResource(Res.string.create_a_hangout)
+            }
+            GuestPromptSheet(
+                actionStr = actionStr,
+                onCreateAccountClick = { onAction(DiscoverAction.SignOutGuest) },
+                onDismissRequest = { onAction(DiscoverAction.HideGuestPrompt) },
+                isLoading = state.isGuestSigningOut
+            )
+        }
+
+        if (state.showSearchSheet) {
+            SpotSearchSheet(
                 state = state,
                 onLoadNextSearchPage = { onAction(DiscoverAction.LoadNextSearchPage) },
                 onSelectPriceLevel = { onAction(DiscoverAction.OnPriceLevelSelected(it)) },
                 onSelectCategory = { onAction(DiscoverAction.OnCategorySelected(it)) },
-                onSpotClick = {
-                    showSearchSheet = false
-                    onAction(DiscoverAction.OnSpotSelected(it))
+                onSpotClick = { spotId ->
+                    onAction(DiscoverAction.ToggleShowSearchSheet)
+                    onAction(DiscoverAction.OnSpotSelected(spotId))
                 },
-                onDismissRequest = { showSearchSheet = false }
+                onDismissRequest = { onAction(DiscoverAction.ToggleShowSearchSheet) }
             )
         }
 
@@ -361,11 +354,38 @@ fun DiscoverScreen(
                     spot = selectedSpot,
                     userLat = userPosition?.latitude,
                     userLng = userPosition?.longitude,
+                    onCreateHangoutClick = { spotId ->
+                        onAction(DiscoverAction.OnSpotSelected(null))
+                        if (state.isGuest) {
+                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
+                        } else {
+                            onAction(DiscoverAction.OnHangoutCreationSelected(spotId))
+                        }
+                    },
                     onToggleSave = { spotId, isSaved ->
-                        onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
+                        if (state.isGuest) {
+                            onAction(DiscoverAction.OnSpotSelected(null))
+                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
+                        } else {
+                            onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
+                        }
                     },
                     onDismissRequest = {
                         onAction(DiscoverAction.OnSpotSelected(null))
+                    }
+                )
+            }
+        }
+
+        if (state.hangoutCreationSpotId != null) {
+            spotsToShow.find { it.id == state.hangoutCreationSpotId }?.let { hangoutSpot ->
+                CreateHangoutRoot(
+                    visible = true,
+                    spot = hangoutSpot,
+                    onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
+                    onSuccess = { newHangoutId ->
+                        onAction(DiscoverAction.OnHangoutCreationSelected(null))
+                        navigateToHangouts(newHangoutId)
                     }
                 )
             }
@@ -377,16 +397,8 @@ fun DiscoverScreen(
                 message = stringResource(Res.string.location_required_message),
                 confirmText = stringResource(Res.string.open_settings),
                 dismissText = stringResource(Res.string.not_now),
-                onConfirm = {
-                    permissionController.openAppSettings()
-                    showSettingsDialog = false
-                },
-                onDismissRequest = {
-                    showSettingsDialog = false
-                },
-                onDismiss = {
-                    showSettingsDialog = false
-                }
+                onConfirm = { permissionController.openAppSettings() },
+                onDismissRequest = { showSettingsDialog = false }
             )
         }
     }

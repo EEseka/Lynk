@@ -11,12 +11,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
@@ -35,7 +35,6 @@ import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
 
-@Immutable
 data class LynkActionSheetItem(
     val text: String,
     val onClick: () -> Unit,
@@ -94,6 +93,17 @@ fun LynkActionSheet(
                             text = title,
                             style = MaterialTheme.typography.titleMedium,
                             color = scheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(bottom = if (message != null) 8.dp else 16.dp)
+                        )
+                    }
+
+                    if (message != null) {
+                        LynkText(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = scheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
@@ -147,6 +157,7 @@ private fun LynkActionSheetPreview() {
         LynkActionSheet(
             onDismissRequest = {},
             title = "What would you like to do?",
+            message = "This shows the message renders too.",
             items = previewItems
         )
     }
@@ -159,6 +170,7 @@ private fun LynkActionSheetPreviewDark() {
         LynkActionSheet(
             onDismissRequest = {},
             title = "What would you like to do?",
+            message = "This shows the message renders too.",
             items = previewItems
         )
     }

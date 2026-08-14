@@ -12,7 +12,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,12 +29,12 @@ import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
-@Immutable
 data class LynkDropDownItem(
     val title: String,
     val icon: ImageVector? = null,
     val sfSymbol: String? = null,
     val isDestructive: Boolean = false,
+    val isDisabled: Boolean = false,
     val onClick: () -> Unit
 )
 
@@ -61,6 +60,7 @@ fun LynkDropDownMenu(
                     title = item.title,
                     iosIcon = item.sfSymbol?.let { UIKitImage.SystemName(it) },
                     isDestructive = item.isDestructive,
+                    isDisabled = item.isDisabled,
                     onClick = {
                         item.onClick()
                         onDismissRequest()
@@ -69,9 +69,14 @@ fun LynkDropDownMenu(
             },
             materialContent = {
                 items.forEachIndexed { index, item ->
-                    val contentColor = if (item.isDestructive) scheme.error else scheme.onSurface
+                    val contentColor = when {
+                        item.isDisabled -> scheme.onSurface.copy(alpha = 0.38f)
+                        item.isDestructive -> scheme.error
+                        else -> scheme.onSurface
+                    }
 
                     DropdownMenuItem(
+                        enabled = !item.isDisabled,
                         text = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

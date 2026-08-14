@@ -92,6 +92,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.compose.ui.tooling)
+            implementation(libs.androidx.lifecycle.process)
         }
         commonMain.dependencies {
             implementation(libs.runtime)
@@ -120,6 +121,7 @@ kotlin {
             implementation(libs.bundles.ktor.common)
 
             implementation(libs.icons.lucide.cmp)
+            implementation(libs.jetbrains.compose.material.icons.extended)
 
             implementation(libs.kotlinx.coroutines.core)
 
@@ -128,6 +130,10 @@ kotlin {
 
             implementation(libs.datastore)
             implementation(libs.datastore.preferences)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+            implementation(libs.zoomimage.compose.coil)
 
             implementation(libs.jetbrains.compose.navigation)
 

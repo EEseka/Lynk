@@ -71,7 +71,10 @@ class FakeSpotService : SpotService {
         return Result.Success(Unit)
     }
 
-    override suspend fun getSavedSpots(before: String?): Result<List<Spot>, DataError.Remote> {
+    override suspend fun getSavedSpots(
+        query: String?,
+        before: String?
+    ): Result<List<Spot>, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
         return Result.Success(savedSpotsList)
     }
