@@ -1,8 +1,10 @@
 package com.eeseka.lynk.shared.data.lobby.lifecycle
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
 import platform.UIKit.UIApplication
@@ -64,5 +66,5 @@ actual class AppLifecycleObserver {
             notificationCenter.removeObserver(backgroundObserver)
             notificationCenter.removeObserver(willResignActiveObserver)
         }
-    }
+    }.flowOn(Dispatchers.Main)
 }
