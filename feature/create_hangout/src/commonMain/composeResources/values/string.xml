@@ -56,6 +56,7 @@
     <string name="save_changes_loading">Saving…</string>
 
     <string name="go_back">Go Back</string>
+    <string name="close_sheet">Close</string>
 
     <string name="km">km</string>
     <string name="m">m</string>

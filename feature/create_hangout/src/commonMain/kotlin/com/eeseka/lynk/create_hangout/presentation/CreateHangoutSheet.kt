@@ -35,11 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.composables.icons.lucide.X
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepOne
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepThree
 import com.eeseka.lynk.create_hangout.presentation.components.CreateHangoutStepTwo
 import com.eeseka.lynk.create_hangout.presentation.components.LynkStepIndicator
+import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
@@ -47,16 +48,17 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import kotlinx.coroutines.flow.Flow
 import lynk.feature.create_hangout.generated.resources.Res
+import lynk.feature.create_hangout.generated.resources.close_sheet
 import lynk.feature.create_hangout.generated.resources.create_hangout
 import lynk.feature.create_hangout.generated.resources.create_hangout_loading
 import lynk.feature.create_hangout.generated.resources.go_back
@@ -145,7 +147,8 @@ fun CreateHangoutSheet(
     }
 
     LynkAdaptiveSheet(
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        isDismissibleByGesture = false
     ) {
         Column(
             modifier = Modifier
@@ -162,26 +165,41 @@ fun CreateHangoutSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    AnimatedVisibility(
-                        visible = state.currentStep > 1,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
+                    AnimatedContent(
+                        targetState = state.currentStep > 1,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "HeaderButtonTransition"
+                    ) { canGoBack ->
                         LynkTonalIconButton(
                             onClick = {
                                 hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(CreateHangoutAction.OnPreviousStep)
+                                if (canGoBack) {
+                                    onAction(CreateHangoutAction.OnPreviousStep)
+                                } else {
+                                    onDismissRequest()
+                                }
                             }
                         ) {
                             Icon(
-                                imageVector = Lucide.ArrowLeft,
-                                contentDescription = stringResource(Res.string.go_back)
+                                imageVector = if (canGoBack) Lucide.ArrowLeft else Lucide.X,
+                                contentDescription = if (canGoBack) stringResource(Res.string.go_back)
+                                else stringResource(Res.string.close_sheet)
                             )
                         }
                     }
 
                     AnimatedContent(
                         targetState = state.currentStep,
+                        transitionSpec = {
+                            // Matches the body below so the header travels with it
+                            if (targetState > initialState) {
+                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> -width } + fadeOut())
+                            } else {
+                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> width } + fadeOut())
+                            }.using(SizeTransform(clip = false))
+                        },
                         label = "StepTitleTransition"
                     ) { step ->
                         LynkText(

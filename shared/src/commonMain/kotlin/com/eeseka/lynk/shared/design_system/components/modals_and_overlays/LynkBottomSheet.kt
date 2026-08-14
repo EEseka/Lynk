@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ fun LynkBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+    isDismissibleByGesture: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -36,19 +38,26 @@ fun LynkBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
         sheetState = sheetState,
+        sheetGesturesEnabled = isDismissibleByGesture,
         containerColor = scheme.surfaceContainerLow,
         contentColor = scheme.onSurface,
         scrimColor = scheme.scrim.copy(alpha = 0.32f),
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .width(36.dp)
-                    .height(4.dp)
-                    .clip(CircleShape)
-                    .background(scheme.outline)
-            )
-        },
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = isDismissibleByGesture,
+            shouldDismissOnClickOutside = isDismissibleByGesture
+        ),
+        dragHandle = if (isDismissibleByGesture) {
+            {
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .width(36.dp)
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(scheme.outline)
+                )
+            }
+        } else null,
         content = content
     )
 }

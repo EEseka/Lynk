@@ -1,5 +1,6 @@
 package com.eeseka.lynk.shared.design_system.components.date_and_time
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,7 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
@@ -33,7 +35,8 @@ fun LynkTimePicker(
             state = state,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .clip(MaterialTheme.shapes.medium),
             colors = TimePickerDefaults.colors(
                 containerColor = scheme.surfaceContainerHigh
             )
@@ -50,18 +53,13 @@ fun LynkTimePicker(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkTimePickerPreview() {
     LynkTheme {
-        LynkTimePicker(onTimeSelected = { _, _ -> })
-    }
-}
-
-@Preview
-@Composable
-private fun LynkTimePickerPreviewDark() {
-    LynkTheme(true) {
-        LynkTimePicker(onTimeSelected = { _, _ -> })
+        LynkTimePicker(
+            onTimeSelected = { _, _ -> },
+            modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(16.dp)
+        )
     }
 }

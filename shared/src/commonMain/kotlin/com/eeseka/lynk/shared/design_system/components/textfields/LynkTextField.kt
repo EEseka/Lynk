@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
@@ -28,19 +30,20 @@ fun LynkTextField(
     placeholder: String? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    isError: Boolean = false,
     enabled: Boolean = true,
     errorMessage: String? = null,
     helperText: String? = null,
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    inputTransformation: InputTransformation? = null,
+    outputTransformation: OutputTransformation? = null,
     modifier: Modifier = Modifier
 ) {
+    val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
 
     LynkTextFieldLayout(
         title = label,
-        isError = isError,
         errorMessage = errorMessage,
         helperText = helperText,
         enabled = enabled,
@@ -56,6 +59,8 @@ fun LynkTextField(
                 color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
             ),
             keyboardOptions = keyboardOptions,
+            inputTransformation = inputTransformation,
+            outputTransformation = outputTransformation,
             cursorBrush = SolidColor(if (isError) scheme.error else scheme.primary),
             interactionSource = interactionSource,
             modifier = styleModifier,
@@ -140,7 +145,6 @@ private fun LynkErrorTextFieldPreview() {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
-            isError = true,
             errorMessage = "Invalid name"
         )
     }
@@ -159,7 +163,6 @@ private fun LynkErrorTextFieldPreviewDark() {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
-            isError = true,
             errorMessage = "Invalid name"
         )
     }

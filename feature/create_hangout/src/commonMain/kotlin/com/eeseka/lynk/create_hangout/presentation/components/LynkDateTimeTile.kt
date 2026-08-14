@@ -37,13 +37,13 @@ fun LynkDateTimeTile(
     value: String?,
     placeholder: String,
     icon: ImageVector,
-    isError: Boolean,
     errorMessage: String?,
     isExpanded: Boolean,
     onClick: () -> Unit,
     pickerContent: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
     val containerColor =
         if (isError) scheme.errorContainer.copy(alpha = 0.1f) else scheme.surfaceContainerHigh
@@ -104,7 +104,7 @@ fun LynkDateTimeTile(
         }
 
         AnimatedVisibility(
-            visible = isError && errorMessage != null,
+            visible = isError,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
@@ -128,7 +128,6 @@ private fun LynkDateTimeTilePreview() {
             value = "20:00",
             placeholder = "Select Time",
             icon = Lucide.Clock,
-            isError = false,
             errorMessage = null,
             isExpanded = false,
             onClick = {},
@@ -147,7 +146,6 @@ private fun LynkDateTimeTileErrorPreview() {
             value = "20:00",
             placeholder = "Select Time",
             icon = Lucide.Clock,
-            isError = true,
             errorMessage = "Please Select a Time",
             isExpanded = false,
             onClick = {},

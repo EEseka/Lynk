@@ -98,7 +98,6 @@ fun CreateHangoutStepOne(
             state = state.hangoutNameTextState,
             label = stringResource(Res.string.hangout_name),
             placeholder = stringResource(Res.string.hangout_name_placeholder),
-            isError = state.hangoutNameError != null,
             errorMessage = state.hangoutNameError?.asString(),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
@@ -113,7 +112,6 @@ fun CreateHangoutStepOne(
             label = stringResource(Res.string.hangout_description),
             placeholder = stringResource(Res.string.hangout_description_placeholder),
             singleLine = false,
-            isError = state.hangoutDescriptionError != null,
             errorMessage = state.hangoutDescriptionError?.asString(),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
@@ -152,7 +150,6 @@ fun CreateHangoutStepOne(
             value = state.hangoutDate?.toString(),
             placeholder = stringResource(Res.string.pick_date),
             icon = Lucide.Calendar,
-            isError = state.hangoutDateError != null,
             errorMessage = state.hangoutDateError?.asString(),
             isExpanded = expandedPicker == PickerType.DATE,
             onClick = {
@@ -164,7 +161,7 @@ fun CreateHangoutStepOne(
                     onDateSelected = { millis ->
                         if (millis != null) {
                             val date = Instant.fromEpochMilliseconds(millis)
-                                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                .toLocalDateTime(TimeZone.UTC).date
                             onDateSelected(date)
                         }
                         expandedPicker = null
@@ -181,7 +178,6 @@ fun CreateHangoutStepOne(
             value = state.hangoutTime?.toString(),
             placeholder = stringResource(Res.string.pick_time),
             icon = Lucide.Clock,
-            isError = state.hangoutTimeError != null,
             errorMessage = state.hangoutTimeError?.asString(),
             isExpanded = expandedPicker == PickerType.TIME,
             onClick = {

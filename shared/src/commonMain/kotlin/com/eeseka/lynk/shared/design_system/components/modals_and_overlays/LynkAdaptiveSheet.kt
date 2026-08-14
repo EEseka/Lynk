@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,6 +23,7 @@ import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 fun LynkAdaptiveSheet(
     onDismissRequest: () -> Unit,
     skipBottomSheetPartiallyExpanded: Boolean = true,
+    isDismissibleByGesture: Boolean = true,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -34,10 +36,17 @@ fun LynkAdaptiveSheet(
             onDismissRequest = onDismissRequest,
             sheetState = sheetState,
             modifier = modifier,
+            isDismissibleByGesture = isDismissibleByGesture,
             content = content
         )
     } else {
-        Dialog(onDismissRequest = onDismissRequest) {
+        Dialog(
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(
+                dismissOnBackPress = isDismissibleByGesture,
+                dismissOnClickOutside = isDismissibleByGesture
+            )
+        ) {
             Box(
                 modifier = modifier
                     .widthIn(max = 480.dp)

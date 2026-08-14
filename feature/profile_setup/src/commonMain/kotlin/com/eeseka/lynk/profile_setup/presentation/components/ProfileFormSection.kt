@@ -94,7 +94,6 @@ fun ProfileFormSection(
             state = displayNameState,
             label = stringResource(Res.string.display_name),
             placeholder = stringResource(Res.string.display_name_placeholder),
-            isError = displayNameErrorMessage != null,
             errorMessage = displayNameErrorMessage,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
@@ -109,7 +108,6 @@ fun ProfileFormSection(
             state = usernameState,
             label = stringResource(Res.string.username),
             placeholder = stringResource(Res.string.username_placeholder),
-            isError = usernameErrorMessage != null,
             errorMessage = usernameErrorMessage,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
