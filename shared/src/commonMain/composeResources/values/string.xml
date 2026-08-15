@@ -64,6 +64,7 @@
     <string name="completed">Completed</string>
     <string name="cancelled">Cancelled</string>
     <string name="close_image">Close image</string>
+    <string name="flash_dismiss">Dismiss</string>
     <string name="open_now">Open now</string>
     <string name="closed">Closed</string>
     <string name="reviews_count">(%1$d reviews)</string>
