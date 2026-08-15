@@ -6,6 +6,8 @@ import dev.icerock.moko.permissions.PermissionsController
 import dev.icerock.moko.permissions.RequestCanceledException
 import dev.icerock.moko.permissions.location.LOCATION
 import dev.icerock.moko.permissions.notifications.REMOTE_NOTIFICATION
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 class PermissionController(
     private val mokoPermissionsController: PermissionsController
@@ -28,6 +30,7 @@ class PermissionController(
             mokoPermissionsController.getPermissionState(permission.toMokoPermission())
                 .toPermissionState()
         } catch (_: Exception) {
+            currentCoroutineContext().ensureActive()
             PermissionState.DENIED
         }
     }
