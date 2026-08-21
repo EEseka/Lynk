@@ -54,6 +54,7 @@ kotlin {
             implementation(projects.feature.discover)
             implementation(projects.feature.createHangout)
             implementation(projects.feature.hangouts)
+            implementation(projects.feature.profile)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

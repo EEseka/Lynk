@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -107,10 +106,7 @@ class DiscoverViewModel(
         _state.update { it.copy(isGuestSigningOut = true) }
 
         viewModelScope.launch {
-            val authInfo = sessionStorage.observeAuthInfo().first()
-            val refreshToken = authInfo?.refreshToken ?: return@launch
-
-            authService.logout(refreshToken)
+            authService.deleteAccount()
                 .onSuccess {
                     _state.update { it.copy(isGuestSigningOut = false) }
                 }
@@ -194,7 +190,7 @@ class DiscoverViewModel(
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
             .distinctUntilChanged()
-            .debounce(500L.milliseconds)
+            .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()

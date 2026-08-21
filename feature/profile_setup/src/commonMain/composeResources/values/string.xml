@@ -12,10 +12,6 @@
     <string name="error_username_rate_limit">Checking too fast! Please wait a moment.</string>
     <string name="error_username_generic_verify">Verification failed. Please try again.</string>
 
-    <string name="profile_picture">Profile Picture</string>
-    <string name="choose">Choose</string>
-    <string name="remove">Remove</string>
-
     <string name="choose_source">Choose Source</string>
     <string name="choose_source_message">How would you like to select your profile picture?</string>
 

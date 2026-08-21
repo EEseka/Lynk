@@ -15,8 +15,15 @@ interface UserService {
         imageBytes: ByteArray
     ): EmptyResult<DataError.Remote>
 
-    suspend fun updateProfile(
+    suspend fun getCurrentUser(): Result<User, DataError.Remote>
+
+    suspend fun createProfile(
         username: String,
+        displayName: String,
+        profilePhotoUrl: String?
+    ): Result<User, DataError.Remote>
+
+    suspend fun updateProfile(
         displayName: String,
         profilePhotoUrl: String?
     ): Result<User, DataError.Remote>

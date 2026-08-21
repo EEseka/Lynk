@@ -1,7 +1,9 @@
-package com.eeseka.lynk.profile_setup.domain
+package com.eeseka.lynk.shared.domain.profile
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidationState
+import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidator
 import kotlin.test.Test
 
 class DisplayNameValidatorTest {

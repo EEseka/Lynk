@@ -1,4 +1,4 @@
-package com.eeseka.lynk.profile_setup.domain
+package com.eeseka.lynk.shared.domain.profile.validation
 
 object DisplayNameValidator {
     private const val MAX_LENGTH = 50

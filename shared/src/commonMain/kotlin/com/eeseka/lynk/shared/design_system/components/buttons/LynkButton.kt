@@ -150,6 +150,8 @@ private fun LynkButtonContent(
     loadingText: String?,
     icon: @Composable (() -> Unit)?
 ) {
+    val label = if (isLoading && loadingText != null) loadingText else text
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -172,11 +174,14 @@ private fun LynkButtonContent(
                     icon?.invoke()
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
+
+            if (label.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
         }
 
         LynkText(
-            text = if (isLoading && loadingText != null) loadingText else text,
+            text = label,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleMedium

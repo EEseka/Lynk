@@ -7,7 +7,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
 import com.eeseka.lynk.hangouts.presentation.navigation.HangoutsGraphRoutes
-import com.eeseka.lynk.main_shell.presentation.navigation.ProfileRoute
+import com.eeseka.lynk.profile.presentation.navigation.ProfileGraphRoutes
 import com.eeseka.lynk.shared.presentation.util.UiText
 import lynk.feature.main_shell.generated.resources.Res
 import lynk.feature.main_shell.generated.resources.discover
@@ -30,7 +30,7 @@ enum class LynkNavigationItem(
         icon = Lucide.CalendarRange
     ),
     PROFILE(
-        route = ProfileRoute,
+        route = ProfileGraphRoutes.Graph,
         title = UiText.Resource(Res.string.profile),
         icon = Lucide.CircleUser
     )

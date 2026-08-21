@@ -75,4 +75,8 @@
     <string name="visit_website">Visit Website</string>
     <string name="open_in_google_maps">Open in Google Maps</string>
     <string name="create_hangout_here">Create Hangout Here</string>
+
+    <string name="profile_picture">Profile Picture</string>
+    <string name="choose">Choose</string>
+    <string name="remove">Remove</string>
 </resources>

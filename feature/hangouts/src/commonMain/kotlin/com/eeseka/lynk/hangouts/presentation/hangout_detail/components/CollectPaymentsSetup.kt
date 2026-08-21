@@ -16,6 +16,8 @@ import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.hangouts.presentation.util.toDeadlineLabel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
+import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
+import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import kotlinx.datetime.LocalDate
 import lynk.feature.hangouts.generated.resources.Res
@@ -29,6 +31,8 @@ fun CollectPaymentsSetup(
     onAction: (HangoutDetailAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     DetailSection(
         title = stringResource(Res.string.payment_collect_title),
         modifier = modifier,
@@ -36,6 +40,7 @@ fun CollectPaymentsSetup(
             LynkSwitch(
                 checked = state.isCollectPaymentsOn,
                 onCheckedChange = { isOn ->
+                    hapticFeedback(AppHaptic.Selection)
                     onAction(HangoutDetailAction.OnCollectPaymentsToggled(isOn))
                 }
             )

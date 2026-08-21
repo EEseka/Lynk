@@ -151,7 +151,7 @@ private fun rememberCategoryPinPainter(category: SpotCategory): Painter {
     return remember(category, coreColor, surfaceColor, outlineColor, iconPainter, density) {
         object : Painter() {
             val widthPx = with(density) { 36.dp.toPx() }
-            val heightPx = with(density) { 50.dp.toPx() }
+            val heightPx = with(density) { 48.dp.toPx() }
             val strokePx = with(density) { 2.dp.toPx() }
 
             override val intrinsicSize: Size = Size(widthPx, heightPx)

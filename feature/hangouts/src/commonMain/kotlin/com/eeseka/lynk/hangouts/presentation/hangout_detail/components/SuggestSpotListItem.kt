@@ -112,7 +112,7 @@ fun SuggestSpotListItem(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 LynkText(
                     text = spot.name,
@@ -140,7 +140,7 @@ fun SuggestSpotListItem(
                 if (distanceString != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             imageVector = Lucide.UsersRound,

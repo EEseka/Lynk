@@ -85,8 +85,8 @@ fun SpotDetailSheet(
     val uriHandler = LocalUriHandler.current
 
     if (initialImageIndex != null) {
-        FullScreenImageViewer(
-            rawUrls = spot.photoUrls,
+        FullScreenSpotPhotoViewer(
+            rawPhotoNames = spot.photoUrls,
             initialIndex = initialImageIndex!!,
             onDismiss = { initialImageIndex = null }
         )

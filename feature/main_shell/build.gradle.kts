@@ -42,6 +42,7 @@ kotlin {
             implementation(projects.shared)
             implementation(projects.feature.discover)
             implementation(projects.feature.hangouts)
+            implementation(projects.feature.profile)
         }
     }
 }

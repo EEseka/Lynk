@@ -73,7 +73,7 @@ fun AuthBranding(
 private fun AuthBrandingPreview() {
     LynkTheme {
         AuthBranding(
-            iconSize = 250.dp,
+            iconSize = 248.dp,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
