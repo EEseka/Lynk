@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Camera
 import com.composables.icons.lucide.Image
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.profile_setup.presentation.components.ProfileAvatarSection
+import com.eeseka.lynk.shared.presentation.components.ProfileAvatarSection
 import com.eeseka.lynk.profile_setup.presentation.components.ProfileFormSection
 import com.eeseka.lynk.profile_setup.presentation.components.ProfileSetupHeader
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton

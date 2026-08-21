@@ -3,6 +3,7 @@ package com.eeseka.lynk.shared.domain.hangout
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
@@ -60,6 +61,8 @@ interface HangoutService {
         vibe: HangoutVibe? = null,
         before: String? = null
     ): Result<List<HangoutSummary>, DataError.Remote>
+
+    suspend fun getMyStats(): Result<HangoutStats, DataError.Remote>
 
     suspend fun cancelHangout(hangoutId: String): EmptyResult<DataError.Remote>
 

@@ -49,6 +49,7 @@ fun ExternalActionRow(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
+        Spacer(modifier = Modifier.width(12.dp))
         Icon(
             imageVector = Lucide.ExternalLink,
             contentDescription = null,

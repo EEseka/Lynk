@@ -95,7 +95,7 @@ class CreateHangoutViewModel(
 
     // Blank-check only — real validation (too long) runs on Next press via validateFormInputs()
     private val isHangoutNameValidFlow =
-        snapshotFlow { state.value.hangoutNameTextState.text.toString() }
+        snapshotFlow { _state.value.hangoutNameTextState.text.toString() }
             .map { it.isNotBlank() }
             .distinctUntilChanged()
     // Description is optional — TOO_LONG caught on Next press, never blocks the button
@@ -408,11 +408,18 @@ class CreateHangoutViewModel(
         viewModelScope.launch {
             val currentState = state.value
 
-            val date = currentState.hangoutDate ?: return@launch
-            val time = currentState.hangoutTime ?: return@launch
+            val date = currentState.hangoutDate ?: run {
+                _state.update { it.copy(isSubmitting = false) }
+                return@launch
+            }
+            val time = currentState.hangoutTime ?: run {
+                _state.update { it.copy(isSubmitting = false) }
+                return@launch
+            }
 
-            val hangoutName = currentState.hangoutNameTextState.text.toString().trim()
-            val hangoutDescription = currentState.hangoutDescriptionTextState.text.toString().trim()
+            val hangoutName = _state.value.hangoutNameTextState.text.toString().trim()
+            val hangoutDescription =
+                _state.value.hangoutDescriptionTextState.text.toString().trim()
             val hangoutScheduledAt =
                 LocalDateTime(date, time).toInstant(TimeZone.currentSystemDefault())
 
@@ -465,9 +472,9 @@ class CreateHangoutViewModel(
         val currentState = state.value
 
         val hangoutNameState =
-            HangoutNameValidator.validate(currentState.hangoutNameTextState.text.toString())
+            HangoutNameValidator.validate(_state.value.hangoutNameTextState.text.toString())
         val hangoutDescriptionState =
-            HangoutDescriptionValidator.validate(currentState.hangoutDescriptionTextState.text.toString())
+            HangoutDescriptionValidator.validate(_state.value.hangoutDescriptionTextState.text.toString())
         val (currentDate, currentTime) = getCurrentDateAndTime()
         val hangoutDateState = HangoutDateValidator.validate(
             selectedDate = currentState.hangoutDate,

@@ -259,7 +259,12 @@ fun HangoutDetailScreen(
             LynkTopAppBar(
                 navigationIcon = {
                     if (isDetailPaneFullScreen) {
-                        LynkIconButton(onClick = onBackClick) {
+                        LynkIconButton(
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onBackClick()
+                            }
+                        ) {
                             Icon(
                                 imageVector = Lucide.ChevronLeft,
                                 contentDescription = null
@@ -268,12 +273,23 @@ fun HangoutDetailScreen(
                     }
                 },
                 iosLeadingItems = if (isDetailPaneFullScreen) {
-                    listOf(LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = onBackClick))
+                    listOf(
+                        LynkIosBarButtonItem(
+                            sfSymbol = "chevron.left",
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onBackClick()
+                            }
+                        )
+                    )
                 } else emptyList(),
                 actions = {
                     if (showInvite) {
                         LynkIconButton(
-                            onClick = { onAction(HangoutDetailAction.OnInviteClick) },
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(HangoutDetailAction.OnInviteClick)
+                            },
                             enabled = inviteEnabled
                         ) {
                             Icon(
@@ -288,7 +304,10 @@ fun HangoutDetailScreen(
                                 LynkDropDownItem(
                                     title = editLabel,
                                     icon = Lucide.SquarePen,
-                                    onClick = onEditClick
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        onEditClick()
+                                    }
                                 )
                             )
                         }
@@ -299,7 +318,10 @@ fun HangoutDetailScreen(
                                     icon = Lucide.CalendarX2,
                                     isDestructive = true,
                                     isDisabled = state.isCancelling,
-                                    onClick = { showCancelDialog = true }
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        showCancelDialog = true
+                                    }
                                 )
                             )
                         }
@@ -310,7 +332,10 @@ fun HangoutDetailScreen(
                                     icon = Lucide.LogOut,
                                     isDestructive = true,
                                     isDisabled = state.isLeaving,
-                                    onClick = { showLeaveDialog = true }
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        showLeaveDialog = true
+                                    }
                                 )
                             )
                         }
@@ -321,7 +346,12 @@ fun HangoutDetailScreen(
                             onDismissRequest = { showOverflowMenu = false },
                             items = overflowItems,
                             anchor = {
-                                LynkIconButton(onClick = { showOverflowMenu = true }) {
+                                LynkIconButton(
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        showOverflowMenu = true
+                                    }
+                                ) {
                                     Icon(
                                         imageVector = Lucide.EllipsisVertical,
                                         contentDescription = moreLabel
@@ -337,7 +367,10 @@ fun HangoutDetailScreen(
                             LynkIosBarButtonItem(
                                 sfSymbol = "person.badge.plus",
                                 enabled = inviteEnabled,
-                                onClick = { onAction(HangoutDetailAction.OnInviteClick) }
+                                onClick = {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onAction(HangoutDetailAction.OnInviteClick)
+                                }
                             )
                         )
                     }
@@ -347,7 +380,10 @@ fun HangoutDetailScreen(
                                 LynkIosDropDownMenuItem(
                                     title = editLabel,
                                     sfSymbol = "square.and.pencil",
-                                    onClick = onEditClick
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        onEditClick()
+                                    }
                                 )
                             )
                         }
@@ -358,7 +394,10 @@ fun HangoutDetailScreen(
                                     sfSymbol = "calendar.badge.minus",
                                     isDestructive = true,
                                     isDisabled = state.isCancelling,
-                                    onClick = { showCancelDialog = true }
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        showCancelDialog = true
+                                    }
                                 )
                             )
                         }
@@ -369,7 +408,10 @@ fun HangoutDetailScreen(
                                     sfSymbol = "rectangle.portrait.and.arrow.right",
                                     isDestructive = true,
                                     isDisabled = state.isLeaving,
-                                    onClick = { showLeaveDialog = true }
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        showLeaveDialog = true
+                                    }
                                 )
                             )
                         }

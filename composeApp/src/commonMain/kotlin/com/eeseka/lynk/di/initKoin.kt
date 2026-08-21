@@ -5,6 +5,7 @@ import com.eeseka.lynk.create_hangout.presentation.di.createHangoutPresentationM
 import com.eeseka.lynk.discover.presentation.di.discoverPresentationModule
 import com.eeseka.lynk.hangouts.presentation.di.hangoutsPresentationModule
 import com.eeseka.lynk.onboarding.presentation.di.onboardingPresentationModule
+import com.eeseka.lynk.profile.presentation.di.profilePresentationModule
 import com.eeseka.lynk.profile_setup.presentation.di.profileSetupPresentationModule
 import com.eeseka.lynk.shared.data.di.sharedDataModule
 import com.eeseka.lynk.shared.presentation.di.sharedPresentationModule
@@ -23,7 +24,8 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             profileSetupPresentationModule,
             discoverPresentationModule,
             createHangoutPresentationModule,
-            hangoutsPresentationModule
+            hangoutsPresentationModule,
+            profilePresentationModule
         )
     }
 }

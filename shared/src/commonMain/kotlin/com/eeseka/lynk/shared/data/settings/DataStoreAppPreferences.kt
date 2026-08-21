@@ -16,6 +16,7 @@ class DataStoreAppPreferences(
 
     private val themePreferenceKey = stringPreferencesKey("KEY_THEME_PREFERENCE")
     private val hasSeenOnboardingKey = booleanPreferencesKey("KEY_HAS_SEEN_ONBOARDING")
+    private val arePushNotificationsEnabledKey = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
 
     override val theme: Flow<AppTheme> = dataStore.data.map { preferences ->
         val currentPreference = preferences[themePreferenceKey] ?: AppTheme.SYSTEM.name
@@ -30,6 +31,10 @@ class DataStoreAppPreferences(
         preferences[hasSeenOnboardingKey] ?: false
     }
 
+    override val arePushNotificationsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[arePushNotificationsEnabledKey] ?: true
+    }
+
     override suspend fun setTheme(theme: AppTheme) {
         dataStore.edit { preferences ->
             preferences[themePreferenceKey] = theme.name
@@ -39,6 +44,15 @@ class DataStoreAppPreferences(
     override suspend fun setOnboardingCompleted() {
         dataStore.edit { preferences ->
             preferences[hasSeenOnboardingKey] = true
+        }
+    }
+
+    // TODO(notifications): turning this off must also unregister this device's token with the
+    //  backend, and turning it on must re-register it plus request the Android 13+ POST_NOTIFICATIONS
+    //  permission. Wire that up when the notification module lands.
+    override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[arePushNotificationsEnabledKey] = isEnabled
         }
     }
 }

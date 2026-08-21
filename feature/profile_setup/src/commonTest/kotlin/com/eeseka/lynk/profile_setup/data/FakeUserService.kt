@@ -19,20 +19,36 @@ class FakeUserService : UserService {
         return Result.Success(isAvailable)
     }
 
-    override suspend fun updateProfile(
+    override suspend fun getCurrentUser(): Result<User, DataError.Remote> {
+        if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
+        return Result.Success(authenticatedUser(username = "tester", displayName = "Tester"))
+    }
+
+    override suspend fun createProfile(
         username: String,
         displayName: String,
         profilePhotoUrl: String?
     ): Result<User, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
         return Result.Success(
-            User.Authenticated(
-                id = "123",
-                provider = AuthProvider.GOOGLE,
-                email = "test@test.com",
+            authenticatedUser(
                 username = username,
                 displayName = displayName,
-                profilePictureUrl = profilePhotoUrl
+                profilePhotoUrl = profilePhotoUrl
+            )
+        )
+    }
+
+    override suspend fun updateProfile(
+        displayName: String,
+        profilePhotoUrl: String?
+    ): Result<User, DataError.Remote> {
+        if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
+        return Result.Success(
+            authenticatedUser(
+                username = "tester",
+                displayName = displayName,
+                profilePhotoUrl = profilePhotoUrl
             )
         )
     }
@@ -56,4 +72,17 @@ class FakeUserService : UserService {
         if (shouldReturnError) return Result.Failure(DataError.Remote.SERVER_ERROR)
         return Result.Success(Unit)
     }
+
+    private fun authenticatedUser(
+        username: String,
+        displayName: String,
+        profilePhotoUrl: String? = null
+    ) = User.Authenticated(
+        id = "123",
+        provider = AuthProvider.GOOGLE,
+        email = "test@test.com",
+        username = username,
+        displayName = displayName,
+        profilePictureUrl = profilePhotoUrl
+    )
 }

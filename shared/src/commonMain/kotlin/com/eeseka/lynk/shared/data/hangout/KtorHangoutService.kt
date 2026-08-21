@@ -3,6 +3,7 @@ package com.eeseka.lynk.shared.data.hangout
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutParticipantDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutPreviewDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutStatsDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutSummaryDto
 import com.eeseka.lynk.shared.data.hangout.dto.requests.CreateHangoutRequest
 import com.eeseka.lynk.shared.data.hangout.dto.requests.InviteParticipantRequest
@@ -18,6 +19,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
@@ -106,6 +108,12 @@ class KtorHangoutService(
         ).map { hangoutSummaries ->
             hangoutSummaries.map { it.toDomain() }
         }
+    }
+
+    override suspend fun getMyStats(): Result<HangoutStats, DataError.Remote> {
+        return httpClient.get<HangoutStatsDto>(
+            route = "/hangouts/stats/me"
+        ).map { it.toDomain() }
     }
 
     override suspend fun cancelHangout(hangoutId: String): EmptyResult<DataError.Remote> {

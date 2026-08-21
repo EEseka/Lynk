@@ -1,5 +1,10 @@
-package com.eeseka.lynk.profile_setup.presentation.components
+package com.eeseka.lynk.shared.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,10 +36,10 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import lynk.feature.profile_setup.generated.resources.Res
-import lynk.feature.profile_setup.generated.resources.choose
-import lynk.feature.profile_setup.generated.resources.profile_picture
-import lynk.feature.profile_setup.generated.resources.remove
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.choose
+import lynk.shared.generated.resources.profile_picture
+import lynk.shared.generated.resources.remove
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -45,9 +51,11 @@ fun ProfileAvatarSection(
     onImageClick: () -> Unit,
     onRemoveImage: () -> Unit,
     modifier: Modifier = Modifier,
+    onViewImageClick: (() -> Unit)? = null
 ) {
     val isBusy = isCompressingImage || isUploadingImage
     val enabled = !isBusy
+    val hasImage = currentImagePayload != null
 
     val haptic = rememberAppHaptic()
 
@@ -66,7 +74,11 @@ fun ProfileAvatarSection(
                         enabled = enabled,
                         onClick = {
                             haptic(AppHaptic.Selection)
-                            onImageClick()
+                            if (onViewImageClick != null && hasImage) {
+                                onViewImageClick()
+                            } else {
+                                onImageClick()
+                            }
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -100,12 +112,12 @@ fun ProfileAvatarSection(
                 }
             }
 
-            if (currentImagePayload != null && enabled) {
+            if (hasImage && enabled) {
                 // The "X" Remove Button
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp)
+                        .minimumInteractiveComponentSize()
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surface)
@@ -125,13 +137,16 @@ fun ProfileAvatarSection(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-            } else if (currentImagePayload == null && enabled) {
+            }
+
+            if (enabled && (!hasImage || onViewImageClick != null)) {
                 // A subtle camera indicator so they know the circle is interactive
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(12.dp)
-                        .size(36.dp)
+                        .padding(8.dp)
+                        .minimumInteractiveComponentSize()
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
                         .clickable(
@@ -153,13 +168,19 @@ fun ProfileAvatarSection(
         }
 
         // Show Image Errors inline below the avatar
-        if (imageError != null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            LynkText(
-                text = imageError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.labelSmall
-            )
+        AnimatedVisibility(
+            visible = imageError != null,
+            enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(modifier = Modifier.height(12.dp))
+                LynkText(
+                    text = imageError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
     }
 }

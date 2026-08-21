@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+
+    <string name="display_name">Display Name</string>
+    <string name="username">Username</string>
+    <string name="display_name_placeholder">e.g. John Doe</string>
+    <string name="email">Email</string>
+    <string name="account">Account</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="saving_changes">Saving…</string>
+    <string name="profile_saved">Profile updated.</string>
+
+    <string name="error_display_name_blank">Display name cannot be empty.</string>
+    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
+    <string name="error_image_read_failure">Failed to read image file</string>
+
+    <string name="choose_source">Choose Source</string>
+    <string name="choose_source_message">How would you like to select your profile picture?</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_from_gallery">Choose from Gallery</string>
+
+    <string name="stat_hosted">Hosted</string>
+    <string name="stat_attended">Attended</string>
+
+    <string name="saved_spots">Saved Spots</string>
+    <string name="saved_spots_empty_title">No saved spots yet</string>
+    <string name="saved_spots_empty_message">Tap the bookmark on any spot and it will wait for you here.</string>
+    <string name="saved_spots_search_placeholder">Search your saved spots</string>
+    <string name="saved_spots_search_empty_title">No saved spots found</string>
+    <string name="saved_spots_search_empty_message">Try a different name or clear the search to see everything you saved.</string>
+    <string name="save_spot">Save spot</string>
+    <string name="unsave_spot">Remove saved spot</string>
+
+    <string name="appearance">Appearance</string>
+    <string name="preferences">Preferences</string>
+    <string name="about">About</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="push_notifications">Push Notifications</string>
+    <string name="push_notifications_message">Invites, hangout changes and payment updates.</string>
+
+    <string name="terms_and_privacy">Terms and Privacy Policy</string>
+
+    <string name="sign_out">Sign Out</string>
+    <string name="signing_out">Signing out…</string>
+    <string name="sign_out_confirm_title">Sign out?</string>
+    <string name="sign_out_confirm_message">You'll need to sign in again to get back to your hangouts.</string>
+
+    <string name="delete_account">Delete Account</string>
+    <string name="deleting_account">Deleting account…</string>
+    <string name="delete_account_confirm_title">Delete your account?</string>
+    <string name="delete_account_confirm_message">This erases your profile and your saved spots. Past hangouts stay, with your name removed. It cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="error_delete_account_blocked">Your account still has something open — a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again.</string>
+
+    <string name="guest_title">You're browsing as a guest</string>
+    <string name="guest_message">Create an account to host hangouts, split bills and save the spots you like.</string>
+    <string name="create_account">Create Account</string>
+
+    <string name="made_with_love">Made with love by Eseka Emmanuel</string>
+    <string name="app_version">Version %1$s</string>
+</resources>

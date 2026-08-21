@@ -4,6 +4,7 @@ import com.eeseka.lynk.shared.data.hangout.dto.HangoutDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutParticipantDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutPaymentDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutPreviewDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutStatsDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutSummaryDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutUserDto
 import com.eeseka.lynk.shared.data.spot.mappers.toDomain
@@ -11,6 +12,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPayment
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
 
@@ -87,5 +89,12 @@ fun HangoutSummaryDto.toDomain(): HangoutSummary {
         maxAttendees = maxAttendees,
         participantCount = participantCount,
         createdAt = createdAt
+    )
+}
+
+fun HangoutStatsDto.toDomain(): HangoutStats {
+    return HangoutStats(
+        hostedCount = hostedCount,
+        attendedCount = attendedCount
     )
 }

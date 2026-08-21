@@ -4,8 +4,8 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.profile_setup.domain.DisplayNameValidationState
-import com.eeseka.lynk.profile_setup.domain.DisplayNameValidator
+import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidationState
+import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidator
 import com.eeseka.lynk.profile_setup.domain.UsernameValidationState
 import com.eeseka.lynk.profile_setup.domain.UsernameValidator
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
@@ -79,13 +79,13 @@ class ProfileSetupViewModel(
             initialValue = ProfileSetupState()
         )
 
-    private val isUsernameValidFlow = snapshotFlow { state.value.usernameTextState.text.toString() }
+    private val isUsernameValidFlow = snapshotFlow { _state.value.usernameTextState.text.toString() }
         .map { UsernameValidator.validate(it) == UsernameValidationState.VALID }
         .distinctUntilChanged()
 
     // Blank-check only — real validation (too long) runs on submit via validateFormInputs()
     private val isDisplayNameValidFlow =
-        snapshotFlow { state.value.displayNameTextState.text.toString() }
+        snapshotFlow { _state.value.displayNameTextState.text.toString() }
             .map { it.isNotBlank() }
             .distinctUntilChanged()
 
@@ -146,7 +146,8 @@ class ProfileSetupViewModel(
                     it.copy(
                         profilePictureUrl = null,
                         localPhotoUri = null,
-                        localPhotoMimeType = null
+                        localPhotoMimeType = null,
+                        imageError = null
                     )
                 }
             }
@@ -157,7 +158,7 @@ class ProfileSetupViewModel(
 
     @OptIn(FlowPreview::class)
     private fun observeUsernameAvailability() {
-        snapshotFlow { state.value.usernameTextState.text.toString() }
+        snapshotFlow { _state.value.usernameTextState.text.toString() }
             .map { it.trim() }
             .onEach { _state.update { it.copy(isUsernameAvailable = null) } }
             .distinctUntilChanged()
@@ -250,8 +251,8 @@ class ProfileSetupViewModel(
         _state.update { it.copy(isSubmitting = true) }
 
         viewModelScope.launch {
-            val username = state.value.usernameTextState.text.toString().trim()
-            val displayName = state.value.displayNameTextState.text.toString().trim()
+            val username = _state.value.usernameTextState.text.toString().trim()
+            val displayName = _state.value.displayNameTextState.text.toString().trim()
 
             // Handle the image upload if a new one was picked
             val uploadedUrl = uploadLocalImageIfPresent()
@@ -265,8 +266,11 @@ class ProfileSetupViewModel(
             // Determine final URL (New uploaded URL, or the existing one)
             val finalPhotoUrl = uploadedUrl ?: state.value.profilePictureUrl
 
-            // Update the backend profile
-            userService.updateProfile(username, displayName, finalPhotoUrl)
+            userService.createProfile(
+                username = username,
+                displayName = displayName,
+                profilePhotoUrl = finalPhotoUrl
+            )
                 .onSuccess { updatedUser ->
                     val currentAuth = sessionStorage.observeAuthInfo().firstOrNull()
                     if (currentAuth != null) {
@@ -340,16 +344,12 @@ class ProfileSetupViewModel(
         }
     }
 
-    private fun clearAllFormErrors() {
-        _state.update { it.copy(usernameError = null, displayNameError = null, imageError = null) }
-    }
-
     private fun validateFormInputs(): Boolean {
         clearAllFormErrors()
 
         val currentState = state.value
-        val username = currentState.usernameTextState.text.toString()
-        val displayName = currentState.displayNameTextState.text.toString()
+        val username = _state.value.usernameTextState.text.toString()
+        val displayName = _state.value.displayNameTextState.text.toString()
 
         val usernameState = UsernameValidator.validate(username)
         val displayNameState = DisplayNameValidator.validate(displayName)
@@ -385,5 +385,9 @@ class ProfileSetupViewModel(
         return usernameState == UsernameValidationState.VALID &&
                 displayNameState == DisplayNameValidationState.VALID &&
                 currentState.isUsernameAvailable == true
+    }
+
+    private fun clearAllFormErrors() {
+        _state.update { it.copy(usernameError = null, displayNameError = null, imageError = null) }
     }
 }

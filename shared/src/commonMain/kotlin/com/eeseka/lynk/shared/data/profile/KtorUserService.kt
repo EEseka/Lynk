@@ -6,6 +6,7 @@ import com.eeseka.lynk.shared.data.networking.get
 import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.data.networking.put
 import com.eeseka.lynk.shared.data.networking.safeCall
+import com.eeseka.lynk.shared.data.profile.dto.requests.CreateProfileRequest
 import com.eeseka.lynk.shared.data.profile.dto.requests.GenerateUploadUrlRequest
 import com.eeseka.lynk.shared.data.profile.dto.requests.UpdateProfileRequest
 import com.eeseka.lynk.shared.data.profile.dto.response.ProfilePictureUploadUrlsResponse
@@ -59,15 +60,38 @@ class KtorUserService(
         }
     }
 
-    override suspend fun updateProfile(
+    override suspend fun getCurrentUser(): Result<User, DataError.Remote> {
+        return httpClient.get<UserSerializable>(
+            route = "/users/me"
+        ).map { userSerializable ->
+            userSerializable.toDomain()
+        }
+    }
+
+    override suspend fun createProfile(
         username: String,
+        displayName: String,
+        profilePhotoUrl: String?
+    ): Result<User, DataError.Remote> {
+        return httpClient.post<CreateProfileRequest, UserSerializable>(
+            route = "/users/profile",
+            body = CreateProfileRequest(
+                username = username,
+                displayName = displayName,
+                profilePhotoUrl = profilePhotoUrl
+            )
+        ).map { userSerializable ->
+            userSerializable.toDomain()
+        }
+    }
+
+    override suspend fun updateProfile(
         displayName: String,
         profilePhotoUrl: String?
     ): Result<User, DataError.Remote> {
         return httpClient.put<UpdateProfileRequest, UserSerializable>(
             route = "/users/profile",
             body = UpdateProfileRequest(
-                username = username,
                 displayName = displayName,
                 profilePhotoUrl = profilePhotoUrl
             )

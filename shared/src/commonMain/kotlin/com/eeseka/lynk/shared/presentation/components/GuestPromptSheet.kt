@@ -107,6 +107,7 @@ private fun GuestPromptSheetContent(
         LynkButton(
             text = stringResource(Res.string.guest_prompt_sign_in),
             isLoading = isLoading,
+            loadingText = "",
             onClick = onCreateAccountClick
         )
 
