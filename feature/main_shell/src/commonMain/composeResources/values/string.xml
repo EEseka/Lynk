@@ -3,4 +3,5 @@
     <string name="discover">Discover</string>
     <string name="hangouts">Hangouts</string>
     <string name="profile">Profile</string>
+    <string name="unread_notifications">Unread notifications</string>
 </resources>

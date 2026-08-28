@@ -11,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
@@ -35,8 +38,10 @@ fun HangoutsListDetailAdaptiveLayout(
     sharedState: HangoutsListDetailState,
     events: Flow<HangoutsListDetailEvent>,
     onAction: (HangoutsListDetailAction) -> Unit,
-    onToggleNavigation: (Boolean) -> Unit,
-    mainShellPadding: PaddingValues
+    onDetailPaneFullScreenChange: (Boolean) -> Unit,
+    mainShellPadding: PaddingValues,
+    unreadNotificationCount: Int,
+    onNavigateToNotifications: () -> Unit
 ) {
     val scaffoldDirective = createNoSpacingPaneScaffoldDirective()
     val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator(
@@ -44,11 +49,17 @@ fun HangoutsListDetailAdaptiveLayout(
     )
     val scope = rememberCoroutineScope()
 
+    // The id arrives as a route argument and never changes, so without this guard the effect
+    // opens the detail pane again every time this screen is recomposed from scratch — which is
+    // what happens on the way back from the notifications screen.
+    var hasOpenedInitialHangout by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(initialHangoutId) {
-        if (initialHangoutId != null) {
-            onAction(HangoutsListDetailAction.OnSelectHangout(initialHangoutId))
-            scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
-        }
+        if (initialHangoutId == null || hasOpenedInitialHangout) return@LaunchedEffect
+
+        hasOpenedInitialHangout = true
+        onAction(HangoutsListDetailAction.OnSelectHangout(initialHangoutId))
+        scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
     }
 
     NavigationBackHandler(
@@ -75,13 +86,13 @@ fun HangoutsListDetailAdaptiveLayout(
     }
 
     LaunchedEffect(isDetailPaneFullScreen) {
-        onToggleNavigation(!isDetailPaneFullScreen)
+        onDetailPaneFullScreenChange(isDetailPaneFullScreen)
     }
-    // Safety net: if this whole layout is torn down while the bar is hidden (e.g. a
-    // notification/deep-link jumps out of a full-screen detail), the LaunchedEffect never
-    // gets to restore it — so guarantee it here on dispose.
+    // Safety net: if this whole layout is torn down while the detail pane owns the screen
+    // (e.g. a notification/deep-link jumps out of it), the LaunchedEffect never gets to
+    // report that it is gone — so guarantee it here on dispose.
     DisposableEffect(Unit) {
-        onDispose { onToggleNavigation(true) }
+        onDispose { onDetailPaneFullScreenChange(false) }
     }
 
     ListDetailPaneScaffold(
@@ -123,6 +134,8 @@ fun HangoutsListDetailAdaptiveLayout(
                     onCreateHangoutClick = {
                         onAction(HangoutsListDetailAction.OnCreateHangoutClick)
                     },
+                    unreadNotificationCount = unreadNotificationCount,
+                    onNavigateToNotifications = onNavigateToNotifications,
                     mainShellPadding = mainShellPadding
                 )
             }

@@ -49,6 +49,10 @@ coil = "3.5.0"
 
 auth = "3.0.5"
 
+# Push notifications
+google-services = "4.4.3"
+firebase-bom = "34.0.0"
+
 iconsLucideCmp = "2.2.1"
 calf = "0.13.0"
 map = "0.14.0"
@@ -133,6 +137,10 @@ compose-lottie-animations = { module = "io.github.alexzhirkevich:compottie", ver
 # Auth
 auth-google-kmp = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "auth" }
 
+# Push notifications (Firebase Cloud Messaging)
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+
 # DataStore (Settings)
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
@@ -186,6 +194,7 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 
 [bundles]
 koin-common = [

@@ -17,7 +17,7 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.hangouts.presentation.util.toNairaString
+import com.eeseka.lynk.shared.presentation.util.toNairaString
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_confirm_action

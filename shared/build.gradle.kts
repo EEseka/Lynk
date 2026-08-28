@@ -93,6 +93,10 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.compose.ui.tooling)
             implementation(libs.androidx.lifecycle.process)
+
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.messaging)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(libs.runtime)

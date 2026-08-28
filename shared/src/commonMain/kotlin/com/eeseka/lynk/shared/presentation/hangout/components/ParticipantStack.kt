@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.shared.presentation.hangout.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,37 +26,35 @@ import coil3.compose.AsyncImage
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
-import lynk.feature.hangouts.generated.resources.Res
-import lynk.feature.hangouts.generated.resources.detail_online
-import lynk.feature.hangouts.generated.resources.detail_participants_overflow
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.detail_online
+import lynk.shared.generated.resources.detail_participants_overflow
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantStack(
-    participants: List<HangoutParticipantUi>,
+    users: List<HangoutUserUi>,
     presentUserIds: Set<String> = emptySet(),
     maxVisible: Int = 5,
     avatarSize: Dp = 40.dp,
     modifier: Modifier = Modifier
 ) {
     val overlap = avatarSize / 3
-    val visible = participants.take(maxVisible)
-    val overflow = participants.size - visible.size
+    val visible = users.take(maxVisible)
+    val overflow = users.size - visible.size
 
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(-overlap),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        visible.forEachIndexed { index, participant ->
+        visible.forEachIndexed { index, user ->
             ParticipantAvatar(
-                displayName = participant.user.displayName,
-                initials = participant.user.initials,
-                profilePictureUrl = participant.user.profilePictureUrl,
-                isOnline = participant.user.userId in presentUserIds,
+                displayName = user.displayName,
+                initials = user.initials,
+                profilePictureUrl = user.profilePictureUrl,
+                isOnline = user.userId in presentUserIds,
                 size = avatarSize,
                 modifier = Modifier.zIndex((visible.size - index).toFloat())
             )
@@ -154,17 +152,13 @@ private fun AvatarBubble(
 private fun ParticipantStackPreview() {
     LynkTheme {
         ParticipantStack(
-            participants = List(7) { index ->
-                HangoutParticipantUi(
-                    user = HangoutUserUi(
-                        userId = "$index",
-                        username = "user$index",
-                        displayName = "User $index",
-                        initials = "U$index",
-                        profilePictureUrl = null
-                    ),
-                    rsvpStatus = RsvpStatus.ATTENDING,
-                    hasPaid = false
+            users = List(7) { index ->
+                HangoutUserUi(
+                    userId = "$index",
+                    username = "user$index",
+                    displayName = "User $index",
+                    initials = "U$index",
+                    profilePictureUrl = null
                 )
             },
             presentUserIds = setOf("0", "2", "3")

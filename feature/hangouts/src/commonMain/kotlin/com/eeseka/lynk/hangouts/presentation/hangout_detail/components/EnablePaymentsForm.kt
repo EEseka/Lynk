@@ -26,7 +26,7 @@ import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.hangouts.presentation.util.NAIRA_SYMBOL
+import com.eeseka.lynk.shared.presentation.util.NAIRA_SYMBOL
 import com.eeseka.lynk.hangouts.presentation.util.accountNumberInput
 import com.eeseka.lynk.hangouts.presentation.util.amountInput
 import com.eeseka.lynk.hangouts.presentation.util.amountOutput

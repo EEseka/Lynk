@@ -5,6 +5,8 @@ import com.eeseka.lynk.shared.data.auth.KtorAuthService
 import com.eeseka.lynk.shared.data.logging.KermitLogger
 import com.eeseka.lynk.shared.data.media.NativeImageCompressionService
 import com.eeseka.lynk.shared.data.networking.HttpClientFactory
+import com.eeseka.lynk.shared.data.notification.KtorDeviceTokenService
+import com.eeseka.lynk.shared.data.notification.KtorNotificationService
 import com.eeseka.lynk.shared.data.payment.KtorPaymentService
 import com.eeseka.lynk.shared.data.profile.KtorUserService
 import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
@@ -19,6 +21,8 @@ import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import com.eeseka.lynk.shared.domain.media.ImageCompressionService
+import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
+import com.eeseka.lynk.shared.domain.notification.NotificationService
 import com.eeseka.lynk.shared.domain.payment.PaymentService
 import com.eeseka.lynk.shared.domain.profile.UserService
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
@@ -50,6 +54,8 @@ val sharedDataModule = module {
     singleOf(::KtorHangoutService) bind HangoutService::class
     singleOf(::KtorHangoutParticipantService) bind HangoutParticipantService::class
     singleOf(::KtorPaymentService) bind PaymentService::class
+    singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class
+    singleOf(::KtorNotificationService) bind NotificationService::class
 
     single {
         Json {

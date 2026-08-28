@@ -8,7 +8,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.DeadlineChange
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.SearchTab
 import com.eeseka.lynk.hangouts.presentation.mappers.toBankUi
-import com.eeseka.lynk.hangouts.presentation.util.toNairaString
+import com.eeseka.lynk.shared.presentation.util.toNairaString
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_COST_PER_PERSON_KOBO

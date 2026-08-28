@@ -11,6 +11,7 @@ import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.util.DataErrorException
 import com.eeseka.lynk.shared.domain.util.Paginator
 import com.eeseka.lynk.shared.domain.util.onFailure
@@ -39,7 +40,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class HangoutsListViewModel(
     private val hangoutService: HangoutService,
     private val sessionStorage: SessionStorage,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val appPreferences: AppPreferences
 ) : ViewModel() {
 
     private val eventChannel = Channel<HangoutsListEvent>()
@@ -87,8 +89,15 @@ class HangoutsListViewModel(
             }
 
             HangoutsListAction.LoadNextPage -> loadNextPage()
+            HangoutsListAction.OnNotificationPermissionDenied -> disablePushNotifications()
             HangoutsListAction.Refresh -> refresh()
             HangoutsListAction.SignOutGuest -> signOutGuest()
+        }
+    }
+
+    private fun disablePushNotifications() {
+        viewModelScope.launch {
+            appPreferences.setPushNotificationsEnabled(false)
         }
     }
 

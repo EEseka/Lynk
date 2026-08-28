@@ -8,6 +8,7 @@ sealed interface HangoutsListAction {
     data class OnStatusFilterSelected(val filter: HangoutStatusFilter) : HangoutsListAction
     data class OnVibeSelected(val vibe: HangoutVibe?) : HangoutsListAction
     data object LoadNextPage : HangoutsListAction
+    data object OnNotificationPermissionDenied : HangoutsListAction
     data object Refresh : HangoutsListAction
     data object SignOutGuest : HangoutsListAction
 }

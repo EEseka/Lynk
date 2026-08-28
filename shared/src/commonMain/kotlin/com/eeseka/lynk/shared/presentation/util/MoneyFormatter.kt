@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.util
+package com.eeseka.lynk.shared.presentation.util
 
 // Paystack settles in naira, so this is the currency of the money itself, not of the device.
 const val NAIRA_SYMBOL = "₦"

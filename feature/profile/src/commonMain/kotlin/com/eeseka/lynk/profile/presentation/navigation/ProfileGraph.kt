@@ -1,7 +1,6 @@
 package com.eeseka.lynk.profile.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -16,8 +15,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.profileGraph(
     navController: NavController,
-    mainShellPadding: PaddingValues,
-    onToggleNavigation: (Boolean) -> Unit
+    mainShellPadding: PaddingValues
 ) {
     navigation<ProfileGraphRoutes.Graph>(
         startDestination = ProfileGraphRoutes.Profile
@@ -40,11 +38,6 @@ fun NavGraphBuilder.profileGraph(
         composable<ProfileGraphRoutes.SavedSpots> {
             val viewModel = koinViewModel<SavedSpotsViewModel>()
             val state by viewModel.state.collectAsStateWithLifecycle()
-
-            DisposableEffect(Unit) {
-                onToggleNavigation(false)
-                onDispose { onToggleNavigation(true) }
-            }
 
             SavedSpotsScreen(
                 state = state,

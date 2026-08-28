@@ -3,7 +3,12 @@ package com.eeseka.lynk
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
+import com.eeseka.lynk.shared.domain.notification.PushNotificationService
+import com.eeseka.lynk.shared.domain.notification.model.DevicePlatform
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
+import com.eeseka.lynk.shared.domain.util.PlatformUtils
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,7 +24,9 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val sessionStorage: SessionStorage,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val deviceTokenService: DeviceTokenService,
+    private val pushNotificationService: PushNotificationService
 ) : ViewModel() {
 
     private val eventChannel = Channel<MainEvent>()
@@ -41,7 +48,8 @@ class MainViewModel(
     }
         .onStart {
             if (!hasLoadedInitialData) {
-                observeSession()
+                observeSessionExpiry()
+                observePushRegistration()
                 hasLoadedInitialData = true
             }
         }
@@ -52,6 +60,7 @@ class MainViewModel(
         )
 
     private var previousRefreshToken: String? = null
+    private var registeredDeviceToken: String? = null
 
     init {
         viewModelScope.launch {
@@ -65,7 +74,7 @@ class MainViewModel(
         }
     }
 
-    private fun observeSession() {
+    private fun observeSessionExpiry() {
         sessionStorage
             .observeAuthInfo()
             .onEach { authInfo ->
@@ -73,16 +82,62 @@ class MainViewModel(
                 val isSessionExpired = previousRefreshToken != null && currentRefreshToken == null
                 if (isSessionExpired) {
                     sessionStorage.set(null)
-                    _state.update {
-                        it.copy(
-                            user = null
-                        )
-                    }
+                    _state.update { it.copy(user = null) }
                     eventChannel.send(MainEvent.OnSessionExpired)
                 }
 
                 previousRefreshToken = currentRefreshToken
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun observePushRegistration() {
+        combine(
+            sessionStorage.observeAuthInfo(),
+            pushNotificationService.observeDeviceToken(),
+            appPreferences.arePushNotificationsEnabled
+        ) { authInfo, deviceToken, arePushNotificationsEnabled ->
+            syncDeviceToken(
+                isSignedIn = authInfo != null,
+                deviceToken = deviceToken,
+                arePushNotificationsEnabled = arePushNotificationsEnabled
+            )
+        }.launchIn(viewModelScope)
+    }
+
+    private suspend fun syncDeviceToken(
+        isSignedIn: Boolean,
+        deviceToken: String?,
+        arePushNotificationsEnabled: Boolean
+    ) {
+        if (!isSignedIn) {
+            // No unregister call here on purpose — ProfileViewModel.signOut already made it,
+            // on its way out, while the session was still alive. By the time we hear about
+            // the sign-out the session is gone, so a deletion would only come back 401. All
+            // that is left is to forget the token, so the next sign-in sends it again.
+            registeredDeviceToken = null
+            return
+        }
+
+        if (!arePushNotificationsEnabled) {
+            registeredDeviceToken?.let { token ->
+                deviceTokenService.unregisterToken(token)
+                registeredDeviceToken = null
+            }
+            return
+        }
+
+        if (deviceToken == null || deviceToken == registeredDeviceToken) return
+
+        deviceTokenService
+            .registerToken(
+                token = deviceToken,
+                platform = currentDevicePlatform()
+            )
+            .onSuccess { registeredDeviceToken = deviceToken }
+    }
+
+    private fun currentDevicePlatform(): DevicePlatform {
+        return if (PlatformUtils.isIOS()) DevicePlatform.IOS else DevicePlatform.ANDROID
     }
 }

@@ -8,4 +8,7 @@ sealed interface HangoutsGraphRoutes {
 
     @Serializable
     data class HangoutListDetail(val hangoutId: String? = null) : HangoutsGraphRoutes
+
+    @Serializable
+    data class Notifications(val previewHangoutId: String? = null) : HangoutsGraphRoutes
 }

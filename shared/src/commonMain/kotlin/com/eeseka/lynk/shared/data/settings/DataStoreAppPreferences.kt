@@ -47,9 +47,6 @@ class DataStoreAppPreferences(
         }
     }
 
-    // TODO(notifications): turning this off must also unregister this device's token with the
-    //  backend, and turning it on must re-register it plus request the Android 13+ POST_NOTIFICATIONS
-    //  permission. Wire that up when the notification module lands.
     override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[arePushNotificationsEnabledKey] = isEnabled

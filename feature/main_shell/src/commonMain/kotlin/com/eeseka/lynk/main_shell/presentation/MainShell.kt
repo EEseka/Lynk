@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -33,8 +35,10 @@ import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
 import com.eeseka.lynk.profile.presentation.navigation.ProfileGraphRoutes
 import com.eeseka.lynk.profile.presentation.navigation.profileGraph
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.presentation.navigation.DeepLinkListener
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MainShell() {
@@ -42,18 +46,43 @@ fun MainShell() {
     val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    val viewModel = koinViewModel<MainShellViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(currentDestination) {
+        viewModel.onAction(MainShellAction.RefreshUnreadCount)
+    }
+
     val config = currentDeviceConfiguration()
 
     val showRail = config.isWideScreen || config == DeviceConfiguration.MOBILE_LANDSCAPE
 
+    // The hangout detail is the only screen whose bar visibility depends on the layout rather
+    // than on which route is open, so it is the only one that still reports up to us.
+    var isDetailPaneFullScreen by remember { mutableStateOf(false) }
+
+    // Routes that take over the whole screen and so hide the bottom bar.
+    val isFullScreenRoute = remember(currentDestination) {
+        currentDestination?.hierarchy?.any {
+            it.hasRoute(HangoutsGraphRoutes.Notifications::class) || it.hasRoute(ProfileGraphRoutes.SavedSpots::class)
+        } == true
+    }
+
     // Controls visibility of the bottom bar only.
-    var isBottomBarVisible by remember { mutableStateOf(true) }
+    val isBottomBarVisible = !isFullScreenRoute && !isDetailPaneFullScreen
 
     val selectedItem = remember(currentDestination) {
         when {
             currentDestination?.hierarchy?.any { it.hasRoute(HangoutsGraphRoutes.Graph::class) } == true -> LynkNavigationItem.HANGOUTS
             currentDestination?.hierarchy?.any { it.hasRoute(ProfileGraphRoutes.Graph::class) } == true -> LynkNavigationItem.PROFILE
             else -> LynkNavigationItem.DISCOVER
+        }
+    }
+
+    // Arriving on the Hangouts tab is what clears the dot
+    LaunchedEffect(selectedItem) {
+        if (selectedItem == LynkNavigationItem.HANGOUTS) {
+            viewModel.onAction(MainShellAction.HangoutsTabSeen)
         }
     }
 
@@ -78,7 +107,8 @@ fun MainShell() {
                 ) {
                     LynkBottomBar(
                         selectedItem = selectedItem,
-                        onItemSelected = onNavigate
+                        onItemSelected = onNavigate,
+                        hasUnseenNotifications = state.hasUnseenNotifications
                     )
                 }
             }
@@ -88,13 +118,15 @@ fun MainShell() {
             Row(modifier = Modifier.fillMaxSize()) {
                 LynkNavigationRail(
                     selectedItem = selectedItem,
-                    onItemSelected = onNavigate
+                    onItemSelected = onNavigate,
+                    hasUnseenNotifications = state.hasUnseenNotifications
                 )
 
                 MainShellNavHost(
                     navController = innerNavController,
                     paddingValues = PaddingValues(0.dp),
-                    onToggleBottomBar = { isBottomBarVisible = it },
+                    onDetailPaneFullScreenChange = { isDetailPaneFullScreen = it },
+                    unreadNotificationCount = state.unreadNotificationCount,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
             }
@@ -102,10 +134,13 @@ fun MainShell() {
             MainShellNavHost(
                 navController = innerNavController,
                 paddingValues = paddingValues,
-                onToggleBottomBar = { isBottomBarVisible = it },
+                onDetailPaneFullScreenChange = { isDetailPaneFullScreen = it },
+                unreadNotificationCount = state.unreadNotificationCount,
                 modifier = Modifier.fillMaxSize()
             )
         }
+
+        DeepLinkListener(navController = innerNavController)
     }
 }
 
@@ -113,7 +148,8 @@ fun MainShell() {
 private fun MainShellNavHost(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    onToggleBottomBar: (Boolean) -> Unit,
+    onDetailPaneFullScreenChange: (Boolean) -> Unit,
+    unreadNotificationCount: Int,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -129,18 +165,21 @@ private fun MainShellNavHost(
             navController = navController,
             mainShellPadding = paddingValues,
             navigateToHangouts = { hangoutId ->
-                navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId))
+                navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId)) {
+                    popUpTo<HangoutsGraphRoutes.HangoutListDetail> { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         )
         hangoutsGraph(
             navController = navController,
             mainShellPadding = paddingValues,
-            onToggleNavigation = onToggleBottomBar
+            onDetailPaneFullScreenChange = onDetailPaneFullScreenChange,
+            unreadNotificationCount = unreadNotificationCount
         )
         profileGraph(
             navController = navController,
-            mainShellPadding = paddingValues,
-            onToggleNavigation = onToggleBottomBar
+            mainShellPadding = paddingValues
         )
     }
 }
