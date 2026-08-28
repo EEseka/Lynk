@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -28,8 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.auth.presentation.components.AuthActions
 import com.eeseka.lynk.auth.presentation.components.AuthBranding
 import com.eeseka.lynk.shared.design_system.components.animated_background.BreathingSpotlightBackground
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
@@ -108,11 +105,14 @@ fun AuthScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Spacer(modifier = Modifier.weight(1f))
+
                         AuthBranding(iconSize = brandingSize)
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         AuthActionsPanel(
                             state = state,
-                            isCarded = !config.isMobile,
                             onAction = onAction,
                             onAppleClick = {
                                 scope.launch {
@@ -122,6 +122,8 @@ fun AuthScreen(
                                 }
                             }
                         )
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         LynkText(
                             text = stringResource(Res.string.auth_disclosure),
@@ -171,7 +173,6 @@ fun AuthScreen(
                             ) {
                                 AuthActionsPanel(
                                     state = state,
-                                    isCarded = !config.isMobile,
                                     onAction = onAction,
                                     onAppleClick = {
                                         scope.launch {
@@ -206,36 +207,19 @@ fun AuthScreen(
 @Composable
 private fun AuthActionsPanel(
     state: AuthState,
-    isCarded: Boolean,
     onAction: (AuthAction) -> Unit,
     onAppleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val actions: @Composable () -> Unit = {
-        AuthActions(
-            isGoogleSigningIn = state.isGoogleSigningIn,
-            isAppleSigningIn = state.isAppleSigningIn,
-            isGuestSigningIn = state.isGuestSigningIn,
-            onGoogleClick = { onAction(AuthAction.OnGoogleSignInClick) },
-            onAppleClick = onAppleClick,
-            onGuestClick = { onAction(AuthAction.OnGuestClick) },
-            onGoogleTokenReceived = { onAction(AuthAction.OnGoogleTokenReceived(it)) },
-            enableButtons = !state.isGoogleSigningIn && !state.isGuestSigningIn && !state.isAppleSigningIn
-        )
-    }
-
-    if (isCarded) {
-        LynkCard(
-            style = LynkCardStyle.ELEVATED,
-            modifier = modifier.widthIn(max = 480.dp)
-        ) {
-            Column(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
-                actions()
-            }
-        }
-    } else {
-        Box(modifier = modifier) {
-            actions()
-        }
-    }
+    AuthActions(
+        isGoogleSigningIn = state.isGoogleSigningIn,
+        isAppleSigningIn = state.isAppleSigningIn,
+        isGuestSigningIn = state.isGuestSigningIn,
+        onGoogleClick = { onAction(AuthAction.OnGoogleSignInClick) },
+        onAppleClick = onAppleClick,
+        onGuestClick = { onAction(AuthAction.OnGuestClick) },
+        onGoogleTokenReceived = { onAction(AuthAction.OnGoogleTokenReceived(it)) },
+        enableButtons = !state.isGoogleSigningIn && !state.isGuestSigningIn && !state.isAppleSigningIn,
+        modifier = modifier
+    )
 }
