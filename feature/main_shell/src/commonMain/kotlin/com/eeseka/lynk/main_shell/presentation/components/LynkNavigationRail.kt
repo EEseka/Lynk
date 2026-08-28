@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.emptyFlow
 fun LynkNavigationRail(
     selectedItem: LynkNavigationItem,
     onItemSelected: (LynkNavigationItem) -> Unit,
+    hasUnseenNotifications: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -53,9 +54,11 @@ fun LynkNavigationRail(
                     selected = isSelected,
                     onClick = { onItemSelected(item) },
                     icon = {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title.asString()
+                        NavigationItemIcon(
+                            icon = item.icon,
+                            contentDescription = item.title.asString(),
+                            hasUnread = hasUnseenNotifications &&
+                                    item == LynkNavigationItem.HANGOUTS
                         )
                     },
                     label = {

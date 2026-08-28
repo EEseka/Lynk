@@ -23,7 +23,7 @@ import com.composables.icons.lucide.CalendarClock
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.util.toDeadlineDisplayDate
-import com.eeseka.lynk.hangouts.presentation.util.toNairaString
+import com.eeseka.lynk.shared.presentation.util.toNairaString
 import com.eeseka.lynk.hangouts.presentation.util.toUiText
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle

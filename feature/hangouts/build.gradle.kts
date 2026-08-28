@@ -58,6 +58,7 @@ kotlin {
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)
+            implementation(projects.feature.notifications)
         }
 
         commonTest.dependencies {

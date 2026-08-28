@@ -23,7 +23,7 @@ import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Users
-import com.eeseka.lynk.hangouts.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText

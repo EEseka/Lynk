@@ -397,7 +397,10 @@ fun DiscoverScreen(
                 message = stringResource(Res.string.location_required_message),
                 confirmText = stringResource(Res.string.open_settings),
                 dismissText = stringResource(Res.string.not_now),
-                onConfirm = { permissionController.openAppSettings() },
+                onConfirm = {
+                    showSettingsDialog = false
+                    permissionController.openAppSettings()
+                },
                 onDismissRequest = { showSettingsDialog = false }
             )
         }

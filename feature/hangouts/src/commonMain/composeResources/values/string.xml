@@ -36,9 +36,6 @@
     <string name="empty_search_title">No hangouts found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
 
-    <string name="am">AM</string>
-    <string name="pm">PM</string>
-
     <string name="connection_online">Connected</string>
     <string name="connection_offline">Offline</string>
     <string name="connection_connecting">Reconnecting…</string>
@@ -53,9 +50,7 @@
     <string name="detail_going">Going</string>
     <string name="detail_going_count">%1$d going</string>
     <string name="detail_going_count_max">%1$d / %2$d going</string>
-    <string name="detail_participants_overflow">+%1$d</string>
     <string name="detail_see_all">See all</string>
-    <string name="detail_online">Online</string>
     <string name="participants_sheet_title">Who's going</string>
     <string name="detail_chosen_spot">Chosen spot</string>
     <string name="detail_no_spot_title">No spot yet</string>
@@ -223,4 +218,8 @@
     <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
     <string name="km">km</string>
     <string name="m">m</string>
+
+    <string name="notifications">Notifications</string>
+    <string name="notifications_with_unread">Notifications, %1$d unread</string>
+    <string name="unread_count_overflow">9+</string>
 </resources>

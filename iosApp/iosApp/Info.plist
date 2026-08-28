@@ -14,6 +14,14 @@
                     <string>com.googleusercontent.apps.547754562784-t5d14eqqqtlt93a9g3d2nqcuc5pu6t8a</string>
                 </array>
             </dict>
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>ng.com.lynk</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>lynk</string>
+                </array>
+            </dict>
         </array>
         <key>GIDClientID</key>
         <string>547754562784-t5d14eqqqtlt93a9g3d2nqcuc5pu6t8a.apps.googleusercontent.com</string>

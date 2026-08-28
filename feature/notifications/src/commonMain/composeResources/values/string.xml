@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="notifications">Notifications</string>
+    <string name="back">Back</string>
+    <string name="mark_all_read">Mark all as read</string>
+    <string name="unread">Unread</string>
+
+    <string name="notifications_empty_title">Nothing yet</string>
+    <string name="notifications_empty_message">Invites, spot picks and payment updates for your hangouts will show up here.</string>
+
+    <!-- Stands in for a name the backend did not send -->
+    <string name="notification_someone">Someone</string>
+
+    <!-- Who is in the hangout -->
+    <string name="notification_participant_invited">%1$s invited you to %2$s</string>
+    <string name="notification_invite_cancelled">%1$s withdrew your invite to %2$s</string>
+    <string name="notification_removed_for_non_payment">You were removed from %1$s because your share was not paid in time</string>
+    <string name="notification_participant_left">%1$s left %2$s</string>
+
+    <!-- The hangout changed -->
+    <string name="notification_details_edited">%1$s updated %2$s</string>
+    <string name="notification_schedule_changed">%1$s moved %2$s to a new time</string>
+    <string name="notification_spot_chosen">%1$s locked in where %2$s is happening</string>
+    <string name="notification_voting_reopened">%1$s reopened voting for %2$s</string>
+    <string name="notification_payments_enabled">%1$s split the bill for %2$s</string>
+
+    <!-- Where the hangout is in its life -->
+    <string name="notification_hangout_started">%1$s is starting now</string>
+    <string name="notification_hangout_completed">%1$s is done</string>
+    <string name="notification_hangout_cancelled">%1$s called %2$s off</string>
+
+    <!-- Money the host has to act on -->
+    <string name="notification_payment_deadline_resolved">The payment deadline for %1$s has been settled</string>
+    <string name="notification_payment_deadline_needs_decision">%1$s needs your call on the guests who did not pay</string>
+    <string name="notification_payment_deadline_changed">%1$s changed the payment deadline for %2$s</string>
+    <string name="notification_payout_succeeded">%1$s from %2$s is on its way to your bank</string>
+    <string name="notification_payout_failed">The %1$s payout for %2$s did not go through</string>
+    <string name="notification_payout_nothing_to_send">There was nothing to pay out for %1$s</string>
+
+    <!-- Money that moved -->
+    <string name="notification_payment_received">%1$s paid their %2$s share for %3$s</string>
+    <string name="notification_payment_received_no_amount">%1$s paid their share for %2$s</string>
+    <string name="notification_refund_issued">%1$s from %2$s is being refunded to you</string>
+
+    <!-- Relative timestamps -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%1$dm ago</string>
+    <string name="time_hours_ago">%1$dh ago</string>
+    <string name="time_days_ago">%1$dd ago</string>
+
+    <!-- Invite preview -->
+    <string name="invite_preview_title">You are invited</string>
+    <string name="invite_preview_accept">Accept</string>
+    <string name="invite_preview_accepting">Accepting</string>
+    <string name="invite_preview_decline">Decline</string>
+    <string name="invite_preview_declining">Declining</string>
+    <string name="invite_preview_going">%1$d going</string>
+    <string name="invite_preview_going_capped">%1$d of %2$d going</string>
+    <string name="invite_preview_spot_pending">Spot still being voted on</string>
+    <string name="invite_preview_attendees">Already going</string>
+    <string name="invite_preview_withdrawn">That invite was withdrawn</string>
+</resources>

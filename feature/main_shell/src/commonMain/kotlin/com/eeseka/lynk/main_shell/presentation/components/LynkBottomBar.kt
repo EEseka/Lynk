@@ -1,6 +1,5 @@
 package com.eeseka.lynk.main_shell.presentation.components
 
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -22,6 +21,7 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 fun LynkBottomBar(
     selectedItem: LynkNavigationItem,
     onItemSelected: (LynkNavigationItem) -> Unit,
+    hasUnseenNotifications: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val entries = LynkNavigationItem.entries
@@ -34,7 +34,7 @@ fun LynkBottomBar(
         iosItems = entries.map { item ->
             val uiKitImageSystemName = when (item) {
                 LynkNavigationItem.DISCOVER -> "map.fill"
-                LynkNavigationItem.HANGOUTS -> "calendar"
+                LynkNavigationItem.HANGOUTS -> if (hasUnseenNotifications) "calendar.badge.exclamationmark" else "calendar"
                 LynkNavigationItem.PROFILE -> "person.crop.circle.fill"
             }
             UIKitUITabBarItem(
@@ -53,9 +53,10 @@ fun LynkBottomBar(
                     selected = isSelected,
                     onClick = { onItemSelected(item) },
                     icon = {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title.asString()
+                        NavigationItemIcon(
+                            icon = item.icon,
+                            contentDescription = item.title.asString(),
+                            hasUnread = hasUnseenNotifications && item == LynkNavigationItem.HANGOUTS
                         )
                     },
                     label = {
@@ -84,6 +85,18 @@ private fun LynkBottomBarPreview() {
         LynkBottomBar(
             selectedItem = LynkNavigationItem.DISCOVER,
             onItemSelected = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LynkBottomBarUnreadPreview() {
+    LynkTheme {
+        LynkBottomBar(
+            selectedItem = LynkNavigationItem.DISCOVER,
+            onItemSelected = {},
+            hasUnseenNotifications = true
         )
     }
 }

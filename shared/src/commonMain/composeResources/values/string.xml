@@ -79,4 +79,8 @@
     <string name="profile_picture">Profile Picture</string>
     <string name="choose">Choose</string>
     <string name="remove">Remove</string>
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
+    <string name="detail_participants_overflow">+%1$d</string>
+    <string name="detail_online">Online</string>
 </resources>

@@ -33,6 +33,11 @@ kotlin {
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
 
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation(libs.bundles.koin.common)
+
             implementation(libs.jetbrains.compose.navigation)
 
             implementation(libs.icons.lucide.cmp)

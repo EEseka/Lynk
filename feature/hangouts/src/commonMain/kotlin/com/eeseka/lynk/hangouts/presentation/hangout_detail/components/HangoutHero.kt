@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended

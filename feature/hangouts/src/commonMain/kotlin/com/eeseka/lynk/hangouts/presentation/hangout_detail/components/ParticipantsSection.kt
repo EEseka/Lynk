@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -66,7 +67,7 @@ fun ParticipantsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ParticipantStack(
-                participants = attending,
+                users = attending.map { it.user },
                 presentUserIds = presentUserIds,
                 modifier = Modifier.weight(1f, fill = false)
             )

@@ -61,7 +61,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentCh
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ProposeSpotSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.VotingSection
-import com.eeseka.lynk.hangouts.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import com.eeseka.lynk.hangouts.presentation.util.toLocalDate
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle

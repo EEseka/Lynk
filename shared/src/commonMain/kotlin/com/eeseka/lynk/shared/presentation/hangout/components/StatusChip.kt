@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.shared.presentation.hangout.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

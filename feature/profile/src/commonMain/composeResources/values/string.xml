@@ -65,4 +65,9 @@
 
     <string name="made_with_love">Made with love by Eseka Emmanuel</string>
     <string name="app_version">Version %1$s</string>
+
+    <string name="notifications_required">Turn on notifications</string>
+    <string name="notifications_required_message">Lynk needs notification permission to tell you about invites, spot picks and payment updates. Please enable it in your device settings.</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="not_now">Not Now</string>
 </resources>

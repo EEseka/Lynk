@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,11 +58,16 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
+import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.NotificationBell
+import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
+import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
@@ -91,6 +97,8 @@ fun HangoutsListScreen(
     events: Flow<HangoutsListEvent>,
     onAction: (HangoutsListAction) -> Unit,
     onCreateHangoutClick: () -> Unit,
+    unreadNotificationCount: Int,
+    onNavigateToNotifications: () -> Unit,
     mainShellPadding: PaddingValues
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -99,6 +107,20 @@ fun HangoutsListScreen(
     val listState = rememberLazyListState()
     var showVibeMenu by remember { mutableStateOf(false) }
     var showGuestPrompt by remember { mutableStateOf(false) }
+
+    val permissionController = rememberPermissionController()
+
+    LaunchedEffect(state.currentUserId, state.isGuest) {
+        if (state.currentUserId == null || state.isGuest) return@LaunchedEffect
+
+        var permissionState = permissionController.getPermissionState(Permission.NOTIFICATIONS)
+        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
+            permissionState = permissionController.requestPermission(Permission.NOTIFICATIONS)
+        }
+        if (permissionState != PermissionState.GRANTED) {
+            onAction(HangoutsListAction.OnNotificationPermissionDenied)
+        }
+    }
 
     ObserveAsEvents(events) { event ->
         when (event) {
@@ -124,7 +146,33 @@ fun HangoutsListScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            LynkTopAppBar(title = stringResource(Res.string.hangouts))
+            LynkTopAppBar(
+                title = stringResource(Res.string.hangouts),
+                actions = {
+                    if (!state.isGuest) {
+                        NotificationBell(
+                            unreadCount = unreadNotificationCount,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onNavigateToNotifications()
+                            }
+                        )
+                    }
+                },
+                iosTrailingItems = if (state.isGuest) {
+                    emptyList()
+                } else {
+                    listOf(
+                        LynkIosBarButtonItem(
+                            sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onNavigateToNotifications()
+                            }
+                        )
+                    )
+                }
+            )
         }
     ) { scaffoldPadding ->
         val configuration = currentDeviceConfiguration()
@@ -188,7 +236,7 @@ fun HangoutsListScreen(
                         ) {
                             LynkProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -363,6 +411,8 @@ private fun HangoutsListScreenPreview(filter: HangoutStatusFilter) {
             ),
             events = emptyFlow(),
             onCreateHangoutClick = {},
+            unreadNotificationCount = 3,
+            onNavigateToNotifications = {},
             onAction = {},
             mainShellPadding = PaddingValues()
         )

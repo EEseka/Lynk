@@ -20,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +60,9 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.components.FullScreenAvatarViewer
 import com.eeseka.lynk.shared.presentation.components.ProfileAvatarSection
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
+import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
@@ -77,6 +81,10 @@ import lynk.feature.profile.generated.resources.delete_account_confirm_message
 import lynk.feature.profile.generated.resources.delete_account_confirm_title
 import lynk.feature.profile.generated.resources.display_name
 import lynk.feature.profile.generated.resources.display_name_placeholder
+import lynk.feature.profile.generated.resources.not_now
+import lynk.feature.profile.generated.resources.notifications_required
+import lynk.feature.profile.generated.resources.notifications_required_message
+import lynk.feature.profile.generated.resources.open_settings
 import lynk.feature.profile.generated.resources.profile
 import lynk.feature.profile.generated.resources.profile_saved
 import lynk.feature.profile.generated.resources.save_changes
@@ -103,12 +111,27 @@ fun ProfileScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val hapticFeedback = rememberAppHaptic()
+    val permissionController = rememberPermissionController()
+
+    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
     val mediaPicker = rememberMediaPicker()
     val uriHandler = LocalUriHandler.current
     val config = currentDeviceConfiguration()
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
+
+    // The stored preference is only half the story — the system permission can be revoked in
+    // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
+    // opens so the switch cannot claim notifications are on while the system says otherwise.
+    LaunchedEffect(state.showSettingsSheet) {
+        if (!state.showSettingsSheet || !state.arePushNotificationsEnabled) return@LaunchedEffect
+
+        if (permissionController.getPermissionState(Permission.NOTIFICATIONS) != PermissionState.GRANTED) {
+            onAction(ProfileAction.OnPushNotificationsToggled(false))
+        }
+    }
 
     ObserveAsEvents(events) { event ->
         when (event) {
@@ -251,13 +274,46 @@ fun ProfileScreen(
             isDeletingAccount = state.isDeletingAccount,
             appVersion = stringResource(Res.string.app_version, APP_VERSION),
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
-            onPushNotificationsToggled = {
-                onAction(ProfileAction.OnPushNotificationsToggled(it))
+            onPushNotificationsToggled = { isEnabled ->
+                if (isEnabled) {
+                    scope.launch {
+                        var permissionState = permissionController.getPermissionState(Permission.NOTIFICATIONS)
+                        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
+                            permissionState = permissionController.requestPermission(Permission.NOTIFICATIONS)
+                        }
+
+                        when (permissionState) {
+                            PermissionState.GRANTED ->
+                                onAction(ProfileAction.OnPushNotificationsToggled(true))
+
+                            PermissionState.PERMANENTLY_DENIED ->
+                                showNotificationSettingsDialog = true
+
+                            else -> Unit
+                        }
+                    }
+                } else {
+                    onAction(ProfileAction.OnPushNotificationsToggled(false))
+                }
             },
             onTermsClick = { uriHandler.openUri(TERMS_AND_PRIVACY_URL) },
             onSignOutClick = { onAction(ProfileAction.OnSignOutClick) },
             onDeleteAccountClick = { onAction(ProfileAction.OnDeleteAccountClick) },
             onDismissRequest = { onAction(ProfileAction.OnDismissSettings) }
+        )
+    }
+
+    if (showNotificationSettingsDialog) {
+        LynkDialog(
+            title = stringResource(Res.string.notifications_required),
+            message = stringResource(Res.string.notifications_required_message),
+            confirmText = stringResource(Res.string.open_settings),
+            dismissText = stringResource(Res.string.not_now),
+            onConfirm = {
+                showNotificationSettingsDialog = false
+                permissionController.openAppSettings()
+            },
+            onDismissRequest = { showNotificationSettingsDialog = false }
         )
     }
 

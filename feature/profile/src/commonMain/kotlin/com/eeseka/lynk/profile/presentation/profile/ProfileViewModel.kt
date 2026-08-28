@@ -9,6 +9,8 @@ import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.media.ImageCompressionService
+import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
+import com.eeseka.lynk.shared.domain.notification.PushNotificationService
 import com.eeseka.lynk.shared.domain.profile.UserService
 import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidationState
 import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidator
@@ -45,7 +47,9 @@ class ProfileViewModel(
     private val authService: AuthService,
     private val sessionStorage: SessionStorage,
     private val appPreferences: AppPreferences,
-    private val imageCompressor: ImageCompressionService
+    private val imageCompressor: ImageCompressionService,
+    private val deviceTokenService: DeviceTokenService,
+    private val pushNotificationService: PushNotificationService
 ) : ViewModel() {
 
     private val eventChannel = Channel<ProfileEvent>()
@@ -303,6 +307,8 @@ class ProfileViewModel(
                 return@launch
             }
 
+            unregisterThisDevice()
+
             authService.logout(refreshToken)
                 .onSuccess {
                     _state.update { it.copy(isSigningOut = false) }
@@ -314,6 +320,11 @@ class ProfileViewModel(
 
             sessionStorage.set(null)
         }
+    }
+
+    private suspend fun unregisterThisDevice() {
+        val deviceToken = pushNotificationService.observeDeviceToken().firstOrNull() ?: return
+        deviceTokenService.unregisterToken(deviceToken)
     }
 
     private fun deleteAccount() {
