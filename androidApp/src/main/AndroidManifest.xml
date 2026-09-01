@@ -10,12 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <!-- TODO: Remove this for production as its needed to use my custom backend locally -->
-    <!-- TODO: This is what to remove `android:usesCleartextTraffic="true"` -->
-    <!-- TODO: Do not forget to also remove IOS equivalent from Info.plist too -->
     <application
-            android:usesCleartextTraffic="true"
-
             android:name=".LynkApplication"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -25,6 +20,7 @@
             android:theme="@style/Theme.Lynk.Splash">
         <activity
                 android:exported="true"
+                android:launchMode="singleTop"
                 android:name=".MainActivity"
                 android:windowSoftInputMode="adjustResize">
             <intent-filter>

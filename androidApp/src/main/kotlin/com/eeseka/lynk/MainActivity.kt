@@ -5,8 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.eeseka.lynk.shared.domain.notification.model.NotificationType
 import com.eeseka.lynk.shared.presentation.navigation.ExternalUriHandler
@@ -62,10 +60,4 @@ class MainActivity : ComponentActivity() {
 
         ExternalUriHandler.onNewUri(deepLinkUri)
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

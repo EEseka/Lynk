@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.eeseka.lynk.auth.presentation.navigation.AuthGraphRoutes
@@ -19,7 +18,6 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-@Preview
 fun App(
     onAuthenticationChecked: () -> Unit = {},
     viewModel: MainViewModel = koinViewModel()

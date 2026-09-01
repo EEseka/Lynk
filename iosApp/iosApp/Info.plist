@@ -29,19 +29,7 @@
         <string>547754562784-lkagou01pi7bj0bsnn610ggh6sa6ndm1.apps.googleusercontent.com</string>
         <key>NSCameraUsageDescription</key>
         <string>Lynk needs camera access so you can take a profile picture.</string>
-        <key>NSPhotoLibraryUsageDescription</key>
-        <string>Lynk needs access to your photos so you can choose a profile picture.</string>
         <key>NSLocationWhenInUseUsageDescription</key>
-        <string>Lynk needs your location to show nearby spots and help you navigate to hangouts with your friends.</string>
-        <key>NSLocationUsageDescription</key>
-        <string>Lynk needs your location to show nearby spots and help you navigate to hangouts with your friends.</string>
-
-        <!-- TODO: Remove this for production as its needed to use my custom backend locally -->
-        <key>NSAppTransportSecurity</key>
-        <dict>
-            <key>NSAllowsArbitraryLoads</key>
-            <true />
-        </dict>
-        <!-- Remove ends here -->
+        <string>Lynk needs your location to show spots near you and find a meetup point everyone can reach.</string>
     </dict>
 </plist>

@@ -21,7 +21,10 @@ import GoogleSignIn
 //   3. Create an APNs auth key in the Apple Developer portal and upload the .p8 to
 //      Firebase → Project settings → Cloud Messaging.
 //   4. Add the Push Notifications capability to the iosApp target.
-//   5. Uncomment the imports above and every block below.
+//   5. Re-register the iOS OAuth client in Google Cloud under the new bundle id, then
+//      update GIDClientID and the reversed-client-id URL scheme in Info.plist. Both are
+//      tied to the old bundle id, so step 1 breaks Google Sign-In until this is done.
+//   6. Uncomment the imports above and every block below.
 //
 // class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
 class AppDelegate: NSObject, UIApplicationDelegate {
