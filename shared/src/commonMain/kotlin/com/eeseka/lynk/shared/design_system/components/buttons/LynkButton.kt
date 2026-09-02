@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -137,7 +137,7 @@ fun LynkButton(
         shape = shape,
         colors = colors,
         liquidGlassColors = liquidGlassColors,
-        contentPadding = PaddingValues(vertical = 16.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
     ) {
         LynkButtonContent(text, isLoading, loadingText, leadingIcon)
     }
@@ -189,7 +189,7 @@ private fun LynkButtonContent(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkPrimaryButtonPreview() {
     LynkTheme {
@@ -201,7 +201,7 @@ private fun LynkPrimaryButtonPreview() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkSecondaryButtonPreview() {
     LynkTheme {
@@ -213,21 +213,7 @@ private fun LynkSecondaryButtonPreview() {
     }
 }
 
-
-@Preview
-@Composable
-private fun LynkSecondaryButtonPreviewDark() {
-    LynkTheme(true) {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.SECONDARY
-        )
-    }
-}
-
-
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkTextButtonPreview() {
     LynkTheme {
@@ -239,19 +225,7 @@ private fun LynkTextButtonPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkTextButtonPreviewDark() {
-    LynkTheme(true) {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.TEXT
-        )
-    }
-}
-
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkDestructivePrimaryButtonPreview() {
     LynkTheme {
@@ -263,7 +237,7 @@ private fun LynkDestructivePrimaryButtonPreview() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkDestructiveSecondaryButtonPreview() {
     LynkTheme {
@@ -275,34 +249,10 @@ private fun LynkDestructiveSecondaryButtonPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkDestructiveSecondaryButtonPreviewDark() {
-    LynkTheme(true) {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.DESTRUCTIVE_SECONDARY
-        )
-    }
-}
-
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkDisabledButtonPreview() {
     LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            enabled = false
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkDisabledButtonPreviewDark() {
-    LynkTheme(true) {
         LynkButton(
             text = "Click me!",
             onClick = {},

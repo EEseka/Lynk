@@ -33,6 +33,7 @@ import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
+import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
@@ -105,7 +106,7 @@ fun SavedSpotsScreen(
                         )
                     }
                 },
-                iosLeadingItems = listOf(
+                iosLeadingItems = persistentListOf(
                     LynkIosBarButtonItem(
                         sfSymbol = "chevron.left",
                         onClick = {

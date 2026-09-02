@@ -39,6 +39,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -133,7 +134,7 @@ fun CreateHangoutStepOne(
         LynkSegmentedControl(
             items = vibes.map {
                 LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
-            },
+            }.toImmutableList(),
             selectedIndex = vibes.indexOf(state.hangoutVibe),
             onItemSelected = {
                 hapticFeedback(AppHaptic.Selection)

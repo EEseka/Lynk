@@ -52,6 +52,7 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkD
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
+import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -173,7 +174,7 @@ fun ProfileScreen(
                         )
                     }
                 },
-                iosTrailingItems = listOf(
+                iosTrailingItems = persistentListOf(
                     LynkIosBarButtonItem(
                         sfSymbol = "gearshape",
                         onClick = {
@@ -236,7 +237,7 @@ fun ProfileScreen(
             onDismissRequest = { showImagePickerSheet = false },
             title = stringResource(Res.string.choose_source),
             message = stringResource(Res.string.choose_source_message),
-            items = listOf(
+            items = persistentListOf(
                 LynkActionSheetItem(
                     text = stringResource(Res.string.take_photo),
                     icon = Lucide.Camera,
@@ -475,9 +476,7 @@ private fun SaveChangesButton(
         },
         enabled = canSave,
         isLoading = isSaving,
-        modifier = Modifier
-            .widthIn(max = 480.dp)
-            .height(56.dp)
+        modifier = Modifier.widthIn(max = 480.dp)
     )
 }
 

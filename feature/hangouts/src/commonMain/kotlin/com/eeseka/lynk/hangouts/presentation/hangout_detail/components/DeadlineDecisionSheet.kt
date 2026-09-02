@@ -11,6 +11,7 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkA
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel
 import lynk.feature.hangouts.generated.resources.payment_decision_extend
@@ -30,7 +31,7 @@ fun DeadlineDecisionSheet(
         onDismissRequest = onDismiss,
         title = stringResource(Res.string.payment_decision_title),
         message = stringResource(Res.string.payment_decision_message, unpaidCount),
-        items = listOf(
+        items = persistentListOf(
             LynkActionSheetItem(
                 text = stringResource(Res.string.payment_decision_extend),
                 icon = Lucide.CalendarClock,

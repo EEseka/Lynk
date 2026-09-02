@@ -35,6 +35,7 @@ import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
+import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -146,8 +147,7 @@ fun ProfileSetupScreen(
                             },
                             enabled = state.canSubmit,
                             isLoading = state.isSubmitting,
-                            loadingText = stringResource(Res.string.complete_profile_loading),
-                            modifier = Modifier.height(56.dp)
+                            loadingText = stringResource(Res.string.complete_profile_loading)
                         )
                     }
                 }
@@ -217,8 +217,7 @@ fun ProfileSetupScreen(
                                 },
                                 enabled = state.canSubmit,
                                 isLoading = state.isSubmitting,
-                                loadingText = stringResource(Res.string.complete_profile_loading),
-                                modifier = Modifier.height(56.dp)
+                                loadingText = stringResource(Res.string.complete_profile_loading)
                             )
                         }
                     }
@@ -285,8 +284,7 @@ fun ProfileSetupScreen(
                                     },
                                     enabled = state.canSubmit,
                                     isLoading = state.isSubmitting,
-                                    loadingText = stringResource(Res.string.complete_profile_loading),
-                                    modifier = Modifier.height(56.dp)
+                                    loadingText = stringResource(Res.string.complete_profile_loading)
                                 )
                             }
                         }
@@ -301,7 +299,7 @@ fun ProfileSetupScreen(
             onDismissRequest = { showImagePickerSheet = false },
             title = stringResource(Res.string.choose_source),
             message = stringResource(Res.string.choose_source_message),
-            items = listOf(
+            items = persistentListOf(
                 LynkActionSheetItem(
                     text = stringResource(Res.string.take_photo),
                     icon = Lucide.Camera,

@@ -74,8 +74,7 @@ fun AuthActions(
                         modifier = Modifier.size(24.dp),
                         tint = Color.Unspecified
                     )
-                },
-                modifier = Modifier.height(56.dp)
+                }
             )
         }
 
@@ -98,8 +97,7 @@ fun AuthActions(
                     modifier = Modifier.size(24.dp),
                     tint = LocalContentColor.current
                 )
-            },
-            modifier = Modifier.height(56.dp)
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -117,8 +115,7 @@ fun AuthActions(
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onGuestClick()
             },
-            loadingText = stringResource(Res.string.please_wait),
-            modifier = Modifier.height(56.dp)
+            loadingText = stringResource(Res.string.please_wait)
         )
     }
 }

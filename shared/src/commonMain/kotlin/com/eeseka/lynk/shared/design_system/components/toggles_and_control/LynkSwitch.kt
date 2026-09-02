@@ -2,7 +2,7 @@ package com.eeseka.lynk.shared.design_system.components.toggles_and_control
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
@@ -21,7 +21,7 @@ fun LynkSwitch(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkSwitchPreview() {
     LynkTheme {
@@ -32,33 +32,10 @@ private fun LynkSwitchPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkSwitchPreviewDark() {
-    LynkTheme(true) {
-        LynkSwitch(
-            checked = true,
-            onCheckedChange = {}
-        )
-    }
-}
-
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkDisabledSwitchPreview() {
     LynkTheme {
-        LynkSwitch(
-            checked = false,
-            onCheckedChange = {},
-            enabled = false
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkDisabledSwitchPreviewDark() {
-    LynkTheme(true) {
         LynkSwitch(
             checked = false,
             onCheckedChange = {},

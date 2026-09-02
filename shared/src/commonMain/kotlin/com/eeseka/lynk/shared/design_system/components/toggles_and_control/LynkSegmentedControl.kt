@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.gesture.adaptiveClickable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class LynkSegmentedItem(
     val title: String,
@@ -56,7 +58,7 @@ enum class LynkSegmentedStyle {
 
 @Composable
 fun LynkSegmentedControl(
-    items: List<LynkSegmentedItem>,
+    items: ImmutableList<LynkSegmentedItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,6 +66,8 @@ fun LynkSegmentedControl(
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp)
 ) {
     val scheme = MaterialTheme.colorScheme
+
+    if (items.isEmpty()) return
 
     when (style) {
         LynkSegmentedStyle.SCROLLABLE_CHIPS -> {
@@ -175,7 +179,7 @@ fun LynkSegmentedControl(
                             }
                             LynkText(
                                 text = item.title,
-                                style = MaterialTheme.typography.labelMedium,
+                                style = MaterialTheme.typography.labelLarge,
                                 color = contentColor
                             )
                         }
@@ -275,7 +279,7 @@ private fun LynkSegmentedControlWrappedPreview() {
     }
 }
 
-private val previewItems = listOf(
+private val previewItems = persistentListOf(
     LynkSegmentedItem("All"),
     LynkSegmentedItem("Unread"),
     LynkSegmentedItem("Archived")

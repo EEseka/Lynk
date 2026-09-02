@@ -53,6 +53,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -199,7 +200,7 @@ fun SpotSearchSheet(
                     LynkDropDownMenu(
                         expanded = showPriceMenu,
                         onDismissRequest = { showPriceMenu = false },
-                        items = listOf(
+                        items = (listOf(
                             LynkDropDownItem(
                                 title = stringResource(Res.string.any_price),
                                 icon = if (state.selectedPriceLevel == null) Lucide.Check else Lucide.Wallet,
@@ -222,7 +223,7 @@ fun SpotSearchSheet(
                                     showPriceMenu = false
                                 }
                             )
-                        },
+                        }).toImmutableList(),
                         anchor = {
                             val isActive = state.selectedPriceLevel != null
                             val containerColor =
@@ -261,7 +262,7 @@ fun SpotSearchSheet(
                 }
 
                 LynkSegmentedControl(
-                    items = listOf(
+                    items = (listOf(
                         LynkSegmentedItem(
                             title = stringResource(Res.string.all),
                             icon = Lucide.LayoutGrid
@@ -271,7 +272,7 @@ fun SpotSearchSheet(
                             title = category.getTitle(),
                             icon = category.getIcon()
                         )
-                    },
+                    }).toImmutableList(),
                     selectedIndex = state.selectedCategory?.let { it.ordinal + 1 } ?: 0,
                     onItemSelected = { index ->
                         hapticFeedback(AppHaptic.Selection)

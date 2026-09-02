@@ -324,8 +324,7 @@ fun CreateHangoutSheet(
                         } else {
                             onAction(CreateHangoutAction.OnNextStep)
                         }
-                    },
-                    modifier = Modifier.height(56.dp)
+                    }
                 )
             }
         }

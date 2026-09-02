@@ -43,6 +43,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -237,7 +238,7 @@ private fun ProposeSpotSheetContent(
                             title = it.getTitle(),
                             icon = it.getIcon()
                         )
-                    },
+                    }.toImmutableList(),
                     selectedIndex = tabs.indexOf(state.activeProposeSpotSheetSearchTab),
                     onItemSelected = { index ->
                         hapticFeedback(AppHaptic.Selection)

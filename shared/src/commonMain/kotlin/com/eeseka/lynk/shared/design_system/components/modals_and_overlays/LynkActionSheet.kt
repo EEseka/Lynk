@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Pencil
@@ -31,6 +31,8 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.cancel
 import org.jetbrains.compose.resources.stringResource
@@ -46,7 +48,7 @@ data class LynkActionSheetItem(
 @Composable
 fun LynkActionSheet(
     onDismissRequest: () -> Unit,
-    items: List<LynkActionSheetItem>,
+    items: ImmutableList<LynkActionSheetItem>,
     title: String? = null,
     message: String? = null,
     cancelText: String = stringResource(Res.string.cancel)
@@ -150,7 +152,7 @@ fun LynkActionSheet(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkActionSheetPreview() {
     LynkTheme {
@@ -163,20 +165,7 @@ private fun LynkActionSheetPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkActionSheetPreviewDark() {
-    LynkTheme(true) {
-        LynkActionSheet(
-            onDismissRequest = {},
-            title = "What would you like to do?",
-            message = "This shows the message renders too.",
-            items = previewItems
-        )
-    }
-}
-
-private val previewItems = listOf(
+private val previewItems = persistentListOf(
     LynkActionSheetItem(
         text = "Edit",
         icon = Lucide.Pencil,

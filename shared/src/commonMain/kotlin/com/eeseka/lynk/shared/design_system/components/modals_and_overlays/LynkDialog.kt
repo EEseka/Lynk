@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
@@ -17,8 +17,8 @@ fun LynkDialog(
     message: String,
     confirmText: String,
     onConfirm: () -> Unit,
+    dismissText: String,
     modifier: Modifier = Modifier,
-    dismissText: String? = null,
     onDismiss: (() -> Unit)? = null,
     isDestructive: Boolean = false,
 ) {
@@ -32,7 +32,7 @@ fun LynkDialog(
             onDismissRequest()
         },
         confirmText = confirmText,
-        dismissText = dismissText ?: "",
+        dismissText = dismissText,
         title = title,
         text = message,
         modifier = modifier,
@@ -54,24 +54,22 @@ fun LynkDialog(
             }
         },
         materialDismissButton = {
-            if (dismissText != null) {
-                TextButton(
-                    onClick = {
-                        onDismiss?.invoke()
-                        onDismissRequest()
-                    }
-                ) {
-                    LynkText(
-                        text = dismissText,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            TextButton(
+                onClick = {
+                    onDismiss?.invoke()
+                    onDismissRequest()
                 }
+            ) {
+                LynkText(
+                    text = dismissText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkDialogPreview() {
     LynkTheme {
@@ -86,42 +84,10 @@ private fun LynkDialogPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkDialogPreviewDark() {
-    LynkTheme(true) {
-        LynkDialog(
-            onDismissRequest = {},
-            title = "Enable Notifications",
-            message = "Get notified when someone likes your post, follows you, or sends a message.",
-            confirmText = "Enable",
-            dismissText = "Not Now",
-            onConfirm = {}
-        )
-    }
-}
-
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkDestructiveDialogPreview() {
     LynkTheme {
-        LynkDialog(
-            onDismissRequest = { },
-            title = "Delete Account?",
-            message = "This action cannot be undone. All your data will be permanently removed from Lynk.",
-            confirmText = "Delete",
-            dismissText = "Cancel",
-            isDestructive = true,
-            onConfirm = {},
-            onDismiss = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkDestructiveDialogPreviewDark() {
-    LynkTheme(true) {
         LynkDialog(
             onDismissRequest = { },
             title = "Delete Account?",

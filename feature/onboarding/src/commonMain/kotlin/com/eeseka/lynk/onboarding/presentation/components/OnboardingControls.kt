@@ -41,8 +41,7 @@ fun OnboardingControls(
         LynkButton(
             onClick = onOnboardingButtonClick,
             text = if (currentPage == pageSize - 1) stringResource(Res.string.get_started)
-            else stringResource(Res.string.next),
-            modifier = Modifier.height(56.dp)
+            else stringResource(Res.string.next)
         )
     }
 }

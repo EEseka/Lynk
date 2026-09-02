@@ -25,6 +25,7 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkA
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -103,7 +104,7 @@ private fun ProfileSettingsSheetContent(
 
     val themeItems = AppTheme.entries.map {
         LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
-    }
+    }.toImmutableList()
 
     Column(
         modifier = modifier

@@ -47,7 +47,7 @@ fun LynkDatePicker(
             onClick = { onDateSelected(state.selectedDateMillis) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(16.dp),
             style = LynkButtonStyle.TEXT
         )
     }

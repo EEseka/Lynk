@@ -57,6 +57,8 @@ import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkPr
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.NotificationBell
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
@@ -160,9 +162,9 @@ fun HangoutsListScreen(
                     }
                 },
                 iosTrailingItems = if (state.isGuest) {
-                    emptyList()
+                    persistentListOf()
                 } else {
-                    listOf(
+                    persistentListOf(
                         LynkIosBarButtonItem(
                             sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
                             onClick = {
@@ -272,7 +274,7 @@ fun HangoutsListScreen(
                     LynkDropDownMenu(
                         expanded = showVibeMenu,
                         onDismissRequest = { showVibeMenu = false },
-                        items = listOf(
+                        items = (listOf(
                             LynkDropDownItem(
                                 title = stringResource(Res.string.any_vibe),
                                 icon = if (state.selectedVibe == null) Lucide.Check else null,
@@ -295,7 +297,7 @@ fun HangoutsListScreen(
                                     showVibeMenu = false
                                 }
                             )
-                        },
+                        }).toImmutableList(),
                         anchor = {
                             val isActive = state.selectedVibe != null
                             LynkTonalIconButton(
@@ -321,7 +323,7 @@ fun HangoutsListScreen(
                 LynkSegmentedControl(
                     items = HangoutStatusFilter.entries.map { filter ->
                         LynkSegmentedItem(title = filter.getTitle())
-                    },
+                    }.toImmutableList(),
                     selectedIndex = HangoutStatusFilter.entries.indexOf(state.selectedStatusFilter),
                     onItemSelected = { index ->
                         hapticFeedback(AppHaptic.Selection)

@@ -54,6 +54,8 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -91,7 +93,7 @@ fun CreateHangoutStepTwo(
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Spacer(modifier = Modifier.height(8.dp))
             LynkSegmentedControl(
-                items = listOf(
+                items = persistentListOf(
                     LynkSegmentedItem(stringResource(Res.string.pick_a_spot), Lucide.MapPin),
                     LynkSegmentedItem(stringResource(Res.string.group_vote), Lucide.Users)
                 ),
@@ -363,7 +365,7 @@ private fun SpotPickerUI(
                     LynkSegmentedControl(
                         items = tabs.map {
                             LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
-                        },
+                        }.toImmutableList(),
                         selectedIndex = tabs.indexOf(state.activeSearchTab),
                         onItemSelected = { index ->
                             hapticFeedback(AppHaptic.Selection)

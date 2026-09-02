@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.Lucide
@@ -23,14 +23,16 @@ import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class LynkIosBarButtonItem(
     val title: String? = null,
     val sfSymbol: String? = null,
     val enabled: Boolean = true,
     val onClick: () -> Unit = {},
-    val menuItems: List<LynkIosDropDownMenuItem> = emptyList(),
-    val menuSections: List<LynkIosDropDownMenuSection> = emptyList()
+    val menuItems: ImmutableList<LynkIosDropDownMenuItem> = persistentListOf(),
+    val menuSections: ImmutableList<LynkIosDropDownMenuSection> = persistentListOf()
 )
 
 data class LynkIosDropDownMenuItem(
@@ -43,21 +45,21 @@ data class LynkIosDropDownMenuItem(
 
 data class LynkIosDropDownMenuSection(
     val title: String? = null,
-    val items: List<LynkIosDropDownMenuItem> = emptyList()
+    val items: ImmutableList<LynkIosDropDownMenuItem> = persistentListOf()
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
 fun LynkTopAppBar(
-    title: String? = null,
     modifier: Modifier = Modifier,
+    title: String? = null,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    iosLeadingItems: List<LynkIosBarButtonItem> = emptyList(),
-    iosTrailingItems: List<LynkIosBarButtonItem> = emptyList(),
+    iosLeadingItems: ImmutableList<LynkIosBarButtonItem> = persistentListOf(),
+    iosTrailingItems: ImmutableList<LynkIosBarButtonItem> = persistentListOf(),
 ) {
     val mappedLeading = remember(iosLeadingItems) { iosLeadingItems.toUIKitItems() }
     val mappedTrailing = remember(iosTrailingItems) { iosTrailingItems.toUIKitItems() }
@@ -131,7 +133,7 @@ private fun List<LynkIosDropDownMenuSection>.toAdaptiveSections(): List<Adaptive
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkTopAppBarPreview() {
     LynkTheme {
@@ -153,61 +155,13 @@ private fun LynkTopAppBarPreview() {
                     )
                 }
             },
-            iosLeadingItems = listOf(
+            iosLeadingItems = persistentListOf(
                 LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = {})
             ),
-            iosTrailingItems = listOf(
+            iosTrailingItems = persistentListOf(
                 LynkIosBarButtonItem(
                     sfSymbol = "ellipsis.circle",
-                    menuItems = listOf(
-                        LynkIosDropDownMenuItem(
-                            title = "Share",
-                            sfSymbol = "square.and.arrow.up",
-                            onClick = {}
-                        ),
-                        LynkIosDropDownMenuItem(
-                            title = "Delete",
-                            sfSymbol = "trash",
-                            isDestructive = true,
-                            onClick = {}
-                        )
-                    )
-                )
-            )
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-private fun LynkTopAppBarPreviewDark() {
-    LynkTheme(true) {
-        LynkTopAppBar(
-            title = "Home",
-            navigationIcon = {
-                LynkIconButton(onClick = {}) {
-                    Icon(
-                        imageVector = Lucide.ChevronLeft,
-                        contentDescription = null
-                    )
-                }
-            },
-            actions = {
-                LynkIconButton(onClick = {}) {
-                    Icon(
-                        imageVector = Lucide.EllipsisVertical,
-                        contentDescription = null
-                    )
-                }
-            },
-            iosLeadingItems = listOf(
-                LynkIosBarButtonItem(sfSymbol = "chevron.left", onClick = {})
-            ),
-            iosTrailingItems = listOf(
-                LynkIosBarButtonItem(
-                    sfSymbol = "ellipsis.circle",
-                    menuItems = listOf(
+                    menuItems = persistentListOf(
                         LynkIosDropDownMenuItem(
                             title = "Share",
                             sfSymbol = "square.and.arrow.up",

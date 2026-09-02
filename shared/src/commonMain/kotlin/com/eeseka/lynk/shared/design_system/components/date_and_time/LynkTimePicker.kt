@@ -47,7 +47,7 @@ fun LynkTimePicker(
             onClick = { onTimeSelected(state.hour, state.minute) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(16.dp),
             style = LynkButtonStyle.TEXT
         )
     }

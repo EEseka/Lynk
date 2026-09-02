@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.User
@@ -47,7 +47,6 @@ fun LynkTextField(
         errorMessage = errorMessage,
         helperText = helperText,
         enabled = enabled,
-        onFocusChanged = {},
         modifier = modifier
     ) { styleModifier, interactionSource ->
 
@@ -98,7 +97,7 @@ fun LynkTextField(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkTextFieldPreview() {
     LynkTheme {
@@ -115,45 +114,10 @@ private fun LynkTextFieldPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkTextFieldPreviewDark() {
-    LynkTheme(true) {
-        LynkTextField(
-            state = TextFieldState("Emmanuel"),
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.User,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        )
-    }
-}
-
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkErrorTextFieldPreview() {
     LynkTheme {
-        LynkTextField(
-            state = TextFieldState("Emmanuel"),
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.User,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            errorMessage = "Invalid name"
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkErrorTextFieldPreviewDark() {
-    LynkTheme(true) {
         LynkTextField(
             state = TextFieldState("Emmanuel"),
             leadingIcon = {

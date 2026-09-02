@@ -105,6 +105,8 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
@@ -273,7 +275,7 @@ fun HangoutDetailScreen(
                     }
                 },
                 iosLeadingItems = if (isDetailPaneFullScreen) {
-                    listOf(
+                    persistentListOf(
                         LynkIosBarButtonItem(
                             sfSymbol = "chevron.left",
                             onClick = {
@@ -282,7 +284,7 @@ fun HangoutDetailScreen(
                             }
                         )
                     )
-                } else emptyList(),
+                } else persistentListOf(),
                 actions = {
                     if (showInvite) {
                         LynkIconButton(
@@ -339,7 +341,7 @@ fun HangoutDetailScreen(
                                 )
                             )
                         }
-                    }
+                    }.toImmutableList()
                     if (overflowItems.isNotEmpty()) {
                         LynkDropDownMenu(
                             expanded = showOverflowMenu,
@@ -415,7 +417,7 @@ fun HangoutDetailScreen(
                                 )
                             )
                         }
-                    }
+                    }.toImmutableList()
                     if (iosOverflowItems.isNotEmpty()) {
                         add(
                             LynkIosBarButtonItem(
@@ -424,7 +426,7 @@ fun HangoutDetailScreen(
                             )
                         )
                     }
-                }.reversed()
+                }.reversed().toImmutableList()
             )
         }
     ) { scaffoldPadding ->
@@ -905,8 +907,7 @@ private fun HangoutDetailContent(
                     onClick = onCompleteClick,
                     style = LynkButtonStyle.PRIMARY,
                     isLoading = isCompleting,
-                    loadingText = stringResource(Res.string.detail_completing),
-                    modifier = Modifier.height(56.dp)
+                    loadingText = stringResource(Res.string.detail_completing)
                 )
             }
 
