@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +47,7 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButt
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
+import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
@@ -77,9 +79,11 @@ import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
 import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.camera.rememberCameraState
-import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
-import org.maplibre.compose.map.OrnamentOptions
+import org.maplibre.compose.overlay.CompassButtonStyle
+import org.maplibre.compose.overlay.DisappearingCompassButton
+import org.maplibre.compose.overlay.DisappearingScaleBar
+import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
@@ -190,21 +194,36 @@ fun DiscoverScreen(
                 cameraState = cameraState,
                 zoomRange = 2f..20f,
                 pitchRange = 0f..60f,
-                options = MapOptions(
-                    ornamentOptions = OrnamentOptions(
-                        isCompassEnabled = true,
-                        compassAlignment = Alignment.TopEnd,
-                        isScaleBarEnabled = true,
-                        scaleBarAlignment = Alignment.TopStart,
-                        isLogoEnabled = false,
-                        isAttributionEnabled = false,
-                        padding = PaddingValues(
-                            top = scaffoldPadding.calculateTopPadding() + 80.dp,
-                            start = 16.dp,
-                            end = 16.dp
+                contentWindowInsets = WindowInsets(
+                    top = scaffoldPadding.calculateTopPadding() + 72.dp,
+                    left = 8.dp,
+                    right = 8.dp
+                ),
+                overlay = MapOverlay {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .height(48.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        DisappearingScaleBar(
+                            metersPerDp = cameraState.viewport?.metersPerDpAtTarget ?: 0.0,
+                            zoom = cameraState.position.zoom,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                            textStyle = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         )
+                    }
+                    DisappearingCompassButton(
+                        cameraState = cameraState,
+                        style = CompassButtonStyle(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd)
                     )
-                )
+                }
             ) {
                 userPosition?.let { position ->
                     UserLocationMapMarker(
@@ -258,7 +277,7 @@ fun DiscoverScreen(
                         bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
                         start = 16.dp
                     ),
-                items = listOf(
+                items = persistentListOf(
                     LynkDropDownItem(
                         title = stringResource(Res.string.osm_attribution),
                         onClick = { uriHandler.openUri(OSM_COPYRIGHT_LINK) }

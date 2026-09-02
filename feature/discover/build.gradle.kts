@@ -47,6 +47,8 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
+            implementation(libs.kotlinx.collections.immutable)
+
             implementation(projects.shared)
             implementation(projects.feature.createHangout)
         }

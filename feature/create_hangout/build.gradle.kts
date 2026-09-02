@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.bundles.koin.common)
 
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.collections.immutable)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
