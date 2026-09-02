@@ -18,6 +18,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -58,10 +59,10 @@ class CreateHangoutViewModelTest {
     private val dummySpotUi = SpotUi(
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
-        photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
+        photoUrls = persistentListOf(), rating = 4.5, reviewCount = 100,
         isOpenNow = true, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList()
+        description = null, tags = persistentListOf()
     )
 
     private val dummyHangoutUi = HangoutUi(
@@ -70,7 +71,7 @@ class CreateHangoutViewModelTest {
         vibe = HangoutVibe.FOOD, status = HangoutStatus.SCHEDULED,
         scheduledAt = futureInstant, maxAttendees = 10,
         participantCount = 3, chosenSpot = dummySpotUi,
-        participants = emptyList(),
+        participants = persistentListOf(),
         payment = null,
         createdAt = futureInstant
     )

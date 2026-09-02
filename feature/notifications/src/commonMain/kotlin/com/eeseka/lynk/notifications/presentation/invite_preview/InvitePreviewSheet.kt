@@ -55,6 +55,8 @@ import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import kotlinx.coroutines.flow.Flow
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.invite_preview_accept
 import lynk.feature.notifications.generated.resources.invite_preview_accepting
@@ -369,7 +371,7 @@ private fun previewHangout(
             initials = "U$index",
             profilePictureUrl = null
         )
-    },
+    }.toImmutableList(),
     createdAt = Instant.fromEpochSeconds(1_789_000_000L)
 )
 
@@ -377,9 +379,9 @@ private val previewSpot = SpotUi(
     id = "s1",
     name = "Nok by Alara",
     description = null,
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = PriceLevel.MODERATE,
     rating = 4.6,
     reviewCount = 210,

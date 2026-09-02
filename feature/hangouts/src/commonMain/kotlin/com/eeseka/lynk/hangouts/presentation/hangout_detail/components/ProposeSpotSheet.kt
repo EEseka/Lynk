@@ -43,6 +43,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -336,9 +337,9 @@ private fun previewSpot(id: String, name: String, category: SpotCategory) = Spot
     id = id,
     name = name,
     description = null,
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = category,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = null,
     rating = 4.3,
     reviewCount = 88,

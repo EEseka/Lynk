@@ -492,7 +492,7 @@ private fun CreateHangoutStepTwoSearchingPreview() {
         SpotUi(
             id = "1",
             name = "Mama Cass Restaurant",
-            photoUrls = emptyList(),
+            photoUrls = persistentListOf(),
             latitude = 6.443,
             longitude = 3.455,
             category = SpotCategory.RESTAURANT,
@@ -502,7 +502,7 @@ private fun CreateHangoutStepTwoSearchingPreview() {
             isSaved = false,
             isOpenNow = true,
             shortAddress = "Victoria Island",
-            tags = emptyList(),
+            tags = persistentListOf(),
             description = null,
             websiteUrl = null,
             googleMapsUrl = null
@@ -510,7 +510,7 @@ private fun CreateHangoutStepTwoSearchingPreview() {
         SpotUi(
             id = "2",
             name = "Domino's Pizza VI",
-            photoUrls = emptyList(),
+            photoUrls = persistentListOf(),
             latitude = 6.445,
             longitude = 3.456,
             category = SpotCategory.RESTAURANT,
@@ -520,7 +520,7 @@ private fun CreateHangoutStepTwoSearchingPreview() {
             isSaved = true,
             isOpenNow = true,
             shortAddress = "Victoria Island",
-            tags = emptyList(),
+            tags = persistentListOf(),
             description = null,
             websiteUrl = null,
             googleMapsUrl = null
@@ -556,7 +556,7 @@ private fun CreateHangoutStepTwoSelectedPreview() {
     val dummySpot = SpotUi(
         id = "1",
         name = "Mama Cass Restaurant",
-        photoUrls = emptyList(),
+        photoUrls = persistentListOf(),
         latitude = 6.443,
         longitude = 3.455,
         category = SpotCategory.RESTAURANT,
@@ -566,7 +566,7 @@ private fun CreateHangoutStepTwoSelectedPreview() {
         isSaved = false,
         isOpenNow = true,
         shortAddress = "Victoria Island",
-        tags = emptyList(),
+        tags = persistentListOf(),
         description = null,
         websiteUrl = null,
         googleMapsUrl = null

@@ -13,6 +13,7 @@ import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.toImmutableList
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.activity
 import lynk.shared.generated.resources.cafe
@@ -67,9 +68,9 @@ fun Spot.toSpotUi() = SpotUi(
     id = id,
     name = name,
     description = description,
-    photoUrls = photoUrls,
+    photoUrls = photoUrls.toImmutableList(),
     category = category,
-    tags = tags,
+    tags = tags.toImmutableList(),
     priceLevel = priceLevel,
     rating = rating,
     reviewCount = reviewCount,

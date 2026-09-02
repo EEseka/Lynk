@@ -27,6 +27,8 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.detail_online
 import lynk.shared.generated.resources.detail_participants_overflow
@@ -34,7 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantStack(
-    users: List<HangoutUserUi>,
+    users: ImmutableList<HangoutUserUi>,
     presentUserIds: Set<String> = emptySet(),
     maxVisible: Int = 5,
     avatarSize: Dp = 40.dp,
@@ -160,7 +162,7 @@ private fun ParticipantStackPreview() {
                     initials = "U$index",
                     profilePictureUrl = null
                 )
-            },
+            }.toImmutableList(),
             presentUserIds = setOf("0", "2", "3")
         )
     }

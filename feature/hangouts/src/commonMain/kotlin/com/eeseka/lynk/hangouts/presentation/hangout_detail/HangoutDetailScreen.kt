@@ -920,9 +920,9 @@ private val previewSpot = SpotUi(
     id = "s1",
     name = "The Rooftop Lounge",
     description = "Skyline views",
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = null,
     rating = 4.6,
     reviewCount = 214,
@@ -985,7 +985,7 @@ private fun previewHangout(
             // The host is created already paid, exactly as the server does it.
             hasPaid = index == 0 || index <= paidGuestCount
         )
-    },
+    }.toImmutableList(),
     payment = paymentState?.let {
         HangoutPaymentUi(
             totalCostKobo = 2_400_000L,

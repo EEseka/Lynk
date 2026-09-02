@@ -27,6 +27,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_going_count
@@ -67,7 +68,7 @@ fun ParticipantsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ParticipantStack(
-                users = attending.map { it.user },
+                users = attending.map { it.user }.toImmutableList(),
                 presentUserIds = presentUserIds,
                 modifier = Modifier.weight(1f, fill = false)
             )

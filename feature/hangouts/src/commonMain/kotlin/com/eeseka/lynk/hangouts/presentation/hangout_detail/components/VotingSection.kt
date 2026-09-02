@@ -33,6 +33,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.voting_close
 import lynk.feature.hangouts.generated.resources.voting_closing
@@ -177,9 +178,9 @@ private fun previewSpot(id: String, name: String, address: String) = SpotUi(
     id = id,
     name = name,
     description = null,
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = null,
     rating = 4.5,
     reviewCount = 120,

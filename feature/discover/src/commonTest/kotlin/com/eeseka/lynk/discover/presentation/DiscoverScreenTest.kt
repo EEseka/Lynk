@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -12,10 +13,10 @@ class DiscoverScreenTest {
     private val dummySpot = SpotUi(
         id = "1", name = "Test Cafe", category = SpotCategory.CAFE,
         latitude = 0.0, longitude = 0.0, isSaved = false,
-        photoUrls = emptyList(), rating = 4.5, reviewCount = 10,
+        photoUrls = persistentListOf(), rating = 4.5, reviewCount = 10,
         isOpenNow = true, shortAddress = "123 Main St",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList()
+        description = null, tags = persistentListOf()
     )
 
     @Test

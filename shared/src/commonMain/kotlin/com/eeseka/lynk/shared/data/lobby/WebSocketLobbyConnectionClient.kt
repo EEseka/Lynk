@@ -45,69 +45,77 @@ class WebSocketLobbyConnectionClient(
         val type = IncomingLobbyMessageType.entries.firstOrNull { it.name == message.type }
             ?: return null
 
+        return try {
+            parsePayload(type, message.payload)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun parsePayload(type: IncomingLobbyMessageType, payload: String): LobbyEvent {
         return when (type) {
             IncomingLobbyMessageType.PARTICIPANT_INVITED -> {
-                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                val dto = json.decodeFromString<LobbyParticipantDto>(payload)
                 LobbyEvent.ParticipantInvited(dto.hangoutId, dto.userId, dto.displayName)
             }
 
             IncomingLobbyMessageType.INVITE_WITHDRAWN -> {
-                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                val dto = json.decodeFromString<LobbyParticipantDto>(payload)
                 LobbyEvent.ParticipantInviteWithdrawn(dto.hangoutId, dto.userId, dto.displayName)
             }
 
             IncomingLobbyMessageType.NON_PAYER_REMOVED -> {
-                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                val dto = json.decodeFromString<LobbyParticipantDto>(payload)
                 LobbyEvent.NonPayerRemoved(dto.hangoutId, dto.userId, dto.displayName)
             }
 
             IncomingLobbyMessageType.PARTICIPANT_LEFT -> {
-                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                val dto = json.decodeFromString<LobbyParticipantDto>(payload)
                 LobbyEvent.ParticipantLeft(dto.hangoutId, dto.userId, dto.displayName)
             }
 
             IncomingLobbyMessageType.PAYMENT_RECEIVED -> {
-                val dto = json.decodeFromString<LobbyParticipantDto>(message.payload)
+                val dto = json.decodeFromString<LobbyParticipantDto>(payload)
                 LobbyEvent.PaymentReceived(dto.hangoutId, dto.userId, dto.displayName)
             }
 
             IncomingLobbyMessageType.PAYMENT_DEADLINE_RESOLVED -> {
-                val dto = json.decodeFromString<LobbyHangoutDto>(message.payload)
+                val dto = json.decodeFromString<LobbyHangoutDto>(payload)
                 LobbyEvent.PaymentDeadlineResolved(dto.hangoutId)
             }
 
             IncomingLobbyMessageType.PAYOUT_OUTCOME -> {
-                val dto = json.decodeFromString<LobbyPayoutDto>(message.payload)
+                val dto = json.decodeFromString<LobbyPayoutDto>(payload)
                 LobbyEvent.PayoutOutcome(dto.hangoutId, dto.succeeded)
             }
 
             IncomingLobbyMessageType.RSVP_UPDATED -> {
-                val dto = json.decodeFromString<LobbyRsvpDto>(message.payload)
+                val dto = json.decodeFromString<LobbyRsvpDto>(payload)
                 LobbyEvent.RsvpUpdated(dto.hangoutId, dto.userId, dto.displayName, dto.rsvpStatus)
             }
 
             IncomingLobbyMessageType.HANGOUT_UPDATED -> {
-                val dto = json.decodeFromString<LobbyHostActionDto>(message.payload)
+                val dto = json.decodeFromString<LobbyHostActionDto>(payload)
                 LobbyEvent.HangoutUpdated(dto.hangoutId, dto.hostDisplayName)
             }
 
             IncomingLobbyMessageType.HANGOUT_COMPLETED -> {
-                val dto = json.decodeFromString<LobbyHostActionDto>(message.payload)
+                val dto = json.decodeFromString<LobbyHostActionDto>(payload)
                 LobbyEvent.HangoutCompleted(dto.hangoutId, dto.hostDisplayName)
             }
 
             IncomingLobbyMessageType.HANGOUT_CANCELLED -> {
-                val dto = json.decodeFromString<LobbyHostActionDto>(message.payload)
+                val dto = json.decodeFromString<LobbyHostActionDto>(payload)
                 LobbyEvent.HangoutCancelled(dto.hangoutId, dto.hostDisplayName)
             }
 
             IncomingLobbyMessageType.PRESENCE_UPDATE -> {
-                val dto = json.decodeFromString<PresenceDto>(message.payload)
+                val dto = json.decodeFromString<PresenceDto>(payload)
                 LobbyEvent.PresenceUpdate(dto.hangoutId, dto.presentUserIds)
             }
 
             IncomingLobbyMessageType.VOTING_SNAPSHOT -> {
-                val dto = json.decodeFromString<VotingSnapshotDto>(message.payload)
+                val dto = json.decodeFromString<VotingSnapshotDto>(payload)
                 LobbyEvent.VotingSnapshot(
                     hangoutId = dto.hangoutId,
                     candidates = dto.candidates.map { it.toDomain() },
@@ -118,32 +126,32 @@ class WebSocketLobbyConnectionClient(
             }
 
             IncomingLobbyMessageType.CANDIDATE_ADDED -> {
-                val dto = json.decodeFromString<CandidateAddedDto>(message.payload)
+                val dto = json.decodeFromString<CandidateAddedDto>(payload)
                 LobbyEvent.CandidateAdded(dto.hangoutId, dto.spot.toDomain())
             }
 
             IncomingLobbyMessageType.CANDIDATE_REMOVED -> {
-                val dto = json.decodeFromString<CandidateRemovedDto>(message.payload)
+                val dto = json.decodeFromString<CandidateRemovedDto>(payload)
                 LobbyEvent.CandidateRemoved(dto.hangoutId, dto.spotId)
             }
 
             IncomingLobbyMessageType.VOTE_TALLY -> {
-                val dto = json.decodeFromString<VoteTallyDto>(message.payload)
+                val dto = json.decodeFromString<VoteTallyDto>(payload)
                 LobbyEvent.VoteTally(dto.hangoutId, dto.votes)
             }
 
             IncomingLobbyMessageType.CENTER_UPDATE -> {
-                val dto = json.decodeFromString<CenterUpdateDto>(message.payload)
+                val dto = json.decodeFromString<CenterUpdateDto>(payload)
                 LobbyEvent.CenterUpdate(dto.hangoutId, dto.latitude, dto.longitude)
             }
 
             IncomingLobbyMessageType.VOTING_TIE -> {
-                val dto = json.decodeFromString<VotingTieDto>(message.payload)
+                val dto = json.decodeFromString<VotingTieDto>(payload)
                 LobbyEvent.VotingTie(dto.hangoutId, dto.tiedSpotIds)
             }
 
             IncomingLobbyMessageType.ERROR -> {
-                val dto = json.decodeFromString<ErrorDto>(message.payload)
+                val dto = json.decodeFromString<ErrorDto>(payload)
                 LobbyEvent.LobbyError(dto.code, dto.message)
             }
         }

@@ -47,6 +47,7 @@ import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.description_label
 import lynk.feature.create_hangout.generated.resources.group_size_label
@@ -325,7 +326,7 @@ private fun CreateHangoutStepThreeSpotSelectedPreview() {
                 selectedSpot = SpotUi(
                     id = "1",
                     name = "Landmark Beach Resort",
-                    photoUrls = emptyList(),
+                    photoUrls = persistentListOf(),
                     latitude = 6.443,
                     longitude = 3.455,
                     category = SpotCategory.ACTIVITY,
@@ -335,7 +336,7 @@ private fun CreateHangoutStepThreeSpotSelectedPreview() {
                     isSaved = false,
                     isOpenNow = true,
                     shortAddress = "Victoria Island",
-                    tags = emptyList(),
+                    tags = persistentListOf(),
                     description = null,
                     websiteUrl = null,
                     googleMapsUrl = null

@@ -45,6 +45,10 @@ val googlePlacesAndroidSHA1: String = localProperties.getProperty("GOOGLE_PLACES
     ?: System.getenv("GOOGLE_PLACES_ANDROID_SHA1")
     ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_ANDROID_SHA1 not found in local.properties or environment variables!")
 
+val isDebug: String = localProperties.getProperty("IS_DEBUG")
+    ?: System.getenv("IS_DEBUG")
+    ?: "false"
+
 // GENERATE THE CONFIG
 buildkonfig {
     packageName = "com.eeseka.lynk"
@@ -58,15 +62,7 @@ buildkonfig {
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_SHA1", googlePlacesAndroidSHA1)
-    }
-    // Debug builds
-    defaultConfigs("debug") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-    }
-
-    // Release builds
-    defaultConfigs("release") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
+        buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
     }
 }
 

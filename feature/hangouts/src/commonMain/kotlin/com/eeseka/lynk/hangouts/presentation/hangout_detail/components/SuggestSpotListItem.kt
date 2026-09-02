@@ -46,6 +46,7 @@ import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.km
 import lynk.feature.hangouts.generated.resources.m
@@ -281,9 +282,9 @@ private val previewSuggestSpot = SpotUi(
     id = "1",
     name = "Mama Cass Restaurant",
     description = null,
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = PriceLevel.MODERATE,
     rating = 4.2,
     reviewCount = 120,

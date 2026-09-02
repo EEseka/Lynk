@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Instant
 
 @Stable
@@ -18,6 +19,6 @@ data class HangoutPreviewUi(
     val maxAttendees: Int?,
     val participantCount: Int,
     val chosenSpot: SpotUi?,
-    val attendees: List<HangoutUserUi>,
+    val attendees: ImmutableList<HangoutUserUi>,
     val createdAt: Instant
 )

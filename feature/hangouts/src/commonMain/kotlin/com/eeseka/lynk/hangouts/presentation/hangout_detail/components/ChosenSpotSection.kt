@@ -38,6 +38,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_chosen_spot
 import lynk.feature.hangouts.generated.resources.detail_get_a_ride
@@ -203,9 +204,9 @@ private val previewSpot = SpotUi(
     id = "s1",
     name = "The Rooftop Lounge",
     description = "Skyline views",
-    photoUrls = emptyList(),
+    photoUrls = persistentListOf(),
     category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
+    tags = persistentListOf(),
     priceLevel = null,
     rating = 4.6,
     reviewCount = 214,

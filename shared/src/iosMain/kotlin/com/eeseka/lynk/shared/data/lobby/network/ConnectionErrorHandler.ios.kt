@@ -85,7 +85,7 @@ actual class ConnectionErrorHandler {
     companion object {
         private val NSURLErrorNotConnectedToInternetPattern =
             "Error Domain=${NSURLErrorDomain} Code=${NSURLErrorNotConnectedToInternet}"
-        val NSURLErrorNetworkConnectionLostPattern =
+        private val NSURLErrorNetworkConnectionLostPattern =
             "Error Domain=${NSURLErrorDomain} Code=${NSURLErrorNetworkConnectionLost}"
     }
 }

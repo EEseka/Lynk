@@ -41,6 +41,8 @@ import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.km
 import lynk.shared.generated.resources.m
@@ -49,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SpotDiscoverCard(
     spotName: String,
-    spotPhotos: List<String>,
+    spotPhotos: ImmutableList<String>,
     spotLatitude: Double,
     spotLongitude: Double,
     spotCategory: SpotCategory,
@@ -189,7 +191,7 @@ private fun SpotDiscoverCardPreview() {
     LynkTheme {
         SpotDiscoverCard(
             spotName = "Mega Chicken Substation",
-            spotPhotos = listOf("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"),
+            spotPhotos = persistentListOf("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"),
             spotLatitude = 6.443,
             spotLongitude = 2.455,
             spotCategory = SpotCategory.RESTAURANT,

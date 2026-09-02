@@ -52,7 +52,7 @@ class HttpClientFactory(
                         lynkLogger.debug(message)
                     }
                 }
-                level = LogLevel.ALL
+                level = if (AppConfig.IS_DEBUG) LogLevel.ALL else LogLevel.NONE
             }
             install(WebSockets) {
                 pingIntervalMillis = 20_000L
