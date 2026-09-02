@@ -57,6 +57,7 @@ firebase-bom = "34.18.0"
 iconsLucideCmp = "2.2.1"
 calf = "0.13.0"
 map = "0.15.0"
+mapNativeFfi = "0.202608.3"
 moko-geo = "0.8.0"
 zoom = "1.6.0"
 
@@ -174,6 +175,8 @@ adaptive-webview = { group = "com.mohamedrejeb.calf", name = "calf-webview", ver
 
 # Map
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
+# Android has to name its own renderer — iOS gets Metal through maplibre-compose, Android gets nothing.
+maplibre-native-ffi-runtime-opengl = { module = "org.maplibre.nativeffi:maplibre-native-ffi-runtime-opengl", version.ref = "mapNativeFfi" }
 
 # Image Zoom
 zoomimage-compose-coil = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil3", version.ref = "zoom" }

@@ -25,6 +25,10 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.maplibre.native.ffi.runtime.opengl)
+        }
+
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
