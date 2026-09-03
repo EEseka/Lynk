@@ -62,7 +62,7 @@ fun ParticipantsSheet(
             presentUserIds = presentUserIds,
             arePaymentsOn = arePaymentsOn,
             hostId = hostId,
-            modifier = modifier
+            modifier = modifier.weight(1f, fill = false)
         )
     }
 }

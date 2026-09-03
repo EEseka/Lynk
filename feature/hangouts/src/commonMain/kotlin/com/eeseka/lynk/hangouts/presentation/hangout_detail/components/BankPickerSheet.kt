@@ -57,6 +57,7 @@ fun BankPickerSheet(
     ) {
         Column(
             modifier = modifier
+                .weight(1f, fill = false)
                 .fillMaxWidth()
                 .clearFocusOnTap()
                 .padding(horizontal = 24.dp)

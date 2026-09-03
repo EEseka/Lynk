@@ -80,7 +80,8 @@ fun ProfileSettingsSheet(
             onPushNotificationsToggled = onPushNotificationsToggled,
             onTermsClick = onTermsClick,
             onSignOutClick = onSignOutClick,
-            onDeleteAccountClick = onDeleteAccountClick
+            onDeleteAccountClick = onDeleteAccountClick,
+            modifier = Modifier.weight(1f, fill = false)
         )
     }
 }
