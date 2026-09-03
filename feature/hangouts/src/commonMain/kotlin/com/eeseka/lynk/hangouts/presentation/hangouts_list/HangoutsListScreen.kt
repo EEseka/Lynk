@@ -1,23 +1,20 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,6 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ import com.composables.icons.lucide.SlidersHorizontal
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutSummaryCard
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutsEmptyState
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.HangoutsSearchEmptyState
+import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.NotificationBell
 import com.eeseka.lynk.hangouts.presentation.mappers.getTitle
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkFloatingActionButton
@@ -52,31 +54,30 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkD
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
+import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.hangouts.presentation.hangouts_list.components.NotificationBell
-import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
-import com.eeseka.lynk.shared.presentation.permissions.Permission
-import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
+import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import lynk.feature.hangouts.generated.resources.Res
@@ -106,9 +107,15 @@ fun HangoutsListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val hapticFeedback = rememberAppHaptic()
 
+    val configuration = currentDeviceConfiguration()
+    val showRail = configuration.isWideScreen
+
     val listState = rememberLazyListState()
     var showVibeMenu by remember { mutableStateOf(false) }
     var showGuestPrompt by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+    var hasTappedSearch by remember { mutableStateOf(false) }
 
     val permissionController = rememberPermissionController()
 
@@ -148,36 +155,37 @@ fun HangoutsListScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            LynkTopAppBar(
-                title = stringResource(Res.string.hangouts),
-                actions = {
-                    if (!state.isGuest) {
-                        NotificationBell(
-                            unreadCount = unreadNotificationCount,
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onNavigateToNotifications()
-                            }
+            if (!showRail) {
+                LynkTopAppBar(
+                    title = stringResource(Res.string.hangouts),
+                    actions = {
+                        if (!state.isGuest) {
+                            NotificationBell(
+                                unreadCount = unreadNotificationCount,
+                                onClick = {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onNavigateToNotifications()
+                                }
+                            )
+                        }
+                    },
+                    iosTrailingItems = if (state.isGuest) {
+                        persistentListOf()
+                    } else {
+                        persistentListOf(
+                            LynkIosBarButtonItem(
+                                sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
+                                onClick = {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onNavigateToNotifications()
+                                }
+                            )
                         )
                     }
-                },
-                iosTrailingItems = if (state.isGuest) {
-                    persistentListOf()
-                } else {
-                    persistentListOf(
-                        LynkIosBarButtonItem(
-                            sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onNavigateToNotifications()
-                            }
-                        )
-                    )
-                }
-            )
+                )
+            }
         }
     ) { scaffoldPadding ->
-        val configuration = currentDeviceConfiguration()
         val listMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
 
         Box(
@@ -266,7 +274,23 @@ fun HangoutsListScreen(
                             HangoutStatusFilter.COMPLETED -> stringResource(Res.string.search_completed_hangouts_hint)
                             HangoutStatusFilter.CANCELLED -> stringResource(Res.string.search_cancelled_hangouts_hint)
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            // The pane hands this field focus on entry; take it back unless tapped
+                            .pointerInput(Unit) {
+                                awaitEachGesture {
+                                    awaitFirstDown(
+                                        requireUnconsumed = false,
+                                        pass = PointerEventPass.Initial
+                                    )
+                                    hasTappedSearch = true
+                                }
+                            }
+                            .onFocusChanged {
+                                if (it.isFocused && !hasTappedSearch) {
+                                    focusManager.clearFocus(force = true)
+                                }
+                            }
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -317,6 +341,19 @@ fun HangoutsListScreen(
                             }
                         }
                     )
+
+                    if (showRail && !state.isGuest) {
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        NotificationBell(
+                            unreadCount = unreadNotificationCount,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onNavigateToNotifications()
+                            },
+                            isTonal = true
+                        )
+                    }
                 }
 
                 // Status filter chips
@@ -344,7 +381,6 @@ fun HangoutsListScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
                     .padding(
                         bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
                         end = 16.dp

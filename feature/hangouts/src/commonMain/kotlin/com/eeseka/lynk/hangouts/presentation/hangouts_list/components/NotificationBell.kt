@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
@@ -31,18 +32,32 @@ private const val MAX_SHOWN_UNREAD_COUNT = 9
 fun NotificationBell(
     unreadCount: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTonal: Boolean = false
 ) {
     val hasUnread = unreadCount > 0
     val label = if (hasUnread) stringResource(Res.string.notifications_with_unread, unreadCount)
     else stringResource(Res.string.notifications)
 
     Box(modifier = modifier) {
-        LynkIconButton(onClick = onClick) {
-            Icon(
-                imageVector = Lucide.Bell,
-                contentDescription = label
-            )
+        if (isTonal) {
+            LynkTonalIconButton(
+                onClick = onClick,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
+                Icon(
+                    imageVector = Lucide.Bell,
+                    contentDescription = label
+                )
+            }
+        } else {
+            LynkIconButton(onClick = onClick) {
+                Icon(
+                    imageVector = Lucide.Bell,
+                    contentDescription = label
+                )
+            }
         }
 
         if (hasUnread) {

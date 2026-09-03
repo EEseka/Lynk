@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +46,7 @@ import com.eeseka.lynk.profile.presentation.profile.components.ProfileSettingsSh
 import com.eeseka.lynk.profile.presentation.profile.components.ProfileStatsRow
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
@@ -123,6 +125,8 @@ fun ProfileScreen(
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
 
+    val showRail = config.isWideScreen
+
     // The stored preference is only half the story — the system permission can be revoked in
     // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
     // opens so the switch cannot claim notifications are on while the system says otherwise.
@@ -159,34 +163,37 @@ fun ProfileScreen(
         topBar = {
             val settingsLabel = stringResource(Res.string.settings)
 
-            LynkTopAppBar(
-                title = stringResource(Res.string.profile),
-                actions = {
-                    LynkIconButton(
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onAction(ProfileAction.OnSettingsClick)
+            if (!showRail) {
+                LynkTopAppBar(
+                    title = stringResource(Res.string.profile),
+                    actions = {
+                        LynkIconButton(
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(ProfileAction.OnSettingsClick)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Lucide.Settings,
+                                contentDescription = settingsLabel
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Lucide.Settings,
-                            contentDescription = settingsLabel
+                    },
+                    iosTrailingItems = persistentListOf(
+                        LynkIosBarButtonItem(
+                            sfSymbol = "gearshape",
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(ProfileAction.OnSettingsClick)
+                            }
                         )
-                    }
-                },
-                iosTrailingItems = persistentListOf(
-                    LynkIosBarButtonItem(
-                        sfSymbol = "gearshape",
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onAction(ProfileAction.OnSettingsClick)
-                        }
                     )
                 )
-            )
+            }
         }
     ) { scaffoldPadding ->
-        val topInset = scaffoldPadding.calculateTopPadding() + 24.dp
+        val settingsButtonInset = if (showRail) 48.dp else 0.dp
+        val topInset = scaffoldPadding.calculateTopPadding() + settingsButtonInset + 24.dp
         val contentBottomInset = mainShellPadding.calculateBottomPadding() + 24.dp
 
         Box(
@@ -226,6 +233,27 @@ fun ProfileScreen(
                         onAction = onAction,
                         onPickImageClick = { showImagePickerSheet = true },
                         onNavigateToSavedSpots = onNavigateToSavedSpots
+                    )
+                }
+            }
+
+            if (showRail) {
+                val settingsLabel = stringResource(Res.string.settings)
+
+                LynkTonalIconButton(
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onAction(ProfileAction.OnSettingsClick)
+                    },
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = scaffoldPadding.calculateTopPadding(), end = 24.dp)
+                ) {
+                    Icon(
+                        imageVector = Lucide.Settings,
+                        contentDescription = settingsLabel
                     )
                 }
             }

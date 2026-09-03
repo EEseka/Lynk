@@ -1,8 +1,14 @@
 package com.eeseka.lynk.main_shell.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,9 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -35,8 +41,8 @@ import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
 import com.eeseka.lynk.profile.presentation.navigation.ProfileGraphRoutes
 import com.eeseka.lynk.profile.presentation.navigation.profileGraph
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.eeseka.lynk.shared.presentation.navigation.DeepLinkListener
-import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -53,9 +59,7 @@ fun MainShell() {
         viewModel.onAction(MainShellAction.RefreshUnreadCount)
     }
 
-    val config = currentDeviceConfiguration()
-
-    val showRail = config.isWideScreen || config == DeviceConfiguration.MOBILE_LANDSCAPE
+    val showRail = currentDeviceConfiguration().isWideScreen
 
     // The hangout detail is the only screen whose bar visibility depends on the layout rather
     // than on which route is open, so it is the only one that still reports up to us.
@@ -68,8 +72,7 @@ fun MainShell() {
         } == true
     }
 
-    // Controls visibility of the bottom bar only.
-    val isBottomBarVisible = !isFullScreenRoute && !isDetailPaneFullScreen
+    val isNavigationBarVisible = !isFullScreenRoute && !isDetailPaneFullScreen
 
     val selectedItem = remember(currentDestination) {
         when {
@@ -98,12 +101,14 @@ fun MainShell() {
     }
 
     LynkScaffold(
+        applyHorizontalInsets = false,
         bottomBar = {
             if (!showRail) {
+                // Can't animate Native IOS components with compose
                 AnimatedVisibility(
-                    visible = isBottomBarVisible,
-                    enter = slideInVertically { it } + fadeIn(),
-                    exit = slideOutVertically { it } + fadeOut()
+                    visible = isNavigationBarVisible,
+                    enter = if (isIOS()) EnterTransition.None else slideInVertically { it } + fadeIn(),
+                    exit = if (isIOS()) ExitTransition.None else slideOutVertically { it } + fadeOut()
                 ) {
                     LynkBottomBar(
                         selectedItem = selectedItem,
@@ -116,11 +121,18 @@ fun MainShell() {
     ) { paddingValues ->
         if (showRail) {
             Row(modifier = Modifier.fillMaxSize()) {
-                LynkNavigationRail(
-                    selectedItem = selectedItem,
-                    onItemSelected = onNavigate,
-                    hasUnseenNotifications = state.hasUnseenNotifications
-                )
+                // This uses M3 NavRail and no Native IOS component so it can be animated
+                AnimatedVisibility(
+                    visible = isNavigationBarVisible,
+                    enter = expandHorizontally() + fadeIn(),
+                    exit = shrinkHorizontally() + fadeOut()
+                ) {
+                    LynkNavigationRail(
+                        selectedItem = selectedItem,
+                        onItemSelected = onNavigate,
+                        hasUnseenNotifications = state.hasUnseenNotifications
+                    )
+                }
 
                 MainShellNavHost(
                     navController = innerNavController,
@@ -156,10 +168,17 @@ private fun MainShellNavHost(
         navController = navController,
         startDestination = DiscoverGraphRoutes.Graph,
         modifier = modifier,
-        enterTransition = { fadeIn() },
-        exitTransition = { fadeOut() },
-        popEnterTransition = { fadeIn() },
-        popExitTransition = { fadeOut() }
+        enterTransition = {
+            if (isIOS()) {
+                EnterTransition.None
+            } else {
+                val fadeThrough = tween<Float>(durationMillis = 210, delayMillis = 90)
+                fadeIn(fadeThrough) + scaleIn(fadeThrough, initialScale = 0.92f)
+            }
+        },
+        exitTransition = {
+            if (isIOS()) ExitTransition.None else fadeOut(tween(durationMillis = 90))
+        }
     ) {
         discoverGraph(
             navController = navController,

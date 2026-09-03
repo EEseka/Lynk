@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,7 +41,8 @@ fun HangoutHero(
     status: HangoutStatus,
     scheduledDate: String,
     isHost: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -105,7 +107,8 @@ fun HangoutHero(
                     LynkText(
                         text = vibe.getTitle(),
                         style = MaterialTheme.typography.titleMedium,
-                        color = scheme.onBackground
+                        color = scheme.onBackground,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     StatusChip(status = status)
                 }
@@ -127,6 +130,8 @@ fun HangoutHero(
                     )
                 }
             }
+
+            actions()
         }
     }
 }

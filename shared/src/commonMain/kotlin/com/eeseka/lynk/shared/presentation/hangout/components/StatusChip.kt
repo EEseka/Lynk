@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -38,7 +39,9 @@ fun StatusChip(
         LynkText(
             text = status.getTitle(),
             style = MaterialTheme.typography.labelSmall,
-            color = foreground
+            color = foreground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

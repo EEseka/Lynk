@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -185,7 +187,8 @@ fun DiscoverScreen(
     val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }
 
     LynkScaffold(
-        snackbarHostState = snackbarHostState
+        snackbarHostState = snackbarHostState,
+        applyHorizontalInsets = false
     ) { scaffoldPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             MaplibreMap(
@@ -198,7 +201,7 @@ fun DiscoverScreen(
                     top = scaffoldPadding.calculateTopPadding() + 72.dp,
                     left = 8.dp,
                     right = 8.dp
-                ),
+                ).union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
                 overlay = MapOverlay {
                     Box(
                         modifier = Modifier
