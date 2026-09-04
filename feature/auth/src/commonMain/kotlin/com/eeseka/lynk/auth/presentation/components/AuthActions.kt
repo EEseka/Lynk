@@ -1,10 +1,9 @@
 package com.eeseka.lynk.auth.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -21,7 +20,8 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.mmk.kmpauth.google.GoogleButtonUiContainer
+import com.mmk.kmpauth.core.auth.KMPAuthUserCancelledException
+import com.mmk.kmpauth.google.rememberGoogleSignInState
 import lynk.feature.auth.generated.resources.Res
 import lynk.feature.auth.generated.resources.apple_logo
 import lynk.feature.auth.generated.resources.continue_as_guest
@@ -40,45 +40,50 @@ fun AuthActions(
     onGoogleClick: () -> Unit,
     onAppleClick: () -> Unit,
     onGuestClick: () -> Unit,
-    onGoogleTokenReceived: (String?) -> Unit,
-    enableButtons: Boolean = true,
+    onGoogleTokenReceived: (String) -> Unit,
+    onGoogleSignInCancelled: () -> Unit,
+    onGoogleSignInFailed: () -> Unit,
     modifier: Modifier = Modifier,
+    enableButtons: Boolean = true
 ) {
     val hapticFeedback = rememberAppHaptic()
 
+    val googleSignIn = rememberGoogleSignInState(
+        onResult = { result ->
+            result
+                .onSuccess { googleUser -> onGoogleTokenReceived(googleUser.idToken) }
+                .onFailure { error ->
+                    if (error is KMPAuthUserCancelledException) onGoogleSignInCancelled()
+                    else onGoogleSignInFailed()
+                }
+        }
+    )
+
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        GoogleButtonUiContainer(
-            onGoogleSignInResult = { googleUser ->
-                val idToken = googleUser?.idToken
-                onGoogleTokenReceived(idToken)
+        LynkButton(
+            text = stringResource(Res.string.continue_with_google),
+            style = LynkButtonStyle.SECONDARY,
+            isLoading = isGoogleSigningIn,
+            enabled = enableButtons,
+            onClick = {
+                hapticFeedback(AppHaptic.ImpactMedium)
+                onGoogleClick()
+                googleSignIn.launch()
+            },
+            loadingText = stringResource(Res.string.please_wait),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(Res.drawable.google_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
             }
-        ) {
-            LynkButton(
-                text = stringResource(Res.string.continue_with_google),
-                style = LynkButtonStyle.SECONDARY,
-                isLoading = isGoogleSigningIn,
-                enabled = enableButtons,
-                onClick = {
-                    hapticFeedback(AppHaptic.ImpactMedium)
-                    onGoogleClick()
-                    this.onClick()
-                },
-                loadingText = stringResource(Res.string.please_wait),
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.google_logo),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.Unspecified
-                    )
-                }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        )
 
         LynkButton(
             text = stringResource(Res.string.continue_with_apple),
@@ -100,11 +105,7 @@ fun AuthActions(
             }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         OrDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         LynkButton(
             text = stringResource(Res.string.continue_as_guest),
@@ -132,6 +133,8 @@ private fun AuthActionsPreview() {
             onAppleClick = {},
             onGuestClick = {},
             onGoogleTokenReceived = {},
+            onGoogleSignInCancelled = {},
+            onGoogleSignInFailed = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
@@ -149,6 +152,8 @@ private fun DisabledAuthActionsPreview() {
             onAppleClick = {},
             onGuestClick = {},
             onGoogleTokenReceived = {},
+            onGoogleSignInCancelled = {},
+            onGoogleSignInFailed = {},
             enableButtons = false,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
@@ -167,6 +172,8 @@ private fun GoogleLoadingAuthActionsPreview() {
             onAppleClick = {},
             onGuestClick = {},
             onGoogleTokenReceived = {},
+            onGoogleSignInCancelled = {},
+            onGoogleSignInFailed = {},
             enableButtons = false,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
@@ -185,6 +192,8 @@ private fun AppleLoadingAuthActionsPreview() {
             onAppleClick = {},
             onGuestClick = {},
             onGoogleTokenReceived = {},
+            onGoogleSignInCancelled = {},
+            onGoogleSignInFailed = {},
             enableButtons = false,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
@@ -203,6 +212,8 @@ private fun GuestLoadingAuthActionsPreview() {
             onAppleClick = {},
             onGuestClick = {},
             onGoogleTokenReceived = {},
+            onGoogleSignInCancelled = {},
+            onGoogleSignInFailed = {},
             enableButtons = false,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )

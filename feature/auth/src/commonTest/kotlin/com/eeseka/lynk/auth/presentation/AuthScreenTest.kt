@@ -1,9 +1,11 @@
 package com.eeseka.lynk.auth.presentation
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.eeseka.lynk.shared.presentation.util.UiText
-import kotlinx.coroutines.flow.MutableSharedFlow
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
@@ -27,13 +29,18 @@ class AuthScreenTest {
     }
 
     @Test
-    fun `error event shows snackbar`() = runTest {
-        val eventFlow = MutableSharedFlow<AuthEvent>()
+    fun `error message shows snackbar`() = runTest {
+        val snackbarHostState = SnackbarHostState()
         runComposeUiTest {
             val robot = AuthRobot(this)
-            robot.setContent(events = eventFlow)
+            robot.setContent(snackbarHostState = snackbarHostState)
 
-            eventFlow.emit(AuthEvent.Error(UiText.DynamicString("Auth Failed")))
+            launch {
+                snackbarHostState.showFlashMessage(
+                    message = "Auth Failed",
+                    type = LynkFlashType.Error
+                )
+            }
 
             robot.assertTextVisible("Auth Failed")
         }

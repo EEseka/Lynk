@@ -7,6 +7,10 @@
     <string name="or"> or </string>
     <string name="continue_as_guest">Continue as Guest</string>
     <string name="please_wait">Please wait...</string>
-    <string name="auth_disclosure">By continuing, you agree to our Terms &amp; Privacy Policy.</string>
+    <string name="auth_disclosure_prefix">By continuing, you agree to our </string>
+    <string name="auth_disclosure_conjunction"> and </string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="privacy_policy">Privacy Policy</string>
     <string name="apple_sign_in_coming_soon">Apple Sign In Coming Soon...</string>
+    <string name="error_google_sign_in_failed">Google sign-in failed. Please try again.</string>
 </resources>
