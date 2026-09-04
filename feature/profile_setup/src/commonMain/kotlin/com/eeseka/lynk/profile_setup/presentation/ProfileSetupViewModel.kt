@@ -12,8 +12,9 @@ import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.media.ImageCompressionService
 import com.eeseka.lynk.shared.domain.profile.UserService
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.profile_setup.presentation.mappers.toUiText
+import com.eeseka.lynk.profile_setup.presentation.mappers.toUsernameCheckUiText
+import com.eeseka.lynk.shared.presentation.profile.mappers.toUiText
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.util.UiText
@@ -22,7 +23,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
@@ -35,20 +35,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.profile_setup.generated.resources.Res
-import lynk.feature.profile_setup.generated.resources.error_display_name_blank
-import lynk.feature.profile_setup.generated.resources.error_display_name_too_long
 import lynk.feature.profile_setup.generated.resources.error_image_read_failure
-import lynk.feature.profile_setup.generated.resources.error_username_blank
-import lynk.feature.profile_setup.generated.resources.error_username_consecutive_underscores
-import lynk.feature.profile_setup.generated.resources.error_username_edge_underscore
-import lynk.feature.profile_setup.generated.resources.error_username_generic_verify
-import lynk.feature.profile_setup.generated.resources.error_username_invalid_chars
-import lynk.feature.profile_setup.generated.resources.error_username_needs_letter
-import lynk.feature.profile_setup.generated.resources.error_username_network_drop
-import lynk.feature.profile_setup.generated.resources.error_username_rate_limit
 import lynk.feature.profile_setup.generated.resources.error_username_taken
-import lynk.feature.profile_setup.generated.resources.error_username_too_long
-import lynk.feature.profile_setup.generated.resources.error_username_too_short
 import kotlin.time.Duration.Companion.milliseconds
 
 class ProfileSetupViewModel(
@@ -68,8 +56,9 @@ class ProfileSetupViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 loadInitialData()
-                observeValidationStates()
-                observeUsernameAvailability()
+                observeBusyState()
+                observeUsernameValidationAndAvailability()
+                observeDisplayNameValidation()
                 hasLoadedInitialData = true
             }
         }
@@ -79,22 +68,17 @@ class ProfileSetupViewModel(
             initialValue = ProfileSetupState()
         )
 
-    private val isUsernameValidFlow = snapshotFlow { _state.value.usernameTextState.text.toString() }
-        .map { UsernameValidator.validate(it) == UsernameValidationState.VALID }
-        .distinctUntilChanged()
-
-    // Blank-check only — real validation (too long) runs on submit via validateFormInputs()
-    private val isDisplayNameValidFlow =
-        snapshotFlow { _state.value.displayNameTextState.text.toString() }
-            .map { it.isNotBlank() }
-            .distinctUntilChanged()
-
-    private val isUsernameAvailableFlow =
-        state.map { it.isUsernameAvailable == true }.distinctUntilChanged()
-
     private val isBusyFlow = state.map {
-        it.isSubmitting || it.isUploadingImage || it.isCompressingImage || it.isCheckingUsername
+        it.isSubmitting || it.isUploadingImage || it.isCompressingImage
     }.distinctUntilChanged()
+
+    private var compressedImageUrl: String? = null
+
+    // Errors stay quiet until the first press, then track every keystroke.
+    private var hasAttemptedSubmit = false
+
+    // The username the availability answer belongs to, so a stale answer is never trusted.
+    private var checkedUsername: String? = null
 
     private fun loadInitialData() {
         viewModelScope.launch {
@@ -119,19 +103,51 @@ class ProfileSetupViewModel(
         }
     }
 
-    private fun observeValidationStates() {
-        combine(
-            isUsernameValidFlow,
-            isDisplayNameValidFlow,
-            isUsernameAvailableFlow,
-            isBusyFlow
-        ) { isUsernameValid, isDisplayNameValid, isUsernameAvailable, isBusy ->
-            val allValid = isUsernameValid && isDisplayNameValid && isUsernameAvailable
-            _state.update { it.copy(canSubmit = !isBusy && allValid) }
-        }.launchIn(viewModelScope)
+    private fun observeBusyState() {
+        isBusyFlow
+            .onEach { isBusy -> _state.update { it.copy(canSubmit = !isBusy) } }
+            .launchIn(viewModelScope)
     }
 
-    private var compressedImageUrl: String? = null
+    @OptIn(FlowPreview::class)
+    private fun observeUsernameValidationAndAvailability() {
+        snapshotFlow { _state.value.usernameTextState.text.toString() }
+            .map { it.trim() }
+            .distinctUntilChanged()
+            .onEach {
+                checkedUsername = null
+                _state.update { it.copy(isUsernameAvailable = null) }
+            }
+            .debounce(500L.milliseconds)
+            .onEach { username ->
+                val validationState = UsernameValidator.validate(username)
+
+                if (validationState != UsernameValidationState.VALID) {
+                    _state.update {
+                        it.copy(usernameError = if (hasAttemptedSubmit) validationState.toUiText() else null)
+                    }
+                    return@onEach
+                }
+
+                // It passed local validation! Now ping the backend to see if it's taken.
+                // These validations where done to reduce the number of backend requests
+                // Because invalid usernames are not allowed, we can skip the backend check.
+                confirmUsernameAvailable(username)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeDisplayNameValidation() {
+        snapshotFlow { _state.value.displayNameTextState.text.toString() }
+            .onEach { displayName ->
+                val validationState = DisplayNameValidator.validate(displayName)
+
+                _state.update {
+                    it.copy(displayNameError = if (hasAttemptedSubmit) validationState.toUiText() else null)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun onAction(action: ProfileSetupAction) {
         when (action) {
@@ -156,70 +172,6 @@ class ProfileSetupViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
-    private fun observeUsernameAvailability() {
-        snapshotFlow { _state.value.usernameTextState.text.toString() }
-            .map { it.trim() }
-            .onEach { _state.update { it.copy(isUsernameAvailable = null) } }
-            .distinctUntilChanged()
-            .debounce(500L.milliseconds)
-            .onEach { username ->
-                val validationState = UsernameValidator.validate(username)
-
-                if (validationState != UsernameValidationState.VALID) {
-                    val usernameError = when (validationState) {
-                        UsernameValidationState.BLANK -> null
-                        UsernameValidationState.TOO_SHORT -> UiText.Resource(Res.string.error_username_too_short)
-                        UsernameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_username_too_long)
-                        UsernameValidationState.NEEDS_LETTER -> UiText.Resource(Res.string.error_username_needs_letter)
-                        UsernameValidationState.EDGE_UNDERSCORE -> UiText.Resource(Res.string.error_username_edge_underscore)
-                        UsernameValidationState.CONSECUTIVE_UNDERSCORES -> UiText.Resource(Res.string.error_username_consecutive_underscores)
-                        UsernameValidationState.INVALID_CHARACTERS -> UiText.Resource(Res.string.error_username_invalid_chars)
-                        UsernameValidationState.VALID -> null
-                    }
-                    _state.update {
-                        it.copy(
-                            isUsernameAvailable = if (validationState == UsernameValidationState.BLANK) null else false,
-                            usernameError = usernameError
-                        )
-                    }
-                    return@onEach
-                }
-
-                // It passed local validation! Now ping the backend to see if it's taken.
-                // These validations where done to reduce the number of backend requests
-                // Because invalid usernames are not allowed, we can skip the backend check.
-                _state.update { it.copy(isCheckingUsername = true, usernameError = null) }
-
-                userService.isUsernameAvailable(username)
-                    .onSuccess { isAvailable ->
-                        _state.update {
-                            it.copy(
-                                isCheckingUsername = false,
-                                isUsernameAvailable = isAvailable,
-                                usernameError = if (!isAvailable) UiText.Resource(Res.string.error_username_taken) else null
-                            )
-                        }
-                    }
-                    .onFailure { error ->
-                        val fallbackError = when (error) {
-                            DataError.Remote.NO_INTERNET -> UiText.Resource(Res.string.error_username_network_drop)
-                            DataError.Remote.TOO_MANY_REQUESTS -> UiText.Resource(Res.string.error_username_rate_limit)
-                            else -> UiText.Resource(Res.string.error_username_generic_verify)
-                        }
-
-                        _state.update {
-                            it.copy(
-                                isCheckingUsername = false,
-                                isUsernameAvailable = null,
-                                usernameError = fallbackError
-                            )
-                        }
-                    }
-            }
-            .launchIn(viewModelScope)
-    }
-
     private fun processAndPreviewImage(rawPath: String, mimeType: String) {
         _state.update {
             it.copy(
@@ -231,9 +183,7 @@ class ProfileSetupViewModel(
         }
 
         viewModelScope.launch {
-            val compressed = imageCompressor.compress(rawPath)
-            compressedImageUrl = compressed
-
+            compressedImageUrl = imageCompressor.compress(rawPath)
             _state.update { it.copy(isCompressingImage = false) }
         }
     }
@@ -241,11 +191,12 @@ class ProfileSetupViewModel(
     private fun submitProfile() {
         val currentState = state.value
 
-        if (!validateFormInputs() ||
-            currentState.isSubmitting ||
+        hasAttemptedSubmit = true
+
+        if (currentState.isSubmitting ||
             currentState.isUploadingImage ||
             currentState.isCompressingImage ||
-            currentState.isCheckingUsername
+            !validateFormInputs()
         ) return
 
         _state.update { it.copy(isSubmitting = true) }
@@ -253,6 +204,19 @@ class ProfileSetupViewModel(
         viewModelScope.launch {
             val username = _state.value.usernameTextState.text.toString().trim()
             val displayName = _state.value.displayNameTextState.text.toString().trim()
+
+            // The debounced check may not have run for what is on screen right now, so an answer
+            // is only trusted when it belongs to this exact username. Anything else is asked again.
+            val isUsernameFree = if (checkedUsername == username) {
+                state.value.isUsernameAvailable == true
+            } else {
+                confirmUsernameAvailable(username)
+            }
+
+            if (!isUsernameFree) {
+                _state.update { it.copy(isSubmitting = false) }
+                return@launch
+            }
 
             // Handle the image upload if a new one was picked
             val uploadedUrl = uploadLocalImageIfPresent()
@@ -286,6 +250,37 @@ class ProfileSetupViewModel(
         }
     }
 
+    private suspend fun confirmUsernameAvailable(username: String): Boolean {
+        _state.update { it.copy(isCheckingUsername = true, usernameError = null) }
+
+        var isAvailable = false
+
+        userService.isUsernameAvailable(username)
+            .onSuccess { available ->
+                isAvailable = available
+                checkedUsername = username
+                _state.update {
+                    it.copy(
+                        isCheckingUsername = false,
+                        isUsernameAvailable = available,
+                        usernameError = if (available) null else UiText.Resource(Res.string.error_username_taken)
+                    )
+                }
+            }
+            .onFailure { error ->
+                checkedUsername = null
+                _state.update {
+                    it.copy(
+                        isCheckingUsername = false,
+                        isUsernameAvailable = null,
+                        usernameError = error.toUsernameCheckUiText()
+                    )
+                }
+            }
+
+        return isAvailable
+    }
+
     private suspend fun uploadLocalImageIfPresent(): String? {
         val compressedUri = compressedImageUrl ?: state.value.localPhotoUri
         val mimeType = state.value.localPhotoMimeType
@@ -294,7 +289,6 @@ class ProfileSetupViewModel(
 
         _state.update { it.copy(isUploadingImage = true) }
 
-        // Read bytes from the file path — this is the only place bytes are needed
         val imageBytes = imageCompressor.readBytes(compressedUri)
         if (imageBytes == null) {
             _state.update {
@@ -306,85 +300,52 @@ class ProfileSetupViewModel(
             return null
         }
 
-        return when (val urlResult = userService.getProfilePictureUploadUrl(mimeType)) {
-            is Result.Success -> {
-                val uploadResult = userService.uploadProfilePicture(
-                    uploadUrl = urlResult.data.uploadUrl,
-                    headers = urlResult.data.headers,
+        var uploadedUrl: String? = null
+
+        userService.getProfilePictureUploadUrl(mimeType)
+            .onSuccess { uploadUrls ->
+                userService.uploadProfilePicture(
+                    uploadUrl = uploadUrls.uploadUrl,
+                    headers = uploadUrls.headers,
                     imageBytes = imageBytes
                 )
-
-                when (uploadResult) {
-                    is Result.Success -> {
+                    .onSuccess {
+                        uploadedUrl = uploadUrls.publicUrl
                         _state.update { it.copy(isUploadingImage = false) }
-                        urlResult.data.publicUrl
                     }
-
-                    is Result.Failure -> {
+                    .onFailure { error ->
                         _state.update {
-                            it.copy(
-                                isUploadingImage = false,
-                                imageError = uploadResult.error.toUiText()
-                            )
+                            it.copy(isUploadingImage = false, imageError = error.toUiText())
                         }
-                        null
                     }
+            }
+            .onFailure { error ->
+                _state.update {
+                    it.copy(isUploadingImage = false, imageError = error.toUiText())
                 }
             }
 
-            is Result.Failure -> {
-                _state.update {
-                    it.copy(
-                        isUploadingImage = false,
-                        imageError = urlResult.error.toUiText()
-                    )
-                }
-                null
-            }
-        }
+        return uploadedUrl
     }
 
     private fun validateFormInputs(): Boolean {
         clearAllFormErrors()
 
-        val currentState = state.value
         val username = _state.value.usernameTextState.text.toString()
         val displayName = _state.value.displayNameTextState.text.toString()
 
         val usernameState = UsernameValidator.validate(username)
         val displayNameState = DisplayNameValidator.validate(displayName)
 
-        val usernameError = when (usernameState) {
-            UsernameValidationState.BLANK -> UiText.Resource(Res.string.error_username_blank)
-            UsernameValidationState.TOO_SHORT -> UiText.Resource(Res.string.error_username_too_short)
-            UsernameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_username_too_long)
-            UsernameValidationState.NEEDS_LETTER -> UiText.Resource(Res.string.error_username_needs_letter)
-            UsernameValidationState.EDGE_UNDERSCORE -> UiText.Resource(Res.string.error_username_edge_underscore)
-            UsernameValidationState.CONSECUTIVE_UNDERSCORES -> UiText.Resource(Res.string.error_username_consecutive_underscores)
-            UsernameValidationState.INVALID_CHARACTERS -> UiText.Resource(Res.string.error_username_invalid_chars)
-            UsernameValidationState.VALID -> {
-                if (currentState.isUsernameAvailable == false) {
-                    UiText.Resource(Res.string.error_username_taken)
-                } else null
-            }
-        }
-
-        val displayNameError = when (displayNameState) {
-            DisplayNameValidationState.BLANK -> UiText.Resource(Res.string.error_display_name_blank)
-            DisplayNameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_display_name_too_long)
-            DisplayNameValidationState.VALID -> null
-        }
-
         _state.update {
             it.copy(
-                usernameError = usernameError,
-                displayNameError = displayNameError
+                usernameError = usernameState.toUiText(),
+                displayNameError = displayNameState.toUiText()
             )
         }
 
         return usernameState == UsernameValidationState.VALID &&
-                displayNameState == DisplayNameValidationState.VALID &&
-                currentState.isUsernameAvailable == true
+                displayNameState == DisplayNameValidationState.VALID
     }
 
     private fun clearAllFormErrors() {

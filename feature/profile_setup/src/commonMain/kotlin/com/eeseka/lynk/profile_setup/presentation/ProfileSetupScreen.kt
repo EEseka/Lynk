@@ -22,11 +22,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.Camera
 import com.composables.icons.lucide.Image
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.presentation.components.ProfileAvatarSection
 import com.eeseka.lynk.profile_setup.presentation.components.ProfileFormSection
 import com.eeseka.lynk.profile_setup.presentation.components.ProfileSetupHeader
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
@@ -35,17 +37,18 @@ import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
-import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.components.ProfileAvatarSection
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import kotlinx.coroutines.flow.Flow
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import lynk.feature.profile_setup.generated.resources.Res
 import lynk.feature.profile_setup.generated.resources.choose_from_gallery
@@ -55,23 +58,19 @@ import lynk.feature.profile_setup.generated.resources.complete_profile
 import lynk.feature.profile_setup.generated.resources.complete_profile_loading
 import lynk.feature.profile_setup.generated.resources.take_photo
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProfileSetupScreen(
-    state: ProfileSetupState,
-    events: Flow<ProfileSetupEvent>,
-    onAction: (ProfileSetupAction) -> Unit,
-    onProfileSetupComplete: () -> Unit
+fun ProfileSetupRoot(
+    onNavigateToMain: () -> Unit,
+    viewModel: ProfileSetupViewModel = koinViewModel()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     val snackbarHostState = remember { SnackbarHostState() }
-    val config = currentDeviceConfiguration()
     val hapticFeedback = rememberAppHaptic()
-    val scope = rememberCoroutineScope()
-    val mediaPicker = rememberMediaPicker()
 
-    var showImagePickerSheet by remember { mutableStateOf(false) }
-
-    ObserveAsEvents(events) { event ->
+    ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is ProfileSetupEvent.Error -> {
                 snackbarHostState.showFlashMessage(
@@ -82,10 +81,30 @@ fun ProfileSetupScreen(
 
             ProfileSetupEvent.Success -> {
                 hapticFeedback(AppHaptic.Success)
-                onProfileSetupComplete()
+                onNavigateToMain()
             }
         }
     }
+
+    ProfileSetupScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        snackbarHostState = snackbarHostState
+    )
+}
+
+@Composable
+fun ProfileSetupScreen(
+    state: ProfileSetupState,
+    onAction: (ProfileSetupAction) -> Unit,
+    snackbarHostState: SnackbarHostState
+) {
+    val config = currentDeviceConfiguration()
+    val hapticFeedback = rememberAppHaptic()
+    val scope = rememberCoroutineScope()
+    val mediaPicker = rememberMediaPicker()
+
+    var showImagePickerSheet by remember { mutableStateOf(false) }
 
     LynkScaffold(
         snackbarHostState = snackbarHostState
@@ -105,23 +124,19 @@ fun ProfileSetupScreen(
                                 .weight(1f)
                                 .fillMaxWidth()
                                 .verticalScroll(rememberScrollState()),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(32.dp)
                         ) {
                             ProfileSetupHeader()
 
-                            Spacer(modifier = Modifier.height(32.dp))
-
                             ProfileAvatarSection(
-                                currentImagePayload = state.localPhotoUri
-                                    ?: state.profilePictureUrl,
+                                currentImagePayload = state.localPhotoUri ?: state.profilePictureUrl,
                                 imageError = state.imageError?.asString(),
                                 isCompressingImage = state.isCompressingImage,
                                 isUploadingImage = state.isUploadingImage,
                                 onImageClick = { showImagePickerSheet = true },
                                 onRemoveImage = { onAction(ProfileSetupAction.OnRemoveImageClick) }
                             )
-
-                            Spacer(modifier = Modifier.height(32.dp))
 
                             ProfileFormSection(
                                 email = state.email,
@@ -132,8 +147,6 @@ fun ProfileSetupScreen(
                                 isCheckingUsername = state.isCheckingUsername,
                                 isUsernameAvailable = state.isUsernameAvailable
                             )
-
-                            Spacer(modifier = Modifier.height(32.dp))
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -159,27 +172,23 @@ fun ProfileSetupScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(32.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            contentAlignment = Alignment.Center
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(rememberScrollState()),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                ProfileAvatarSection(
-                                    currentImagePayload = state.localPhotoUri
-                                        ?: state.profilePictureUrl,
-                                    imageError = state.imageError?.asString(),
-                                    isCompressingImage = state.isCompressingImage,
-                                    isUploadingImage = state.isUploadingImage,
-                                    onImageClick = { showImagePickerSheet = true },
-                                    onRemoveImage = { onAction(ProfileSetupAction.OnRemoveImageClick) }
-                                )
-                            }
+                            ProfileAvatarSection(
+                                currentImagePayload = state.localPhotoUri
+                                    ?: state.profilePictureUrl,
+                                imageError = state.imageError?.asString(),
+                                isCompressingImage = state.isCompressingImage,
+                                isUploadingImage = state.isUploadingImage,
+                                onImageClick = { showImagePickerSheet = true },
+                                onRemoveImage = { onAction(ProfileSetupAction.OnRemoveImageClick) }
+                            )
                         }
 
                         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
@@ -187,11 +196,12 @@ fun ProfileSetupScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.Center
+                                verticalArrangement = Arrangement.spacedBy(
+                                    space = 24.dp,
+                                    alignment = Alignment.CenterVertically
+                                )
                             ) {
                                 ProfileSetupHeader()
-
-                                Spacer(modifier = Modifier.height(24.dp))
 
                                 ProfileFormSection(
                                     email = state.email,
@@ -202,8 +212,6 @@ fun ProfileSetupScreen(
                                     isCheckingUsername = state.isCheckingUsername,
                                     isUsernameAvailable = state.isUsernameAvailable
                                 )
-
-                                Spacer(modifier = Modifier.height(24.dp))
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -242,11 +250,10 @@ fun ProfileSetupScreen(
                                     modifier = Modifier
                                         .weight(1f, fill = false)
                                         .verticalScroll(rememberScrollState()),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(32.dp)
                                 ) {
                                     ProfileSetupHeader()
-
-                                    Spacer(modifier = Modifier.height(32.dp))
 
                                     ProfileAvatarSection(
                                         currentImagePayload = state.localPhotoUri
@@ -258,8 +265,6 @@ fun ProfileSetupScreen(
                                         onRemoveImage = { onAction(ProfileSetupAction.OnRemoveImageClick) }
                                     )
 
-                                    Spacer(modifier = Modifier.height(32.dp))
-
                                     ProfileFormSection(
                                         email = state.email,
                                         displayNameState = state.displayNameTextState,
@@ -269,8 +274,6 @@ fun ProfileSetupScreen(
                                         isCheckingUsername = state.isCheckingUsername,
                                         isUsernameAvailable = state.isUsernameAvailable
                                     )
-
-                                    Spacer(modifier = Modifier.height(32.dp))
                                 }
 
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -305,10 +308,8 @@ fun ProfileSetupScreen(
                     onClick = {
                         scope.launch {
                             val image = mediaPicker.captureImage()
-                            if (image != null) {
-                                onAction(
-                                    ProfileSetupAction.OnImagePicked(image.uri, image.mimeType)
-                                )
+                            image?.let {
+                                onAction(ProfileSetupAction.OnImagePicked(it.uri, it.mimeType))
                             }
                         }
                     }
@@ -319,15 +320,49 @@ fun ProfileSetupScreen(
                     onClick = {
                         scope.launch {
                             val image = mediaPicker.pickImage()
-                            if (image != null) {
-                                onAction(
-                                    ProfileSetupAction.OnImagePicked(image.uri, image.mimeType)
-                                )
+                            image?.let {
+                                onAction(ProfileSetupAction.OnImagePicked(it.uri, it.mimeType))
                             }
                         }
                     }
                 )
             )
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ProfileSetupScreenPreview() {
+    LynkTheme {
+        ProfileSetupScreen(
+            state = ProfileSetupState(email = "eseka@lynk.app"),
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
+@Composable
+private fun ProfileSetupScreenLandscapePreview() {
+    LynkTheme {
+        ProfileSetupScreen(
+            state = ProfileSetupState(email = "eseka@lynk.app"),
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
+@Composable
+private fun ProfileSetupScreenTabletPreview() {
+    LynkTheme {
+        ProfileSetupScreen(
+            state = ProfileSetupState(email = "eseka@lynk.app"),
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }

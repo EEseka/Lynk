@@ -1,9 +1,12 @@
 package com.eeseka.lynk.profile_setup.presentation
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.presentation.util.UiText
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
@@ -81,23 +84,24 @@ class ProfileSetupScreenTest {
     }
 
     @Test
-    fun `error event triggers flash message snackbar`() = runTest {
-        // We use runTest here so we can safely emit to the coroutine flow
-        val eventFlow = MutableSharedFlow<ProfileSetupEvent>()
+    fun `error message triggers flash message snackbar`() = runTest {
+        val snackbarHostState = SnackbarHostState()
 
         runComposeUiTest {
             val robot = ProfileSetupRobot(this)
             robot.setContent(
                 state = ProfileSetupState(),
-                events = eventFlow
+                snackbarHostState = snackbarHostState
             )
 
-            // Emit the error just like the ViewModel would
-            eventFlow.emit(
-                ProfileSetupEvent.Error(UiText.DynamicString("Network connection lost"))
-            )
+            // Show the flash just like the root does when an error event arrives
+            launch {
+                snackbarHostState.showFlashMessage(
+                    message = "Network connection lost",
+                    type = LynkFlashType.Error
+                )
+            }
 
-            // The UI should react to the event and display the snackbar
             robot.assertSnackbarMessageVisible("Network connection lost")
         }
     }

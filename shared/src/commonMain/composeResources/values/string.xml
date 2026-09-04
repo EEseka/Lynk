@@ -23,6 +23,9 @@
     <string name="error_serialization">We had trouble loading this data. Please refresh.</string>
     <string name="error_lobby_send_failed">That didn't go through. Please try again.</string>
 
+    <string name="error_display_name_blank">Display name cannot be empty.</string>
+    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
+
     <string name="lobby_error_not_attending">You're not part of this hangout.</string>
     <string name="lobby_error_voting_closed">Voting isn't open for this hangout.</string>
     <string name="lobby_error_spot_not_found">We couldn't load that spot. Please try another.</string>

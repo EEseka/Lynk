@@ -148,7 +148,7 @@ fun ProfileFormSection(
 private fun ProfileFormSectionPreview() {
     LynkTheme {
         ProfileFormSection(
-            email = "john.doe@example.com",
+            email = "johndoe@example.com",
             displayNameState = TextFieldState("John Doe"),
             displayNameErrorMessage = null,
             usernameState = TextFieldState("john_doe"),
@@ -165,7 +165,7 @@ private fun ProfileFormSectionPreview() {
 private fun ProfileFormSectionPreviewError() {
     LynkTheme {
         ProfileFormSection(
-            email = "john.doe@example.com",
+            email = "johndoe@example.com",
             displayNameState = TextFieldState("John Doe"),
             displayNameErrorMessage = "Too Long",
             usernameState = TextFieldState("john_doe"),
