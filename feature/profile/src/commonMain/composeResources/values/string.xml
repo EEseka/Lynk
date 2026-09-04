@@ -13,8 +13,6 @@
     <string name="saving_changes">Saving…</string>
     <string name="profile_saved">Profile updated.</string>
 
-    <string name="error_display_name_blank">Display name cannot be empty.</string>
-    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
     <string name="error_image_read_failure">Failed to read image file</string>
 
     <string name="choose_source">Choose Source</string>

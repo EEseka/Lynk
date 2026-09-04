@@ -20,6 +20,7 @@ import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.Result
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.profile.mappers.toUiText
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
@@ -37,8 +38,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.error_delete_account_blocked
-import lynk.feature.profile.generated.resources.error_display_name_blank
-import lynk.feature.profile.generated.resources.error_display_name_too_long
 import lynk.feature.profile.generated.resources.error_image_read_failure
 
 class ProfileViewModel(
@@ -440,13 +439,7 @@ class ProfileViewModel(
         val displayName = _state.value.displayNameTextState.text.toString()
         val displayNameState = DisplayNameValidator.validate(displayName)
 
-        val displayNameError = when (displayNameState) {
-            DisplayNameValidationState.BLANK -> UiText.Resource(Res.string.error_display_name_blank)
-            DisplayNameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_display_name_too_long)
-            DisplayNameValidationState.VALID -> null
-        }
-
-        _state.update { it.copy(displayNameError = displayNameError) }
+        _state.update { it.copy(displayNameError = displayNameState.toUiText()) }
 
         return displayNameState == DisplayNameValidationState.VALID
     }
