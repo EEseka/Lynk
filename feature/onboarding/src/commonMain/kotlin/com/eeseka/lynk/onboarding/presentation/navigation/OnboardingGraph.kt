@@ -4,25 +4,17 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.eeseka.lynk.onboarding.presentation.OnboardingScreen
-import com.eeseka.lynk.onboarding.presentation.OnboardingViewModel
-import org.koin.compose.viewmodel.koinViewModel
+import com.eeseka.lynk.onboarding.presentation.OnboardingRoot
 
 fun NavGraphBuilder.onboardingGraph(
     navController: NavController,
-    onOnboardingComplete: () -> Unit
+    onNavigateToAuth: () -> Unit
 ) {
     navigation<OnboardingGraphRoutes.Graph>(
         startDestination = OnboardingGraphRoutes.Welcome
     ) {
         composable<OnboardingGraphRoutes.Welcome> {
-            val viewModel = koinViewModel<OnboardingViewModel>()
-
-            OnboardingScreen(
-                events = viewModel.events,
-                onAction = viewModel::onAction,
-                onOnboardingComplete = onOnboardingComplete
-            )
+            OnboardingRoot(onNavigateToAuth = onNavigateToAuth)
         }
     }
 }

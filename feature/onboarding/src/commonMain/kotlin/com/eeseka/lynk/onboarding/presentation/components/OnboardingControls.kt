@@ -1,6 +1,5 @@
 package com.eeseka.lynk.onboarding.presentation.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -19,7 +18,6 @@ import lynk.feature.onboarding.generated.resources.get_started
 import lynk.feature.onboarding.generated.resources.next
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingControls(
     currentPage: Int,
@@ -46,7 +44,7 @@ fun OnboardingControls(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun OnboardingControlsPreview() {
     LynkTheme {

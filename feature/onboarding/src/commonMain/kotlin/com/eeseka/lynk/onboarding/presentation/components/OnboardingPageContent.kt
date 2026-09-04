@@ -16,11 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.onboarding.presentation.model.OnboardingPageUi
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -30,7 +32,6 @@ import lynk.feature.onboarding.generated.resources.Res
 @Composable
 fun OnboardingPageContent(
     page: OnboardingPageUi,
-    isLandscape: Boolean,
     modifier: Modifier = Modifier
 ) {
     val composition by rememberLottieComposition {
@@ -39,23 +40,27 @@ fun OnboardingPageContent(
         )
     }
 
+    val animationSize = when (currentDeviceConfiguration()) {
+        DeviceConfiguration.MOBILE_LANDSCAPE -> 220.dp
+        DeviceConfiguration.TABLET_PORTRAIT -> 400.dp
+        else -> 320.dp
+    }
+
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val imageSize = if (isLandscape) 220.dp else 320.dp
-
         Image(
             painter = rememberLottiePainter(
                 composition = composition,
                 iterations = Compottie.IterateForever
             ),
             contentDescription = null,
-            modifier = Modifier.size(imageSize)
+            modifier = Modifier.size(animationSize)
         )
 
-        Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 40.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         LynkText(
             text = page.title,
@@ -77,7 +82,7 @@ fun OnboardingPageContent(
 }
 
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun OnboardingPageContentPreview() {
     LynkTheme {
@@ -87,8 +92,7 @@ private fun OnboardingPageContentPreview() {
                 title = "Stop wasting time",
                 description = "Stop wasting time on manual stuff. Let Lynk handle your stuff automatically.",
                 animationFileName = ""
-            ),
-            isLandscape = false
+            )
         )
     }
 }

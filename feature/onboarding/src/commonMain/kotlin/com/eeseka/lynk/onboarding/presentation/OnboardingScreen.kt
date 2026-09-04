@@ -1,6 +1,5 @@
 package com.eeseka.lynk.onboarding.presentation
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,13 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -31,31 +29,41 @@ import com.eeseka.lynk.onboarding.presentation.model.OnboardingPageUi
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.onboarding.generated.resources.Res
 import lynk.feature.onboarding.generated.resources.discover_trending_spots_nearby
 import lynk.feature.onboarding.generated.resources.end_the_debate
+import lynk.feature.onboarding.generated.resources.everyone_pays_before_deadline
 import lynk.feature.onboarding.generated.resources.find_the_perfect_spot
-import lynk.feature.onboarding.generated.resources.secure_your_reservation
-import lynk.feature.onboarding.generated.resources.split_the_cost_instantly
+import lynk.feature.onboarding.generated.resources.split_the_cost_evenly
 import lynk.feature.onboarding.generated.resources.stop_the_group_chat_debate
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 private const val ANIMATION_COMMUNITY = "community.json"
 private const val ANIMATION_MAP_PIN_LOCATION = "map_pin_location.json"
 private const val ANIMATION_PAYMENT_SUCCESS = "payment_success.json"
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
-fun OnboardingScreen(
-    events: Flow<OnboardingEvent>,
-    onAction: (OnboardingAction) -> Unit,
-    onOnboardingComplete: () -> Unit
+fun OnboardingRoot(
+    onNavigateToAuth: () -> Unit,
+    viewModel: OnboardingViewModel = koinViewModel()
 ) {
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            OnboardingEvent.Success -> onNavigateToAuth()
+        }
+    }
+
+    OnboardingScreen(onAction = viewModel::onAction)
+}
+
+@Composable
+fun OnboardingScreen(onAction: (OnboardingAction) -> Unit) {
     val config = currentDeviceConfiguration()
 
     val pages = listOf(
@@ -70,24 +78,15 @@ fun OnboardingScreen(
             animationFileName = ANIMATION_MAP_PIN_LOCATION
         ),
         OnboardingPageUi(
-            title = stringResource(Res.string.split_the_cost_instantly),
-            description = stringResource(Res.string.secure_your_reservation),
+            title = stringResource(Res.string.split_the_cost_evenly),
+            description = stringResource(Res.string.everyone_pays_before_deadline),
             animationFileName = ANIMATION_PAYMENT_SUCCESS
         )
     )
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val hapticFeedback = rememberAppHaptic()
-
-    ObserveAsEvents(events) { event ->
-        when (event) {
-            OnboardingEvent.Success -> {
-                onOnboardingComplete()
-            }
-        }
-    }
 
     // If we are NOT on the first page, INTERCEPT the back button.
     NavigationBackHandler(
@@ -113,9 +112,7 @@ fun OnboardingScreen(
         }
     }
 
-    LynkScaffold(
-        snackbarHostState = snackbarHostState
-    ) { paddingValues ->
+    LynkScaffold { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -133,13 +130,12 @@ fun OnboardingScreen(
                             state = pagerState,
                             modifier = Modifier.weight(1f)
                         ) { pageIndex ->
-                            OnboardingPageContent(page = pages[pageIndex], isLandscape = true)
+                            OnboardingPageContent(page = pages[pageIndex])
                         }
 
-                        Column(
-                            modifier = Modifier.weight(0.8f).fillMaxHeight(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Box(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            contentAlignment = Alignment.BottomCenter
                         ) {
                             OnboardingControls(
                                 currentPage = pagerState.currentPage,
@@ -152,20 +148,13 @@ fun OnboardingScreen(
 
                 else -> {
                     Column(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .then(
-                                if (config.isWideScreen || config == DeviceConfiguration.TABLET_PORTRAIT) {
-                                    Modifier.widthIn(max = 600.dp)
-                                } else Modifier.fillMaxWidth()
-                            )
-                            .padding(24.dp)
+                        modifier = Modifier.widthIn(max = 600.dp).fillMaxSize().padding(24.dp)
                     ) {
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier.weight(1f)
                         ) { pageIndex ->
-                            OnboardingPageContent(page = pages[pageIndex], isLandscape = false)
+                            OnboardingPageContent(page = pages[pageIndex])
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -179,5 +168,21 @@ fun OnboardingScreen(
                 }
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun OnboardingScreenPreview() {
+    LynkTheme {
+        OnboardingScreen(onAction = {})
+    }
+}
+
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
+@Composable
+private fun OnboardingScreenLandscapePreview() {
+    LynkTheme {
+        OnboardingScreen(onAction = {})
     }
 }
