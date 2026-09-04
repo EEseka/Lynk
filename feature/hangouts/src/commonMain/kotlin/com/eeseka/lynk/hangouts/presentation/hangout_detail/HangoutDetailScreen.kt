@@ -259,11 +259,11 @@ fun HangoutDetailScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            val cancelLabel = stringResource(Res.string.detail_cancel)
-            val leaveLabel = stringResource(Res.string.detail_leave)
-            val editLabel = stringResource(Res.string.detail_update)
-
             if (isDetailPaneFullScreen) {
+                val cancelLabel = stringResource(Res.string.detail_cancel)
+                val leaveLabel = stringResource(Res.string.detail_leave)
+                val editLabel = stringResource(Res.string.detail_update)
+
                 LynkTopAppBar(
                     navigationIcon = {
                         LynkIconButton(

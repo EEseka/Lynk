@@ -141,7 +141,6 @@ fun ProfileScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is ProfileEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.message.asStringAsync(),
                     type = LynkFlashType.Error
@@ -149,7 +148,6 @@ fun ProfileScreen(
             }
 
             ProfileEvent.ProfileSaved -> {
-                hapticFeedback(AppHaptic.Success)
                 snackbarHostState.showFlashMessage(
                     message = getString(Res.string.profile_saved),
                     type = LynkFlashType.Success
@@ -161,9 +159,9 @@ fun ProfileScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            val settingsLabel = stringResource(Res.string.settings)
-
             if (!showRail) {
+                val settingsLabel = stringResource(Res.string.settings)
+
                 LynkTopAppBar(
                     title = stringResource(Res.string.profile),
                     actions = {

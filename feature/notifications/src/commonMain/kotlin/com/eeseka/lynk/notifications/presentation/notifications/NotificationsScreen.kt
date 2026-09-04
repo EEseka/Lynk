@@ -72,7 +72,6 @@ fun NotificationsScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is NotificationsEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.message.asStringAsync(),
                     type = LynkFlashType.Error

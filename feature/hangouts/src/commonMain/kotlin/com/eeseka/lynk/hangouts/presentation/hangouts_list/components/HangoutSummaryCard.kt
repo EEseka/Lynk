@@ -23,7 +23,6 @@ import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Users
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -46,6 +45,7 @@ import kotlin.time.Instant
 @Composable
 fun HangoutSummaryCard(
     hangout: HangoutSummaryUi,
+    scheduledDate: String,
     isSelected: Boolean,
     isHost: Boolean,
     onClick: () -> Unit,
@@ -174,7 +174,7 @@ fun HangoutSummaryCard(
                         modifier = Modifier.size(12.dp)
                     )
                     LynkText(
-                        text = hangout.scheduledAt.toHangoutDisplayDate(),
+                        text = scheduledDate,
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant
                     )
@@ -219,6 +219,7 @@ private fun HangoutSummaryCardPreview() {
                 participantCount = 4,
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
+            scheduledDate = "Fri, 15 Jun · 8:00 PM",
             isSelected = false,
             isHost = true,
             onClick = {},
@@ -243,6 +244,7 @@ private fun HangoutSummaryCardSelectedPreview() {
                 participantCount = 7,
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
+            scheduledDate = "Sat, 16 Jun · 7:30 PM",
             isSelected = true,
             isHost = false,
             onClick = {},

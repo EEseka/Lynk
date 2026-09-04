@@ -74,7 +74,6 @@ fun ProfileSetupScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is ProfileSetupEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.error.asStringAsync(),
                     type = LynkFlashType.Error

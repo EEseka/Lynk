@@ -68,7 +68,6 @@ fun SavedSpotsScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is SavedSpotsEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.message.asStringAsync(),
                     type = LynkFlashType.Error

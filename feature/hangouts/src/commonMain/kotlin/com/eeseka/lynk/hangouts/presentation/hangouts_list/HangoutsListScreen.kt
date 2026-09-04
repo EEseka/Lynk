@@ -76,6 +76,7 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
@@ -134,7 +135,6 @@ fun HangoutsListScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is HangoutsListEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.error.asStringAsync(),
                     type = LynkFlashType.Error
@@ -225,6 +225,7 @@ fun HangoutsListScreen(
                         Box(modifier = Modifier.animateItem()) {
                             HangoutSummaryCard(
                                 hangout = hangout,
+                                scheduledDate = hangout.scheduledAt.toHangoutDisplayDate(),
                                 isSelected = hangout.id == state.selectedHangoutId,
                                 isHost = hangout.hostId == state.currentUserId,
                                 onClick = {

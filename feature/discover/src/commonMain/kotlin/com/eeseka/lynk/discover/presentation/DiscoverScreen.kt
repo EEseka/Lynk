@@ -126,7 +126,6 @@ fun DiscoverScreen(
     ObserveAsEvents(events) { event ->
         when (event) {
             is DiscoverEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.error.asStringAsync(),
                     type = LynkFlashType.Error

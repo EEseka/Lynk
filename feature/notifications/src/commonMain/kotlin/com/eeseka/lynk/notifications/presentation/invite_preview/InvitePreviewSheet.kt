@@ -118,7 +118,6 @@ fun InvitePreviewSheet(
     ObserveAsEvents(events) { event ->
         when (event) {
             is InvitePreviewEvent.Error -> {
-                hapticFeedback(AppHaptic.Error)
                 snackbarHostState.showFlashMessage(
                     message = event.message.asStringAsync(),
                     type = LynkFlashType.Error
