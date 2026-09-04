@@ -20,6 +20,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -39,6 +41,11 @@ fun SavedSpotsEmptyState(modifier: Modifier = Modifier) {
         )
     }
 
+    val animationSize = when (currentDeviceConfiguration()) {
+        DeviceConfiguration.MOBILE_LANDSCAPE -> 200.dp
+        else -> 300.dp
+    }
+
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -53,7 +60,7 @@ fun SavedSpotsEmptyState(modifier: Modifier = Modifier) {
                     iterations = Compottie.IterateForever
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(300.dp)
+                modifier = Modifier.size(animationSize)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
