@@ -72,7 +72,6 @@ fun NavGraphBuilder.hangoutsGraph(
                 onNavigateToHangout = { hangoutId ->
                     navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId)) {
                         popUpTo<HangoutsGraphRoutes.HangoutListDetail> { inclusive = true }
-                        launchSingleTop = true
                     }
                 }
             )

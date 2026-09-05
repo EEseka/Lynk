@@ -62,7 +62,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileSetupRoot(
-    onNavigateToMain: () -> Unit,
+    navigateToMain: () -> Unit,
     viewModel: ProfileSetupViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -81,7 +81,7 @@ fun ProfileSetupRoot(
 
             ProfileSetupEvent.Success -> {
                 hapticFeedback(AppHaptic.Success)
-                onNavigateToMain()
+                navigateToMain()
             }
         }
     }

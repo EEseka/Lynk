@@ -14,7 +14,7 @@ fun NavGraphBuilder.onboardingGraph(
         startDestination = OnboardingGraphRoutes.Welcome
     ) {
         composable<OnboardingGraphRoutes.Welcome> {
-            OnboardingRoot(onNavigateToAuth = onNavigateToAuth)
+            OnboardingRoot(navigateToAuth = onNavigateToAuth)
         }
     }
 }

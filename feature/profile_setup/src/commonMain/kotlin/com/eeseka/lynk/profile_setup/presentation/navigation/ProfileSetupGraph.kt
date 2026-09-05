@@ -14,7 +14,7 @@ fun NavGraphBuilder.profileSetupGraph(
         startDestination = ProfileSetupGraphRoutes.ProfileSetup
     ) {
         composable<ProfileSetupGraphRoutes.ProfileSetup> {
-            ProfileSetupRoot(onNavigateToMain = onNavigateToMain)
+            ProfileSetupRoot(navigateToMain = onNavigateToMain)
         }
     }
 }

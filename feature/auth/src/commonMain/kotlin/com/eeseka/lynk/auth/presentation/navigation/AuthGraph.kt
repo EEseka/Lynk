@@ -16,8 +16,8 @@ fun NavGraphBuilder.authGraph(
     ) {
         composable<AuthGraphRoutes.Auth> {
             AuthRoot(
-                onNavigateToProfileSetup = onNavigateToProfileSetup,
-                onNavigateToMain = onNavigateToMain
+                navigateToProfileSetup = onNavigateToProfileSetup,
+                navigateToMain = onNavigateToMain
             )
         }
     }

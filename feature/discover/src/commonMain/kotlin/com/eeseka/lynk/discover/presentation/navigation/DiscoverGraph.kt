@@ -14,7 +14,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun NavGraphBuilder.discoverGraph(
     navController: NavController,
     mainShellPadding: PaddingValues,
-    navigateToHangouts: (String) -> Unit
+    onNavigateToHangouts: (String) -> Unit
 ) {
     navigation<DiscoverGraphRoutes.Graph>(
         startDestination = DiscoverGraphRoutes.Discover
@@ -27,7 +27,7 @@ fun NavGraphBuilder.discoverGraph(
                 state = state,
                 events = viewModel.events,
                 onAction = viewModel::onAction,
-                navigateToHangouts = navigateToHangouts,
+                navigateToHangouts = onNavigateToHangouts,
                 mainShellPadding = mainShellPadding
             )
         }

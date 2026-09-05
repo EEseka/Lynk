@@ -6,8 +6,11 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.eeseka.lynk.main_shell.presentation.mappers.toIcon
+import com.eeseka.lynk.main_shell.presentation.mappers.toSfSymbolName
+import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
+import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
@@ -21,28 +24,22 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 fun LynkBottomBar(
     selectedItem: LynkNavigationItem,
     onItemSelected: (LynkNavigationItem) -> Unit,
-    hasUnseenNotifications: Boolean = false,
+    hasUnseenNotifications: Boolean,
     modifier: Modifier = Modifier
 ) {
     val entries = LynkNavigationItem.entries
-    val selectedIndex = entries.indexOf(selectedItem)
 
     val scheme = MaterialTheme.colorScheme
 
     AdaptiveNavigationBar(
         modifier = modifier,
         iosItems = entries.map { item ->
-            val uiKitImageSystemName = when (item) {
-                LynkNavigationItem.DISCOVER -> "map.fill"
-                LynkNavigationItem.HANGOUTS -> if (hasUnseenNotifications) "calendar.badge.exclamationmark" else "calendar"
-                LynkNavigationItem.PROFILE -> "person.crop.circle.fill"
-            }
             UIKitUITabBarItem(
-                title = item.title.asString(),
-                image = UIKitImage.SystemName(uiKitImageSystemName)
+                title = item.toTitle().asString(),
+                image = UIKitImage.SystemName(item.toSfSymbolName(hasUnseenNotifications))
             )
         },
-        iosSelectedIndex = selectedIndex,
+        iosSelectedIndex = selectedItem.ordinal,
         iosOnItemSelected = { index -> onItemSelected(entries[index]) },
         iosConfiguration = UIKitTabBarConfiguration(selectedItemColor = scheme.primary),
         content = {
@@ -54,17 +51,15 @@ fun LynkBottomBar(
                     onClick = { onItemSelected(item) },
                     icon = {
                         NavigationItemIcon(
-                            icon = item.icon,
-                            contentDescription = item.title.asString(),
+                            icon = item.toIcon(),
                             hasUnread = hasUnseenNotifications && item == LynkNavigationItem.HANGOUTS
                         )
                     },
                     label = {
                         LynkText(
-                            text = item.title.asString(),
+                            text = item.toTitle().asString(),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
+                            overflow = TextOverflow.Ellipsis
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -78,18 +73,19 @@ fun LynkBottomBar(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkBottomBarPreview() {
     LynkTheme {
         LynkBottomBar(
             selectedItem = LynkNavigationItem.DISCOVER,
-            onItemSelected = {}
+            onItemSelected = {},
+            hasUnseenNotifications = false
         )
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkBottomBarUnreadPreview() {
     LynkTheme {
@@ -97,17 +93,6 @@ private fun LynkBottomBarUnreadPreview() {
             selectedItem = LynkNavigationItem.DISCOVER,
             onItemSelected = {},
             hasUnseenNotifications = true
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkBottomBarPreviewDark() {
-    LynkTheme(true) {
-        LynkBottomBar(
-            selectedItem = LynkNavigationItem.DISCOVER,
-            onItemSelected = {}
         )
     }
 }

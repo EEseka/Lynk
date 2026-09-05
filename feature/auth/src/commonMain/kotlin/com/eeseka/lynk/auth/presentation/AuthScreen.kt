@@ -43,8 +43,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AuthRoot(
-    onNavigateToProfileSetup: () -> Unit,
-    onNavigateToMain: () -> Unit,
+    navigateToProfileSetup: () -> Unit,
+    navigateToMain: () -> Unit,
     viewModel: AuthViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -61,8 +61,8 @@ fun AuthRoot(
             }
 
             is AuthEvent.Success -> {
-                if (event.user is User.ProfileIncomplete) onNavigateToProfileSetup()
-                else onNavigateToMain()
+                if (event.user is User.ProfileIncomplete) navigateToProfileSetup()
+                else navigateToMain()
             }
         }
     }

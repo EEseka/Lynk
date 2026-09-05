@@ -18,9 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,9 +33,9 @@ import com.eeseka.lynk.discover.presentation.navigation.DiscoverGraphRoutes
 import com.eeseka.lynk.discover.presentation.navigation.discoverGraph
 import com.eeseka.lynk.hangouts.presentation.navigation.HangoutsGraphRoutes
 import com.eeseka.lynk.hangouts.presentation.navigation.hangoutsGraph
-import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
 import com.eeseka.lynk.main_shell.presentation.components.LynkBottomBar
 import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
+import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
 import com.eeseka.lynk.profile.presentation.navigation.ProfileGraphRoutes
 import com.eeseka.lynk.profile.presentation.navigation.profileGraph
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -47,32 +45,38 @@ import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun MainShell() {
+fun MainShellRoot(
+    viewModel: MainShellViewModel = koinViewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    MainShellScreen(
+        state = state,
+        onAction = viewModel::onAction
+    )
+}
+
+@Composable
+fun MainShellScreen(
+    state: MainShellState,
+    onAction: (MainShellAction) -> Unit
+) {
     val innerNavController = rememberNavController()
     val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val viewModel = koinViewModel<MainShellViewModel>()
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(currentDestination) {
-        viewModel.onAction(MainShellAction.RefreshUnreadCount)
-    }
-
     val showRail = currentDeviceConfiguration().isWideScreen
 
-    // The hangout detail is the only screen whose bar visibility depends on the layout rather
-    // than on which route is open, so it is the only one that still reports up to us.
-    var isDetailPaneFullScreen by remember { mutableStateOf(false) }
-
-    // Routes that take over the whole screen and so hide the bottom bar.
+    // Routes that take over the whole screen and so hide the nav bar. The hangout detail is
+    // the only screen whose bar visibility depends on the layout rather than on which route is
+    // open, so it is the only one that still reports up to us.
     val isFullScreenRoute = remember(currentDestination) {
         currentDestination?.hierarchy?.any {
             it.hasRoute(HangoutsGraphRoutes.Notifications::class) || it.hasRoute(ProfileGraphRoutes.SavedSpots::class)
         } == true
     }
 
-    val isNavigationBarVisible = !isFullScreenRoute && !isDetailPaneFullScreen
+    val isNavigationBarVisible = !isFullScreenRoute && !state.isHangoutDetailPaneFullScreen
 
     val selectedItem = remember(currentDestination) {
         when {
@@ -82,21 +86,20 @@ fun MainShell() {
         }
     }
 
-    // Arriving on the Hangouts tab is what clears the dot
     LaunchedEffect(selectedItem) {
-        if (selectedItem == LynkNavigationItem.HANGOUTS) {
-            viewModel.onAction(MainShellAction.HangoutsTabSeen)
-        }
+        onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = selectedItem == LynkNavigationItem.HANGOUTS))
     }
 
     // Common navigation action passed to both Rail and BottomBar
-    val onNavigate: (LynkNavigationItem) -> Unit = { item ->
-        innerNavController.navigate(item.route) {
-            popUpTo(innerNavController.graph.findStartDestination().id) {
-                saveState = true
+    val onNavigate: (LynkNavigationItem) -> Unit = remember(innerNavController) {
+        { item ->
+            innerNavController.navigate(item.route) {
+                popUpTo(innerNavController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
-            launchSingleTop = true
-            restoreState = true
         }
     }
 
@@ -137,7 +140,9 @@ fun MainShell() {
                 MainShellNavHost(
                     navController = innerNavController,
                     paddingValues = PaddingValues(0.dp),
-                    onDetailPaneFullScreenChange = { isDetailPaneFullScreen = it },
+                    onHangoutDetailPaneFullScreenChanged = {
+                        onAction(MainShellAction.OnHangoutDetailPaneFullScreenChanged(it))
+                    },
                     unreadNotificationCount = state.unreadNotificationCount,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
@@ -146,7 +151,9 @@ fun MainShell() {
             MainShellNavHost(
                 navController = innerNavController,
                 paddingValues = paddingValues,
-                onDetailPaneFullScreenChange = { isDetailPaneFullScreen = it },
+                onHangoutDetailPaneFullScreenChanged = {
+                    onAction(MainShellAction.OnHangoutDetailPaneFullScreenChanged(it))
+                },
                 unreadNotificationCount = state.unreadNotificationCount,
                 modifier = Modifier.fillMaxSize()
             )
@@ -160,7 +167,7 @@ fun MainShell() {
 private fun MainShellNavHost(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    onDetailPaneFullScreenChange: (Boolean) -> Unit,
+    onHangoutDetailPaneFullScreenChanged: (Boolean) -> Unit,
     unreadNotificationCount: Int,
     modifier: Modifier = Modifier
 ) {
@@ -183,17 +190,16 @@ private fun MainShellNavHost(
         discoverGraph(
             navController = navController,
             mainShellPadding = paddingValues,
-            navigateToHangouts = { hangoutId ->
+            onNavigateToHangouts = { hangoutId ->
                 navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId)) {
                     popUpTo<HangoutsGraphRoutes.HangoutListDetail> { inclusive = true }
-                    launchSingleTop = true
                 }
             }
         )
         hangoutsGraph(
             navController = navController,
             mainShellPadding = paddingValues,
-            onDetailPaneFullScreenChange = onDetailPaneFullScreenChange,
+            onDetailPaneFullScreenChange = onHangoutDetailPaneFullScreenChanged,
             unreadNotificationCount = unreadNotificationCount
         )
         profileGraph(
