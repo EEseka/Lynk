@@ -1,7 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -12,9 +11,7 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.eeseka.lynk.hangouts.presentation.hangouts_list_detail.HangoutsListDetailAdaptiveLayout
 import com.eeseka.lynk.hangouts.presentation.hangouts_list_detail.HangoutsListDetailViewModel
-import com.eeseka.lynk.notifications.presentation.notifications.NotificationsAction
-import com.eeseka.lynk.notifications.presentation.notifications.NotificationsScreen
-import com.eeseka.lynk.notifications.presentation.notifications.NotificationsViewModel
+import com.eeseka.lynk.notifications.presentation.notifications.NotificationsRoot
 import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.hangoutsGraph(
@@ -55,21 +52,11 @@ fun NavGraphBuilder.hangoutsGraph(
             )
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<HangoutsGraphRoutes.Notifications>()
-            val viewModel = koinViewModel<NotificationsViewModel>()
-            val state by viewModel.state.collectAsStateWithLifecycle()
 
-            LaunchedEffect(route.previewHangoutId) {
-                route.previewHangoutId?.let { hangoutId ->
-                    viewModel.onAction(NotificationsAction.OnOpenInvitePreview(hangoutId))
-                }
-            }
-
-            NotificationsScreen(
-                state = state,
-                events = viewModel.events,
-                onAction = viewModel::onAction,
-                onNavigateBack = { navController.navigateUp() },
-                onNavigateToHangout = { hangoutId ->
+            NotificationsRoot(
+                previewHangoutId = route.previewHangoutId,
+                navigateBack = { navController.navigateUp() },
+                navigateToHangout = { hangoutId ->
                     navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId)) {
                         popUpTo<HangoutsGraphRoutes.HangoutListDetail> { inclusive = true }
                     }

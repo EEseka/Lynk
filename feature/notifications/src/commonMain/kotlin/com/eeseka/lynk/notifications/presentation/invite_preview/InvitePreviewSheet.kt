@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -17,9 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +26,7 @@ import com.composables.icons.lucide.CalendarClock
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Users
+import com.eeseka.lynk.notifications.presentation.invite_preview.components.InviteDetailRow
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
@@ -54,7 +54,6 @@ import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
-import kotlinx.coroutines.flow.Flow
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.notifications.generated.resources.Res
@@ -82,6 +81,8 @@ fun InvitePreviewRoot(
     onAccepted: (hangoutId: String) -> Unit,
     onAlreadyAnswered: (hangoutId: String) -> Unit
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     DialogSheetScopedViewModel(visible = visible) {
         val viewModel = koinViewModel<InvitePreviewViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
@@ -90,13 +91,38 @@ fun InvitePreviewRoot(
             hangoutId?.let { viewModel.onAction(InvitePreviewAction.Init(it)) }
         }
 
+        ObserveAsEvents(viewModel.events) { event ->
+            when (event) {
+                is InvitePreviewEvent.Error -> {
+                    snackbarHostState.showFlashMessage(
+                        message = event.message.asStringAsync(),
+                        type = LynkFlashType.Error
+                    )
+                    onDismiss()
+                }
+
+                is InvitePreviewEvent.Accepted -> {
+                    hapticFeedback(AppHaptic.Success)
+                    onAccepted(event.hangoutId)
+                }
+
+                is InvitePreviewEvent.AlreadyAnswered -> onAlreadyAnswered(event.hangoutId)
+
+                InvitePreviewEvent.InviteWithdrawn -> {
+                    snackbarHostState.showFlashMessage(
+                        message = getString(Res.string.invite_preview_withdrawn),
+                        type = LynkFlashType.Info
+                    )
+                    onDismiss()
+                }
+
+                InvitePreviewEvent.Dismissed -> onDismiss()
+            }
+        }
+
         InvitePreviewSheet(
             state = state,
-            events = viewModel.events,
             onAction = viewModel::onAction,
-            snackbarHostState = snackbarHostState,
-            onAccepted = onAccepted,
-            onAlreadyAnswered = onAlreadyAnswered,
             onDismissRequest = onDismiss
         )
     }
@@ -105,45 +131,10 @@ fun InvitePreviewRoot(
 @Composable
 fun InvitePreviewSheet(
     state: InvitePreviewState,
-    events: Flow<InvitePreviewEvent>,
     onAction: (InvitePreviewAction) -> Unit,
-    snackbarHostState: SnackbarHostState,
-    onAccepted: (hangoutId: String) -> Unit,
-    onAlreadyAnswered: (hangoutId: String) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val hapticFeedback = rememberAppHaptic()
-
-    ObserveAsEvents(events) { event ->
-        when (event) {
-            is InvitePreviewEvent.Error -> {
-                snackbarHostState.showFlashMessage(
-                    message = event.message.asStringAsync(),
-                    type = LynkFlashType.Error
-                )
-                onDismissRequest()
-            }
-
-            is InvitePreviewEvent.Accepted -> {
-                hapticFeedback(AppHaptic.Success)
-                onAccepted(event.hangoutId)
-            }
-
-            is InvitePreviewEvent.AlreadyAnswered -> onAlreadyAnswered(event.hangoutId)
-
-            InvitePreviewEvent.InviteWithdrawn -> {
-                snackbarHostState.showFlashMessage(
-                    message = getString(Res.string.invite_preview_withdrawn),
-                    type = LynkFlashType.Info
-                )
-                onDismissRequest()
-            }
-
-            InvitePreviewEvent.Dismissed -> onDismissRequest()
-        }
-    }
-
     LynkAdaptiveSheet(
         onDismissRequest = onDismissRequest,
         skipBottomSheetPartiallyExpanded = false
@@ -151,7 +142,7 @@ fun InvitePreviewSheet(
         InvitePreviewSheetContent(
             state = state,
             onAction = onAction,
-            modifier = modifier
+            modifier = modifier.weight(1f, fill = false)
         )
     }
 }
@@ -165,13 +156,7 @@ private fun InvitePreviewSheetContent(
     val hapticFeedback = rememberAppHaptic()
     val hangoutPreview = state.hangoutPreview
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         if (state.isLoading || hangoutPreview == null) {
             Box(
                 modifier = Modifier
@@ -185,95 +170,102 @@ private fun InvitePreviewSheetContent(
                 )
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                LynkText(
-                    text = stringResource(Res.string.invite_preview_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     LynkText(
-                        text = hangoutPreview.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-
-                    StatusChip(status = hangoutPreview.status)
-                }
-            }
-
-            hangoutPreview.description?.let { description ->
-                LynkText(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                DetailRow(
-                    icon = hangoutPreview.vibe.getIcon(),
-                    text = hangoutPreview.vibe.getTitle()
-                )
-
-                DetailRow(
-                    icon = Lucide.CalendarClock,
-                    text = hangoutPreview.scheduledAt.toHangoutDisplayDate()
-                )
-
-                val chosenSpot = hangoutPreview.chosenSpot
-                DetailRow(
-                    icon = Lucide.MapPin,
-                    text = chosenSpot?.name ?: stringResource(Res.string.invite_preview_spot_pending),
-                    supportingText = chosenSpot?.let { spot ->
-                        listOfNotNull(
-                            spot.category.getTitle(),
-                            spot.priceLevel?.let { getPriceLevelSymbol(it.tier) },
-                            spot.shortAddress
-                        ).joinToString(" • ")
-                    }
-                )
-
-                val maxAttendees = hangoutPreview.maxAttendees
-                DetailRow(
-                    icon = Lucide.Users,
-                    text = if (maxAttendees != null) {
-                        stringResource(
-                            Res.string.invite_preview_going_capped,
-                            hangoutPreview.participantCount,
-                            maxAttendees
-                        )
-                    } else {
-                        stringResource(Res.string.invite_preview_going, hangoutPreview.participantCount)
-                    }
-                )
-            }
-
-            if (hangoutPreview.attendees.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    LynkText(
-                        text = stringResource(Res.string.invite_preview_attendees),
+                        text = stringResource(Res.string.invite_preview_title),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    ParticipantStack(users = hangoutPreview.attendees)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        LynkText(
+                            text = hangoutPreview.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+
+                        StatusChip(status = hangoutPreview.status)
+                    }
+                }
+
+                hangoutPreview.description?.let { description ->
+                    LynkText(
+                        text = description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    InviteDetailRow(
+                        icon = hangoutPreview.vibe.getIcon(),
+                        text = hangoutPreview.vibe.getTitle()
+                    )
+
+                    InviteDetailRow(
+                        icon = Lucide.CalendarClock,
+                        text = hangoutPreview.scheduledAt.toHangoutDisplayDate()
+                    )
+
+                    val chosenSpot = hangoutPreview.chosenSpot
+                    InviteDetailRow(
+                        icon = Lucide.MapPin,
+                        text = chosenSpot?.name ?: stringResource(Res.string.invite_preview_spot_pending),
+                        supportingText = chosenSpot?.let { spot ->
+                            listOfNotNull(
+                                spot.category.getTitle(),
+                                spot.priceLevel?.let { getPriceLevelSymbol(it.tier) },
+                                spot.shortAddress
+                            ).joinToString(" • ")
+                        }
+                    )
+
+                    val maxAttendees = hangoutPreview.maxAttendees
+                    InviteDetailRow(
+                        icon = Lucide.Users,
+                        text = if (maxAttendees != null) {
+                            stringResource(
+                                Res.string.invite_preview_going_capped,
+                                hangoutPreview.participantCount,
+                                maxAttendees
+                            )
+                        } else {
+                            stringResource(Res.string.invite_preview_going, hangoutPreview.participantCount)
+                        }
+                    )
+                }
+
+                if (hangoutPreview.attendees.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LynkText(
+                            text = stringResource(Res.string.invite_preview_attendees),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        ParticipantStack(users = hangoutPreview.attendees)
+                    }
                 }
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 20.dp, bottom = 24.dp)
             ) {
                 val isResponding = state.respondingTo != null
 
@@ -293,7 +285,7 @@ private fun InvitePreviewSheetContent(
                 LynkButton(
                     text = stringResource(Res.string.invite_preview_accept),
                     onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
+                        hapticFeedback(AppHaptic.ImpactMedium)
                         onAction(InvitePreviewAction.OnAcceptClick)
                     },
                     style = LynkButtonStyle.PRIMARY,
@@ -301,47 +293,6 @@ private fun InvitePreviewSheetContent(
                     isLoading = state.respondingTo == RsvpStatus.ATTENDING,
                     loadingText = stringResource(Res.string.invite_preview_accepting),
                     modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DetailRow(
-    icon: ImageVector,
-    text: String,
-    supportingText: String? = null,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(20.dp)
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            LynkText(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            supportingText?.takeIf { it.isNotBlank() }?.let {
-                LynkText(
-                    text = it,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

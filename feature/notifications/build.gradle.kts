@@ -37,16 +37,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.icons.lucide.cmp)
-            implementation(libs.jetbrains.compose.material.icons.extended)
 
             implementation(libs.bundles.koin.common)
 
-            implementation(libs.jetbrains.compose.navigation)
-
             implementation(libs.compose.lottie.animations)
-
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
 
             implementation(libs.kotlinx.collections.immutable)
 

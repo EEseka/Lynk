@@ -18,7 +18,7 @@ fun LynkNavigationItem.toTitle(): UiText = when (this) {
     LynkNavigationItem.PROFILE -> UiText.Resource(Res.string.profile)
 }
 
-fun LynkNavigationItem.toIcon(): ImageVector = when (this) {
+fun LynkNavigationItem.getIcon(): ImageVector = when (this) {
     LynkNavigationItem.DISCOVER -> Lucide.Map
     LynkNavigationItem.HANGOUTS -> Lucide.CalendarRange
     LynkNavigationItem.PROFILE -> Lucide.CircleUser

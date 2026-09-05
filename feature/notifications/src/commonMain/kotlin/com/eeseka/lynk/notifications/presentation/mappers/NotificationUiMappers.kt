@@ -1,4 +1,4 @@
-package com.eeseka.lynk.notifications.presentation.util
+package com.eeseka.lynk.notifications.presentation.mappers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,8 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NotificationUi.toUiText(): UiText {
-    val someone = stringResource(Res.string.notification_someone)
-    val actor = actorDisplayName ?: someone
+    val actor = actorDisplayName ?: stringResource(Res.string.notification_someone)
     val amount = amountKobo?.toNairaString()
 
     return when (type) {

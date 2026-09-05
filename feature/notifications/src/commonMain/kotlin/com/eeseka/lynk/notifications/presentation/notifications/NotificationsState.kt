@@ -1,13 +1,15 @@
 package com.eeseka.lynk.notifications.presentation.notifications
 
-import androidx.compose.runtime.Stable
 import com.eeseka.lynk.shared.presentation.notification.model.NotificationUi
+import com.eeseka.lynk.shared.presentation.util.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
-@Stable
 data class NotificationsState(
-    val notifications: List<NotificationUi> = emptyList(),
+    val notifications: ImmutableList<NotificationUi> = persistentListOf(),
     val isLoading: Boolean = false,
     val isEndReached: Boolean = false,
     val isMarkingAllRead: Boolean = false,
-    val previewHangoutId: String? = null
+    val previewHangoutId: String? = null,
+    val loadError: UiText? = null
 )

@@ -11,6 +11,7 @@ sealed interface NotificationsAction {
 
     data class OnOpenInvitePreview(val hangoutId: String) : NotificationsAction
     data object OnMarkAllReadClick : NotificationsAction
+    data object OnRetryClick : NotificationsAction
     data object OnDismissInvitePreview : NotificationsAction
     data object LoadNextPage : NotificationsAction
 }

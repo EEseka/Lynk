@@ -29,8 +29,8 @@ class InvitePreviewViewModel(
     fun onAction(action: InvitePreviewAction) {
         when (action) {
             is InvitePreviewAction.Init -> loadPreview(action.hangoutId)
-            InvitePreviewAction.OnAcceptClick -> respond(RsvpStatus.ATTENDING)
-            InvitePreviewAction.OnDeclineClick -> respond(RsvpStatus.DECLINED)
+            InvitePreviewAction.OnAcceptClick -> submitRsvp(RsvpStatus.ATTENDING)
+            InvitePreviewAction.OnDeclineClick -> submitRsvp(RsvpStatus.DECLINED)
         }
     }
 
@@ -59,7 +59,7 @@ class InvitePreviewViewModel(
         }
     }
 
-    private fun respond(rsvpStatus: RsvpStatus) {
+    private fun submitRsvp(rsvpStatus: RsvpStatus) {
         val hangoutId = state.value.hangoutPreview?.id ?: return
 
         _state.update { it.copy(respondingTo = rsvpStatus) }

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.eeseka.lynk.main_shell.presentation.mappers.toIcon
+import com.eeseka.lynk.main_shell.presentation.mappers.getIcon
 import com.eeseka.lynk.main_shell.presentation.mappers.toSfSymbolName
 import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
@@ -51,7 +51,7 @@ fun LynkBottomBar(
                     onClick = { onItemSelected(item) },
                     icon = {
                         NavigationItemIcon(
-                            icon = item.toIcon(),
+                            icon = item.getIcon(),
                             hasUnread = hasUnseenNotifications && item == LynkNavigationItem.HANGOUTS
                         )
                     },

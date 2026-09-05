@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.main_shell.presentation.mappers.toIcon
+import com.eeseka.lynk.main_shell.presentation.mappers.getIcon
 import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -56,7 +56,7 @@ fun LynkNavigationRail(
                     onClick = { onItemSelected(item) },
                     icon = {
                         NavigationItemIcon(
-                            icon = item.toIcon(),
+                            icon = item.getIcon(),
                             hasUnread = hasUnseenNotifications && item == LynkNavigationItem.HANGOUTS
                         )
                     },

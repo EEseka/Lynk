@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -87,6 +88,16 @@ fun NotificationsEmptyState(modifier: Modifier = Modifier) {
 @PreviewLightDark
 @Composable
 private fun NotificationsEmptyStatePreview() {
+    LynkTheme {
+        NotificationsEmptyState(
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        )
+    }
+}
+
+@Preview(widthDp = 900, heightDp = 400)
+@Composable
+private fun NotificationsEmptyStateLandscapePreview() {
     LynkTheme {
         NotificationsEmptyState(
             modifier = Modifier.background(MaterialTheme.colorScheme.background)

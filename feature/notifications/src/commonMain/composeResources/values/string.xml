@@ -5,6 +5,8 @@
     <string name="mark_all_read">Mark all as read</string>
     <string name="unread">Unread</string>
 
+    <string name="notifications_load_error_title">Couldn't load notifications</string>
+
     <string name="notifications_empty_title">Nothing yet</string>
     <string name="notifications_empty_message">Invites, spot picks and payment updates for your hangouts will show up here.</string>
 

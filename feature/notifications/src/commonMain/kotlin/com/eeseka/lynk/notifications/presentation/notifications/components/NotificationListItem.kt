@@ -22,7 +22,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.notifications.presentation.util.getIcon
+import com.eeseka.lynk.notifications.presentation.mappers.getIcon
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText

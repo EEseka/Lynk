@@ -12,6 +12,7 @@ import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.notification.mappers.toNotificationUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,6 +58,7 @@ class NotificationsViewModel(
             )
             is NotificationsAction.OnOpenInvitePreview -> _state.update { it.copy(previewHangoutId = action.hangoutId) }
             NotificationsAction.OnMarkAllReadClick -> markAllAsRead()
+            NotificationsAction.OnRetryClick -> retryLoad()
             NotificationsAction.OnDismissInvitePreview -> _state.update { it.copy(previewHangoutId = null) }
             NotificationsAction.LoadNextPage -> loadNextPage()
         }
@@ -70,9 +72,7 @@ class NotificationsViewModel(
         val isAlreadyRead = state.value.notifications
             .any { it.id == notificationId && it.isRead }
 
-        if (!isAlreadyRead) {
-            markAsRead(notificationId)
-        }
+        if (!isAlreadyRead) markAsRead(notificationId)
 
         when (type) {
             NotificationType.PARTICIPANT_INVITED -> _state.update { it.copy(previewHangoutId = hangoutId) }
@@ -101,7 +101,7 @@ class NotificationsViewModel(
             currentState.copy(
                 notifications = currentState.notifications.map {
                     if (it.id == notificationId) it.copy(isRead = isRead) else it
-                }
+                }.toImmutableList()
             )
         }
     }
@@ -116,7 +116,9 @@ class NotificationsViewModel(
                     _state.update { currentState ->
                         currentState.copy(
                             isMarkingAllRead = false,
-                            notifications = currentState.notifications.map { it.copy(isRead = true) }
+                            notifications = currentState.notifications
+                                .map { it.copy(isRead = true) }
+                                .toImmutableList()
                         )
                     }
                 }
@@ -141,14 +143,21 @@ class NotificationsViewModel(
             },
             onError = { throwable ->
                 if (throwable is DataErrorException) {
-                    eventChannel.send(NotificationsEvent.Error(throwable.error.toUiText()))
+                    val message = throwable.error.toUiText()
+
+                    if (state.value.notifications.isEmpty()) {
+                        _state.update { it.copy(loadError = message) }
+                    } else {
+                        eventChannel.send(NotificationsEvent.Error(message))
+                    }
                 }
             },
             onSuccess = { newNotifications, _ ->
                 _state.update {
                     it.copy(
-                        notifications = it.notifications + newNotifications.map { notification -> notification.toNotificationUi() },
-                        isEndReached = newNotifications.isEmpty()
+                        notifications = (it.notifications + newNotifications.map { notification -> notification.toNotificationUi() }).toImmutableList(),
+                        isEndReached = newNotifications.isEmpty(),
+                        loadError = null
                     )
                 }
             }
@@ -159,5 +168,10 @@ class NotificationsViewModel(
         viewModelScope.launch {
             notificationsPaginator?.loadNextItems()
         }
+    }
+
+    private fun retryLoad() {
+        _state.update { it.copy(loadError = null) }
+        loadNextPage()
     }
 }
