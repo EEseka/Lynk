@@ -13,7 +13,6 @@ import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.am
 import lynk.shared.generated.resources.pm
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
@@ -44,9 +43,4 @@ fun Instant.toHangoutDisplayDate(): String {
     )
 
     return "$datePart${dateTime.date.yearSuffixIfNotCurrent()} · $timePart"
-}
-
-fun LocalDate.yearSuffixIfNotCurrent(): String {
-    val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
-    return if (year == currentYear) "" else " $year"
 }
