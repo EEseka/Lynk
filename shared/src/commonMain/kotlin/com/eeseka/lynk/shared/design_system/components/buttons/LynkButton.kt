@@ -156,14 +156,14 @@ private fun LynkButtonContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        if (isLoading || icon != null) {
-            AnimatedContent(
-                targetState = isLoading,
-                transitionSpec = {
-                    fadeIn() togetherWith fadeOut() using SizeTransform(clip = false)
-                },
-                label = "LynkButtonIconTransition"
-            ) { loading ->
+        AnimatedContent(
+            targetState = isLoading,
+            transitionSpec = {
+                fadeIn() togetherWith fadeOut() using SizeTransform(clip = false)
+            },
+            label = "LynkButtonIconTransition"
+        ) { loading ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 if (loading) {
                     LynkProgressIndicator(
                         modifier = Modifier.size(20.dp),
@@ -173,19 +173,27 @@ private fun LynkButtonContent(
                 } else {
                     icon?.invoke()
                 }
-            }
 
-            if (label.isNotEmpty()) {
-                Spacer(modifier = Modifier.width(8.dp))
+                if ((loading || icon != null) && label.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
             }
         }
 
-        LynkText(
-            text = label,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.titleMedium
-        )
+        AnimatedContent(
+            targetState = label,
+            transitionSpec = {
+                fadeIn() togetherWith fadeOut() using SizeTransform(clip = false)
+            },
+            label = "LynkButtonLabelTransition"
+        ) { animatedLabel ->
+            LynkText(
+                text = animatedLabel,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
     }
 }
 
