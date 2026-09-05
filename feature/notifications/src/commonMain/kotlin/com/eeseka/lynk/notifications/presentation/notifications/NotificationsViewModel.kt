@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.notification.NotificationService
 import com.eeseka.lynk.shared.domain.notification.model.Notification
+import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
 import com.eeseka.lynk.shared.domain.notification.model.NotificationType
 import com.eeseka.lynk.shared.domain.util.DataErrorException
 import com.eeseka.lynk.shared.domain.util.Paginator
@@ -21,7 +22,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class NotificationsViewModel(
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val unreadNotificationCounter: UnreadNotificationCounter
 ) : ViewModel() {
 
     private val eventChannel = Channel<NotificationsEvent>()
@@ -83,11 +85,13 @@ class NotificationsViewModel(
 
     private fun markAsRead(notificationId: String) {
         updateNotificationReadState(notificationId, isRead = true)
+        unreadNotificationCounter.decrement()
 
         viewModelScope.launch {
             notificationService.markAsRead(notificationId)
                 .onFailure {
                     updateNotificationReadState(notificationId, isRead = false)
+                    unreadNotificationCounter.refresh()
                 }
         }
     }
@@ -108,6 +112,7 @@ class NotificationsViewModel(
         viewModelScope.launch {
             notificationService.markAllAsRead()
                 .onSuccess {
+                    unreadNotificationCounter.clear()
                     _state.update { currentState ->
                         currentState.copy(
                             isMarkingAllRead = false,
