@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.shared.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,13 +24,13 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import lynk.feature.hangouts.generated.resources.Res
-import lynk.feature.hangouts.generated.resources.detail_load_error_title
-import lynk.feature.hangouts.generated.resources.detail_retry
+import lynk.shared.generated.resources.Res
+import lynk.shared.generated.resources.retry
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun DetailErrorState(
+fun LynkErrorState(
+    title: String,
     message: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
@@ -50,7 +50,7 @@ fun DetailErrorState(
             modifier = Modifier.size(36.dp)
         )
         LynkText(
-            text = stringResource(Res.string.detail_load_error_title),
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
@@ -64,7 +64,7 @@ fun DetailErrorState(
 
         Spacer(modifier = Modifier.height(12.dp))
         LynkButton(
-            text = stringResource(Res.string.detail_retry),
+            text = stringResource(Res.string.retry),
             onClick = onRetry,
             style = LynkButtonStyle.SECONDARY
         )
@@ -72,9 +72,10 @@ fun DetailErrorState(
 }
 
 @Composable
-private fun DetailErrorStatePreview(message: String) {
+private fun LynkErrorStatePreview(title: String, message: String) {
     LynkTheme {
-        DetailErrorState(
+        LynkErrorState(
+            title = title,
             message = message,
             onRetry = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surface)
@@ -84,9 +85,14 @@ private fun DetailErrorStatePreview(message: String) {
 
 @PreviewLightDark
 @Composable
-private fun DetailErrorStateDefaultPreview() =
-    DetailErrorStatePreview("Couldn't reach the server. Check your connection and try again.")
+private fun LynkErrorStateDefaultPreview() = LynkErrorStatePreview(
+    title = "Couldn't load this hangout",
+    message = "Couldn't reach the server. Check your connection and try again."
+)
 
 @PreviewLightDark
 @Composable
-private fun DetailErrorStateShortPreview() = DetailErrorStatePreview("Something went wrong.")
+private fun LynkErrorStateShortPreview() = LynkErrorStatePreview(
+    title = "Couldn't load notifications",
+    message = "Something went wrong."
+)

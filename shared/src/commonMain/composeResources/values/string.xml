@@ -6,6 +6,7 @@
     <string name="confirm_date">Confirm Date</string>
     <string name="confirm_time">Confirm Time</string>
     <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
 
     <string name="error_disk_full">Oops, it looks like your device storage is full.</string>
     <string name="error_not_found">We couldn't find the requested item.</string>

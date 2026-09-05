@@ -45,7 +45,6 @@
     <string name="detail_select_title">No hangout selected</string>
     <string name="detail_select_message">Pick a hangout to see the crew and the full plan.</string>
     <string name="detail_load_error_title">Couldn't load this hangout</string>
-    <string name="detail_retry">Retry</string>
     <string name="detail_about">About</string>
     <string name="detail_going">Going</string>
     <string name="detail_going_count">%1$d going</string>

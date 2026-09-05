@@ -56,7 +56,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.CollectPa
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ConnectionBanner
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DeadlineDecisionSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailEmptyState
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailErrorState
+import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHero
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
@@ -134,6 +134,7 @@ import lynk.feature.hangouts.generated.resources.detail_leave
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_action
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_title
+import lynk.feature.hangouts.generated.resources.detail_load_error_title
 import lynk.feature.hangouts.generated.resources.detail_more_actions
 import lynk.feature.hangouts.generated.resources.detail_update
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_message
@@ -515,7 +516,8 @@ fun HangoutDetailScreen(
                         }
 
                         is DetailBodyState.Error -> {
-                            DetailErrorState(
+                            LynkErrorState(
+                                title = stringResource(Res.string.detail_load_error_title),
                                 message = target.message.asString(),
                                 onRetry = { onAction(HangoutDetailAction.OnRetryClick) }
                             )
