@@ -28,6 +28,8 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.detail_online
@@ -37,10 +39,10 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ParticipantStack(
     users: ImmutableList<HangoutUserUi>,
-    presentUserIds: Set<String> = emptySet(),
+    modifier: Modifier = Modifier,
+    presentUserIds: ImmutableSet<String> = persistentSetOf(),
     maxVisible: Int = 5,
-    avatarSize: Dp = 40.dp,
-    modifier: Modifier = Modifier
+    avatarSize: Dp = 40.dp
 ) {
     val overlap = avatarSize / 3
     val visible = users.take(maxVisible)
@@ -84,9 +86,9 @@ fun ParticipantAvatar(
     displayName: String,
     initials: String,
     profilePictureUrl: String?,
+    modifier: Modifier = Modifier,
     isOnline: Boolean = false,
-    size: Dp = 40.dp,
-    modifier: Modifier = Modifier
+    size: Dp = 40.dp
 ) {
     val onlineLabel = stringResource(Res.string.detail_online)
     val description = if (isOnline) "$displayName · $onlineLabel" else displayName
@@ -163,7 +165,7 @@ private fun ParticipantStackPreview() {
                     profilePictureUrl = null
                 )
             }.toImmutableList(),
-            presentUserIds = setOf("0", "2", "3")
+            presentUserIds = persistentSetOf("0", "2", "3")
         )
     }
 }

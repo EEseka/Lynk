@@ -28,6 +28,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_going_count
@@ -69,7 +70,7 @@ fun ParticipantsSection(
         ) {
             ParticipantStack(
                 users = attending.map { it.user }.toImmutableList(),
-                presentUserIds = presentUserIds,
+                presentUserIds = presentUserIds.toImmutableSet(),
                 modifier = Modifier.weight(1f, fill = false)
             )
 

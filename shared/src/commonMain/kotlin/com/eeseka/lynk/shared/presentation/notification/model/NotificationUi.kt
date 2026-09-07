@@ -1,10 +1,10 @@
 package com.eeseka.lynk.shared.presentation.notification.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.domain.notification.model.NotificationType
 import kotlin.time.Instant
 
-@Stable
+@Immutable
 data class NotificationUi(
     val id: String,
     val type: NotificationType,

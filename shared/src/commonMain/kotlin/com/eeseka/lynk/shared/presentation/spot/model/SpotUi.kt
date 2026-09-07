@@ -1,9 +1,11 @@
 package com.eeseka.lynk.shared.presentation.spot.model
 
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import kotlinx.collections.immutable.ImmutableList
 
+@Immutable
 data class SpotUi(
     val id: String,
     val name: String,
