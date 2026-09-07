@@ -26,6 +26,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 @Composable
 fun LynkTextField(
     state: TextFieldState,
+    modifier: Modifier = Modifier,
     label: String? = null,
     placeholder: String? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -34,10 +35,10 @@ fun LynkTextField(
     errorMessage: String? = null,
     helperText: String? = null,
     singleLine: Boolean = true,
+    maxLines: Int = 5,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     inputTransformation: InputTransformation? = null,
-    outputTransformation: OutputTransformation? = null,
-    modifier: Modifier = Modifier
+    outputTransformation: OutputTransformation? = null
 ) {
     val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
@@ -53,7 +54,7 @@ fun LynkTextField(
         BasicTextField(
             state = state,
             enabled = enabled,
-            lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.Default,
+            lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines),
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
             ),

@@ -16,12 +16,8 @@
     <string name="osm_attribution">© OpenStreetMap Contributors</string>
     <string name="maptiler_attribution">© MapTiler</string>
 
-    <string name="km">km</string>
-    <string name="m">m</string>
-
     <string name="empty_search_title">No spots found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
-
 
     <string name="save_this_spot">save this spot</string>
     <string name="create_a_hangout">create a hangout</string>

@@ -42,14 +42,12 @@ import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
-import lynk.feature.hangouts.generated.resources.km
-import lynk.feature.hangouts.generated.resources.m
 import lynk.feature.hangouts.generated.resources.propose_proposed
 import lynk.feature.hangouts.generated.resources.propose_suggest_action
 import org.jetbrains.compose.resources.stringResource
@@ -70,20 +68,12 @@ fun SuggestSpotListItem(
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spot.photoUrls)
     }
 
-    val km = stringResource(Res.string.km)
-    val m = stringResource(Res.string.m)
-
-    val distanceString = remember(spot.latitude, spot.longitude, originLat, originLng) {
-        if (originLat != null && originLng != null) {
-            val meters = DistanceCalculator.calculateDistanceInMeters(
-                userLat = originLat,
-                userLng = originLng,
-                spotLat = spot.latitude,
-                spotLng = spot.longitude
-            )
-            if (meters > 1000) "${(meters / 1000.0).toInt()} $km" else "$meters $m"
-        } else null
-    }
+    val distanceString = rememberSpotDistanceLabel(
+        userLatitude = originLat,
+        userLongitude = originLng,
+        spotLatitude = spot.latitude,
+        spotLongitude = spot.longitude
+    )
 
     val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
 

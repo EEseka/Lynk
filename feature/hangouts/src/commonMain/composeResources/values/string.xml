@@ -215,8 +215,6 @@
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
-    <string name="km">km</string>
-    <string name="m">m</string>
 
     <string name="notifications">Notifications</string>
     <string name="notifications_with_unread">Notifications, %1$d unread</string>

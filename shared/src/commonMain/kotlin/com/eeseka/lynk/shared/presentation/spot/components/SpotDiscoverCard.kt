@@ -37,16 +37,12 @@ import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import lynk.shared.generated.resources.Res
-import lynk.shared.generated.resources.km
-import lynk.shared.generated.resources.m
-import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SpotDiscoverCard(
@@ -66,20 +62,12 @@ fun SpotDiscoverCard(
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spotPhotos)
     }
 
-    val km = stringResource(Res.string.km)
-    val m = stringResource(Res.string.m)
-
-    val distanceString = remember(spotLatitude, spotLongitude, userLat, userLng) {
-        if (userLat != null && userLng != null) {
-            val meters = DistanceCalculator.calculateDistanceInMeters(
-                userLat = userLat,
-                userLng = userLng,
-                spotLat = spotLatitude,
-                spotLng = spotLongitude
-            )
-            if (meters > 1000) "${(meters / 1000.0).toInt()} $km" else "$meters $m"
-        } else null
-    }
+    val distanceString = rememberSpotDistanceLabel(
+        userLatitude = userLat,
+        userLongitude = userLng,
+        spotLatitude = spotLatitude,
+        spotLongitude = spotLongitude
+    )
 
     val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
 
