@@ -7,25 +7,19 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalTestApi::class)
 class CreateHangoutRobot(private val composeTestRule: ComposeUiTest) {
 
     fun setContent(
         state: CreateHangoutState = CreateHangoutState(),
-        events: Flow<CreateHangoutEvent> = emptyFlow(),
         onAction: (CreateHangoutAction) -> Unit = {},
-        onSuccess: (String) -> Unit = {},
         onDismissRequest: () -> Unit = {}
     ) = apply {
         composeTestRule.setContent {
             CreateHangoutSheet(
                 state = state,
-                events = events,
                 onAction = onAction,
-                onSuccess = onSuccess,
                 onDismissRequest = onDismissRequest
             )
         }

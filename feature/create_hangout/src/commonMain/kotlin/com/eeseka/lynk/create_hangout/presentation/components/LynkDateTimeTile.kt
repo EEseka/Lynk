@@ -1,6 +1,7 @@
 package com.eeseka.lynk.create_hangout.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,17 +20,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.ChevronDown
 import com.composables.icons.lucide.Clock
 import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkTimePicker
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import lynk.feature.create_hangout.generated.resources.Res
+import lynk.feature.create_hangout.generated.resources.picker_collapsed
+import lynk.feature.create_hangout.generated.resources.picker_expanded
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LynkDateTimeTile(
@@ -45,11 +57,15 @@ fun LynkDateTimeTile(
 ) {
     val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
-    val containerColor =
-        if (isError) scheme.errorContainer.copy(alpha = 0.1f) else scheme.surfaceContainerHigh
+    val expandedLabel = stringResource(Res.string.picker_expanded)
+    val collapsedLabel = stringResource(Res.string.picker_collapsed)
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        label = "chevronRotation"
+    )
+    val containerColor = if (isError) scheme.errorContainer.copy(alpha = 0.1f) else scheme.surfaceContainerHigh
     val contentColor = scheme.onSurface
-    val valueTextColor =
-        if (value != null) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val valueTextColor = if (value != null) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.6f)
 
     Column(modifier = modifier) {
         Column(
@@ -66,7 +82,10 @@ fun LynkDateTimeTile(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onClick)
+                    .clickable(role = Role.Button, onClick = onClick)
+                    .semantics {
+                        stateDescription = if (isExpanded) expandedLabel else collapsedLabel
+                    }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -92,6 +111,17 @@ fun LynkDateTimeTile(
                         color = valueTextColor
                     )
                 }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Icon(
+                    imageVector = Lucide.ChevronDown,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .graphicsLayer { rotationZ = chevronRotation }
+                )
             }
 
             AnimatedVisibility(
@@ -118,38 +148,41 @@ fun LynkDateTimeTile(
     }
 }
 
-@PreviewLightDark
 @Composable
-private fun LynkDateTimeTilePreview() {
+private fun LynkDateTimeTilePreview(
+    value: String? = "20:00",
+    errorMessage: String? = null,
+    isExpanded: Boolean = false
+) {
     LynkTheme {
         LynkDateTimeTile(
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
             title = "Time",
-            value = "20:00",
+            value = value,
             placeholder = "Select Time",
             icon = Lucide.Clock,
-            errorMessage = null,
-            isExpanded = false,
+            errorMessage = errorMessage,
+            isExpanded = isExpanded,
             onClick = {},
-            pickerContent = {}
+            pickerContent = { LynkTimePicker(onTimeSelected = { _, _ -> }) }
         )
     }
 }
 
 @PreviewLightDark
 @Composable
-private fun LynkDateTimeTileErrorPreview() {
-    LynkTheme {
-        LynkDateTimeTile(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
-            title = "Time",
-            value = "20:00",
-            placeholder = "Select Time",
-            icon = Lucide.Clock,
-            errorMessage = "Please Select a Time",
-            isExpanded = false,
-            onClick = {},
-            pickerContent = {}
-        )
-    }
-}
+private fun LynkDateTimeTileCollapsedPreview() = LynkDateTimeTilePreview()
+
+@PreviewLightDark
+@Composable
+private fun LynkDateTimeTileExpandedPreview() = LynkDateTimeTilePreview(isExpanded = true)
+
+@PreviewLightDark
+@Composable
+private fun LynkDateTimeTileEmptyPreview() = LynkDateTimeTilePreview(value = null)
+
+@PreviewLightDark
+@Composable
+private fun LynkDateTimeTileErrorPreview() = LynkDateTimeTilePreview(
+    errorMessage = "Please select a time"
+)

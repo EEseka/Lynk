@@ -58,16 +58,11 @@ fun LynkStepIndicator(
                 label = "dotBackgroundColor_$step"
             )
 
-            // Animate text color
-            val dotTextColor by animateColorAsState(
-                targetValue = when {
-                    isDone -> MaterialTheme.colorScheme.onPrimary
-                    isCurrent -> MaterialTheme.colorScheme.onSecondary
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                animationSpec = tween(durationMillis = 300),
-                label = "dotTextColor_$step"
-            )
+            val dotTextColor = when {
+                isDone -> MaterialTheme.colorScheme.onPrimary
+                isCurrent -> MaterialTheme.colorScheme.onSecondary
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
 
             // Step Dot
             Box(

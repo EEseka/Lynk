@@ -28,22 +28,19 @@ import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
-import lynk.feature.create_hangout.generated.resources.Res
-import lynk.feature.create_hangout.generated.resources.km
-import lynk.feature.create_hangout.generated.resources.m
-import org.jetbrains.compose.resources.stringResource
+import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SpotPickerListItem(
     spotName: String,
-    spotPhotos: List<String>,
+    spotPhotos: ImmutableList<String>,
     spotLatitude: Double,
     spotLongitude: Double,
     spotCategory: SpotCategory,
@@ -57,20 +54,12 @@ fun SpotPickerListItem(
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spotPhotos)
     }
 
-    val km = stringResource(Res.string.km)
-    val m = stringResource(Res.string.m)
-
-    val distanceString = remember(spotLatitude, spotLongitude, userLat, userLng) {
-        if (userLat != null && userLng != null) {
-            val meters = DistanceCalculator.calculateDistanceInMeters(
-                userLat = userLat,
-                userLng = userLng,
-                spotLat = spotLatitude,
-                spotLng = spotLongitude
-            )
-            if (meters > 1000) "${(meters / 1000.0).toInt()} $km" else "$meters $m"
-        } else null
-    }
+    val distanceString = rememberSpotDistanceLabel(
+        userLatitude = userLat,
+        userLongitude = userLng,
+        spotLatitude = spotLatitude,
+        spotLongitude = spotLongitude
+    )
 
     val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
 
@@ -94,7 +83,7 @@ fun SpotPickerListItem(
                 if (imageRequest != null) {
                     AsyncImage(
                         model = imageRequest,
-                        contentDescription = spotName,
+                        contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -155,11 +144,11 @@ fun SpotPickerListItem(
 
 @PreviewLightDark
 @Composable
-fun SpotPickerListItemPreview() {
-    LynkTheme { 
+private fun SpotPickerListItemPreview() {
+    LynkTheme {
         SpotPickerListItem(
             spotName = "Mega Chicken Substation",
-            spotPhotos = listOf("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"),
+            spotPhotos = persistentListOf("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"),
             spotLatitude = 6.443,
             spotLongitude = 2.455,
             spotCategory = SpotCategory.RESTAURANT,

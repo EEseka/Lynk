@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -31,7 +28,7 @@ import com.composables.icons.lucide.Clock
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
-import com.eeseka.lynk.create_hangout.presentation.CreateHangoutState
+import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePicker
 import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkTimePicker
@@ -39,7 +36,6 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
-import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -48,11 +44,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.util.UiText
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.date
 import lynk.feature.create_hangout.generated.resources.decrease_max_people
@@ -69,23 +61,33 @@ import lynk.feature.create_hangout.generated.resources.time
 import lynk.feature.create_hangout.generated.resources.unlimited
 import lynk.feature.create_hangout.generated.resources.vibe
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
-
-private enum class PickerType { DATE, TIME }
 
 @Composable
 fun CreateHangoutStepOne(
-    state: CreateHangoutState,
+    nameState: TextFieldState,
+    nameErrorMessage: String?,
+    descriptionState: TextFieldState,
+    descriptionErrorMessage: String?,
+    vibe: HangoutVibe,
+    dateValue: String?,
+    dateMillis: Long?,
+    dateErrorMessage: String?,
+    timeValue: String?,
+    timeHour: Int?,
+    timeMinute: Int?,
+    timeErrorMessage: String?,
+    expandedPicker: PickerType?,
+    maxAttendees: Int?,
     onVibeSelected: (HangoutVibe) -> Unit,
-    onDateSelected: (LocalDate) -> Unit,
-    onTimeSelected: (LocalTime) -> Unit,
+    onPickerToggled: (PickerType) -> Unit,
+    onDateSelected: (epochMilliseconds: Long?) -> Unit,
+    onTimeSelected: (hour: Int, minute: Int) -> Unit,
     onIncrementAttendees: () -> Unit,
     onDecrementAttendees: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val hapticFeedback = rememberAppHaptic()
     val scrollState = rememberScrollState()
-    var expandedPicker by remember { mutableStateOf<PickerType?>(null) }
 
     Column(
         modifier = modifier
@@ -96,10 +98,10 @@ fun CreateHangoutStepOne(
         Spacer(modifier = Modifier.height(8.dp))
 
         LynkTextField(
-            state = state.hangoutNameTextState,
+            state = nameState,
             label = stringResource(Res.string.hangout_name),
             placeholder = stringResource(Res.string.hangout_name_placeholder),
-            errorMessage = state.hangoutNameError?.asString(),
+            errorMessage = nameErrorMessage,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next
@@ -109,11 +111,11 @@ fun CreateHangoutStepOne(
         Spacer(modifier = Modifier.height(16.dp))
 
         LynkTextField(
-            state = state.hangoutDescriptionTextState,
+            state = descriptionState,
             label = stringResource(Res.string.hangout_description),
             placeholder = stringResource(Res.string.hangout_description_placeholder),
             singleLine = false,
-            errorMessage = state.hangoutDescriptionError?.asString(),
+            errorMessage = descriptionErrorMessage,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 imeAction = ImeAction.Done
@@ -135,7 +137,7 @@ fun CreateHangoutStepOne(
             items = vibes.map {
                 LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
             }.toImmutableList(),
-            selectedIndex = vibes.indexOf(state.hangoutVibe),
+            selectedIndex = vibes.indexOf(vibe),
             onItemSelected = {
                 hapticFeedback(AppHaptic.Selection)
                 onVibeSelected(vibes[it])
@@ -148,25 +150,19 @@ fun CreateHangoutStepOne(
 
         LynkDateTimeTile(
             title = stringResource(Res.string.date),
-            value = state.hangoutDate?.toString(),
+            value = dateValue,
             placeholder = stringResource(Res.string.pick_date),
             icon = Lucide.Calendar,
-            errorMessage = state.hangoutDateError?.asString(),
+            errorMessage = dateErrorMessage,
             isExpanded = expandedPicker == PickerType.DATE,
             onClick = {
                 hapticFeedback(AppHaptic.ImpactLight)
-                expandedPicker = if (expandedPicker == PickerType.DATE) null else PickerType.DATE
+                onPickerToggled(PickerType.DATE)
             },
             pickerContent = {
                 LynkDatePicker(
-                    onDateSelected = { millis ->
-                        if (millis != null) {
-                            val date = Instant.fromEpochMilliseconds(millis)
-                                .toLocalDateTime(TimeZone.UTC).date
-                            onDateSelected(date)
-                        }
-                        expandedPicker = null
-                    }
+                    onDateSelected = onDateSelected,
+                    initialSelectedDateMillis = dateMillis
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -176,21 +172,20 @@ fun CreateHangoutStepOne(
 
         LynkDateTimeTile(
             title = stringResource(Res.string.time),
-            value = state.hangoutTime?.toString(),
+            value = timeValue,
             placeholder = stringResource(Res.string.pick_time),
             icon = Lucide.Clock,
-            errorMessage = state.hangoutTimeError?.asString(),
+            errorMessage = timeErrorMessage,
             isExpanded = expandedPicker == PickerType.TIME,
             onClick = {
                 hapticFeedback(AppHaptic.ImpactLight)
-                expandedPicker = if (expandedPicker == PickerType.TIME) null else PickerType.TIME
+                onPickerToggled(PickerType.TIME)
             },
             pickerContent = {
                 LynkTimePicker(
-                    onTimeSelected = { hour, minute ->
-                        onTimeSelected(LocalTime(hour, minute))
-                        expandedPicker = null
-                    }
+                    onTimeSelected = onTimeSelected,
+                    initialHour = timeHour,
+                    initialMinute = timeMinute
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -212,7 +207,7 @@ fun CreateHangoutStepOne(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 LynkText(
-                    text = state.maxAttendees?.let { "$it $people" }
+                    text = maxAttendees?.let { "$it $people" }
                         ?: stringResource(Res.string.unlimited),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
@@ -228,7 +223,7 @@ fun CreateHangoutStepOne(
                         hapticFeedback(AppHaptic.Selection)
                         onDecrementAttendees()
                     },
-                    enabled = state.maxAttendees != null
+                    enabled = maxAttendees != null
                 ) {
                     Icon(
                         imageVector = Lucide.Minus,
@@ -241,7 +236,7 @@ fun CreateHangoutStepOne(
                         hapticFeedback(AppHaptic.Selection)
                         onIncrementAttendees()
                     },
-                    enabled = state.maxAttendees == null || state.maxAttendees < MAX_ATTENDEES
+                    enabled = maxAttendees == null || maxAttendees < MAX_ATTENDEES
                 ) {
                     Icon(
                         imageVector = Lucide.Plus,
@@ -251,24 +246,37 @@ fun CreateHangoutStepOne(
             }
         }
 
-        Spacer(modifier = Modifier.height(120.dp))
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
-@PreviewLightDark
 @Composable
-private fun CreateHangoutStepOnePreview() {
+private fun CreateHangoutStepOnePreview(
+    nameErrorMessage: String? = null,
+    dateErrorMessage: String? = null,
+    timeErrorMessage: String? = null,
+    maxAttendees: Int? = 8
+) {
     LynkTheme {
         CreateHangoutStepOne(
-            state = CreateHangoutState(
-                hangoutVibe = HangoutVibe.CHILL,
-                hangoutDate = LocalDate(2026, 5, 20),
-                hangoutTime = LocalTime(20, 0),
-                maxAttendees = null
-            ),
+            nameState = TextFieldState("Suya Night 🔥"),
+            nameErrorMessage = nameErrorMessage,
+            descriptionState = TextFieldState("Friday night chills with the guys."),
+            descriptionErrorMessage = null,
+            vibe = HangoutVibe.CHILL,
+            dateValue = "2026-05-20",
+            dateMillis = null,
+            dateErrorMessage = dateErrorMessage,
+            timeValue = "20:00",
+            timeHour = 20,
+            timeMinute = 0,
+            timeErrorMessage = timeErrorMessage,
+            expandedPicker = null,
+            maxAttendees = maxAttendees,
             onVibeSelected = {},
+            onPickerToggled = {},
             onDateSelected = {},
-            onTimeSelected = {},
+            onTimeSelected = { _, _ -> },
             onIncrementAttendees = {},
             onDecrementAttendees = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -278,21 +286,13 @@ private fun CreateHangoutStepOnePreview() {
 
 @PreviewLightDark
 @Composable
-private fun CreateHangoutStepOneErrorPreview() {
-    LynkTheme {
-        CreateHangoutStepOne(
-            state = CreateHangoutState(
-                hangoutNameError = UiText.DynamicString("Hangout name cannot be blank"),
-                hangoutDateError = UiText.DynamicString("Please select a date"),
-                hangoutTimeError = UiText.DynamicString("Please select a time"),
-                maxAttendees = 6
-            ),
-            onVibeSelected = {},
-            onDateSelected = {},
-            onTimeSelected = {},
-            onIncrementAttendees = {},
-            onDecrementAttendees = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
-        )
-    }
-}
+private fun CreateHangoutStepOneFilledPreview() = CreateHangoutStepOnePreview()
+
+@PreviewLightDark
+@Composable
+private fun CreateHangoutStepOneErrorPreview() = CreateHangoutStepOnePreview(
+    nameErrorMessage = "Hangout name cannot be blank",
+    dateErrorMessage = "Please select a date",
+    timeErrorMessage = "Please select a time",
+    maxAttendees = null
+)

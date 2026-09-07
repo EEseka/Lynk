@@ -4,6 +4,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
@@ -72,6 +73,9 @@ class FakeHangoutService : HangoutService {
         vibe: HangoutVibe?,
         before: String?
     ): Result<List<HangoutSummary>, DataError.Remote> = Result.Failure(DataError.Remote.SERVER_ERROR)
+
+    override suspend fun getMyStats(): Result<HangoutStats, DataError.Remote> =
+        Result.Failure(DataError.Remote.SERVER_ERROR)
 
     override suspend fun cancelHangout(hangoutId: String): EmptyResult<DataError.Remote> =
         Result.Failure(DataError.Remote.SERVER_ERROR)
