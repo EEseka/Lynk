@@ -2,17 +2,18 @@ package com.eeseka.lynk.discover.presentation.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -22,65 +23,102 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
+import org.maplibre.compose.camera.CameraState
+import org.maplibre.compose.expressions.dsl.asString
+import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.eq
+import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.overlay.MapOverlayScope
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.util.ClickResult
+import org.maplibre.compose.util.MapClickHandler
+import org.maplibre.spatialk.geojson.Position
+
+private const val SELECTED_PIN_SCALE = 1.35f
+private val BOB_TRAVEL = (-12).dp
+
+private val PIN_WIDTH = 36.dp
+private val PIN_HEIGHT = 48.dp
+
+// No spot id is ever blank, so this stands in for "nothing selected" in the filter expression.
+private const val NO_SELECTION_ID = ""
+
+private val SPOT_LAYER_IDS: Set<String> = SpotCategory.entries.map { it.layerId() }.toSet()
+
+@Composable
+fun rememberSpotMapClickHandler(
+    cameraState: CameraState,
+    onSpotClick: (String) -> Unit
+): MapClickHandler {
+    val scope = rememberCoroutineScope()
+
+    return remember(cameraState, onSpotClick) {
+        { _, offset ->
+            scope.launch {
+                val features = cameraState.queryRenderedFeatures(
+                    offset = offset,
+                    layerIds = SPOT_LAYER_IDS
+                )
+                features.firstNotNullOfOrNull { feature ->
+                    (feature.properties?.get("id") as? JsonPrimitive)?.content
+                }?.let(onSpotClick)
+            }
+            ClickResult.Consume
+        }
+    }
+}
 
 @Composable
 fun SpotLocationMapMarker(
-    spots: List<SpotUi>,
-    selectedSpotId: String?,
-    onSpotClick: (String) -> Unit
+    spots: ImmutableList<SpotUi>,
+    selectedSpotId: String?
 ) {
-    val unselectedSpots = spots.filter { it.id != selectedSpotId }
-    val selectedSpot = spots.find { it.id == selectedSpotId }
+    val geoJsonByCategory = remember(spots) {
+        SpotCategory.entries.associateWith { category ->
+            spots.filter { it.category == category }.toFeatureCollectionJson()
+        }
+    }
 
-    RenderSpotLayers(
-        spots = unselectedSpots,
-        layerPrefix = "unselected",
-        scale = 1f,
-        offsetY = 0f,
-        onSpotClick = onSpotClick
-    )
+    val selectedCategory = remember(spots, selectedSpotId) {
+        spots.find { it.id == selectedSpotId }?.category
+    }
 
-    if (selectedSpot != null) {
-        AnimatedSelectedSpotLayer(
-            spot = selectedSpot,
-            onSpotClick = onSpotClick
+    SpotCategory.entries.forEach { category ->
+        SpotCategoryLayer(
+            category = category,
+            geoJson = geoJsonByCategory.getValue(category),
+            selectedSpotId = selectedSpotId.takeIf { category == selectedCategory }
         )
     }
 }
 
 @Composable
-private fun AnimatedSelectedSpotLayer(
-    spot: SpotUi,
-    onSpotClick: (String) -> Unit
-) {
-    val animatedScale by animateFloatAsState(
-        targetValue = 1.35f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "spot_scale"
-    )
+fun MapOverlayScope.SelectedSpotPinOverlay(spot: SpotUi?) {
+    if (spot == null) return
 
-    val infiniteTransition = rememberInfiniteTransition(label = "spot_bob")
-    val bobOffsetY by infiniteTransition.animateFloat(
+    val painter = rememberCategoryPinPainter(spot.category)
+
+    val transition = rememberInfiniteTransition(label = "spot_bob")
+    val bobFraction = transition.animateFloat(
         initialValue = 0f,
-        targetValue = -12f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -88,55 +126,46 @@ private fun AnimatedSelectedSpotLayer(
         label = "spot_bob_y"
     )
 
-    RenderSpotLayers(
-        spots = listOf(spot),
-        layerPrefix = "selected",
-        scale = animatedScale,
-        offsetY = bobOffsetY,
-        onSpotClick = onSpotClick
+    Image(
+        painter = painter,
+        contentDescription = null,
+        modifier = Modifier
+            .placedAt(
+                position = Position(longitude = spot.longitude, latitude = spot.latitude),
+                alignment = Alignment.BottomCenter
+            )
+            .size(
+                width = PIN_WIDTH * SELECTED_PIN_SCALE,
+                height = PIN_HEIGHT * SELECTED_PIN_SCALE
+            )
+            .graphicsLayer {
+                translationY = BOB_TRAVEL.toPx() * bobFraction.value
+            }
     )
 }
 
 @Composable
-private fun RenderSpotLayers(
-    spots: List<SpotUi>,
-    layerPrefix: String,
-    scale: Float,
-    offsetY: Float,
-    onSpotClick: (String) -> Unit
+private fun SpotCategoryLayer(
+    category: SpotCategory,
+    geoJson: String,
+    selectedSpotId: String?
 ) {
-    SpotCategory.entries.forEach { category ->
-        val matchingSpots = spots.filter { it.category == category }
+    val source = rememberGeoJsonSource(data = GeoJsonData.JsonString(geoJson))
+    val pinPainter = rememberCategoryPinPainter(category)
 
-        if (matchingSpots.isNotEmpty()) {
-            val spotsGeoJson = remember(matchingSpots) {
-                val features = matchingSpots.joinToString(",") { spot ->
-                    """{ "type": "Feature", "geometry": { "type": "Point", "coordinates": [${spot.longitude}, ${spot.latitude}] }, "properties": { "id": "${spot.id}" } }"""
-                }
-                """{ "type": "FeatureCollection", "features": [$features] }"""
-            }
+    val isSelected = feature["id"].asString() eq const(selectedSpotId ?: NO_SELECTION_ID)
 
-            val source = rememberGeoJsonSource(data = GeoJsonData.JsonString(spotsGeoJson))
-            val pinPainter = rememberCategoryPinPainter(category)
-
-            SymbolLayer(
-                id = "spots-$layerPrefix-${category.name.lowercase()}",
-                source = source,
-                iconImage = image(pinPainter),
-                iconAnchor = const(SymbolAnchor.Bottom),
-                iconAllowOverlap = const(true),
-                iconSize = const(scale),
-                iconOffset = const(DpOffset(0.dp, offsetY.dp)),
-                onClick = { features ->
-                    val clickedFeature = features.firstOrNull()
-                    val clickedSpotId =
-                        clickedFeature?.properties?.get("id")?.toString()?.replace("\"", "")
-                    if (clickedSpotId != null) onSpotClick(clickedSpotId)
-                    ClickResult.Consume
-                }
-            )
-        }
-    }
+    SymbolLayer(
+        id = category.layerId(),
+        source = source,
+        iconImage = image(pinPainter),
+        iconAnchor = const(SymbolAnchor.Bottom),
+        iconAllowOverlap = const(true),
+        iconOpacity = switch(
+            condition(isSelected, const(0f)),
+            fallback = const(1f)
+        )
+    )
 }
 
 @Composable
@@ -148,10 +177,10 @@ private fun rememberCategoryPinPainter(category: SpotCategory): Painter {
 
     val density = LocalDensity.current
 
-    return remember(category, coreColor, surfaceColor, outlineColor, iconPainter, density) {
+    return remember(category, surfaceColor, outlineColor, density) {
         object : Painter() {
-            val widthPx = with(density) { 36.dp.toPx() }
-            val heightPx = with(density) { 48.dp.toPx() }
+            val widthPx = with(density) { PIN_WIDTH.toPx() }
+            val heightPx = with(density) { PIN_HEIGHT.toPx() }
             val strokePx = with(density) { 2.dp.toPx() }
 
             override val intrinsicSize: Size = Size(widthPx, heightPx)
@@ -197,4 +226,13 @@ private fun getCategoryPinColor(category: SpotCategory): Color {
         SpotCategory.ACTIVITY -> Color(0xFF10B981)
         SpotCategory.OTHER -> Color(0xFF64748B)
     }
+}
+
+private fun SpotCategory.layerId(): String = "spots-${name.lowercase()}"
+
+private fun List<SpotUi>.toFeatureCollectionJson(): String {
+    val features = joinToString(",") { spot ->
+        """{ "type": "Feature", "geometry": { "type": "Point", "coordinates": [${spot.longitude}, ${spot.latitude}] }, "properties": { "id": "${spot.id}" } }"""
+    }
+    return """{ "type": "FeatureCollection", "features": [$features] }"""
 }

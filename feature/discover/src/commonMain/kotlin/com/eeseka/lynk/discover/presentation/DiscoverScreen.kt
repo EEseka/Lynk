@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
@@ -35,21 +35,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
-import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
+import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
+import com.eeseka.lynk.discover.presentation.components.rememberSpotMapClickHandler
+import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
-import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
@@ -59,12 +63,15 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
+import com.eeseka.lynk.shared.presentation.components.LynkErrorState
+import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
-import kotlinx.coroutines.flow.Flow
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
 import lynk.feature.discover.generated.resources.create_a_hangout
@@ -76,10 +83,14 @@ import lynk.feature.discover.generated.resources.map_data_label
 import lynk.feature.discover.generated.resources.maptiler_attribution
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
+import lynk.feature.discover.generated.resources.open_spot_search
 import lynk.feature.discover.generated.resources.osm_attribution
 import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
+import lynk.feature.discover.generated.resources.show_map_attribution
+import lynk.feature.discover.generated.resources.trending_load_error_title
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.overlay.CompassButtonStyle
@@ -99,31 +110,15 @@ private const val OSM_COPYRIGHT_LINK = "https://www.openstreetmap.org/copyright"
 private const val MAPTILER_COPYRIGHT_LINK = "https://www.maptiler.com/copyright"
 
 @Composable
-fun DiscoverScreen(
-    state: DiscoverState,
-    events: Flow<DiscoverEvent>,
-    onAction: (DiscoverAction) -> Unit,
+fun DiscoverRoot(
     navigateToHangouts: (String) -> Unit,
-    mainShellPadding: PaddingValues
+    mainShellPadding: PaddingValues,
+    viewModel: DiscoverViewModel = koinViewModel()
 ) {
-    val permissionController = rememberPermissionController()
-    val locationController = rememberLocationController()
-    val cameraState = rememberCameraState()
-    var userPosition by remember { mutableStateOf<Position?>(null) }
-
-    val scope = rememberCoroutineScope()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val hapticFeedback = rememberAppHaptic()
-    val uriHandler = LocalUriHandler.current
 
-    var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
-
-    var showSettingsDialog by remember { mutableStateOf(false) }
-    var showAttributionMenu by remember { mutableStateOf(false) }
-
-    val locationFetchError = stringResource(Res.string.location_fetch_error)
-
-    ObserveAsEvents(events) { event ->
+    ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is DiscoverEvent.Error -> {
                 snackbarHostState.showFlashMessage(
@@ -134,6 +129,38 @@ fun DiscoverScreen(
         }
     }
 
+    DiscoverScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        snackbarHostState = snackbarHostState,
+        navigateToHangouts = navigateToHangouts,
+        mainShellPadding = mainShellPadding
+    )
+}
+
+@Composable
+fun DiscoverScreen(
+    state: DiscoverState,
+    onAction: (DiscoverAction) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    navigateToHangouts: (String) -> Unit,
+    mainShellPadding: PaddingValues
+) {
+    val permissionController = rememberPermissionController()
+    val locationController = rememberLocationController()
+    val cameraState = rememberCameraState()
+
+    val scope = rememberCoroutineScope()
+    val hapticFeedback = rememberAppHaptic()
+    val uriHandler = LocalUriHandler.current
+
+    var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
+
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showAttributionMenu by remember { mutableStateOf(false) }
+
+    val locationFetchError = stringResource(Res.string.location_fetch_error)
+
     val fetchCurrentLocationAndShowOnMap: suspend () -> Unit = {
         val coordinate = locationController.getCurrentLocation()
         if (coordinate == null) {
@@ -142,17 +169,14 @@ fun DiscoverScreen(
                 type = LynkFlashType.Error
             )
         } else {
-            val position = Position(
-                latitude = coordinate.latitude,
-                longitude = coordinate.longitude
-            )
-            userPosition = position
-
             onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
             cameraState.animateTo(
                 finalPosition = cameraState.position.copy(
-                    target = position,
+                    target = Position(
+                        latitude = coordinate.latitude,
+                        longitude = coordinate.longitude
+                    ),
                     zoom = 14.0
                 )
             )
@@ -183,7 +207,33 @@ fun DiscoverScreen(
 
     val mapStyle = if (isDark) MAP_STYLE_URI_DARK else MAP_STYLE_URI_LIGHT
 
-    val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }
+    val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
+
+    val selectedSpot = state.selectedSpotId?.let { selectedId ->
+        state.searchResults.find { it.id == selectedId }
+            ?: state.trendingSpots.find { it.id == selectedId }
+    }
+
+    val hangoutCreationSpot = state.hangoutCreationSpotId?.let { hangoutSpotId ->
+        state.searchResults.find { it.id == hangoutSpotId }
+            ?: state.trendingSpots.find { it.id == hangoutSpotId }
+    }
+
+    val showTrendingError = state.trendingError != null &&
+            state.trendingSpots.isEmpty() &&
+            !state.isTrendingLoading
+
+    val userLatitude = state.userLatitude
+    val userLongitude = state.userLongitude
+
+    val isSearchActive = state.searchTextState.text.isNotBlank() ||
+            state.selectedCategory != null ||
+            state.selectedPriceLevel != null
+
+    val onSpotPinClick = rememberSpotMapClickHandler(cameraState) { spotId ->
+        hapticFeedback(AppHaptic.ImpactLight)
+        onAction(DiscoverAction.OnSpotSelected(spotId))
+    }
 
     LynkScaffold(
         snackbarHostState = snackbarHostState,
@@ -196,6 +246,7 @@ fun DiscoverScreen(
                 cameraState = cameraState,
                 zoomRange = 2f..20f,
                 pitchRange = 0f..60f,
+                onMapClick = onSpotPinClick,
                 contentWindowInsets = WindowInsets(
                     top = scaffoldPadding.calculateTopPadding() + 72.dp,
                     left = 8.dp,
@@ -225,22 +276,21 @@ fun DiscoverScreen(
                         ),
                         modifier = Modifier.align(Alignment.TopEnd)
                     )
+
+                    if (userLatitude != null && userLongitude != null) {
+                        UserLocationMapMarker(
+                            userLatitude = userLatitude,
+                            userLongitude = userLongitude,
+                            pulseKey = state.locationFetchEpoch
+                        )
+                    }
+
+                    SelectedSpotPinOverlay(spot = selectedSpot)
                 }
             ) {
-                userPosition?.let { position ->
-                    UserLocationMapMarker(
-                        userLatitude = position.latitude,
-                        userLongitude = position.longitude
-                    )
-                }
-
                 SpotLocationMapMarker(
                     spots = spotsToShow,
-                    selectedSpotId = state.selectedSpotId,
-                    onSpotClick = { spotId ->
-                        hapticFeedback(AppHaptic.Selection)
-                        onAction(DiscoverAction.OnSpotSelected(spotId))
-                    }
+                    selectedSpotId = state.selectedSpotId
                 )
             }
 
@@ -255,7 +305,9 @@ fun DiscoverScreen(
                 LynkSearchField(
                     state = state.searchTextState,
                     placeholder = stringResource(Res.string.search_spots_hint),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clearAndSetSemantics { }
                 )
 
                 Box(
@@ -264,7 +316,12 @@ fun DiscoverScreen(
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = { onAction(DiscoverAction.ToggleShowSearchSheet) }
+                            onClickLabel = stringResource(Res.string.open_spot_search),
+                            role = Role.Button,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(DiscoverAction.ToggleShowSearchSheet)
+                            }
                         )
                 )
             }
@@ -282,11 +339,17 @@ fun DiscoverScreen(
                 items = persistentListOf(
                     LynkDropDownItem(
                         title = stringResource(Res.string.osm_attribution),
-                        onClick = { uriHandler.openUri(OSM_COPYRIGHT_LINK) }
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            uriHandler.openUri(OSM_COPYRIGHT_LINK)
+                        }
                     ),
                     LynkDropDownItem(
                         title = stringResource(Res.string.maptiler_attribution),
-                        onClick = { uriHandler.openUri(MAPTILER_COPYRIGHT_LINK) }
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            uriHandler.openUri(MAPTILER_COPYRIGHT_LINK)
+                        }
                     )
                 ),
                 anchor = {
@@ -294,7 +357,13 @@ fun DiscoverScreen(
                         modifier = Modifier
                             .clip(MaterialTheme.shapes.small)
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
-                            .clickable { showAttributionMenu = true }
+                            .clickable(
+                                onClickLabel = stringResource(Res.string.show_map_attribution),
+                                role = Role.Button
+                            ) {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                showAttributionMenu = true
+                            }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -317,6 +386,7 @@ fun DiscoverScreen(
             // Action Button
             LynkTonalIconButton(
                 onClick = {
+                    hapticFeedback(AppHaptic.ImpactLight)
                     if (permissionState == PermissionState.GRANTED) {
                         scope.launch { fetchCurrentLocationAndShowOnMap() }
                     } else {
@@ -339,11 +409,30 @@ fun DiscoverScreen(
                     contentDescription = stringResource(Res.string.locate_me)
                 )
             }
+
+            if (showTrendingError) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 16.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    LynkErrorState(
+                        title = stringResource(Res.string.trending_load_error_title),
+                        message = state.trendingError.asString(),
+                        onRetry = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(DiscoverAction.RetryTrending)
+                        }
+                    )
+                }
+            }
         }
 
         // Overlays & Sheets
-        if (state.guestPromptContext != null) {
-            val actionStr = when (state.guestPromptContext) {
+        state.guestPromptContext?.let { guestPromptContext ->
+            val actionStr = when (guestPromptContext) {
                 GuestPromptContext.SAVE_SPOT -> stringResource(Res.string.save_this_spot)
                 GuestPromptContext.CREATE_HANGOUT -> stringResource(Res.string.create_a_hangout)
             }
@@ -357,7 +446,17 @@ fun DiscoverScreen(
 
         if (state.showSearchSheet) {
             SpotSearchSheet(
-                state = state,
+                searchTextState = state.searchTextState,
+                spots = if (isSearchActive) state.searchResults else state.trendingSpots,
+                isSearchActive = isSearchActive,
+                isSearchLoading = state.isSearchLoading,
+                searchError = state.searchError?.asString(),
+                searchEndReached = state.searchEndReached,
+                searchResetEpoch = state.searchResetEpoch,
+                selectedCategory = state.selectedCategory,
+                selectedPriceLevel = state.selectedPriceLevel,
+                userLatitude = state.userLatitude,
+                userLongitude = state.userLongitude,
                 onLoadNextSearchPage = { onAction(DiscoverAction.LoadNextSearchPage) },
                 onSelectPriceLevel = { onAction(DiscoverAction.OnPriceLevelSelected(it)) },
                 onSelectCategory = { onAction(DiscoverAction.OnCategorySelected(it)) },
@@ -369,47 +468,43 @@ fun DiscoverScreen(
             )
         }
 
-        if (state.selectedSpotId != null) {
-            spotsToShow.find { it.id == state.selectedSpotId }?.let { selectedSpot ->
-                SpotDetailSheet(
-                    spot = selectedSpot,
-                    userLat = userPosition?.latitude,
-                    userLng = userPosition?.longitude,
-                    onCreateHangoutClick = { spotId ->
-                        onAction(DiscoverAction.OnSpotSelected(null))
-                        if (state.isGuest) {
-                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
-                        } else {
-                            onAction(DiscoverAction.OnHangoutCreationSelected(spotId))
-                        }
-                    },
-                    onToggleSave = { spotId, isSaved ->
-                        if (state.isGuest) {
-                            onAction(DiscoverAction.OnSpotSelected(null))
-                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
-                        } else {
-                            onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
-                        }
-                    },
-                    onDismissRequest = {
-                        onAction(DiscoverAction.OnSpotSelected(null))
+        selectedSpot?.let { spot ->
+            SpotDetailSheet(
+                spot = spot,
+                userLat = state.userLatitude,
+                userLng = state.userLongitude,
+                onCreateHangoutClick = { spotId ->
+                    onAction(DiscoverAction.OnSpotSelected(null))
+                    if (state.isGuest) {
+                        onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
+                    } else {
+                        onAction(DiscoverAction.OnHangoutCreationSelected(spotId))
                     }
-                )
-            }
+                },
+                onToggleSave = { spotId, isSaved ->
+                    if (state.isGuest) {
+                        onAction(DiscoverAction.OnSpotSelected(null))
+                        onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
+                    } else {
+                        onAction(DiscoverAction.OnToggleSaveSpot(spotId, isSaved))
+                    }
+                },
+                onDismissRequest = {
+                    onAction(DiscoverAction.OnSpotSelected(null))
+                }
+            )
         }
 
-        if (state.hangoutCreationSpotId != null) {
-            spotsToShow.find { it.id == state.hangoutCreationSpotId }?.let { hangoutSpot ->
-                CreateHangoutRoot(
-                    visible = true,
-                    spot = hangoutSpot,
-                    onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
-                    onSuccess = { newHangoutId ->
-                        onAction(DiscoverAction.OnHangoutCreationSelected(null))
-                        navigateToHangouts(newHangoutId)
-                    }
-                )
-            }
+        hangoutCreationSpot?.let { hangoutSpot ->
+            CreateHangoutRoot(
+                visible = true,
+                spot = hangoutSpot,
+                onDismiss = { onAction(DiscoverAction.OnHangoutCreationSelected(null)) },
+                onSuccess = { newHangoutId ->
+                    onAction(DiscoverAction.OnHangoutCreationSelected(null))
+                    navigateToHangouts(newHangoutId)
+                }
+            )
         }
 
         if (showSettingsDialog) {

@@ -1,16 +1,15 @@
 package com.eeseka.lynk.discover.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.runtime.Stable
+import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
-enum class GuestPromptContext { SAVE_SPOT, CREATE_HANGOUT }
-
-@Stable
 data class DiscoverState(
     val mapTheme: AppTheme = AppTheme.SYSTEM,
 
@@ -21,17 +20,20 @@ data class DiscoverState(
     // User Location
     val userLatitude: Double? = null,
     val userLongitude: Double? = null,
+    // Bumped on every fix so the blue dot can replay its pulse.
+    val locationFetchEpoch: Int = 0,
 
     // Trending Data
-    val trendingSpots: List<SpotUi> = emptyList(),
+    val trendingSpots: ImmutableList<SpotUi> = persistentListOf(),
     val isTrendingLoading: Boolean = false,
+    val trendingError: UiText? = null,
 
     // Detail Sheet
     val selectedSpotId: String? = null,
 
     // Search Sheet Data (Pagination)
     val searchTextState: TextFieldState = TextFieldState(),
-    val searchResults: List<SpotUi> = emptyList(),
+    val searchResults: ImmutableList<SpotUi> = persistentListOf(),
     val isSearchLoading: Boolean = false,
     val searchError: UiText? = null,
     val searchEndReached: Boolean = false,

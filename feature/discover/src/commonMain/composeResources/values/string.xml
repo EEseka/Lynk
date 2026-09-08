@@ -12,7 +12,11 @@
     <string name="locate_me">Locate Me</string>
     <string name="location_fetch_error">We couldn't find your location. Please ensure Location Services are enabled.</string>
 
+    <string name="open_spot_search">Open spot search</string>
+    <string name="trending_load_error_title">Couldn't load nearby spots</string>
+
     <string name="map_data_label">Map Data</string>
+    <string name="show_map_attribution">Show map attribution</string>
     <string name="osm_attribution">© OpenStreetMap Contributors</string>
     <string name="maptiler_attribution">© MapTiler</string>
 
