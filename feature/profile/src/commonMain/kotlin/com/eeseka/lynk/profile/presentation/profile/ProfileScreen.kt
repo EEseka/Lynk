@@ -1,21 +1,10 @@
 package com.eeseka.lynk.profile.presentation.profile
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,21 +19,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.Camera
 import com.composables.icons.lucide.Image
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
-import com.eeseka.lynk.profile.presentation.profile.components.GuestProfileSection
-import com.eeseka.lynk.profile.presentation.profile.components.ProfileAccountSection
 import com.eeseka.lynk.profile.presentation.profile.components.ProfileSettingsSheet
-import com.eeseka.lynk.profile.presentation.profile.components.ProfileStatsRow
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.profile.presentation.profile.components.SinglePaneProfile
+import com.eeseka.lynk.profile.presentation.profile.components.TwoPaneProfile
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -54,24 +39,21 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkD
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
-import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.components.FullScreenAvatarViewer
-import com.eeseka.lynk.shared.presentation.components.ProfileAvatarSection
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
+import com.eeseka.lynk.shared.presentation.util.buildMailtoUri
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.app_version
@@ -82,63 +64,38 @@ import lynk.feature.profile.generated.resources.choose_source_message
 import lynk.feature.profile.generated.resources.delete
 import lynk.feature.profile.generated.resources.delete_account_confirm_message
 import lynk.feature.profile.generated.resources.delete_account_confirm_title
-import lynk.feature.profile.generated.resources.display_name
-import lynk.feature.profile.generated.resources.display_name_placeholder
 import lynk.feature.profile.generated.resources.not_now
 import lynk.feature.profile.generated.resources.notifications_required
 import lynk.feature.profile.generated.resources.notifications_required_message
 import lynk.feature.profile.generated.resources.open_settings
 import lynk.feature.profile.generated.resources.profile
 import lynk.feature.profile.generated.resources.profile_saved
-import lynk.feature.profile.generated.resources.save_changes
-import lynk.feature.profile.generated.resources.saving_changes
 import lynk.feature.profile.generated.resources.settings
 import lynk.feature.profile.generated.resources.sign_out
 import lynk.feature.profile.generated.resources.sign_out_confirm_message
 import lynk.feature.profile.generated.resources.sign_out_confirm_title
+import lynk.feature.profile.generated.resources.support_email_body
+import lynk.feature.profile.generated.resources.support_email_subject
 import lynk.feature.profile.generated.resources.take_photo
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
-private const val TERMS_AND_PRIVACY_URL = "https://example.com/privacy"
+private const val TERMS_URL = "https://example.com/terms"
+private const val PRIVACY_URL = "https://example.com/privacy"
+private const val SUPPORT_EMAIL = "support@lynk.com.ng"
 private const val APP_VERSION = "1.0.0"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
-    state: ProfileState,
-    events: Flow<ProfileEvent>,
-    onAction: (ProfileAction) -> Unit,
-    onNavigateToSavedSpots: () -> Unit,
-    mainShellPadding: PaddingValues
+fun ProfileRoot(
+    navigateToSavedSpots: () -> Unit,
+    mainShellPadding: PaddingValues,
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val hapticFeedback = rememberAppHaptic()
-    val permissionController = rememberPermissionController()
 
-    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
-
-    val scope = rememberCoroutineScope()
-    val mediaPicker = rememberMediaPicker()
-    val uriHandler = LocalUriHandler.current
-    val config = currentDeviceConfiguration()
-
-    var showImagePickerSheet by remember { mutableStateOf(false) }
-
-    val showRail = config.isWideScreen
-
-    // The stored preference is only half the story — the system permission can be revoked in
-    // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
-    // opens so the switch cannot claim notifications are on while the system says otherwise.
-    LaunchedEffect(state.showSettingsSheet) {
-        if (!state.showSettingsSheet || !state.arePushNotificationsEnabled) return@LaunchedEffect
-
-        if (permissionController.getPermissionState(Permission.NOTIFICATIONS) != PermissionState.GRANTED) {
-            onAction(ProfileAction.OnPushNotificationsToggled(false))
-        }
-    }
-
-    ObserveAsEvents(events) { event ->
+    ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is ProfileEvent.Error -> {
                 snackbarHostState.showFlashMessage(
@@ -153,6 +110,54 @@ fun ProfileScreen(
                     type = LynkFlashType.Success
                 )
             }
+        }
+    }
+
+    ProfileScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        snackbarHostState = snackbarHostState,
+        navigateToSavedSpots = navigateToSavedSpots,
+        mainShellPadding = mainShellPadding
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileScreen(
+    state: ProfileState,
+    onAction: (ProfileAction) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    navigateToSavedSpots: () -> Unit,
+    mainShellPadding: PaddingValues
+) {
+    val hapticFeedback = rememberAppHaptic()
+    val permissionController = rememberPermissionController()
+
+    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+    val mediaPicker = rememberMediaPicker()
+    val uriHandler = LocalUriHandler.current
+    val config = currentDeviceConfiguration()
+
+    var showImagePickerSheet by remember { mutableStateOf(false) }
+
+    val showRail = config.isWideScreen
+
+    val supportSubject = stringResource(Res.string.support_email_subject)
+    val supportBody = stringResource(Res.string.support_email_body, state.userId)
+
+    // The stored preference is only half the story — the system permission can be revoked in
+    // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
+    // opens so the switch cannot claim notifications are on while the system says otherwise.
+    LaunchedEffect(state.showSettingsSheet) {
+        if (state.isGuest || !state.showSettingsSheet || !state.arePushNotificationsEnabled) {
+            return@LaunchedEffect
+        }
+
+        if (permissionController.getPermissionState(Permission.NOTIFICATIONS) != PermissionState.GRANTED) {
+            onAction(ProfileAction.OnPushNotificationsToggled(false))
         }
     }
 
@@ -209,7 +214,7 @@ fun ProfileScreen(
                             bottomInset = contentBottomInset,
                             onAction = onAction,
                             onPickImageClick = { showImagePickerSheet = true },
-                            onNavigateToSavedSpots = onNavigateToSavedSpots
+                            navigateToSavedSpots = navigateToSavedSpots
                         )
                     } else {
                         TwoPaneProfile(
@@ -218,7 +223,7 @@ fun ProfileScreen(
                             bottomInset = contentBottomInset,
                             onAction = onAction,
                             onPickImageClick = { showImagePickerSheet = true },
-                            onNavigateToSavedSpots = onNavigateToSavedSpots
+                            navigateToSavedSpots = navigateToSavedSpots
                         )
                     }
                 }
@@ -230,7 +235,7 @@ fun ProfileScreen(
                         bottomInset = contentBottomInset,
                         onAction = onAction,
                         onPickImageClick = { showImagePickerSheet = true },
-                        onNavigateToSavedSpots = onNavigateToSavedSpots
+                        navigateToSavedSpots = navigateToSavedSpots
                     )
                 }
             }
@@ -300,6 +305,7 @@ fun ProfileScreen(
             isSigningOut = state.isSigningOut,
             isDeletingAccount = state.isDeletingAccount,
             appVersion = stringResource(Res.string.app_version, APP_VERSION),
+            supportEmail = SUPPORT_EMAIL,
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
             onPushNotificationsToggled = { isEnabled ->
                 if (isEnabled) {
@@ -323,7 +329,17 @@ fun ProfileScreen(
                     onAction(ProfileAction.OnPushNotificationsToggled(false))
                 }
             },
-            onTermsClick = { uriHandler.openUri(TERMS_AND_PRIVACY_URL) },
+            onContactSupportClick = {
+                uriHandler.openUri(
+                    buildMailtoUri(
+                        email = SUPPORT_EMAIL,
+                        subject = supportSubject,
+                        body = supportBody
+                    )
+                )
+            },
+            onTermsClick = { uriHandler.openUri(TERMS_URL) },
+            onPrivacyClick = { uriHandler.openUri(PRIVACY_URL) },
             onSignOutClick = { onAction(ProfileAction.OnSignOutClick) },
             onDeleteAccountClick = { onAction(ProfileAction.OnDeleteAccountClick) },
             onDismissRequest = { onAction(ProfileAction.OnDismissSettings) }
@@ -377,190 +393,6 @@ fun ProfileScreen(
     }
 }
 
-@Composable
-private fun SinglePaneProfile(
-    state: ProfileState,
-    topInset: Dp,
-    bottomInset: Dp,
-    onAction: (ProfileAction) -> Unit,
-    onPickImageClick: () -> Unit,
-    onNavigateToSavedSpots: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .widthIn(max = 480.dp)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(
-                top = topInset,
-                bottom = bottomInset,
-                start = 24.dp,
-                end = 24.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = if (state.isGuest) Arrangement.Center else Arrangement.Top
-    ) {
-        if (state.isGuest) {
-            GuestProfileSection(
-                isDeletingAccount = state.isDeletingAccount,
-                onCreateAccountClick = { onAction(ProfileAction.OnCreateAccountClick) }
-            )
-        } else {
-            ProfileHeaderSection(
-                state = state,
-                onAction = onAction,
-                onPickImageClick = onPickImageClick
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProfileDetailsSection(
-                state = state,
-                onNavigateToSavedSpots = onNavigateToSavedSpots
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SaveChangesButton(
-                canSave = state.canSave,
-                isSaving = state.isSaving,
-                onSaveClick = { onAction(ProfileAction.OnSaveClick) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun TwoPaneProfile(
-    state: ProfileState,
-    topInset: Dp,
-    bottomInset: Dp,
-    onAction: (ProfileAction) -> Unit,
-    onPickImageClick: () -> Unit,
-    onNavigateToSavedSpots: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(32.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState())
-                .padding(top = topInset, bottom = bottomInset),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            ProfileHeaderSection(
-                state = state,
-                onAction = onAction,
-                onPickImageClick = onPickImageClick
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState())
-                .padding(top = topInset, bottom = bottomInset),
-            verticalArrangement = Arrangement.Center
-        ) {
-            ProfileDetailsSection(
-                state = state,
-                onNavigateToSavedSpots = onNavigateToSavedSpots
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SaveChangesButton(
-                canSave = state.canSave,
-                isSaving = state.isSaving,
-                onSaveClick = { onAction(ProfileAction.OnSaveClick) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun SaveChangesButton(
-    canSave: Boolean,
-    isSaving: Boolean,
-    onSaveClick: () -> Unit
-) {
-    val hapticFeedback = rememberAppHaptic()
-
-    LynkButton(
-        text = stringResource(Res.string.save_changes),
-        loadingText = stringResource(Res.string.saving_changes),
-        onClick = {
-            hapticFeedback(AppHaptic.ImpactMedium)
-            onSaveClick()
-        },
-        enabled = canSave,
-        isLoading = isSaving,
-        modifier = Modifier.widthIn(max = 480.dp)
-    )
-}
-
-@Composable
-private fun ProfileHeaderSection(
-    state: ProfileState,
-    onAction: (ProfileAction) -> Unit,
-    onPickImageClick: () -> Unit
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        ProfileAvatarSection(
-            currentImagePayload = state.localPhotoUri ?: state.profilePictureUrl,
-            imageError = state.imageError?.asString(),
-            isCompressingImage = state.isCompressingImage,
-            isUploadingImage = state.isUploadingImage,
-            onImageClick = onPickImageClick,
-            onRemoveImage = { onAction(ProfileAction.OnRemoveImageClick) },
-            onViewImageClick = { onAction(ProfileAction.OnImageClick) }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        ProfileStatsRow(
-            hostedCount = state.hostedCount.toString(),
-            attendedCount = state.attendedCount.toString(),
-            isLoading = state.isStatsLoading
-        )
-    }
-}
-
-@Composable
-private fun ProfileDetailsSection(
-    state: ProfileState,
-    onNavigateToSavedSpots: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        LynkTextField(
-            state = state.displayNameTextState,
-            label = stringResource(Res.string.display_name),
-            placeholder = stringResource(Res.string.display_name_placeholder),
-            errorMessage = state.displayNameError?.asString(),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        ProfileAccountSection(
-            email = state.email,
-            username = state.username,
-            onSavedSpotsClick = onNavigateToSavedSpots
-        )
-    }
-}
-
 private fun previewState(isGuest: Boolean = false) = ProfileState(
     isGuest = isGuest,
     email = "john.doe@example.com",
@@ -575,9 +407,9 @@ private fun ProfileScreenPreview(state: ProfileState) {
     LynkTheme {
         ProfileScreen(
             state = state,
-            events = emptyFlow(),
             onAction = {},
-            onNavigateToSavedSpots = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            navigateToSavedSpots = {},
             mainShellPadding = PaddingValues(0.dp)
         )
     }
@@ -590,6 +422,10 @@ private fun ProfileScreenPreview() = ProfileScreenPreview(previewState())
 @PreviewLightDark
 @Composable
 private fun ProfileScreenGuestPreview() = ProfileScreenPreview(previewState(isGuest = true))
+
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
+@Composable
+private fun ProfileScreenLandscapePreview() = ProfileScreenPreview(previewState())
 
 @Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable

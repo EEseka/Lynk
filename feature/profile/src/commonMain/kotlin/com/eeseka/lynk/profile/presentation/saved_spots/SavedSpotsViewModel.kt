@@ -13,12 +13,13 @@ import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
@@ -64,6 +65,7 @@ class SavedSpotsViewModel(
                 action.isCurrentlySaved
             )
             SavedSpotsAction.LoadNextPage -> loadNextPage()
+            SavedSpotsAction.OnRetryClick -> retryLoad()
         }
     }
 
@@ -95,7 +97,7 @@ class SavedSpotsViewModel(
             currentState.copy(
                 spots = currentState.spots.map {
                     if (it.id == spotId) it.copy(isSaved = isSaved) else it
-                }
+                }.toImmutableList()
             )
         }
     }
@@ -103,15 +105,15 @@ class SavedSpotsViewModel(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeSearchQuery() {
         snapshotFlow { _state.value.searchTextState.text.toString() }
-            .distinctUntilChanged()
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .mapLatest { query ->
                 setupSavedSpotsPaginator(query.takeIf { it.isNotBlank() })
                 _state.update {
                     it.copy(
-                        spots = emptyList(),
+                        spots = persistentListOf(),
                         isEndReached = false,
-                        searchResetEpoch = it.searchResetEpoch + 1
+                        searchResetEpoch = it.searchResetEpoch + 1,
+                        loadError = null
                     )
                 }
                 savedSpotsPaginator?.loadNextItems()
@@ -133,14 +135,21 @@ class SavedSpotsViewModel(
             },
             onError = { throwable ->
                 if (throwable is DataErrorException) {
-                    eventChannel.send(SavedSpotsEvent.Error(throwable.error.toUiText()))
+                    val message = throwable.error.toUiText()
+
+                    if (state.value.spots.isEmpty()) {
+                        _state.update { it.copy(loadError = message) }
+                    } else {
+                        eventChannel.send(SavedSpotsEvent.Error(message))
+                    }
                 }
             },
             onSuccess = { savedSpots, _ ->
                 _state.update {
                     it.copy(
-                        spots = it.spots + savedSpots.map { spot -> spot.toSpotUi() },
-                        isEndReached = savedSpots.isEmpty()
+                        spots = (it.spots + savedSpots.map { spot -> spot.toSpotUi() }).toImmutableList(),
+                        isEndReached = savedSpots.isEmpty(),
+                        loadError = null
                     )
                 }
             }
@@ -151,5 +160,10 @@ class SavedSpotsViewModel(
         viewModelScope.launch {
             savedSpotsPaginator?.loadNextItems()
         }
+    }
+
+    private fun retryLoad() {
+        _state.update { it.copy(loadError = null) }
+        loadNextPage()
     }
 }

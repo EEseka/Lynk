@@ -43,6 +43,8 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.save_spot
 import lynk.feature.profile.generated.resources.unsave_spot
@@ -51,7 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SavedSpotListItem(
     spotName: String,
-    spotPhotos: List<String>,
+    spotPhotos: ImmutableList<String>,
     spotAddress: String?,
     spotCategory: SpotCategory,
     spotPriceLevel: PriceLevel?,
@@ -189,7 +191,7 @@ private fun SavedSpotListItemPreview() {
     LynkTheme {
         SavedSpotListItem(
             spotName = "Nok by Alara",
-            spotPhotos = emptyList(),
+            spotPhotos = persistentListOf(),
             spotAddress = "Victoria Island, Lagos",
             spotCategory = SpotCategory.RESTAURANT,
             spotPriceLevel = PriceLevel.MODERATE,

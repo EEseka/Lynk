@@ -29,6 +29,7 @@
     <string name="saved_spots_search_placeholder">Search your saved spots</string>
     <string name="saved_spots_search_empty_title">No saved spots found</string>
     <string name="saved_spots_search_empty_message">Try a different name or clear the search to see everything you saved.</string>
+    <string name="saved_spots_load_error_title">Couldn't load your saved spots</string>
     <string name="save_spot">Save spot</string>
     <string name="unsave_spot">Remove saved spot</string>
 
@@ -42,7 +43,13 @@
     <string name="push_notifications">Push Notifications</string>
     <string name="push_notifications_message">Invites, hangout changes and payment updates.</string>
 
-    <string name="terms_and_privacy">Terms and Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="privacy_policy">Privacy Policy</string>
+
+    <string name="support">Support</string>
+    <string name="contact_support">Contact support</string>
+    <string name="support_email_subject">Lynk Support Request</string>
+    <string name="support_email_body">Hello, I need help with…\n\nAccount ID: %1$s</string>
 
     <string name="sign_out">Sign Out</string>
     <string name="signing_out">Signing out…</string>
@@ -55,7 +62,7 @@
     <string name="delete_account_confirm_message">This erases your profile and your saved spots. Past hangouts stay, with your name removed. It cannot be undone.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
-    <string name="error_delete_account_blocked">Your account still has something open — a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again.</string>
+    <string name="error_delete_account_blocked">Your account still has something open — a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again. Still stuck? Reach us from Contact support in Settings.</string>
 
     <string name="guest_title">You're browsing as a guest</string>
     <string name="guest_message">Create an account to host hangouts, split bills and save the spots you like.</string>

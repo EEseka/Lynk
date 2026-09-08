@@ -17,12 +17,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.profile.presentation.saved_spots.components.SavedSpotListItem
@@ -33,39 +36,40 @@ import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
-import kotlinx.collections.immutable.persistentListOf
 import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
+import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
+import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.back
 import lynk.feature.profile.generated.resources.saved_spots
+import lynk.feature.profile.generated.resources.saved_spots_load_error_title
 import lynk.feature.profile.generated.resources.saved_spots_search_placeholder
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SavedSpotsScreen(
-    state: SavedSpotsState,
-    events: Flow<SavedSpotsEvent>,
-    onAction: (SavedSpotsAction) -> Unit,
-    onNavigateBack: () -> Unit
+fun SavedSpotsRoot(
+    navigateBack: () -> Unit,
+    viewModel: SavedSpotsViewModel = koinViewModel()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val hapticFeedback = rememberAppHaptic()
-    val listState = rememberLazyListState()
 
-    ObserveAsEvents(events) { event ->
+    ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is SavedSpotsEvent.Error -> {
                 snackbarHostState.showFlashMessage(
@@ -75,6 +79,25 @@ fun SavedSpotsScreen(
             }
         }
     }
+
+    SavedSpotsScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        snackbarHostState = snackbarHostState,
+        navigateBack = navigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SavedSpotsScreen(
+    state: SavedSpotsState,
+    onAction: (SavedSpotsAction) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    navigateBack: () -> Unit
+) {
+    val hapticFeedback = rememberAppHaptic()
+    val listState = rememberLazyListState()
 
     PaginationScrollListener(
         lazyListState = listState,
@@ -96,7 +119,7 @@ fun SavedSpotsScreen(
                     LynkIconButton(
                         onClick = {
                             hapticFeedback(AppHaptic.ImpactLight)
-                            onNavigateBack()
+                            navigateBack()
                         }
                     ) {
                         Icon(
@@ -110,7 +133,7 @@ fun SavedSpotsScreen(
                         sfSymbol = "chevron.left",
                         onClick = {
                             hapticFeedback(AppHaptic.ImpactLight)
-                            onNavigateBack()
+                            navigateBack()
                         }
                     )
                 )
@@ -131,62 +154,83 @@ fun SavedSpotsScreen(
                 !isSearchActive && state.spots.isEmpty() && !state.isLoading && state.isEndReached
             val showEmptySearch =
                 isSearchActive && state.spots.isEmpty() && !state.isLoading && state.isEndReached
+            val showLoadError =
+                state.spots.isEmpty() && state.loadError != null && !state.isLoading
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.widthIn(max = listMaxWidth).fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = scaffoldPadding.calculateTopPadding() + 72.dp,
-                    bottom = scaffoldPadding.calculateBottomPadding() + 16.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (showEmptyList) {
-                    item {
-                        SavedSpotsEmptyState()
-                    }
-                } else if (showEmptySearch) {
-                    item {
-                        SavedSpotsSearchEmptyState(
-                            modifier = Modifier.padding(top = 64.dp)
-                        )
-                    }
-                } else {
-                    items(state.spots, key = { it.id }) { spot ->
-                        Box(modifier = Modifier.animateItem()) {
-                            SavedSpotListItem(
-                                spotName = spot.name,
-                                spotPhotos = spot.photoUrls,
-                                spotAddress = spot.shortAddress,
-                                spotCategory = spot.category,
-                                spotPriceLevel = spot.priceLevel,
-                                spotRating = spot.rating,
-                                isSaved = spot.isSaved,
-                                onClick = { onAction(SavedSpotsAction.OnSpotSelected(spot.id)) },
-                                onToggleSave = {
-                                    hapticFeedback(AppHaptic.Selection)
-                                    onAction(
-                                        SavedSpotsAction.OnToggleSaveSpot(spot.id, spot.isSaved)
-                                    )
-                                }
+            if (showLoadError) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LynkErrorState(
+                        title = stringResource(Res.string.saved_spots_load_error_title),
+                        message = state.loadError.asString(),
+                        onRetry = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(SavedSpotsAction.OnRetryClick)
+                        }
+                    )
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.widthIn(max = listMaxWidth).fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = scaffoldPadding.calculateTopPadding() + 72.dp,
+                        bottom = scaffoldPadding.calculateBottomPadding() + 16.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (showEmptyList) {
+                        item {
+                            SavedSpotsEmptyState()
+                        }
+                    } else if (showEmptySearch) {
+                        item {
+                            SavedSpotsSearchEmptyState(
+                                modifier = Modifier.padding(top = 64.dp)
                             )
                         }
-                    }
-
-                    if (state.isLoading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(64.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                LynkProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = MaterialTheme.colorScheme.onBackground
+                    } else {
+                        items(state.spots, key = { it.id }) { spot ->
+                            Box(modifier = Modifier.animateItem()) {
+                                SavedSpotListItem(
+                                    spotName = spot.name,
+                                    spotPhotos = spot.photoUrls,
+                                    spotAddress = spot.shortAddress,
+                                    spotCategory = spot.category,
+                                    spotPriceLevel = spot.priceLevel,
+                                    spotRating = spot.rating,
+                                    isSaved = spot.isSaved,
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        onAction(SavedSpotsAction.OnSpotSelected(spot.id))
+                                    },
+                                    onToggleSave = {
+                                        hapticFeedback(AppHaptic.Selection)
+                                        onAction(
+                                            SavedSpotsAction.OnToggleSaveSpot(spot.id, spot.isSaved)
+                                        )
+                                    }
                                 )
+                            }
+                        }
+
+                        if (state.isLoading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(64.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    LynkProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
                             }
                         }
                     }
@@ -206,30 +250,94 @@ fun SavedSpotsScreen(
         }
     }
 
-    if (state.selectedSpotId != null) {
-        state.spots.find { it.id == state.selectedSpotId }?.let { selectedSpot ->
-            SpotDetailSheet(
-                spot = selectedSpot,
-                userLat = null,
-                userLng = null,
-                onDismissRequest = { onAction(SavedSpotsAction.OnDismissSpotDetail) },
-                onToggleSave = { spotId, isCurrentlySaved ->
-                    onAction(SavedSpotsAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
-                }
-            )
-        }
+    state.spots.find { it.id == state.selectedSpotId }?.let { selectedSpot ->
+        SpotDetailSheet(
+            spot = selectedSpot,
+            userLat = null,
+            userLng = null,
+            onDismissRequest = { onAction(SavedSpotsAction.OnDismissSpotDetail) },
+            onToggleSave = { spotId, isCurrentlySaved ->
+                onAction(SavedSpotsAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
+            }
+        )
+    }
+}
+
+private val previewSpots = persistentListOf(
+    SpotUi(
+        id = "1",
+        name = "Nok by Alara",
+        description = null,
+        photoUrls = persistentListOf(),
+        category = SpotCategory.RESTAURANT,
+        tags = persistentListOf(),
+        priceLevel = PriceLevel.MODERATE,
+        rating = 4.6,
+        reviewCount = 214,
+        isOpenNow = true,
+        shortAddress = "Victoria Island, Lagos",
+        latitude = 6.4281,
+        longitude = 3.4219,
+        websiteUrl = null,
+        googleMapsUrl = null,
+        isSaved = true
+    ),
+    SpotUi(
+        id = "2",
+        name = "Jazzhole",
+        description = null,
+        photoUrls = persistentListOf(),
+        category = SpotCategory.CAFE,
+        tags = persistentListOf(),
+        priceLevel = PriceLevel.CHEAP,
+        rating = 4.4,
+        reviewCount = 88,
+        isOpenNow = false,
+        shortAddress = "Ikoyi, Lagos",
+        latitude = 6.4474,
+        longitude = 3.4362,
+        websiteUrl = null,
+        googleMapsUrl = null,
+        isSaved = true
+    )
+)
+
+@Composable
+private fun SavedSpotsScreenPreview(state: SavedSpotsState) {
+    LynkTheme {
+        SavedSpotsScreen(
+            state = state,
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            navigateBack = {}
+        )
     }
 }
 
 @PreviewLightDark
 @Composable
-private fun SavedSpotsScreenEmptyPreview() {
-    LynkTheme {
-        SavedSpotsScreen(
-            state = SavedSpotsState(),
-            events = flowOf(),
-            onAction = {},
-            onNavigateBack = {}
+private fun SavedSpotsScreenFilledPreview() = SavedSpotsScreenPreview(
+    SavedSpotsState(spots = previewSpots, isEndReached = true)
+)
+
+@PreviewLightDark
+@Composable
+private fun SavedSpotsScreenEmptyPreview() = SavedSpotsScreenPreview(
+    SavedSpotsState(isEndReached = true)
+)
+
+@PreviewLightDark
+@Composable
+private fun SavedSpotsScreenErrorPreview() = SavedSpotsScreenPreview(
+    SavedSpotsState(
+        loadError = UiText.DynamicString(
+            "Couldn't reach the server. Check your connection and try again."
         )
-    }
-}
+    )
+)
+
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
+@Composable
+private fun SavedSpotsScreenTabletPreview() = SavedSpotsScreenPreview(
+    SavedSpotsState(spots = previewSpots, isEndReached = true)
+)
