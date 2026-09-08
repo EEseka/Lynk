@@ -38,7 +38,6 @@ import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UserRoundSearch
 import com.composables.icons.lucide.UserX
-import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
@@ -47,6 +46,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import kotlinx.coroutines.delay
@@ -91,10 +91,7 @@ fun InviteParticipantSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LynkAdaptiveSheet(
-        onDismissRequest = onDismiss,
-        skipBottomSheetPartiallyExpanded = false
-    ) {
+    LynkAdaptiveSheet(onDismissRequest = onDismiss) {
         InviteParticipantSheetContent(
             queryState = queryState,
             result = result,
