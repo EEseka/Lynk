@@ -85,6 +85,8 @@ class SavedSpotsViewModel(
                 updateSpotSaveState(spotId, isCurrentlySaved)
                 eventChannel.send(SavedSpotsEvent.Error(error.toUiText()))
             }
+
+            saveJobs.remove(spotId)
         }
     }
 
