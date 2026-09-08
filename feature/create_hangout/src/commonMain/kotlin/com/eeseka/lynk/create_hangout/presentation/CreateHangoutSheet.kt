@@ -77,6 +77,7 @@ import lynk.feature.create_hangout.generated.resources.empty_favorite_search_mes
 import lynk.feature.create_hangout.generated.resources.empty_search_message
 import lynk.feature.create_hangout.generated.resources.go_back
 import lynk.feature.create_hangout.generated.resources.next_pick_location
+import lynk.feature.create_hangout.generated.resources.no_favorite_spots_message
 import lynk.feature.create_hangout.generated.resources.next_review_and_confirm
 import lynk.feature.create_hangout.generated.resources.pick_location
 import lynk.feature.create_hangout.generated.resources.review_and_confirm
@@ -325,12 +326,11 @@ private fun CreateHangoutSheetContent(
                             spots = spots,
                             isLoading = isLoading,
                             isEndReached = isEndReached,
-                            showEmptyState = spots.isEmpty() && !isLoading && isEndReached &&
-                                    (!isAllSpots || isSearchActive),
-                            emptyStateMessage = if (isAllSpots) {
-                                stringResource(Res.string.empty_search_message)
-                            } else {
-                                stringResource(Res.string.empty_favorite_search_message)
+                            showEmptyState = spots.isEmpty() && !isLoading && isEndReached && (!isAllSpots || isSearchActive),
+                            emptyStateMessage = when {
+                                isAllSpots -> stringResource(Res.string.empty_search_message)
+                                isSearchActive -> stringResource(Res.string.empty_favorite_search_message)
+                                else -> stringResource(Res.string.no_favorite_spots_message)
                             },
                             errorMessage = if (isAllSpots) {
                                 state.spotSearchError?.asString()

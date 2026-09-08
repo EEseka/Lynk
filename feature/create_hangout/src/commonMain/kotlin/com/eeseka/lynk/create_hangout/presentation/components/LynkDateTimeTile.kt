@@ -63,7 +63,7 @@ fun LynkDateTimeTile(
         targetValue = if (isExpanded) 180f else 0f,
         label = "chevronRotation"
     )
-    val containerColor = if (isError) scheme.errorContainer.copy(alpha = 0.1f) else scheme.surfaceContainerHigh
+    val containerColor = scheme.surfaceContainerHigh
     val contentColor = scheme.onSurface
     val valueTextColor = if (value != null) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.6f)
 

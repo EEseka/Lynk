@@ -34,6 +34,7 @@
     <string name="favorites">Favorites</string>
     <string name="empty_search_message">No spots found.</string>
     <string name="empty_favorite_search_message">No favorite spots found.</string>
+    <string name="no_favorite_spots_message">No favorite spots yet. Try All Spots to find one.</string>
     <string name="selected">Selected</string>
     <string name="change_location">Change Location</string>
     <string name="group_vote">Group Vote</string>
