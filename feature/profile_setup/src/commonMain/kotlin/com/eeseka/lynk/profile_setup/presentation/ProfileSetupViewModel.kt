@@ -56,7 +56,7 @@ class ProfileSetupViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 loadInitialData()
-                observeBusyState()
+                observeCanSubmit()
                 observeUsernameValidationAndAvailability()
                 observeDisplayNameValidation()
                 hasLoadedInitialData = true
@@ -103,7 +103,7 @@ class ProfileSetupViewModel(
         }
     }
 
-    private fun observeBusyState() {
+    private fun observeCanSubmit() {
         isBusyFlow
             .onEach { isBusy -> _state.update { it.copy(canSubmit = !isBusy) } }
             .launchIn(viewModelScope)
