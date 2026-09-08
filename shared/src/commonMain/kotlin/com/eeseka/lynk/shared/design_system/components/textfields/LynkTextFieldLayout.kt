@@ -23,17 +23,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun LynkTextFieldLayout(
+    modifier: Modifier = Modifier,
     title: String? = null,
     errorMessage: String? = null,
     helperText: String? = null,
     enabled: Boolean = true,
     shape: Shape = MaterialTheme.shapes.medium,
-    modifier: Modifier = Modifier,
     textField: @Composable (Modifier, MutableInteractionSource) -> Unit
 ) {
     val isError = errorMessage != null
@@ -46,7 +47,7 @@ fun LynkTextFieldLayout(
         .background(
             color = when {
                 isFocused -> scheme.primary.copy(alpha = 0.05f)
-                enabled -> scheme.surface
+                enabled -> Color.Transparent
                 else -> scheme.surfaceVariant.copy(alpha = 0.5f)
             },
             shape = shape
