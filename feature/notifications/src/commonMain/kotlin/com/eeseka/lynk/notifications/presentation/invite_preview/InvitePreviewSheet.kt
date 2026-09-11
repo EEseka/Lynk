@@ -53,7 +53,7 @@ import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.notifications.generated.resources.Res
@@ -216,7 +216,7 @@ private fun InvitePreviewSheetContent(
 
                     InviteDetailRow(
                         icon = Lucide.CalendarClock,
-                        text = hangoutPreview.scheduledAt.toHangoutDisplayDate()
+                        text = hangoutPreview.scheduledAt.toDateTimeLabel()
                     )
 
                     val chosenSpot = hangoutPreview.chosenSpot

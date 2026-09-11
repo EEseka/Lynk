@@ -62,12 +62,14 @@ import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toDateLabel
+import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
+import com.eeseka.lynk.shared.presentation.util.toPickerMillis
+import com.eeseka.lynk.shared.presentation.util.toTimeLabel
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.close_sheet
@@ -276,10 +278,10 @@ private fun CreateHangoutSheetContent(
                             descriptionState = state.hangoutDescriptionTextState,
                             descriptionErrorMessage = state.hangoutDescriptionError?.asString(),
                             vibe = state.hangoutVibe,
-                            dateValue = state.hangoutDate?.toString(),
-                            dateMillis = state.hangoutDate?.atStartOfDayIn(TimeZone.UTC)?.toEpochMilliseconds(),
+                            dateValue = state.hangoutDate?.toDateLabel(),
+                            dateMillis = state.hangoutDate?.toPickerMillis(),
                             dateErrorMessage = state.hangoutDateError?.asString(),
-                            timeValue = state.hangoutTime?.toString(),
+                            timeValue = state.hangoutTime?.toTimeLabel(),
                             timeHour = state.hangoutTime?.hour,
                             timeMinute = state.hangoutTime?.minute,
                             timeErrorMessage = state.hangoutTimeError?.asString(),
@@ -370,7 +372,7 @@ private fun CreateHangoutSheetContent(
                             scheduledLabel = if (date != null && time != null) {
                                 LocalDateTime(date, time)
                                     .toInstant(TimeZone.currentSystemDefault())
-                                    .toHangoutDisplayDate()
+                                    .toDateTimeLabel()
                             } else {
                                 stringResource(Res.string.tbd)
                             },

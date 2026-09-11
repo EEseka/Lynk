@@ -30,8 +30,8 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
-import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.host_badge_description
@@ -53,22 +53,10 @@ fun HangoutSummaryCard(
 ) {
     val scheme = MaterialTheme.colorScheme
 
-    val (statusBackground, statusForeground) = when (hangout.status) {
-        HangoutStatus.ONGOING -> scheme.extended.success to scheme.extended.onSuccess
-        HangoutStatus.SCHEDULED -> scheme.secondary to scheme.onSecondary
-        HangoutStatus.VOTING -> scheme.tertiary to scheme.onTertiary
-        HangoutStatus.COMPLETED -> scheme.surfaceVariant to scheme.onSurfaceVariant
-        HangoutStatus.CANCELLED -> scheme.error to scheme.onError
-    }
-
     val participantsText = when (hangout.status) {
         HangoutStatus.COMPLETED -> {
             hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(
-                    Res.string.participants_attended_max_format,
-                    hangout.participantCount,
-                    maxAttendees
-                )
+                stringResource(Res.string.participants_attended_max_format, hangout.participantCount, maxAttendees)
             } ?: stringResource(Res.string.participants_attended_format, hangout.participantCount)
         }
 
@@ -76,11 +64,7 @@ fun HangoutSummaryCard(
 
         else -> {
             hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(
-                    Res.string.participants_max_format,
-                    hangout.participantCount,
-                    maxAttendees
-                )
+                stringResource(Res.string.participants_max_format, hangout.participantCount, maxAttendees)
             } ?: stringResource(Res.string.participants_format, hangout.participantCount)
         }
     }
@@ -114,13 +98,15 @@ fun HangoutSummaryCard(
                 }
 
                 if (isHost) {
+                    val cardColor = if (isSelected) scheme.surface else scheme.surfaceContainerHighest
+
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .size(20.dp)
                             .clip(CircleShape)
                             .background(scheme.extended.gold)
-                            .border(2.dp, scheme.surface, CircleShape),
+                            .border(2.dp, cardColor, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -149,18 +135,7 @@ fun HangoutSummaryCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(statusBackground)
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        LynkText(
-                            text = hangout.status.getTitle(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = statusForeground
-                        )
-                    }
+                    StatusChip(status = hangout.status)
                 }
 
                 Row(
@@ -219,7 +194,7 @@ private fun HangoutSummaryCardPreview() {
                 participantCount = 4,
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
-            scheduledDate = "Fri, 15 Jun · 8:00 PM",
+            scheduledDate = "Mon 15 Jun · 8:00 PM",
             isSelected = false,
             isHost = true,
             onClick = {},
@@ -244,9 +219,59 @@ private fun HangoutSummaryCardSelectedPreview() {
                 participantCount = 7,
                 createdAt = Instant.fromEpochSeconds(1_749_000_000)
             ),
-            scheduledDate = "Sat, 16 Jun · 7:30 PM",
+            scheduledDate = "Tue 16 Jun · 7:30 PM",
             isSelected = true,
             isHost = false,
+            onClick = {},
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun HangoutSummaryCardCompletedPreview() {
+    LynkTheme {
+        HangoutSummaryCard(
+            hangout = HangoutSummaryUi(
+                id = "3",
+                hostId = "user2",
+                name = "Beach Day at Tarkwa Bay",
+                vibe = HangoutVibe.ACTIVE,
+                status = HangoutStatus.COMPLETED,
+                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
+                maxAttendees = 8,
+                participantCount = 6,
+                createdAt = Instant.fromEpochSeconds(1_749_000_000)
+            ),
+            scheduledDate = "Sat 6 Jun · 10:00 AM",
+            isSelected = false,
+            isHost = false,
+            onClick = {},
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun HangoutSummaryCardCancelledPreview() {
+    LynkTheme {
+        HangoutSummaryCard(
+            hangout = HangoutSummaryUi(
+                id = "4",
+                hostId = "user1",
+                name = "Karaoke Night",
+                vibe = HangoutVibe.PARTY,
+                status = HangoutStatus.CANCELLED,
+                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
+                maxAttendees = null,
+                participantCount = 3,
+                createdAt = Instant.fromEpochSeconds(1_749_000_000)
+            ),
+            scheduledDate = "Fri 12 Jun · 9:00 PM",
+            isSelected = false,
+            isHost = true,
             onClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )

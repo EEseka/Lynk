@@ -27,6 +27,7 @@ import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.shared.presentation.util.toPickerDate
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -55,7 +56,6 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Instant
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class CreateHangoutViewModel(
@@ -175,11 +175,7 @@ class CreateHangoutViewModel(
             }
 
             is CreateHangoutAction.OnDateSelected -> {
-                val date = action.epochMilliseconds?.let { epochMilliseconds ->
-                    Instant.fromEpochMilliseconds(epochMilliseconds)
-                        .toLocalDateTime(TimeZone.UTC)
-                        .date
-                }
+                val date = action.epochMilliseconds?.toPickerDate()
                 _state.update {
                     it.copy(hangoutDate = date ?: it.hangoutDate, expandedPicker = null)
                 }

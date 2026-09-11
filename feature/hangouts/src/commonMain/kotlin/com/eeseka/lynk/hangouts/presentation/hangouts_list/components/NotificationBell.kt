@@ -102,3 +102,13 @@ private fun NotificationBellOverflowPreview() {
         }
     }
 }
+
+@PreviewLightDark
+@Composable
+private fun NotificationBellTonalPreview() {
+    LynkTheme {
+        Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+            NotificationBell(unreadCount = 3, onClick = {}, isTonal = true)
+        }
+    }
+}

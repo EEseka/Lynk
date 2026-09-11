@@ -148,7 +148,7 @@ private fun HangoutHeroPreview(
             name = name,
             vibe = vibe,
             status = status,
-            scheduledDate = "Sat, 12 Oct · 8:00 PM",
+            scheduledDate = "Mon 12 Oct · 8:00 PM",
             isHost = isHost,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)

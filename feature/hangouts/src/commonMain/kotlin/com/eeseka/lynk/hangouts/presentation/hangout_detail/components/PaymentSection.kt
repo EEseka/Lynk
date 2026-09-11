@@ -22,8 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CalendarClock
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.hangouts.presentation.util.toDeadlineDisplayDate
-import com.eeseka.lynk.shared.presentation.util.toNairaString
 import com.eeseka.lynk.hangouts.presentation.util.toUiText
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
@@ -36,7 +34,8 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
-import kotlin.time.Instant
+import com.eeseka.lynk.shared.presentation.util.toDateLabel
+import com.eeseka.lynk.shared.presentation.util.toNairaString
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_change_deadline
 import lynk.feature.hangouts.generated.resources.payment_check_action
@@ -53,6 +52,7 @@ import lynk.feature.hangouts.generated.resources.payment_total
 import lynk.feature.hangouts.generated.resources.payment_you_paid
 import lynk.feature.hangouts.generated.resources.payment_your_share
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 
 @Composable
 fun PaymentSection(
@@ -143,7 +143,7 @@ fun PaymentSection(
                         } else {
                             stringResource(Res.string.payment_pay_by)
                         },
-                        value = payment.deadline.toDeadlineDisplayDate()
+                        value = payment.deadline.toDateLabel()
                     )
                 }
 

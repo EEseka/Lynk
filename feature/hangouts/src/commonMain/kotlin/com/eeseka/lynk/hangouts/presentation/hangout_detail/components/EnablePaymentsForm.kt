@@ -246,7 +246,7 @@ private fun EnablePaymentsFormPreview() {
             totalCostState = TextFieldState("24000"),
             totalCostError = null,
             accountNumberState = TextFieldState("0123456789"),
-            deadlineLabel = "12 Sep 2026",
+            deadlineLabel = "Sat 12 Sep",
             deadlineError = null,
             selectedBankName = "Guaranty Trust Bank",
             resolvedAccountName = "EMMANUEL ESEKA",

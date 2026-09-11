@@ -9,12 +9,16 @@
     <string name="search_upcoming_hangouts_hint">Search upcoming hangouts…</string>
     <string name="search_ongoing_hangouts_hint">Search ongoing hangouts…</string>
     <string name="search_completed_hangouts_hint">Search completed hangouts…</string>
-    <string name="search_cancelled_hangouts_hint">Search canceled hangouts…</string>
+    <string name="search_cancelled_hangouts_hint">Search cancelled hangouts…</string>
     <string name="create_hangout">Create Hangout</string>
     <string name="create_a_hangout">Create a hangout</string>
     <string name="filter_vibe">Filter by vibe</string>
     <string name="host_badge_description">You are the host</string>
     <string name="any_vibe">Any Vibe</string>
+
+    <string name="notifications">Notifications</string>
+    <string name="notifications_with_unread">Notifications, %1$d unread</string>
+    <string name="unread_count_overflow">9+</string>
 
     <string name="participants_format">%1$d going</string>
     <string name="participants_max_format">%1$d / %2$d going</string>
@@ -30,11 +34,12 @@
     <string name="empty_hangouts_completed_title">No past hangouts</string>
     <string name="empty_hangouts_completed_message">Hangouts you've finished will appear here.</string>
 
-    <string name="empty_hangouts_cancelled_title">No canceled hangouts</string>
+    <string name="empty_hangouts_cancelled_title">No cancelled hangouts</string>
     <string name="empty_hangouts_cancelled_message">Nothing to see here right now.</string>
 
     <string name="empty_search_title">No hangouts found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
+    <string name="hangouts_load_error_title">Couldn't load your hangouts</string>
 
     <string name="connection_online">Connected</string>
     <string name="connection_offline">Offline</string>
@@ -122,7 +127,7 @@
     <string name="payment_state_collecting_guest">Waiting for everyone to pay</string>
     <string name="payment_state_awaiting_decision_host">The deadline passed with people still unpaid</string>
     <string name="payment_state_awaiting_decision_guest">The host is sorting out the payments</string>
-    <string name="payment_state_ready_for_payout_host">Everyone has paid. Your payout is queued</string>
+    <string name="payment_state_ready_for_payout_host">Everyone has paid. Your payout is queued.</string>
     <string name="payment_state_paying_out_host">Sending your payout</string>
     <string name="payment_state_paid_out_host">Paid out to your account</string>
     <string name="payment_state_payout_failed_host">Your payout didn't go through</string>
@@ -134,7 +139,7 @@
     <string name="payment_deadline_in_past">Pick a day that hasn't passed yet.</string>
     <string name="payment_deadline_after_hangout">The deadline has to be on or before the hangout.</string>
 
-    <!-- Enable payments sheet -->
+    <!-- Enable payments form -->
     <string name="payment_collect_title">Collect payments</string>
     <string name="payment_collect_hint">Ask your guests to pay their share before the hangout. The bill is split between whoever is in when you turn this on, so invite everyone first.</string>
     <string name="payment_total_cost_label">Total cost</string>
@@ -215,8 +220,4 @@
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
-
-    <string name="notifications">Notifications</string>
-    <string name="notifications_with_unread">Notifications, %1$d unread</string>
-    <string name="unread_count_overflow">9+</string>
 </resources>

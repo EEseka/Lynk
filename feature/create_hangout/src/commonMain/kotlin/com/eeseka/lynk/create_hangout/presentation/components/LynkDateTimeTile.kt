@@ -150,7 +150,7 @@ fun LynkDateTimeTile(
 
 @Composable
 private fun LynkDateTimeTilePreview(
-    value: String? = "20:00",
+    value: String? = "8:00 PM",
     errorMessage: String? = null,
     isExpanded: Boolean = false
 ) {

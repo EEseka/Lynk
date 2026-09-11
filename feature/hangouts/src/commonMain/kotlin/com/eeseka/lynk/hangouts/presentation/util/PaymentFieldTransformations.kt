@@ -28,9 +28,14 @@ private fun TextFieldBuffer.keepAmountCharactersOnly() {
     val original = asCharSequence().toString()
     val cleaned = buildString {
         var hasDecimalPoint = false
+        var koboDigitCount = 0
         original.forEach { character ->
             when {
-                character.isDigit() -> append(character)
+                character.isDigit() && !hasDecimalPoint -> append(character)
+                character.isDigit() && koboDigitCount < 2 -> {
+                    koboDigitCount++
+                    append(character)
+                }
                 character == '.' && !hasDecimalPoint -> {
                     hasDecimalPoint = true
                     append(character)

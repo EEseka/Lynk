@@ -31,12 +31,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
@@ -66,6 +70,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
+import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
@@ -74,38 +79,84 @@ import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
+import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.any_vibe
 import lynk.feature.hangouts.generated.resources.create_a_hangout
 import lynk.feature.hangouts.generated.resources.create_hangout
 import lynk.feature.hangouts.generated.resources.filter_vibe
 import lynk.feature.hangouts.generated.resources.hangouts
+import lynk.feature.hangouts.generated.resources.hangouts_load_error_title
 import lynk.feature.hangouts.generated.resources.search_cancelled_hangouts_hint
 import lynk.feature.hangouts.generated.resources.search_completed_hangouts_hint
 import lynk.feature.hangouts.generated.resources.search_ongoing_hangouts_hint
 import lynk.feature.hangouts.generated.resources.search_upcoming_hangouts_hint
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Instant
+
+@Composable
+fun HangoutsListRoot(
+    selectedHangoutId: String?,
+    onHangoutClick: (String?) -> Unit,
+    onCreateHangoutClick: () -> Unit,
+    navigateToNotifications: () -> Unit,
+    unreadNotificationCount: Int,
+    mainShellPadding: PaddingValues,
+    viewModel: HangoutsListViewModel = koinViewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(selectedHangoutId) {
+        viewModel.onAction(HangoutsListAction.OnSelectHangout(selectedHangoutId))
+    }
+
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is HangoutsListEvent.Error -> {
+                snackbarHostState.showFlashMessage(
+                    message = event.message.asStringAsync(),
+                    type = LynkFlashType.Error
+                )
+            }
+        }
+    }
+
+    HangoutsListScreen(
+        state = state,
+        onAction = { action ->
+            when (action) {
+                is HangoutsListAction.OnSelectHangout -> onHangoutClick(action.hangoutId)
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        },
+        snackbarHostState = snackbarHostState,
+        onCreateHangoutClick = onCreateHangoutClick,
+        unreadNotificationCount = unreadNotificationCount,
+        navigateToNotifications = navigateToNotifications,
+        mainShellPadding = mainShellPadding
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangoutsListScreen(
     state: HangoutsListState,
-    events: Flow<HangoutsListEvent>,
     onAction: (HangoutsListAction) -> Unit,
+    snackbarHostState: SnackbarHostState,
     onCreateHangoutClick: () -> Unit,
     unreadNotificationCount: Int,
-    onNavigateToNotifications: () -> Unit,
+    navigateToNotifications: () -> Unit,
     mainShellPadding: PaddingValues
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
     val hapticFeedback = rememberAppHaptic()
 
     val configuration = currentDeviceConfiguration()
@@ -116,6 +167,7 @@ fun HangoutsListScreen(
     var showGuestPrompt by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    val inputModeManager = LocalInputModeManager.current
     var hasTappedSearch by remember { mutableStateOf(false) }
 
     val permissionController = rememberPermissionController()
@@ -132,22 +184,11 @@ fun HangoutsListScreen(
         }
     }
 
-    ObserveAsEvents(events) { event ->
-        when (event) {
-            is HangoutsListEvent.Error -> {
-                snackbarHostState.showFlashMessage(
-                    message = event.error.asStringAsync(),
-                    type = LynkFlashType.Error
-                )
-            }
-        }
-    }
-
     PaginationScrollListener(
         lazyListState = listState,
         itemCount = state.hangouts.size,
-        isPaginationLoading = state.isSearchLoading,
-        isEndReached = state.isSearchEndReached,
+        isPaginationLoading = state.isLoading,
+        isEndReached = state.isEndReached,
         onNearBottom = { onAction(HangoutsListAction.LoadNextPage) },
         resetKey = state.searchResetEpoch
     )
@@ -164,7 +205,7 @@ fun HangoutsListScreen(
                                 unreadCount = unreadNotificationCount,
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
-                                    onNavigateToNotifications()
+                                    navigateToNotifications()
                                 }
                             )
                         }
@@ -177,7 +218,7 @@ fun HangoutsListScreen(
                                 sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
-                                    onNavigateToNotifications()
+                                    navigateToNotifications()
                                 }
                             )
                         )
@@ -192,68 +233,81 @@ fun HangoutsListScreen(
             modifier = Modifier.fillMaxSize().clearFocusOnTap(),
             contentAlignment = Alignment.TopCenter
         ) {
-            val isSearchActive =
-                state.searchTextState.text.toString().isNotBlank() || state.selectedVibe != null
-            val showEmptyList =
-                !isSearchActive && state.hangouts.isEmpty() && !state.isSearchLoading && state.isSearchEndReached
-            val showEmptySearch =
-                isSearchActive && state.hangouts.isEmpty() && !state.isSearchLoading && state.isSearchEndReached
+            val isSearchActive = state.searchTextState.text.toString().isNotBlank() || state.selectedVibe != null
+            val showEmptyList = !isSearchActive && state.hangouts.isEmpty() && !state.isLoading && state.isEndReached
+            val showEmptySearch = isSearchActive && state.hangouts.isEmpty() && !state.isLoading && state.isEndReached
+            val showLoadError = state.hangouts.isEmpty() && state.loadError != null && !state.isLoading
 
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = scaffoldPadding.calculateTopPadding() + 120.dp,
-                    bottom = mainShellPadding.calculateBottomPadding() + 80.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.widthIn(max = listMaxWidth).fillMaxSize()
-            ) {
-                if (showEmptyList) {
-                    item {
-                        HangoutsEmptyState(currentFilter = state.selectedStatusFilter)
-                    }
-                } else if (showEmptySearch) {
-                    item {
-                        HangoutsSearchEmptyState(
-                            modifier = Modifier.padding(top = 64.dp)
-                        )
-                    }
-                } else {
-                    items(items = state.hangouts, key = { it.id }) { hangout ->
-                        Box(modifier = Modifier.animateItem()) {
-                            HangoutSummaryCard(
-                                hangout = hangout,
-                                scheduledDate = hangout.scheduledAt.toHangoutDisplayDate(),
-                                isSelected = hangout.id == state.selectedHangoutId,
-                                isHost = hangout.hostId == state.currentUserId,
-                                onClick = {
-                                    hapticFeedback(AppHaptic.ImpactMedium)
-                                    onAction(HangoutsListAction.OnSelectHangout(hangout.id))
-                                }
+            if (showLoadError) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LynkErrorState(
+                        title = stringResource(Res.string.hangouts_load_error_title),
+                        message = state.loadError.asString(),
+                        onRetry = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(HangoutsListAction.OnRetryClick)
+                        }
+                    )
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        top = scaffoldPadding.calculateTopPadding() + 120.dp,
+                        bottom = mainShellPadding.calculateBottomPadding() + 80.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.widthIn(max = listMaxWidth).fillMaxSize()
+                ) {
+                    if (showEmptyList) {
+                        item {
+                            HangoutsEmptyState(currentFilter = state.selectedStatusFilter)
+                        }
+                    } else if (showEmptySearch) {
+                        item {
+                            HangoutsSearchEmptyState(
+                                modifier = Modifier.padding(top = 64.dp)
                             )
                         }
+                    } else {
+                        items(items = state.hangouts, key = { it.id }) { hangout ->
+                            Box(modifier = Modifier.animateItem()) {
+                                HangoutSummaryCard(
+                                    hangout = hangout,
+                                    scheduledDate = hangout.scheduledAt.toDateTimeLabel(),
+                                    isSelected = hangout.id == state.selectedHangoutId,
+                                    isHost = hangout.hostId == state.currentUserId,
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        onAction(HangoutsListAction.OnSelectHangout(hangout.id))
+                                    }
+                                )
+                            }
+                        }
                     }
-                }
 
-                if (state.isSearchLoading) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(64.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            LynkProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
+                    if (state.isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                LynkProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
                         }
                     }
                 }
             }
-
 
             Column(
                 modifier = Modifier
@@ -277,7 +331,8 @@ fun HangoutsListScreen(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            // The pane hands this field focus on entry; take it back unless tapped
+                            // The pane hands this field focus on entry; take it back unless tapped.
+                            // Touch only: with a keyboard, focus arriving is navigation
                             .pointerInput(Unit) {
                                 awaitEachGesture {
                                     awaitFirstDown(
@@ -288,7 +343,7 @@ fun HangoutsListScreen(
                                 }
                             }
                             .onFocusChanged {
-                                if (it.isFocused && !hasTappedSearch) {
+                                if (it.isFocused && !hasTappedSearch && inputModeManager.inputMode == InputMode.Touch) {
                                     focusManager.clearFocus(force = true)
                                 }
                             }
@@ -350,7 +405,7 @@ fun HangoutsListScreen(
                             unreadCount = unreadNotificationCount,
                             onClick = {
                                 hapticFeedback(AppHaptic.ImpactLight)
-                                onNavigateToNotifications()
+                                navigateToNotifications()
                             },
                             isTonal = true
                         )
@@ -371,6 +426,7 @@ fun HangoutsListScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
             LynkFloatingActionButton(
                 onClick = {
                     hapticFeedback(AppHaptic.ImpactMedium)
@@ -418,7 +474,7 @@ private val previewNames = listOf(
     "Movie Night" to HangoutVibe.CHILL
 )
 
-private fun previewHangouts(filter: HangoutStatusFilter): List<HangoutSummaryUi> {
+private fun previewHangouts(filter: HangoutStatusFilter): ImmutableList<HangoutSummaryUi> {
     val statuses = when (filter) {
         HangoutStatusFilter.UPCOMING -> listOf(HangoutStatus.VOTING, HangoutStatus.SCHEDULED)
         HangoutStatusFilter.ONGOING -> listOf(HangoutStatus.ONGOING)
@@ -437,21 +493,23 @@ private fun previewHangouts(filter: HangoutStatusFilter): List<HangoutSummaryUi>
             participantCount = 1 + index % 5,
             createdAt = Instant.fromEpochSeconds(1_790_000_000L + index * 86_400L)
         )
-    }
+    }.toImmutableList()
 }
 
+private fun previewState(filter: HangoutStatusFilter) = HangoutsListState(
+    hangouts = previewHangouts(filter),
+    selectedStatusFilter = filter
+)
+
 @Composable
-private fun HangoutsListScreenPreview(filter: HangoutStatusFilter) {
+private fun HangoutsListScreenPreview(state: HangoutsListState) {
     LynkTheme {
         HangoutsListScreen(
-            state = HangoutsListState(
-                hangouts = previewHangouts(filter),
-                selectedStatusFilter = filter
-            ),
-            events = emptyFlow(),
+            state = state,
+            snackbarHostState = remember { SnackbarHostState() },
             onCreateHangoutClick = {},
             unreadNotificationCount = 3,
-            onNavigateToNotifications = {},
+            navigateToNotifications = {},
             onAction = {},
             mainShellPadding = PaddingValues()
         )
@@ -461,14 +519,34 @@ private fun HangoutsListScreenPreview(filter: HangoutStatusFilter) {
 @PreviewLightDark
 @Composable
 private fun HangoutsListScreenUpcomingPreview() =
-    HangoutsListScreenPreview(HangoutStatusFilter.UPCOMING)
+    HangoutsListScreenPreview(previewState(HangoutStatusFilter.UPCOMING))
 
 @PreviewLightDark
 @Composable
 private fun HangoutsListScreenOngoingPreview() =
-    HangoutsListScreenPreview(HangoutStatusFilter.ONGOING)
+    HangoutsListScreenPreview(previewState(HangoutStatusFilter.ONGOING))
 
 @PreviewLightDark
 @Composable
 private fun HangoutsListScreenCompletedPreview() =
-    HangoutsListScreenPreview(HangoutStatusFilter.COMPLETED)
+    HangoutsListScreenPreview(previewState(HangoutStatusFilter.COMPLETED))
+
+@PreviewLightDark
+@Composable
+private fun HangoutsListScreenCancelledPreview() =
+    HangoutsListScreenPreview(previewState(HangoutStatusFilter.CANCELLED))
+
+@PreviewLightDark
+@Composable
+private fun HangoutsListScreenErrorPreview() = HangoutsListScreenPreview(
+    HangoutsListState(
+        loadError = UiText.DynamicString(
+            "Couldn't reach the server. Check your connection and try again."
+        )
+    )
+)
+
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
+@Composable
+private fun HangoutsListScreenTabletPreview() =
+    HangoutsListScreenPreview(previewState(HangoutStatusFilter.UPCOMING))

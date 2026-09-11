@@ -13,12 +13,12 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailState
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
-import com.eeseka.lynk.hangouts.presentation.util.toDeadlineLabel
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.toDateLabel
 import kotlinx.datetime.LocalDate
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_collect_hint
@@ -58,7 +58,7 @@ fun CollectPaymentsSetup(
                     totalCostState = state.totalCostState,
                     totalCostError = state.totalCostError?.asString(),
                     accountNumberState = state.accountNumberState,
-                    deadlineLabel = state.paymentDeadlineDate?.toDeadlineLabel(),
+                    deadlineLabel = state.paymentDeadlineDate?.toDateLabel(),
                     deadlineError = state.paymentDeadlineError?.asString(),
                     selectedBankName = state.selectedBank?.name,
                     resolvedAccountName = state.resolvedAccountName,

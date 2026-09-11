@@ -40,35 +40,19 @@ class HangoutsListDetailViewModel(
     fun onAction(action: HangoutsListDetailAction) {
         when (action) {
             is HangoutsListDetailAction.OnSelectHangout -> {
-                _state.update {
-                    it.copy(
-                        selectedHangoutId = action.hangoutId
-                    )
-                }
+                _state.update { it.copy(selectedHangoutId = action.hangoutId) }
             }
 
             HangoutsListDetailAction.OnCreateHangoutClick -> {
-                _state.update {
-                    it.copy(
-                        sheetState = SheetState.CreateHangout
-                    )
-                }
+                _state.update { it.copy(sheetState = SheetState.CreateHangout) }
             }
 
             is HangoutsListDetailAction.OnEditHangoutClick -> {
-                _state.update {
-                    it.copy(
-                        sheetState = SheetState.EditHangout(action.hangout)
-                    )
-                }
+                _state.update { it.copy(sheetState = SheetState.EditHangout(action.hangout)) }
             }
 
             HangoutsListDetailAction.OnDismissCurrentSheet -> {
-                _state.update {
-                    it.copy(
-                        sheetState = SheetState.Hidden
-                    )
-                }
+                _state.update { it.copy(sheetState = SheetState.Hidden) }
             }
 
             HangoutsListDetailAction.RefreshList -> refreshList()
@@ -79,6 +63,7 @@ class HangoutsListDetailViewModel(
         connectionClient.events
             .onEach { event ->
                 val affectsList = when (event) {
+                    is LobbyEvent.NonPayerRemoved,
                     is LobbyEvent.ParticipantLeft,
                     is LobbyEvent.RsvpUpdated,
                     is LobbyEvent.HangoutUpdated,

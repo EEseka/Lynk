@@ -191,15 +191,15 @@ private fun MainShellNavHost(
             navController = navController,
             mainShellPadding = paddingValues,
             onNavigateToHangouts = { hangoutId ->
-                navController.navigate(HangoutsGraphRoutes.HangoutListDetail(hangoutId)) {
-                    popUpTo<HangoutsGraphRoutes.HangoutListDetail> { inclusive = true }
+                navController.navigate(HangoutsGraphRoutes.HangoutsListDetail(hangoutId)) {
+                    popUpTo<HangoutsGraphRoutes.HangoutsListDetail> { inclusive = true }
                 }
             }
         )
         hangoutsGraph(
             navController = navController,
             mainShellPadding = paddingValues,
-            onDetailPaneFullScreenChange = onHangoutDetailPaneFullScreenChanged,
+            onDetailPaneFullScreenChanged = onHangoutDetailPaneFullScreenChanged,
             unreadNotificationCount = unreadNotificationCount
         )
         profileGraph(

@@ -43,6 +43,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.CalendarX2
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
@@ -67,7 +68,6 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentCh
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ProposeSpotSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.VotingSection
-import com.eeseka.lynk.hangouts.presentation.util.toLocalDate
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
@@ -110,11 +110,11 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
+import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
+import com.eeseka.lynk.shared.presentation.util.toPickerDate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_about
@@ -140,6 +140,7 @@ import lynk.feature.hangouts.generated.resources.detail_update
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_title
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -150,19 +151,55 @@ private sealed interface DetailBodyState {
     data object Empty : DetailBodyState
 }
 
+@Composable
+fun HangoutDetailRoot(
+    hangoutId: String?,
+    isDetailPaneFullScreen: Boolean,
+    navigateBack: () -> Unit,
+    onHangoutLeft: () -> Unit,
+    onEditHangoutClick: (HangoutUi) -> Unit,
+    viewModel: HangoutDetailViewModel = koinViewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is HangoutDetailEvent.ShowMessage -> {
+                snackbarHostState.showFlashMessage(
+                    message = event.message.asStringAsync(),
+                    type = event.type
+                )
+            }
+
+            HangoutDetailEvent.NavigateBack -> onHangoutLeft()
+        }
+    }
+
+    LaunchedEffect(hangoutId) {
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+    }
+
+    HangoutDetailScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        snackbarHostState = snackbarHostState,
+        isDetailPaneFullScreen = isDetailPaneFullScreen,
+        navigateBack = navigateBack,
+        onEditClick = { state.hangout?.let(onEditHangoutClick) }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangoutDetailScreen(
     state: HangoutDetailState,
-    events: Flow<HangoutDetailEvent>,
     onAction: (HangoutDetailAction) -> Unit,
+    snackbarHostState: SnackbarHostState,
     isDetailPaneFullScreen: Boolean,
-    onBackClick: () -> Unit,
-    onLeave: () -> Unit,
+    navigateBack: () -> Unit,
     onEditClick: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = rememberAppHaptic()
@@ -174,19 +211,6 @@ fun HangoutDetailScreen(
     var showLeaveDialog by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
     var pendingCancelDecision by remember { mutableStateOf(false) }
-
-    ObserveAsEvents(events) { event ->
-        when (event) {
-            is HangoutDetailEvent.ShowMessage -> {
-                snackbarHostState.showFlashMessage(
-                    message = event.message.asStringAsync(),
-                    type = event.type
-                )
-            }
-
-            HangoutDetailEvent.NavigateBack -> onLeave()
-        }
-    }
 
     val hangout = state.hangout
     val isHost = hangout != null && hangout.hostId == state.currentUserId
@@ -270,7 +294,7 @@ fun HangoutDetailScreen(
                         LynkIconButton(
                             onClick = {
                                 hapticFeedback(AppHaptic.ImpactLight)
-                                onBackClick()
+                                navigateBack()
                             }
                         ) {
                             Icon(
@@ -284,7 +308,7 @@ fun HangoutDetailScreen(
                             sfSymbol = "chevron.left",
                             onClick = {
                                 hapticFeedback(AppHaptic.ImpactLight)
-                                onBackClick()
+                                navigateBack()
                             }
                         )
                     ),
@@ -609,7 +633,7 @@ fun HangoutDetailScreen(
                     if (millis == null) {
                         onAction(HangoutDetailAction.OnDismissPaymentDeadlinePicker)
                     } else {
-                        onAction(HangoutDetailAction.OnPaymentDeadlineSelected(millis.toLocalDate()))
+                        onAction(HangoutDetailAction.OnPaymentDeadlineSelected(millis.toPickerDate()))
                     }
                 }
             )
@@ -655,7 +679,7 @@ fun HangoutDetailScreen(
                     if (millis == null) {
                         onAction(HangoutDetailAction.OnDismissDeadlinePicker)
                     } else {
-                        onAction(HangoutDetailAction.OnNewDeadlineSelected(millis.toLocalDate()))
+                        onAction(HangoutDetailAction.OnNewDeadlineSelected(millis.toPickerDate()))
                     }
                 }
             )
@@ -829,7 +853,7 @@ private fun HangoutDetailContent(
                 name = hangout.name,
                 vibe = hangout.vibe,
                 status = hangout.status,
-                scheduledDate = hangout.scheduledAt.toHangoutDisplayDate(),
+                scheduledDate = hangout.scheduledAt.toDateTimeLabel(),
                 isHost = isHost,
                 actions = heroActions
             )

@@ -16,10 +16,10 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.toPickerMillis
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.confirm_date
@@ -37,8 +37,7 @@ fun LynkDatePicker(
         initialSelectedDateMillis ?: Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .date
-            .atStartOfDayIn(TimeZone.UTC)
-            .toEpochMilliseconds()
+            .toPickerMillis()
     }
 
     val state = rememberAdaptiveDatePickerState(initialSelectedDateMillis = seedMillis)

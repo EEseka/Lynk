@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
@@ -137,3 +138,8 @@ private fun HangoutsEmptyStateCompletedPreview() =
 @Composable
 private fun HangoutsEmptyStateCancelledPreview() =
     HangoutsEmptyStatePreview(HangoutStatusFilter.CANCELLED)
+
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
+@Composable
+private fun HangoutsEmptyStateLandscapePreview() =
+    HangoutsEmptyStatePreview(HangoutStatusFilter.UPCOMING)
