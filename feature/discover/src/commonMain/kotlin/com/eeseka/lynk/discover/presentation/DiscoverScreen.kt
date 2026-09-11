@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.rememberSpotMapClickHandler
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
+import com.eeseka.lynk.discover.presentation.util.flightDurationTo
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
@@ -159,9 +161,11 @@ fun DiscoverScreen(
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showAttributionMenu by remember { mutableStateOf(false) }
 
+    var hasCenteredOnUser by rememberSaveable { mutableStateOf(false) }
+
     val locationFetchError = stringResource(Res.string.location_fetch_error)
 
-    val fetchCurrentLocationAndShowOnMap: suspend () -> Unit = {
+    val fetchCurrentLocationAndShowOnMap: suspend (isLocateMeTap: Boolean) -> Unit = { isLocateMeTap ->
         val coordinate = locationController.getCurrentLocation()
         if (coordinate == null) {
             snackbarHostState.showFlashMessage(
@@ -171,15 +175,25 @@ fun DiscoverScreen(
         } else {
             onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
-            cameraState.animateTo(
-                finalPosition = cameraState.position.copy(
-                    target = Position(
-                        latitude = coordinate.latitude,
-                        longitude = coordinate.longitude
-                    ),
-                    zoom = 14.0
-                )
+            val currentPosition = cameraState.position
+            val userPosition = currentPosition.copy(
+                target = Position(
+                    latitude = coordinate.latitude,
+                    longitude = coordinate.longitude
+                ),
+                zoom = 14.0
             )
+
+            if (isLocateMeTap) {
+                cameraState.animateTo(
+                    finalPosition = userPosition,
+                    duration = currentPosition.flightDurationTo(userPosition)
+                )
+            } else if (!hasCenteredOnUser) {
+                // Opening the screen lands on the user straight away
+                cameraState.position = userPosition
+            }
+            hasCenteredOnUser = true
         }
     }
 
@@ -195,7 +209,7 @@ fun DiscoverScreen(
 
     LaunchedEffect(permissionState) {
         if (permissionState == PermissionState.GRANTED) {
-            fetchCurrentLocationAndShowOnMap()
+            fetchCurrentLocationAndShowOnMap(false)
         }
     }
 
@@ -388,7 +402,7 @@ fun DiscoverScreen(
                 onClick = {
                     hapticFeedback(AppHaptic.ImpactLight)
                     if (permissionState == PermissionState.GRANTED) {
-                        scope.launch { fetchCurrentLocationAndShowOnMap() }
+                        scope.launch { fetchCurrentLocationAndShowOnMap(true) }
                     } else {
                         scope.launch {
                             permissionState =
