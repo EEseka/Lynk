@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +16,10 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.presentation.util.toNairaString
+import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
+import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.toNairaString
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_confirm_action
 import lynk.feature.hangouts.generated.resources.payment_confirm_charge
@@ -51,6 +53,8 @@ private fun PayConfirmSheetContent(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -85,7 +89,10 @@ private fun PayConfirmSheetContent(
 
         LynkButton(
             text = stringResource(Res.string.payment_confirm_action),
-            onClick = onConfirm,
+            onClick = {
+                hapticFeedback(AppHaptic.ImpactMedium)
+                onConfirm()
+            },
             style = LynkButtonStyle.PRIMARY,
             modifier = Modifier.fillMaxWidth()
         )

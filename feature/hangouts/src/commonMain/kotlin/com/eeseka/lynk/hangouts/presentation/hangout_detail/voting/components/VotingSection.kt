@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
 import androidx.compose.animation.animateBounds
 import androidx.compose.foundation.background
@@ -25,6 +25,8 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Scale
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PlaceholderCard
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -33,7 +35,12 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.persistentSetOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.voting_close
 import lynk.feature.hangouts.generated.resources.voting_closing
@@ -47,12 +54,12 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun VotingSection(
-    candidates: List<SpotUi>,
-    votes: Map<String, String>,
-    removingSpotIds: Set<String>,
+    candidates: ImmutableList<SpotUi>,
+    votes: ImmutableMap<String, String>,
+    removingSpotIds: ImmutableSet<String>,
     currentUserId: String?,
     isHost: Boolean,
-    tiedSpotIds: List<String>,
+    tiedSpotIds: ImmutableList<String>,
     isClosingVoting: Boolean,
     onCastVote: (String) -> Unit,
     onRemoveSpot: (String) -> Unit,
@@ -143,12 +150,16 @@ fun VotingSection(
                                     onRemove = { onRemoveSpot(spot.id) },
                                     onClick = {
                                         when {
-                                            tie && isHost && spot.id in tiedSpotIds -> onBreakTie(
-                                                spot.id
-                                            )
+                                            tie && isHost && spot.id in tiedSpotIds -> {
+                                                hapticFeedback(AppHaptic.ImpactMedium)
+                                                onBreakTie(spot.id)
+                                            }
 
-                                            tie -> Unit // locked while the host breaks the tie
-                                            else -> onCastVote(spot.id)
+                                            tie -> Unit // locked while the host breaks the tie, so no buzz either
+                                            else -> {
+                                                hapticFeedback(AppHaptic.ImpactMedium)
+                                                onCastVote(spot.id)
+                                            }
                                         }
                                     },
                                     modifier = Modifier.animateBounds(this@LookaheadScope)
@@ -161,7 +172,10 @@ fun VotingSection(
                 if (isHost && !tie) {
                     LynkButton(
                         text = stringResource(Res.string.voting_close),
-                        onClick = onCloseVoting,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactMedium)
+                            onCloseVoting()
+                        },
                         style = LynkButtonStyle.SECONDARY,
                         enabled = totalVotes > 0,
                         isLoading = isClosingVoting,
@@ -193,7 +207,7 @@ private fun previewSpot(id: String, name: String, address: String) = SpotUi(
     isSaved = false
 )
 
-private val previewCandidates = listOf(
+private val previewCandidates = persistentListOf(
     previewSpot("s1", "The Rooftop Lounge", "12 Admiralty Way, Lekki"),
     previewSpot("s2", "Nomad Beach Bar", "8 Elegushi Rd, Lekki"),
     previewSpot("s3", "Craft & Co", "3 Karimu Kotun St, VI")
@@ -201,11 +215,11 @@ private val previewCandidates = listOf(
 
 @Composable
 private fun VotingSectionPreview(
-    candidates: List<SpotUi> = previewCandidates,
-    votes: Map<String, String> = mapOf("0" to "s1", "1" to "s1", "2" to "s2", "me" to "s3"),
+    candidates: ImmutableList<SpotUi> = previewCandidates,
+    votes: ImmutableMap<String, String> = persistentMapOf("0" to "s1", "1" to "s1", "2" to "s2", "me" to "s3"),
     isHost: Boolean = false,
-    tiedSpotIds: List<String> = emptyList(),
-    removingSpotIds: Set<String> = emptySet(),
+    tiedSpotIds: ImmutableList<String> = persistentListOf(),
+    removingSpotIds: ImmutableSet<String> = persistentSetOf(),
     isClosingVoting: Boolean = false
 ) {
     LynkTheme {
@@ -240,16 +254,16 @@ private fun VotingSectionHostPreview() = VotingSectionPreview(isHost = true)
 @PreviewLightDark
 @Composable
 private fun VotingSectionEmptyPreview() = VotingSectionPreview(
-    candidates = emptyList(),
-    votes = emptyMap()
+    candidates = persistentListOf(),
+    votes = persistentMapOf()
 )
 
 @PreviewLightDark
 @Composable
 private fun VotingSectionTiePreview() = VotingSectionPreview(
-    votes = mapOf("0" to "s1", "1" to "s2"),
+    votes = persistentMapOf("0" to "s1", "1" to "s2"),
     isHost = true,
-    tiedSpotIds = listOf("s1", "s2")
+    tiedSpotIds = persistentListOf("s1", "s2")
 )
 
 @PreviewLightDark

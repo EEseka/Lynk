@@ -5,29 +5,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,112 +20,86 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.composables.icons.lucide.CalendarX2
-import com.composables.icons.lucide.ChevronLeft
-import com.composables.icons.lucide.EllipsisVertical
-import com.composables.icons.lucide.LogOut
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.SquarePen
-import com.composables.icons.lucide.UserRoundPlus
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.BankPickerSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ChosenSpotSection
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.CollectPaymentsSetup
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ConnectionBanner
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DeadlineDecisionSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailEmptyState
-import com.eeseka.lynk.shared.presentation.components.LynkErrorState
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHero
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDetailContent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDetailTopBar
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHeroActions
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PayConfirmSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentCheckoutSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PaymentSection
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ProposeSpotSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.VotingSection
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
-import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePicker
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsEvent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.BankPickerSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.CollectPaymentsSetup
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.DeadlineDecisionSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PayConfirmSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentCheckoutSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentDeadlinePickerSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingEvent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.LocationShareEffect
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.ProposeSpotSheet
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
-import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosBarButtonItem
-import com.eeseka.lynk.shared.design_system.components.navigation.LynkIosDropDownMenuItem
-import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PAYMENTS
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
-import com.eeseka.lynk.shared.presentation.location.rememberLocationController
-import com.eeseka.lynk.shared.presentation.permissions.Permission
-import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
-import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
-import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
-import com.eeseka.lynk.shared.presentation.util.toPickerDate
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
-import lynk.feature.hangouts.generated.resources.detail_about
 import lynk.feature.hangouts.generated.resources.detail_address_copied
-import lynk.feature.hangouts.generated.resources.detail_cancel
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_action
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_title
-import lynk.feature.hangouts.generated.resources.detail_complete
+import lynk.feature.hangouts.generated.resources.detail_cancelled_message
 import lynk.feature.hangouts.generated.resources.detail_complete_confirm_action
 import lynk.feature.hangouts.generated.resources.detail_complete_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_complete_confirm_title
-import lynk.feature.hangouts.generated.resources.detail_completing
+import lynk.feature.hangouts.generated.resources.detail_completed_message
 import lynk.feature.hangouts.generated.resources.detail_dialog_dismiss
-import lynk.feature.hangouts.generated.resources.detail_invite
-import lynk.feature.hangouts.generated.resources.detail_leave
+import lynk.feature.hangouts.generated.resources.detail_invited_message
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_action
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_title
+import lynk.feature.hangouts.generated.resources.detail_left_message
 import lynk.feature.hangouts.generated.resources.detail_load_error_title
-import lynk.feature.hangouts.generated.resources.detail_more_actions
-import lynk.feature.hangouts.generated.resources.detail_update
+import lynk.feature.hangouts.generated.resources.detail_withdrawn_message
+import lynk.feature.hangouts.generated.resources.payment_deadline_changed
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_title
+import lynk.feature.hangouts.generated.resources.payment_decision_saved
+import lynk.feature.hangouts.generated.resources.payment_enabled_message
+import lynk.feature.hangouts.generated.resources.payment_not_completed
+import lynk.feature.hangouts.generated.resources.payment_payout_queued
+import lynk.feature.hangouts.generated.resources.payment_still_processing
+import lynk.feature.hangouts.generated.resources.spot_suggested_message
+import lynk.feature.hangouts.generated.resources.voting_tie_flash
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
-import kotlin.time.Instant
 
 private sealed interface DetailBodyState {
     data object Loading : DetailBodyState
@@ -158,31 +115,127 @@ fun HangoutDetailRoot(
     navigateBack: () -> Unit,
     onHangoutLeft: () -> Unit,
     onEditHangoutClick: (HangoutUi) -> Unit,
-    viewModel: HangoutDetailViewModel = koinViewModel()
+    viewModel: HangoutDetailViewModel = koinViewModel(),
+    votingViewModel: HangoutVotingViewModel = koinViewModel(),
+    paymentsViewModel: HangoutPaymentsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val votingState by votingViewModel.state.collectAsStateWithLifecycle()
+    val paymentsState by paymentsViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            is HangoutDetailEvent.ShowMessage -> {
-                snackbarHostState.showFlashMessage(
-                    message = event.message.asStringAsync(),
-                    type = event.type
-                )
-            }
+            is HangoutDetailEvent.Error -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = LynkFlashType.Error
+            )
+
+            HangoutDetailEvent.HangoutCompleted -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_completed_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutDetailEvent.HangoutCancelled -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_cancelled_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutDetailEvent.HangoutLeft -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_left_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutDetailEvent.InviteSent -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_invited_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutDetailEvent.InviteWithdrawn -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_withdrawn_message),
+                type = LynkFlashType.Success
+            )
+
+            is HangoutDetailEvent.LobbyAnnouncement -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = event.type
+            )
 
             HangoutDetailEvent.NavigateBack -> onHangoutLeft()
         }
     }
 
+    ObserveAsEvents(votingViewModel.events) { event ->
+        when (event) {
+            is HangoutVotingEvent.Error -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = LynkFlashType.Error
+            )
+
+            HangoutVotingEvent.SpotSuggested -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.spot_suggested_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutVotingEvent.VotingTied -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.voting_tie_flash),
+                type = LynkFlashType.Warning
+            )
+        }
+    }
+
+    ObserveAsEvents(paymentsViewModel.events) { event ->
+        when (event) {
+            is HangoutPaymentsEvent.Error -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = LynkFlashType.Error
+            )
+
+            HangoutPaymentsEvent.PaymentsEnabled -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_enabled_message),
+                type = LynkFlashType.Success
+            )
+
+            HangoutPaymentsEvent.DeadlineChanged -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_deadline_changed),
+                type = LynkFlashType.Success
+            )
+
+            HangoutPaymentsEvent.DecisionSaved -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_decision_saved),
+                type = LynkFlashType.Success
+            )
+
+            HangoutPaymentsEvent.PayoutQueued -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_payout_queued),
+                type = LynkFlashType.Success
+            )
+
+            HangoutPaymentsEvent.PaymentPending -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_still_processing),
+                type = LynkFlashType.Info
+            )
+
+            HangoutPaymentsEvent.PaymentNotCompleted -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_not_completed),
+                type = LynkFlashType.Error
+            )
+        }
+    }
+
     LaunchedEffect(hangoutId) {
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        votingViewModel.onAction(HangoutVotingAction.OnSelectHangout(hangoutId))
+        paymentsViewModel.onAction(HangoutPaymentsAction.OnSelectHangout(hangoutId))
     }
 
     HangoutDetailScreen(
         state = state,
         onAction = viewModel::onAction,
+        votingState = votingState,
+        onVotingAction = votingViewModel::onAction,
+        paymentsState = paymentsState,
+        onPaymentsAction = paymentsViewModel::onAction,
         snackbarHostState = snackbarHostState,
         isDetailPaneFullScreen = isDetailPaneFullScreen,
         navigateBack = navigateBack,
@@ -190,11 +243,14 @@ fun HangoutDetailRoot(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangoutDetailScreen(
     state: HangoutDetailState,
     onAction: (HangoutDetailAction) -> Unit,
+    votingState: HangoutVotingState,
+    onVotingAction: (HangoutVotingAction) -> Unit,
+    paymentsState: HangoutPaymentsState,
+    onPaymentsAction: (HangoutPaymentsAction) -> Unit,
     snackbarHostState: SnackbarHostState,
     isDetailPaneFullScreen: Boolean,
     navigateBack: () -> Unit,
@@ -268,7 +324,6 @@ fun HangoutDetailScreen(
     val onCopyAddressClick = {
         val spot = hangout?.chosenSpot
         if (spot != null) {
-            hapticFeedback(AppHaptic.ImpactLight)
             clipboardManager.setText(
                 AnnotatedString(spot.shortAddress ?: "${spot.latitude}, ${spot.longitude}")
             )
@@ -285,147 +340,21 @@ fun HangoutDetailScreen(
         snackbarHostState = snackbarHostState,
         topBar = {
             if (isDetailPaneFullScreen) {
-                val cancelLabel = stringResource(Res.string.detail_cancel)
-                val leaveLabel = stringResource(Res.string.detail_leave)
-                val editLabel = stringResource(Res.string.detail_update)
-
-                LynkTopAppBar(
-                    navigationIcon = {
-                        LynkIconButton(
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                navigateBack()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.ChevronLeft,
-                                contentDescription = null
-                            )
-                        }
-                    },
-                    iosLeadingItems = persistentListOf(
-                        LynkIosBarButtonItem(
-                            sfSymbol = "chevron.left",
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                navigateBack()
-                            }
-                        )
-                    ),
-                    actions = {
-                        val inviteLabel = stringResource(Res.string.detail_invite)
-                        val moreLabel = stringResource(Res.string.detail_more_actions)
-
-                        if (showInvite) {
-                            LynkIconButton(
-                                onClick = {
-                                    hapticFeedback(AppHaptic.ImpactLight)
-                                    onAction(HangoutDetailAction.OnInviteClick)
-                                },
-                                enabled = inviteEnabled
-                            ) {
-                                Icon(
-                                    imageVector = Lucide.UserRoundPlus,
-                                    contentDescription = inviteLabel
-                                )
-                            }
-                        }
-
-                        val overflowItems = detailOverflowItems(
-                            canEdit = canEdit,
-                            canCancel = canCancel,
-                            canLeave = canLeave,
-                            isCancelling = state.isCancelling,
-                            isLeaving = state.isLeaving,
-                            onEditClick = onEditClick,
-                            onCancelClick = { showCancelDialog = true },
-                            onLeaveClick = { showLeaveDialog = true }
-                        )
-                        if (overflowItems.isNotEmpty()) {
-                            LynkDropDownMenu(
-                                expanded = showOverflowMenu,
-                                onDismissRequest = { showOverflowMenu = false },
-                                items = overflowItems,
-                                anchor = {
-                                    LynkIconButton(
-                                        onClick = {
-                                            hapticFeedback(AppHaptic.ImpactLight)
-                                            showOverflowMenu = true
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Lucide.EllipsisVertical,
-                                            contentDescription = moreLabel
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    },
-                    iosTrailingItems = buildList {
-                        if (showInvite) {
-                            add(
-                                LynkIosBarButtonItem(
-                                    sfSymbol = "person.badge.plus",
-                                    enabled = inviteEnabled,
-                                    onClick = {
-                                        hapticFeedback(AppHaptic.ImpactLight)
-                                        onAction(HangoutDetailAction.OnInviteClick)
-                                    }
-                                )
-                            )
-                        }
-                        val iosOverflowItems = buildList {
-                            if (canEdit) {
-                                add(
-                                    LynkIosDropDownMenuItem(
-                                        title = editLabel,
-                                        sfSymbol = "square.and.pencil",
-                                        onClick = {
-                                            hapticFeedback(AppHaptic.ImpactLight)
-                                            onEditClick()
-                                        }
-                                    )
-                                )
-                            }
-                            if (canCancel) {
-                                add(
-                                    LynkIosDropDownMenuItem(
-                                        title = cancelLabel,
-                                        sfSymbol = "calendar.badge.minus",
-                                        isDestructive = true,
-                                        isDisabled = state.isCancelling,
-                                        onClick = {
-                                            hapticFeedback(AppHaptic.ImpactLight)
-                                            showCancelDialog = true
-                                        }
-                                    )
-                                )
-                            }
-                            if (canLeave) {
-                                add(
-                                    LynkIosDropDownMenuItem(
-                                        title = leaveLabel,
-                                        sfSymbol = "rectangle.portrait.and.arrow.right",
-                                        isDestructive = true,
-                                        isDisabled = state.isLeaving,
-                                        onClick = {
-                                            hapticFeedback(AppHaptic.ImpactLight)
-                                            showLeaveDialog = true
-                                        }
-                                    )
-                                )
-                            }
-                        }.toImmutableList()
-                        if (iosOverflowItems.isNotEmpty()) {
-                            add(
-                                LynkIosBarButtonItem(
-                                    sfSymbol = "ellipsis.circle",
-                                    menuItems = iosOverflowItems
-                                )
-                            )
-                        }
-                    }.reversed().toImmutableList()
+                HangoutDetailTopBar(
+                    showInvite = showInvite,
+                    inviteEnabled = inviteEnabled,
+                    canEdit = canEdit,
+                    canCancel = canCancel,
+                    canLeave = canLeave,
+                    isCancelling = state.isCancelling,
+                    isLeaving = state.isLeaving,
+                    isOverflowExpanded = showOverflowMenu,
+                    onOverflowExpandedChange = { showOverflowMenu = it },
+                    onBackClick = navigateBack,
+                    onInviteClick = { onAction(HangoutDetailAction.OnInviteClick) },
+                    onEditClick = onEditClick,
+                    onCancelClick = { showCancelDialog = true },
+                    onLeaveClick = { showLeaveDialog = true }
                 )
             }
         }
@@ -460,26 +389,28 @@ fun HangoutDetailScreen(
                         is DetailBodyState.Content -> {
                             HangoutDetailContent(
                                 hangout = target.hangout,
-                                isHost = target.hangout.hostId == state.currentUserId,
+                                isHost = isHost,
                                 currentUserId = state.currentUserId,
                                 presentUserIds = state.presentUserIds,
-                                candidates = state.candidates,
-                                votes = state.votes,
-                                removingSpotIds = state.removingSpotIds,
-                                tiedSpotIds = state.tiedSpotIds,
-                                isClosingVoting = state.isClosingVoting,
+                                candidates = votingState.candidates,
+                                votes = votingState.votes,
+                                removingSpotIds = votingState.removingSpotIds,
+                                tiedSpotIds = votingState.tiedSpotIds,
+                                isClosingVoting = votingState.isClosingVoting,
                                 isCompleting = state.isCompleting,
                                 canCopyAddress = canCopyAddress,
                                 hasUnpaidGuests = unpaidCount > 0,
                                 hasCurrentUserPaid = hasCurrentUserPaid,
-                                canPay = canPay && !state.isAwaitingPaymentReturn,
-                                isInitializingPayment = state.isInitializingPayment,
-                                isAwaitingPaymentReturn = state.isAwaitingPaymentReturn,
-                                isVerifyingPayment = state.isVerifyingPayment,
+                                canPay = canPay && !paymentsState.isAwaitingPaymentReturn,
+                                isInitializingPayment = paymentsState.isInitializingPayment,
+                                isAwaitingPaymentReturn = paymentsState.isAwaitingPaymentReturn,
+                                isVerifyingPayment = paymentsState.isVerifyingPayment,
                                 canChangeDeadline = canChangeDeadline,
+                                isChangingDeadline = paymentsState.isChangingDeadline,
                                 needsDeadlineDecision = needsDeadlineDecision,
+                                isDecidingAtDeadline = paymentsState.isDecidingAtDeadline,
                                 canRetryPayout = canRetryPayout,
-                                isRetryingPayout = state.isRetryingPayout,
+                                isRetryingPayout = paymentsState.isRetryingPayout,
                                 onSeeAllParticipantsClick = { showParticipantsSheet = true },
                                 onChosenSpotClick = { showChosenSpotSheet = true },
                                 onCopyAddressClick = onCopyAddressClick,
@@ -510,31 +441,36 @@ fun HangoutDetailScreen(
                                     val attendingCount = target.hangout.participants.count {
                                         it.rsvpStatus == RsvpStatus.ATTENDING
                                     }
-                                    if (target.hangout.hostId == state.currentUserId &&
+                                    if (isHost &&
                                         target.hangout.status == HangoutStatus.SCHEDULED &&
                                         target.hangout.payment == null &&
                                         attendingCount >= MIN_ATTENDEES_FOR_PAYMENTS
                                     ) {
-                                        CollectPaymentsSetup(state = state, onAction = onAction)
+                                        CollectPaymentsSetup(
+                                            state = paymentsState,
+                                            onAction = onPaymentsAction
+                                        )
                                     }
                                 },
-                                onPayClick = { onAction(HangoutDetailAction.OnPayClick) },
-                                onCheckPaymentClick = { onAction(HangoutDetailAction.OnCheckPaymentClick) },
+                                onPayClick = { onPaymentsAction(HangoutPaymentsAction.OnPayClick) },
+                                onCheckPaymentClick = {
+                                    onPaymentsAction(HangoutPaymentsAction.OnCheckPaymentClick)
+                                },
                                 onChangeDeadlineClick = {
-                                    onAction(HangoutDetailAction.OnChangeDeadlineClick)
+                                    onPaymentsAction(HangoutPaymentsAction.OnChangeDeadlineClick)
                                 },
                                 onDecideClick = {
-                                    onAction(HangoutDetailAction.OnDeadlineDecisionClick)
+                                    onPaymentsAction(HangoutPaymentsAction.OnDeadlineDecisionClick)
                                 },
                                 onRetryPayoutClick = {
-                                    onAction(HangoutDetailAction.OnRetryPayoutClick)
+                                    onPaymentsAction(HangoutPaymentsAction.OnRetryPayoutClick)
                                 },
                                 onCompleteClick = { showCompleteDialog = true },
-                                onCastVote = { onAction(HangoutDetailAction.OnCastVote(it)) },
-                                onRemoveSpot = { onAction(HangoutDetailAction.OnRemoveSpot(it)) },
-                                onProposeClick = { onAction(HangoutDetailAction.OnProposeSpotClick) },
-                                onCloseVoting = { onAction(HangoutDetailAction.OnCloseVotingClick) },
-                                onBreakTie = { onAction(HangoutDetailAction.OnBreakTie(it)) },
+                                onCastVote = { onVotingAction(HangoutVotingAction.OnCastVote(it)) },
+                                onRemoveSpot = { onVotingAction(HangoutVotingAction.OnRemoveSpot(it)) },
+                                onProposeClick = { onVotingAction(HangoutVotingAction.OnProposeSpotClick) },
+                                onCloseVoting = { onVotingAction(HangoutVotingAction.OnCloseVotingClick) },
+                                onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
                                 contentPadding = scaffoldPadding
                             )
                         }
@@ -543,7 +479,10 @@ fun HangoutDetailScreen(
                             LynkErrorState(
                                 title = stringResource(Res.string.detail_load_error_title),
                                 message = target.message.asString(),
-                                onRetry = { onAction(HangoutDetailAction.OnRetryClick) }
+                                onRetry = {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onAction(HangoutDetailAction.OnRetryClick)
+                                }
                             )
                         }
 
@@ -569,7 +508,7 @@ fun HangoutDetailScreen(
     if (showParticipantsSheet && state.hangout != null) {
         ParticipantsSheet(
             participants = state.hangout.participants,
-            isHost = state.hangout.hostId == state.currentUserId,
+            isHost = isHost,
             onDismiss = { showParticipantsSheet = false },
             onWithdraw = { onAction(HangoutDetailAction.OnWithdrawParticipantInvite(it)) },
             withdrawingUserIds = state.withdrawingUserIds,
@@ -583,8 +522,8 @@ fun HangoutDetailScreen(
     if (showChosenSpotSheet && chosenSpot != null) {
         SpotDetailSheet(
             spot = chosenSpot,
-            userLat = state.center?.latitude ?: state.myLocation?.latitude,
-            userLng = state.center?.longitude ?: state.myLocation?.longitude,
+            userLat = votingState.center?.latitude ?: votingState.myLocation?.latitude,
+            userLng = votingState.center?.longitude ?: votingState.myLocation?.longitude,
             onDismissRequest = { showChosenSpotSheet = false },
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(HangoutDetailAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
@@ -613,34 +552,25 @@ fun HangoutDetailScreen(
         )
     }
 
-    if (state.isProposeSpotSheetOpen) {
+    if (votingState.isProposeSpotSheetOpen) {
         ProposeSpotSheet(
-            state = state,
-            onTabSelected = { onAction(HangoutDetailAction.OnTabSelected(it)) },
-            onPropose = { onAction(HangoutDetailAction.OnProposeSpot(it)) },
-            onLoadNextSpotPage = { onAction(HangoutDetailAction.LoadNextSpotPage) },
-            onLoadNextFavoritePage = { onAction(HangoutDetailAction.LoadNextFavoriteSpotPage) },
-            onDismiss = { onAction(HangoutDetailAction.OnDismissProposeSpotSheet) }
+            state = votingState,
+            onTabSelected = { onVotingAction(HangoutVotingAction.OnTabSelected(it)) },
+            onPropose = { onVotingAction(HangoutVotingAction.OnProposeSpot(it)) },
+            onLoadNextSpotPage = { onVotingAction(HangoutVotingAction.LoadNextSpotPage) },
+            onLoadNextFavoritePage = { onVotingAction(HangoutVotingAction.LoadNextFavoriteSpotPage) },
+            onDismiss = { onVotingAction(HangoutVotingAction.OnDismissProposeSpotSheet) }
         )
     }
 
-    if (state.isPaymentDeadlinePickerOpen) {
-        LynkAdaptiveSheet(
-            onDismissRequest = { onAction(HangoutDetailAction.OnDismissPaymentDeadlinePicker) }
-        ) {
-            LynkDatePicker(
-                onDateSelected = { millis ->
-                    if (millis == null) {
-                        onAction(HangoutDetailAction.OnDismissPaymentDeadlinePicker)
-                    } else {
-                        onAction(HangoutDetailAction.OnPaymentDeadlineSelected(millis.toPickerDate()))
-                    }
-                }
-            )
-        }
+    if (paymentsState.isPaymentDeadlinePickerOpen) {
+        PaymentDeadlinePickerSheet(
+            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnPaymentDeadlineSelected(it)) },
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPaymentDeadlinePicker) }
+        )
     }
 
-    if (state.isDeadlineDecisionSheetOpen && needsDeadlineDecision) {
+    if (paymentsState.isDeadlineDecisionSheetOpen && needsDeadlineDecision) {
         DeadlineDecisionSheet(
             unpaidCount = unpaidCount,
             onDecision = { decision ->
@@ -648,10 +578,10 @@ fun HangoutDetailScreen(
                 if (decision == DeadlineDecision.CANCEL) {
                     pendingCancelDecision = true
                 } else {
-                    onAction(HangoutDetailAction.OnDeadlineDecisionSelected(decision))
+                    onPaymentsAction(HangoutPaymentsAction.OnDeadlineDecisionSelected(decision))
                 }
             },
-            onDismiss = { onAction(HangoutDetailAction.OnDismissDeadlineDecisionSheet) }
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissDeadlineDecisionSheet) }
         )
     }
 
@@ -665,53 +595,44 @@ fun HangoutDetailScreen(
             isDestructive = true,
             onConfirm = {
                 pendingCancelDecision = false
-                onAction(HangoutDetailAction.OnDeadlineDecisionSelected(DeadlineDecision.CANCEL))
+                onPaymentsAction(HangoutPaymentsAction.OnDeadlineDecisionSelected(DeadlineDecision.CANCEL))
             }
         )
     }
 
-    if (state.pendingDeadlineChange != null) {
-        LynkAdaptiveSheet(
-            onDismissRequest = { onAction(HangoutDetailAction.OnDismissDeadlinePicker) }
-        ) {
-            LynkDatePicker(
-                onDateSelected = { millis ->
-                    if (millis == null) {
-                        onAction(HangoutDetailAction.OnDismissDeadlinePicker)
-                    } else {
-                        onAction(HangoutDetailAction.OnNewDeadlineSelected(millis.toPickerDate()))
-                    }
-                }
-            )
-        }
-    }
-
-    val paymentCheckoutUrl = state.paymentCheckoutUrl
-    if (paymentCheckoutUrl != null) {
-        PaymentCheckoutSheet(
-            url = paymentCheckoutUrl,
-            onDismiss = { onAction(HangoutDetailAction.OnDismissPaymentCheckout) }
+    if (paymentsState.pendingDeadlineChange != null) {
+        PaymentDeadlinePickerSheet(
+            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnNewDeadlineSelected(it)) },
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissDeadlinePicker) }
         )
     }
 
-    val paymentQuote = state.paymentQuote
+    val paymentCheckoutUrl = paymentsState.paymentCheckoutUrl
+    if (paymentCheckoutUrl != null) {
+        PaymentCheckoutSheet(
+            url = paymentCheckoutUrl,
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPaymentCheckout) }
+        )
+    }
+
+    val paymentQuote = paymentsState.paymentQuote
     if (paymentQuote != null) {
         PayConfirmSheet(
             shareLabel = paymentQuote.shareLabel,
             chargeLabel = paymentQuote.chargeLabel,
-            onConfirm = { onAction(HangoutDetailAction.OnConfirmPayment) },
-            onDismiss = { onAction(HangoutDetailAction.OnDismissPayConfirmSheet) }
+            onConfirm = { onPaymentsAction(HangoutPaymentsAction.OnConfirmPayment) },
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPayConfirmSheet) }
         )
     }
 
-    if (state.isBankPickerOpen) {
+    if (paymentsState.isBankPickerOpen) {
         BankPickerSheet(
-            banks = state.bankResults,
-            searchState = state.bankSearchState,
-            isLoading = state.isLoadingBanks,
-            errorMessage = state.bankLoadError?.asString(),
-            onBankSelected = { onAction(HangoutDetailAction.OnBankSelected(it)) },
-            onDismiss = { onAction(HangoutDetailAction.OnDismissBankPicker) }
+            banks = paymentsState.bankResults,
+            searchState = paymentsState.bankSearchState,
+            isLoading = paymentsState.isLoadingBanks,
+            errorMessage = paymentsState.bankLoadError?.asString(),
+            onBankSelected = { onPaymentsAction(HangoutPaymentsAction.OnBankSelected(it)) },
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissBankPicker) }
         )
     }
 
@@ -754,522 +675,8 @@ fun HangoutDetailScreen(
     LocationShareEffect(
         enabled = state.hangout?.status == HangoutStatus.VOTING,
         isConnected = state.connectionState == ConnectionState.CONNECTED,
-        onShareLocation = { lat, lng -> onAction(HangoutDetailAction.OnShareLocation(lat, lng)) }
+        onShareLocation = { lat, lng ->
+            onVotingAction(HangoutVotingAction.OnShareLocation(lat, lng))
+        }
     )
 }
-
-@Composable
-private fun LocationShareEffect(
-    enabled: Boolean,
-    isConnected: Boolean,
-    onShareLocation: (Double, Double) -> Unit
-) {
-    val permissionController = rememberPermissionController()
-    val locationController = rememberLocationController()
-    var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
-
-    LaunchedEffect(enabled) {
-        if (!enabled) return@LaunchedEffect
-
-        permissionState = permissionController.getPermissionState(Permission.LOCATION)
-        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
-            permissionState = permissionController.requestPermission(Permission.LOCATION)
-        }
-    }
-
-    LaunchedEffect(permissionState, enabled, isConnected) {
-        if (!enabled || !isConnected) return@LaunchedEffect
-        if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
-
-        val coordinate = locationController.getCurrentLocation() ?: return@LaunchedEffect
-        onShareLocation(coordinate.latitude, coordinate.longitude)
-    }
-}
-
-@Composable
-private fun HangoutDetailContent(
-    hangout: HangoutUi,
-    isHost: Boolean,
-    currentUserId: String?,
-    presentUserIds: Set<String>,
-    candidates: List<SpotUi>,
-    votes: Map<String, String>,
-    removingSpotIds: Set<String>,
-    tiedSpotIds: List<String>,
-    isClosingVoting: Boolean,
-    isCompleting: Boolean,
-    canCopyAddress: Boolean,
-    hasUnpaidGuests: Boolean,
-    hasCurrentUserPaid: Boolean,
-    canPay: Boolean,
-    isInitializingPayment: Boolean,
-    isAwaitingPaymentReturn: Boolean,
-    isVerifyingPayment: Boolean,
-    canChangeDeadline: Boolean,
-    needsDeadlineDecision: Boolean,
-    canRetryPayout: Boolean,
-    isRetryingPayout: Boolean,
-    onSeeAllParticipantsClick: () -> Unit,
-    onChosenSpotClick: () -> Unit,
-    onCopyAddressClick: () -> Unit,
-    heroActions: @Composable RowScope.() -> Unit = {},
-    paymentSetup: @Composable () -> Unit,
-    onPayClick: () -> Unit,
-    onCheckPaymentClick: () -> Unit,
-    onChangeDeadlineClick: () -> Unit,
-    onDecideClick: () -> Unit,
-    onRetryPayoutClick: () -> Unit,
-    onCompleteClick: () -> Unit,
-    onCastVote: (String) -> Unit,
-    onRemoveSpot: (String) -> Unit,
-    onProposeClick: () -> Unit,
-    onCloseVoting: () -> Unit,
-    onBreakTie: (String) -> Unit,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    modifier: Modifier = Modifier
-) {
-    val configuration = currentDeviceConfiguration()
-    val contentMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .clearFocusOnTap()
-            .padding(
-                top = contentPadding.calculateTopPadding() + 16.dp,
-                bottom = contentPadding.calculateBottomPadding() + 16.dp
-            ),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Column(
-            modifier = Modifier
-                .widthIn(max = contentMaxWidth)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            HangoutHero(
-                name = hangout.name,
-                vibe = hangout.vibe,
-                status = hangout.status,
-                scheduledDate = hangout.scheduledAt.toDateTimeLabel(),
-                isHost = isHost,
-                actions = heroActions
-            )
-
-            hangout.description?.takeIf { it.isNotBlank() }?.let { description ->
-                DetailSection(title = stringResource(Res.string.detail_about)) {
-                    LynkText(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            ParticipantsSection(
-                participants = hangout.participants,
-                participantCount = hangout.participantCount,
-                maxAttendees = hangout.maxAttendees,
-                presentUserIds = presentUserIds,
-                onSeeAllClick = onSeeAllParticipantsClick
-            )
-
-            if (hangout.status == HangoutStatus.VOTING) {
-                VotingSection(
-                    candidates = candidates,
-                    votes = votes,
-                    removingSpotIds = removingSpotIds,
-                    currentUserId = currentUserId,
-                    isHost = isHost,
-                    tiedSpotIds = tiedSpotIds,
-                    isClosingVoting = isClosingVoting,
-                    onCastVote = onCastVote,
-                    onRemoveSpot = onRemoveSpot,
-                    onProposeClick = onProposeClick,
-                    onCloseVoting = onCloseVoting,
-                    onBreakTie = onBreakTie
-                )
-            } else {
-                ChosenSpotSection(
-                    chosenSpot = hangout.chosenSpot,
-                    onSpotClick = onChosenSpotClick,
-                    canCopyAddress = canCopyAddress,
-                    onCopyAddressClick = onCopyAddressClick
-                )
-            }
-
-            paymentSetup()
-
-            val isSharingTheBill = isHost || hangout.participants.any {
-                it.user.userId == currentUserId && it.rsvpStatus == RsvpStatus.ATTENDING
-            }
-            hangout.payment?.takeIf { isSharingTheBill }?.let { payment ->
-                PaymentSection(
-                    payment = payment,
-                    isHost = isHost,
-                    hasUnpaidGuests = hasUnpaidGuests,
-                    hasCurrentUserPaid = hasCurrentUserPaid,
-                    canPay = canPay,
-                    isInitializingPayment = isInitializingPayment,
-                    isAwaitingPaymentReturn = isAwaitingPaymentReturn,
-                    isVerifyingPayment = isVerifyingPayment,
-                    canChangeDeadline = canChangeDeadline,
-                    needsDeadlineDecision = needsDeadlineDecision,
-                    canRetryPayout = canRetryPayout,
-                    isRetryingPayout = isRetryingPayout,
-                    onPayClick = onPayClick,
-                    onCheckPaymentClick = onCheckPaymentClick,
-                    onChangeDeadlineClick = onChangeDeadlineClick,
-                    onDecideClick = onDecideClick,
-                    onRetryPayoutClick = onRetryPayoutClick
-                )
-            }
-
-            if (isHost && hangout.status == HangoutStatus.ONGOING) {
-                LynkButton(
-                    text = stringResource(Res.string.detail_complete),
-                    onClick = onCompleteClick,
-                    style = LynkButtonStyle.PRIMARY,
-                    isLoading = isCompleting,
-                    loadingText = stringResource(Res.string.detail_completing)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}
-
-private val previewSpot = SpotUi(
-    id = "s1",
-    name = "The Rooftop Lounge",
-    description = "Skyline views",
-    photoUrls = persistentListOf(),
-    category = SpotCategory.RESTAURANT,
-    tags = persistentListOf(),
-    priceLevel = null,
-    rating = 4.6,
-    reviewCount = 214,
-    isOpenNow = true,
-    shortAddress = "12 Admiralty Way, Lekki",
-    latitude = 6.4,
-    longitude = 3.4,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
-)
-
-private val previewCandidates = listOf(
-    previewSpot,
-    previewSpot.copy(
-        id = "s2",
-        name = "Nomad Beach Bar",
-        shortAddress = "8 Elegushi Rd, Lekki"
-    ),
-    previewSpot.copy(
-        id = "s3",
-        name = "Craft & Co",
-        shortAddress = "3 Karimu Kotun St, VI"
-    )
-)
-
-private const val PREVIEW_HOST_ID = "host-1"
-private const val PREVIEW_GUEST_ID = "guest-1"
-
-private fun previewHangout(
-    status: HangoutStatus = HangoutStatus.SCHEDULED,
-    withSpot: Boolean = true,
-    paymentState: PaymentState? = null,
-    paidGuestCount: Int = 0
-) = HangoutUi(
-    id = "1",
-    hostId = PREVIEW_HOST_ID,
-    name = "Rooftop Party in Lekki",
-    description = "Bring your best vibes. We'll sort drinks and music, you just show up.",
-    vibe = HangoutVibe.PARTY,
-    status = status,
-    scheduledAt = Instant.fromEpochSeconds(1_800_000_000L),
-    maxAttendees = 10,
-    participantCount = 6,
-    chosenSpot = if (withSpot) previewSpot else null,
-    participants = List(6) { index ->
-        HangoutParticipantUi(
-            user = HangoutUserUi(
-                userId = when (index) {
-                    0 -> PREVIEW_HOST_ID
-                    1 -> PREVIEW_GUEST_ID
-                    else -> "user-$index"
-                },
-                username = if (index == 0) "the.host" else "guest$index",
-                displayName = if (index == 0) "Ada Obi" else "Guest $index",
-                initials = if (index == 0) "AO" else "G$index",
-                profilePictureUrl = null
-            ),
-            rsvpStatus = RsvpStatus.ATTENDING,
-            // The host is created already paid, exactly as the server does it.
-            hasPaid = index == 0 || index <= paidGuestCount
-        )
-    }.toImmutableList(),
-    payment = paymentState?.let {
-        HangoutPaymentUi(
-            totalCostKobo = 2_400_000L,
-            costPerPersonKobo = 400_000L,
-            splitHeadcount = 6,
-            deadline = Instant.fromEpochSeconds(1_799_000_000L),
-            state = it
-        )
-    },
-    createdAt = Instant.fromEpochSeconds(1_790_000_000L)
-)
-
-@Composable
-private fun detailOverflowItems(
-    canEdit: Boolean,
-    canCancel: Boolean,
-    canLeave: Boolean,
-    isCancelling: Boolean,
-    isLeaving: Boolean,
-    onEditClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    onLeaveClick: () -> Unit
-): ImmutableList<LynkDropDownItem> {
-    val hapticFeedback = rememberAppHaptic()
-
-    val cancelLabel = stringResource(Res.string.detail_cancel)
-    val leaveLabel = stringResource(Res.string.detail_leave)
-    val editLabel = stringResource(Res.string.detail_update)
-
-    return buildList {
-        if (canEdit) {
-            add(
-                LynkDropDownItem(
-                    title = editLabel,
-                    icon = Lucide.SquarePen,
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onEditClick()
-                    }
-                )
-            )
-        }
-        if (canCancel) {
-            add(
-                LynkDropDownItem(
-                    title = cancelLabel,
-                    icon = Lucide.CalendarX2,
-                    isDestructive = true,
-                    isDisabled = isCancelling,
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onCancelClick()
-                    }
-                )
-            )
-        }
-        if (canLeave) {
-            add(
-                LynkDropDownItem(
-                    title = leaveLabel,
-                    icon = Lucide.LogOut,
-                    isDestructive = true,
-                    isDisabled = isLeaving,
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onLeaveClick()
-                    }
-                )
-            )
-        }
-    }.toImmutableList()
-}
-
-@Composable
-private fun HangoutHeroActions(
-    showInvite: Boolean,
-    inviteEnabled: Boolean,
-    overflowItems: ImmutableList<LynkDropDownItem>,
-    isOverflowExpanded: Boolean,
-    onOverflowExpandedChange: (Boolean) -> Unit,
-    onInviteClick: () -> Unit
-) {
-    if (!showInvite && overflowItems.isEmpty()) return
-
-    val hapticFeedback = rememberAppHaptic()
-    val scheme = MaterialTheme.colorScheme
-
-    val inviteLabel = stringResource(Res.string.detail_invite)
-    val moreLabel = stringResource(Res.string.detail_more_actions)
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (showInvite) {
-            Icon(
-                imageVector = Lucide.UserRoundPlus,
-                contentDescription = inviteLabel,
-                tint = if (inviteEnabled) scheme.onSurfaceVariant
-                else scheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .clip(CircleShape)
-                    .clickable(enabled = inviteEnabled) {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onInviteClick()
-                    }
-                    .padding(8.dp)
-                    .size(20.dp)
-            )
-        }
-
-        if (overflowItems.isNotEmpty()) {
-            LynkDropDownMenu(
-                expanded = isOverflowExpanded,
-                onDismissRequest = { onOverflowExpandedChange(false) },
-                items = overflowItems,
-                anchor = {
-                    Icon(
-                        imageVector = Lucide.EllipsisVertical,
-                        contentDescription = moreLabel,
-                        tint = scheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .minimumInteractiveComponentSize()
-                            .clip(CircleShape)
-                            .clickable {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onOverflowExpandedChange(true)
-                            }
-                            .padding(8.dp)
-                            .size(20.dp)
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun HangoutDetailContentPreview(
-    hangout: HangoutUi = previewHangout(),
-    isHost: Boolean = true,
-    candidates: List<SpotUi> = emptyList(),
-    votes: Map<String, String> = emptyMap(),
-    tiedSpotIds: List<String> = emptyList(),
-    isClosingVoting: Boolean = false,
-    isCompleting: Boolean = false,
-    canPay: Boolean = false,
-    isAwaitingPaymentReturn: Boolean = false,
-    canChangeDeadline: Boolean = false,
-    needsDeadlineDecision: Boolean = false,
-    canRetryPayout: Boolean = false
-) {
-    val currentUserId = if (isHost) PREVIEW_HOST_ID else PREVIEW_GUEST_ID
-    LynkTheme {
-        HangoutDetailContent(
-            hangout = hangout,
-            isHost = isHost,
-            currentUserId = currentUserId,
-            presentUserIds = setOf(PREVIEW_HOST_ID, "user-2"),
-            candidates = candidates,
-            votes = votes,
-            removingSpotIds = emptySet(),
-            tiedSpotIds = tiedSpotIds,
-            isClosingVoting = isClosingVoting,
-            isCompleting = isCompleting,
-            canCopyAddress = hangout.chosenSpot != null,
-            hasUnpaidGuests = hangout.participants.any {
-                it.rsvpStatus == RsvpStatus.ATTENDING && !it.hasPaid
-            },
-            hasCurrentUserPaid = hangout.participants.any {
-                it.user.userId == currentUserId && it.hasPaid
-            },
-            canPay = canPay,
-            isInitializingPayment = false,
-            isAwaitingPaymentReturn = isAwaitingPaymentReturn,
-            isVerifyingPayment = false,
-            canChangeDeadline = canChangeDeadline,
-            needsDeadlineDecision = needsDeadlineDecision,
-            canRetryPayout = canRetryPayout,
-            isRetryingPayout = false,
-            onSeeAllParticipantsClick = {},
-            onChosenSpotClick = {},
-            onCopyAddressClick = {},
-            paymentSetup = {},
-            onPayClick = {},
-            onCheckPaymentClick = {},
-            onChangeDeadlineClick = {},
-            onDecideClick = {},
-            onRetryPayoutClick = {},
-            onCompleteClick = {},
-            onCastVote = {},
-            onRemoveSpot = {},
-            onProposeClick = {},
-            onCloseVoting = {},
-            onBreakTie = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentScheduledPreview() = HangoutDetailContentPreview()
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentAttendeePreview() = HangoutDetailContentPreview(isHost = false)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentVotingPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.VOTING, withSpot = false),
-    candidates = previewCandidates,
-    votes = mapOf("user-2" to "s1", "user-3" to "s1", "user-4" to "s2", PREVIEW_HOST_ID to "s3")
-)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentVotingEmptyPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.VOTING, withSpot = false)
-)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentVotingTiePreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.VOTING, withSpot = false),
-    candidates = previewCandidates,
-    votes = mapOf("user-2" to "s1", "user-3" to "s2"),
-    tiedSpotIds = listOf("s1", "s2")
-)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentOngoingPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.ONGOING)
-)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentCompletedPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.COMPLETED)
-)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailContentCancelledNoSpotPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(status = HangoutStatus.CANCELLED, withSpot = false)
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentHostCollectingPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(paymentState = PaymentState.COLLECTING, paidGuestCount = 2),
-    canChangeDeadline = true
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentGuestOwesPreview() = HangoutDetailContentPreview(
-    hangout = previewHangout(paymentState = PaymentState.COLLECTING, paidGuestCount = 0),
-    isHost = false,
-    canPay = true
-)

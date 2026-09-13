@@ -4,11 +4,18 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkF
 import com.eeseka.lynk.shared.presentation.util.UiText
 
 sealed interface HangoutDetailEvent {
-    data class ShowMessage(
+    data class Error(val message: UiText) : HangoutDetailEvent
+
+    data object HangoutCompleted : HangoutDetailEvent
+    data object HangoutCancelled : HangoutDetailEvent
+    data object HangoutLeft : HangoutDetailEvent
+    data object InviteSent : HangoutDetailEvent
+    data object InviteWithdrawn : HangoutDetailEvent
+
+    data class LobbyAnnouncement(
         val message: UiText,
         val type: LynkFlashType
     ) : HangoutDetailEvent
 
-    // Left the hangout — the detail can no longer be viewed, so close it.
     data object NavigateBack : HangoutDetailEvent
 }

@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,7 +15,10 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Trash2
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
@@ -26,26 +30,20 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
+@Immutable
 data class LynkIosBarButtonItem(
     val title: String? = null,
     val sfSymbol: String? = null,
     val enabled: Boolean = true,
     val onClick: () -> Unit = {},
-    val menuItems: ImmutableList<LynkIosDropDownMenuItem> = persistentListOf(),
+    val menuItems: ImmutableList<LynkDropDownItem> = persistentListOf(),
     val menuSections: ImmutableList<LynkIosDropDownMenuSection> = persistentListOf()
 )
 
-data class LynkIosDropDownMenuItem(
-    val title: String,
-    val sfSymbol: String? = null,
-    val isDestructive: Boolean = false,
-    val isDisabled: Boolean = false,
-    val onClick: () -> Unit = {}
-)
-
+@Immutable
 data class LynkIosDropDownMenuSection(
     val title: String? = null,
-    val items: ImmutableList<LynkIosDropDownMenuItem> = persistentListOf()
+    val items: ImmutableList<LynkDropDownItem> = persistentListOf()
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
@@ -113,7 +111,7 @@ private fun LynkIosBarButtonItem.toUIKitItem(): UIKitUIBarButtonItem {
     }
 }
 
-private fun List<LynkIosDropDownMenuItem>.toAdaptiveItems(): List<AdaptiveDropDownItem> =
+private fun List<LynkDropDownItem>.toAdaptiveItems(): List<AdaptiveDropDownItem> =
     map { item ->
         AdaptiveDropDownItem(
             title = item.title,
@@ -162,13 +160,15 @@ private fun LynkTopAppBarPreview() {
                 LynkIosBarButtonItem(
                     sfSymbol = "ellipsis.circle",
                     menuItems = persistentListOf(
-                        LynkIosDropDownMenuItem(
+                        LynkDropDownItem(
                             title = "Share",
+                            icon = Lucide.Share2,
                             sfSymbol = "square.and.arrow.up",
                             onClick = {}
                         ),
-                        LynkIosDropDownMenuItem(
+                        LynkDropDownItem(
                             title = "Delete",
+                            icon = Lucide.Trash2,
                             sfSymbol = "trash",
                             isDestructive = true,
                             onClick = {}

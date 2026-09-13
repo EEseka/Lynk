@@ -42,7 +42,6 @@ fun DetailEmptyState(modifier: Modifier = Modifier) {
 
     Column(
         modifier = modifier
-
             .widthIn(max = 320.dp)
             .verticalScroll(rememberScrollState())
             .padding(24.dp),

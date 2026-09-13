@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,11 +22,13 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CalendarClock
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.hangouts.presentation.util.toUiText
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
+import com.eeseka.lynk.hangouts.presentation.mappers.toUiText
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
+import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -41,6 +43,7 @@ import lynk.feature.hangouts.generated.resources.payment_change_deadline
 import lynk.feature.hangouts.generated.resources.payment_check_action
 import lynk.feature.hangouts.generated.resources.payment_checking
 import lynk.feature.hangouts.generated.resources.payment_decide_action
+import lynk.feature.hangouts.generated.resources.payment_deciding
 import lynk.feature.hangouts.generated.resources.payment_pay_action
 import lynk.feature.hangouts.generated.resources.payment_pay_by
 import lynk.feature.hangouts.generated.resources.payment_payout_on
@@ -65,7 +68,9 @@ fun PaymentSection(
     isAwaitingPaymentReturn: Boolean = false,
     isVerifyingPayment: Boolean = false,
     canChangeDeadline: Boolean = false,
+    isChangingDeadline: Boolean = false,
     needsDeadlineDecision: Boolean = false,
+    isDecidingAtDeadline: Boolean = false,
     canRetryPayout: Boolean = false,
     isRetryingPayout: Boolean = false,
     onPayClick: () -> Unit = {},
@@ -85,7 +90,7 @@ fun PaymentSection(
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
                         .clip(CircleShape)
-                        .clickable {
+                        .clickable(enabled = !isChangingDeadline) {
                             hapticFeedback(AppHaptic.ImpactLight)
                             onChangeDeadlineClick()
                         }
@@ -98,12 +103,19 @@ fun PaymentSection(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary
                     )
-                    Icon(
-                        imageVector = Lucide.CalendarClock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    if (isChangingDeadline) {
+                        LynkProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Lucide.CalendarClock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         } else null,
@@ -132,8 +144,7 @@ fun PaymentSection(
                 }
 
                 val awaitingPayout = !hasUnpaidGuests &&
-                        (payment.state == PaymentState.COLLECTING ||
-                                payment.state == PaymentState.AWAITING_HOST_DECISION)
+                        (payment.state == PaymentState.COLLECTING || payment.state == PaymentState.AWAITING_HOST_DECISION)
                 val statusState = if (awaitingPayout) PaymentState.READY_FOR_PAYOUT else payment.state
 
                 if (payment.state == PaymentState.COLLECTING) {
@@ -166,8 +177,13 @@ fun PaymentSection(
                 if (needsDeadlineDecision) {
                     LynkButton(
                         text = stringResource(Res.string.payment_decide_action),
-                        onClick = onDecideClick,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onDecideClick()
+                        },
                         style = LynkButtonStyle.SECONDARY,
+                        isLoading = isDecidingAtDeadline,
+                        loadingText = stringResource(Res.string.payment_deciding),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -175,7 +191,10 @@ fun PaymentSection(
                 if (canRetryPayout) {
                     LynkButton(
                         text = stringResource(Res.string.payment_retry_payout),
-                        onClick = onRetryPayoutClick,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactMedium)
+                            onRetryPayoutClick()
+                        },
                         style = LynkButtonStyle.SECONDARY,
                         isLoading = isRetryingPayout,
                         loadingText = stringResource(Res.string.payment_retrying_payout),
@@ -186,7 +205,10 @@ fun PaymentSection(
                 if (isAwaitingPaymentReturn) {
                     LynkButton(
                         text = stringResource(Res.string.payment_check_action),
-                        onClick = onCheckPaymentClick,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactMedium)
+                            onCheckPaymentClick()
+                        },
                         style = LynkButtonStyle.SECONDARY,
                         isLoading = isVerifyingPayment,
                         loadingText = stringResource(Res.string.payment_checking),
@@ -197,7 +219,10 @@ fun PaymentSection(
                 if (canPay) {
                     LynkButton(
                         text = stringResource(Res.string.payment_pay_action),
-                        onClick = onPayClick,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactMedium)
+                            onPayClick()
+                        },
                         style = LynkButtonStyle.PRIMARY,
                         isLoading = isInitializingPayment,
                         loadingText = stringResource(Res.string.payment_preparing),
@@ -263,7 +288,9 @@ private fun PaymentSectionPreview(
     canPay: Boolean = false,
     isAwaitingPaymentReturn: Boolean = false,
     canChangeDeadline: Boolean = false,
+    isChangingDeadline: Boolean = false,
     needsDeadlineDecision: Boolean = false,
+    isDecidingAtDeadline: Boolean = false,
     canRetryPayout: Boolean = false
 ) {
     LynkTheme {
@@ -281,7 +308,9 @@ private fun PaymentSectionPreview(
             canPay = canPay,
             isAwaitingPaymentReturn = isAwaitingPaymentReturn,
             canChangeDeadline = canChangeDeadline,
+            isChangingDeadline = isChangingDeadline,
             needsDeadlineDecision = needsDeadlineDecision,
+            isDecidingAtDeadline = isDecidingAtDeadline,
             canRetryPayout = canRetryPayout,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
@@ -294,6 +323,13 @@ private fun PaymentSectionPreview(
 @Composable
 private fun PaymentSectionHostCollectingPreview() = PaymentSectionPreview(
     canChangeDeadline = true
+)
+
+@PreviewLightDark
+@Composable
+private fun PaymentSectionHostChangingDeadlinePreview() = PaymentSectionPreview(
+    canChangeDeadline = true,
+    isChangingDeadline = true
 )
 
 @PreviewLightDark
@@ -315,6 +351,14 @@ private fun PaymentSectionGuestConfirmingPreview() = PaymentSectionPreview(
 private fun PaymentSectionAwaitingDecisionPreview() = PaymentSectionPreview(
     paymentState = PaymentState.AWAITING_HOST_DECISION,
     needsDeadlineDecision = true
+)
+
+@PreviewLightDark
+@Composable
+private fun PaymentSectionDecidingPreview() = PaymentSectionPreview(
+    paymentState = PaymentState.AWAITING_HOST_DECISION,
+    needsDeadlineDecision = true,
+    isDecidingAtDeadline = true
 )
 
 @PreviewLightDark

@@ -146,14 +146,18 @@
     <string name="payment_total_cost_placeholder">0</string>
     <string name="payment_total_cost_helper">The full bill for everyone, you included. We split it for you.</string>
     <string name="payment_share_too_low">That splits to under ₦1 each. Put in the full bill.</string>
+    <string name="payment_total_cost_required">Put in the total cost.</string>
     <string name="payment_deadline_label">Pay by</string>
     <string name="payment_deadline_placeholder">Pick a day</string>
+    <string name="payment_deadline_required">Pick the day everyone has to pay by.</string>
     <string name="payment_bank_label">Bank</string>
     <string name="payment_bank_placeholder">Choose your bank</string>
+    <string name="payment_bank_required">Choose the bank your payout goes to.</string>
     <string name="payment_account_number_label">Account number</string>
     <string name="payment_account_number_placeholder">10 digits</string>
     <string name="payment_account_not_found">No account with that number at this bank. Check both.</string>
     <string name="payment_account_check_limit">Checking too fast! Please wait a moment.</string>
+    <string name="payment_account_required">Put in your 10-digit account number and wait for the name to show.</string>
     <string name="payment_enable_confirm">Turn on payments</string>
     <string name="payment_enabling">Turning on…</string>
     <string name="payment_enable_warning">Once payments are on, none of this can change. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out. Check the details.</string>
@@ -180,6 +184,7 @@
     <string name="payment_deadline_changed">Deadline updated</string>
     <string name="payment_decision_saved">Sorted. Everyone has been told.</string>
     <string name="payment_decide_action">Decide what happens</string>
+    <string name="payment_deciding">Saving…</string>
     <string name="payment_decision_title">Not everyone has paid</string>
     <string name="payment_decision_message">%1$d still to pay. Pick how you want to handle it.</string>
     <string name="payment_decision_extend">Give them more time</string>

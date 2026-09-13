@@ -1,18 +1,15 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.model
+package com.eeseka.lynk.hangouts.presentation.mappers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.composables.icons.lucide.Bookmark
 import com.composables.icons.lucide.Globe
 import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.all_spots
 import lynk.feature.hangouts.generated.resources.favorites
 import org.jetbrains.compose.resources.stringResource
-
-enum class SearchTab {
-    ALL_SPOTS, FAVORITES
-}
 
 @Composable
 fun SearchTab.getTitle(): String = stringResource(

@@ -30,6 +30,10 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_group_declined
 import lynk.feature.hangouts.generated.resources.detail_group_going
@@ -40,15 +44,15 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantsSheet(
-    participants: List<HangoutParticipantUi>,
+    participants: ImmutableList<HangoutParticipantUi>,
     isHost: Boolean,
     onDismiss: () -> Unit,
     onWithdraw: (String) -> Unit,
-    withdrawingUserIds: Set<String>,
-    presentUserIds: Set<String> = emptySet(),
+    withdrawingUserIds: ImmutableSet<String>,
+    modifier: Modifier = Modifier,
+    presentUserIds: ImmutableSet<String> = persistentSetOf(),
     arePaymentsOn: Boolean = false,
-    hostId: String? = null,
-    modifier: Modifier = Modifier
+    hostId: String? = null
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismiss,
@@ -69,11 +73,11 @@ fun ParticipantsSheet(
 
 @Composable
 private fun ParticipantsSheetContent(
-    participants: List<HangoutParticipantUi>,
+    participants: ImmutableList<HangoutParticipantUi>,
     isHost: Boolean,
     onWithdraw: (String) -> Unit,
-    withdrawingUserIds: Set<String>,
-    presentUserIds: Set<String>,
+    withdrawingUserIds: ImmutableSet<String>,
+    presentUserIds: ImmutableSet<String>,
     arePaymentsOn: Boolean,
     hostId: String?,
     modifier: Modifier = Modifier
@@ -216,7 +220,7 @@ private fun previewParticipant(
     hasPaid = hasPaid
 )
 
-private val previewRoster = listOf(
+private val previewRoster = persistentListOf(
     // "1" is the host in the previews: marked paid by the server, but never badged.
     previewParticipant("1", "Eseka Emmanuel", "e.eseka", "EE", RsvpStatus.ATTENDING, hasPaid = true),
     previewParticipant("2", "Ada Obi", "ada", "AO", RsvpStatus.ATTENDING, hasPaid = true),
@@ -229,7 +233,7 @@ private val previewRoster = listOf(
 @Composable
 private fun ParticipantsSheetPreview(
     isHost: Boolean,
-    withdrawingUserIds: Set<String> = emptySet()
+    withdrawingUserIds: ImmutableSet<String> = persistentSetOf()
 ) {
     LynkTheme {
         ParticipantsSheetContent(
@@ -237,7 +241,7 @@ private fun ParticipantsSheetPreview(
             isHost = isHost,
             onWithdraw = {},
             withdrawingUserIds = withdrawingUserIds,
-            presentUserIds = setOf("1", "3"),
+            presentUserIds = persistentSetOf("1", "3"),
             arePaymentsOn = true,
             hostId = "1",
             modifier = Modifier
@@ -257,4 +261,4 @@ private fun ParticipantsSheetAttendeePreview() = ParticipantsSheetPreview(isHost
 
 @PreviewLightDark
 @Composable
-private fun ParticipantsSheetWithdrawingPreview() = ParticipantsSheetPreview(isHost = true, withdrawingUserIds = setOf("4"))
+private fun ParticipantsSheetWithdrawingPreview() = ParticipantsSheetPreview(isHost = true, withdrawingUserIds = persistentSetOf("4"))

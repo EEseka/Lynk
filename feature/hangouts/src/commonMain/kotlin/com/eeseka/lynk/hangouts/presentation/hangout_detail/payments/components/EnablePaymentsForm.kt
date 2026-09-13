@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +25,6 @@ import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.presentation.util.NAIRA_SYMBOL
 import com.eeseka.lynk.hangouts.presentation.util.accountNumberInput
 import com.eeseka.lynk.hangouts.presentation.util.amountInput
 import com.eeseka.lynk.hangouts.presentation.util.amountOutput
@@ -38,6 +37,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.shared.presentation.util.NAIRA_SYMBOL
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_account_number_label
@@ -62,6 +62,7 @@ fun EnablePaymentsForm(
     deadlineLabel: String?,
     deadlineError: String?,
     selectedBankName: String?,
+    bankError: String?,
     resolvedAccountName: String?,
     accountError: String?,
     isResolvingAccount: Boolean,
@@ -72,6 +73,8 @@ fun EnablePaymentsForm(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     Column(
         modifier = modifier.fillMaxWidth().clearFocusOnTap(),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -110,7 +113,7 @@ fun EnablePaymentsForm(
             label = stringResource(Res.string.payment_bank_label),
             value = selectedBankName,
             placeholder = stringResource(Res.string.payment_bank_placeholder),
-            errorMessage = null,
+            errorMessage = bankError,
             leadingIcon = Lucide.Building2,
             enabled = !isEnabling,
             onClick = onBankPickerClick
@@ -163,7 +166,10 @@ fun EnablePaymentsForm(
 
         LynkButton(
             text = stringResource(Res.string.payment_enable_confirm),
-            onClick = onConfirm,
+            onClick = {
+                hapticFeedback(AppHaptic.ImpactMedium)
+                onConfirm()
+            },
             style = LynkButtonStyle.PRIMARY,
             enabled = canConfirm,
             isLoading = isEnabling,
@@ -205,7 +211,7 @@ private fun PickerRow(
                     hapticFeedback(AppHaptic.ImpactLight)
                     onClick()
                 }
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -249,6 +255,7 @@ private fun EnablePaymentsFormPreview() {
             deadlineLabel = "Sat 12 Sep",
             deadlineError = null,
             selectedBankName = "Guaranty Trust Bank",
+            bankError = null,
             resolvedAccountName = "EMMANUEL ESEKA",
             accountError = null,
             isResolvingAccount = false,

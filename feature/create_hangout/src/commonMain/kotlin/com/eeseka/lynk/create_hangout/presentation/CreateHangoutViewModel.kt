@@ -297,9 +297,7 @@ class CreateHangoutViewModel(
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.spotSearchTextState.text.toString() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
-
         val tabFlow = state.map { it.activeSearchTab }.distinctUntilChanged()
-
         val locationFlow = state.map { it.userLatitude to it.userLongitude }.distinctUntilChanged()
 
         combine(searchQueryFlow, tabFlow, locationFlow) { query, activeTab, location ->

@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween

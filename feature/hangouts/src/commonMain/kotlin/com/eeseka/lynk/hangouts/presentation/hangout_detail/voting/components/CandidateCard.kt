@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
@@ -56,6 +56,8 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.voting_leading
 import lynk.feature.hangouts.generated.resources.voting_remove_spot
@@ -66,20 +68,19 @@ import org.jetbrains.compose.resources.stringResource
 fun CandidateCard(
     spotName: String,
     spotAddress: String?,
-    photoUrls: List<String>,
+    photoUrls: ImmutableList<String>,
     voteCount: Int,
     totalVotes: Int,
     isMyVote: Boolean,
     isLeading: Boolean,
     isTiebreakTarget: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     canRemove: Boolean = false,
     isRemoving: Boolean = false,
-    onClick: () -> Unit,
-    onRemove: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onRemove: () -> Unit = {}
 ) {
     val scheme = MaterialTheme.colorScheme
-    val hapticFeedback = rememberAppHaptic()
 
     val borderColor by animateColorAsState(
         when {
@@ -110,10 +111,7 @@ fun CandidateCard(
     val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
 
     LynkCard(
-        onClick = {
-            hapticFeedback(AppHaptic.ImpactMedium)
-            onClick()
-        },
+        onClick = onClick,
         style = LynkCardStyle.OUTLINED,
         modifier = modifier
             .fillMaxWidth()
@@ -124,7 +122,6 @@ fun CandidateCard(
             )
     ) {
         Box(modifier = Modifier.fillMaxWidth().height(180.dp)) {
-            // Photo hero (falls back to a tinted placeholder icon).
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -393,7 +390,7 @@ private fun CandidateCardPreview(
         CandidateCard(
             spotName = spotName,
             spotAddress = spotAddress,
-            photoUrls = emptyList(),
+            photoUrls = persistentListOf(),
             voteCount = voteCount,
             totalVotes = totalVotes,
             isMyVote = isMyVote,

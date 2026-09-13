@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -33,18 +33,16 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.UsersRound
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailState
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.SearchTab
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.getIcon
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.model.getTitle
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
+import com.eeseka.lynk.hangouts.presentation.mappers.getIcon
+import com.eeseka.lynk.hangouts.presentation.mappers.getTitle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -53,6 +51,11 @@ import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.propose_center_caption
 import lynk.feature.hangouts.generated.resources.propose_empty_favorite_message
@@ -64,7 +67,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProposeSpotSheet(
-    state: HangoutDetailState,
+    state: HangoutVotingState,
     onTabSelected: (SearchTab) -> Unit,
     onPropose: (String) -> Unit,
     onLoadNextSpotPage: () -> Unit,
@@ -88,7 +91,7 @@ fun ProposeSpotSheet(
 
 @Composable
 private fun ProposeSpotSheetContent(
-    state: HangoutDetailState,
+    state: HangoutVotingState,
     onTabSelected: (SearchTab) -> Unit,
     onPropose: (String) -> Unit,
     onLoadNextSpotPage: () -> Unit,
@@ -103,7 +106,7 @@ private fun ProposeSpotSheetContent(
     val originLng = state.center?.longitude ?: state.myLocation?.longitude
 
     val candidateSpotIds = remember(state.candidates) {
-        state.candidates.mapTo(mutableSetOf()) { it.id }
+        state.candidates.mapTo(mutableSetOf()) { it.id }.toImmutableSet()
     }
 
     val isSearchActive = state.proposeSpotSheetSearchTextState.text.toString().isNotBlank()
@@ -256,14 +259,14 @@ private fun ProposeSpotSheetContent(
 @Composable
 private fun SuggestSpotList(
     listState: LazyListState,
-    spots: List<SpotUi>,
+    spots: ImmutableList<SpotUi>,
     originLat: Double?,
     originLng: Double?,
     isLoading: Boolean,
     showEmptyState: Boolean,
     emptyStateMessage: String,
-    proposingSpotIds: Set<String>,
-    candidateSpotIds: Set<String>,
+    proposingSpotIds: ImmutableSet<String>,
+    candidateSpotIds: ImmutableSet<String>,
     onSuggest: (SpotUi) -> Unit
 ) {
     LazyColumn(
@@ -352,7 +355,7 @@ private fun previewSpot(id: String, name: String, category: SpotCategory) = Spot
     isSaved = false
 )
 
-private val previewSpots = listOf(
+private val previewSpots = persistentListOf(
     previewSpot("1", "Mama Cass Restaurant", SpotCategory.RESTAURANT),
     previewSpot("2", "Cafe Neo", SpotCategory.CAFE),
     previewSpot("3", "The Good Beach Lounge", SpotCategory.LOUNGE),
@@ -360,7 +363,7 @@ private val previewSpots = listOf(
 )
 
 @Composable
-private fun ProposeSpotSheetPreview(state: HangoutDetailState) {
+private fun ProposeSpotSheetPreview(state: HangoutVotingState) {
     LynkTheme {
         ProposeSpotSheetContent(
             state = state,
@@ -378,7 +381,7 @@ private fun ProposeSpotSheetPreview(state: HangoutDetailState) {
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetTrendingPreview() = ProposeSpotSheetPreview(
-    state = HangoutDetailState(
+    state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         trendingSpots = previewSpots
     )
@@ -387,22 +390,22 @@ private fun ProposeSpotSheetTrendingPreview() = ProposeSpotSheetPreview(
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetSearchResultsPreview() = ProposeSpotSheetPreview(
-    state = HangoutDetailState(
+    state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         proposeSpotSheetSearchTextState = TextFieldState("beach"),
         spotSearchResults = previewSpots,
         spotSearchEndReached = true,
-        candidates = previewSpots.filter { it.id == "2" }
+        candidates = previewSpots.filter { it.id == "2" }.toImmutableList()
     )
 )
 
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetEmptyPreview() = ProposeSpotSheetPreview(
-    state = HangoutDetailState(
+    state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         proposeSpotSheetSearchTextState = TextFieldState("xyzzy"),
-        spotSearchResults = emptyList(),
+        spotSearchResults = persistentListOf(),
         spotSearchEndReached = true
     )
 )
@@ -410,7 +413,7 @@ private fun ProposeSpotSheetEmptyPreview() = ProposeSpotSheetPreview(
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetLoadingPreview() = ProposeSpotSheetPreview(
-    state = HangoutDetailState(
+    state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         proposeSpotSheetSearchTextState = TextFieldState("beach"),
         isSpotSearchLoading = true
@@ -420,10 +423,10 @@ private fun ProposeSpotSheetLoadingPreview() = ProposeSpotSheetPreview(
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetFavoritesPreview() = ProposeSpotSheetPreview(
-    state = HangoutDetailState(
+    state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         activeProposeSpotSheetSearchTab = SearchTab.FAVORITES,
-        favoriteSpotSearchResults = previewSpots.take(2),
+        favoriteSpotSearchResults = previewSpots.take(2).toImmutableList(),
         favoriteSpotSearchEndReached = true
     )
 )

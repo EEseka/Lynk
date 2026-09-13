@@ -19,16 +19,19 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_going_count
@@ -38,10 +41,10 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantsSection(
-    participants: List<HangoutParticipantUi>,
+    participants: ImmutableList<HangoutParticipantUi>,
     participantCount: Int,
     maxAttendees: Int?,
-    presentUserIds: Set<String>,
+    presentUserIds: ImmutableSet<String>,
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -70,7 +73,7 @@ fun ParticipantsSection(
         ) {
             ParticipantStack(
                 users = attending.map { it.user }.toImmutableList(),
-                presentUserIds = presentUserIds.toImmutableSet(),
+                presentUserIds = presentUserIds,
                 modifier = Modifier.weight(1f, fill = false)
             )
 
@@ -116,14 +119,14 @@ private fun previewParticipants(count: Int) = List(count) { index ->
         rsvpStatus = RsvpStatus.ATTENDING,
         hasPaid = false
     )
-}
+}.toImmutableList()
 
 @Composable
 private fun ParticipantsSectionPreview(
-    participants: List<HangoutParticipantUi> = previewParticipants(6),
+    participants: ImmutableList<HangoutParticipantUi> = previewParticipants(6),
     participantCount: Int = 6,
     maxAttendees: Int? = 10,
-    presentUserIds: Set<String> = setOf("0", "2")
+    presentUserIds: ImmutableSet<String> = persistentSetOf("0", "2")
 ) {
     LynkTheme {
         ParticipantsSection(
@@ -158,7 +161,7 @@ private fun ParticipantsSectionFullPreview() = ParticipantsSectionPreview(
 @PreviewLightDark
 @Composable
 private fun ParticipantsSectionEmptyPreview() = ParticipantsSectionPreview(
-    participants = emptyList(),
+    participants = persistentListOf(),
     participantCount = 0,
-    presentUserIds = emptySet()
+    presentUserIds = persistentSetOf()
 )

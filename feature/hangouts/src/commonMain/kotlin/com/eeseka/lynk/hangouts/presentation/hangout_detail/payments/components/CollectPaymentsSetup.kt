@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -10,8 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailAction
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsState
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
@@ -27,8 +28,8 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CollectPaymentsSetup(
-    state: HangoutDetailState,
-    onAction: (HangoutDetailAction) -> Unit,
+    state: HangoutPaymentsState,
+    onAction: (HangoutPaymentsAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val hapticFeedback = rememberAppHaptic()
@@ -41,8 +42,10 @@ fun CollectPaymentsSetup(
                 checked = state.isCollectPaymentsOn,
                 onCheckedChange = { isOn ->
                     hapticFeedback(AppHaptic.Selection)
-                    onAction(HangoutDetailAction.OnCollectPaymentsToggled(isOn))
-                }
+                    onAction(HangoutPaymentsAction.OnCollectPaymentsToggled(isOn))
+                },
+                // Switching off wipes the form, which must not happen while it is being submitted.
+                enabled = !state.isEnablingPayments
             )
         }
     ) {
@@ -61,16 +64,15 @@ fun CollectPaymentsSetup(
                     deadlineLabel = state.paymentDeadlineDate?.toDateLabel(),
                     deadlineError = state.paymentDeadlineError?.asString(),
                     selectedBankName = state.selectedBank?.name,
+                    bankError = state.bankError?.asString(),
                     resolvedAccountName = state.resolvedAccountName,
-                    accountError = state.accountResolutionError?.asString(),
+                    accountError = state.accountResolutionError?.asString() ?: state.accountNumberError?.asString(),
                     isResolvingAccount = state.isResolvingAccount,
                     isEnabling = state.isEnablingPayments,
                     canConfirm = state.canEnablePayments,
-                    onDeadlineClick = {
-                        onAction(HangoutDetailAction.OnPaymentDeadlinePickerClick)
-                    },
-                    onBankPickerClick = { onAction(HangoutDetailAction.OnBankPickerClick) },
-                    onConfirm = { onAction(HangoutDetailAction.OnEnablePaymentsConfirmed) },
+                    onDeadlineClick = { onAction(HangoutPaymentsAction.OnPaymentDeadlinePickerClick) },
+                    onBankPickerClick = { onAction(HangoutPaymentsAction.OnBankPickerClick) },
+                    onConfirm = { onAction(HangoutPaymentsAction.OnEnablePaymentsConfirmed) },
                     modifier = Modifier.padding(top = 20.dp)
                 )
             }
@@ -83,7 +85,7 @@ fun CollectPaymentsSetup(
 private fun CollectPaymentsSetupOffPreview() {
     LynkTheme {
         CollectPaymentsSetup(
-            state = HangoutDetailState(),
+            state = HangoutPaymentsState(),
             onAction = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
@@ -97,12 +99,11 @@ private fun CollectPaymentsSetupOffPreview() {
 private fun CollectPaymentsSetupOnPreview() {
     LynkTheme {
         CollectPaymentsSetup(
-            state = HangoutDetailState(
+            state = HangoutPaymentsState(
                 isCollectPaymentsOn = true,
                 paymentDeadlineDate = LocalDate(2026, 9, 12),
                 selectedBank = BankUi("058", "Guaranty Trust Bank", null, "GT"),
-                resolvedAccountName = "EMMANUEL ESEKA",
-                canEnablePayments = true
+                resolvedAccountName = "EMMANUEL ESEKA"
             ),
             onAction = {},
             modifier = Modifier

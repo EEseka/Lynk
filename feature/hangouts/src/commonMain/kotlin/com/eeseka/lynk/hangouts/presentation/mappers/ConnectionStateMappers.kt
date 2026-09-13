@@ -1,4 +1,4 @@
-package com.eeseka.lynk.hangouts.presentation.util
+package com.eeseka.lynk.hangouts.presentation.mappers
 
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.presentation.util.UiText

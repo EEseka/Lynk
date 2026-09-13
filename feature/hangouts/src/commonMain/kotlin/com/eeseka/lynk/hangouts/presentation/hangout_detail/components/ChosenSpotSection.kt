@@ -38,6 +38,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_chosen_spot
@@ -50,12 +51,10 @@ import org.jetbrains.compose.resources.stringResource
 fun ChosenSpotSection(
     chosenSpot: SpotUi?,
     onSpotClick: () -> Unit,
+    modifier: Modifier = Modifier,
     canCopyAddress: Boolean = false,
-    onCopyAddressClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onCopyAddressClick: () -> Unit = {}
 ) {
-    val hapticFeedback = rememberAppHaptic()
-
     DetailSection(
         title = stringResource(Res.string.detail_chosen_spot),
         trailing = if (canCopyAddress) {
@@ -64,10 +63,7 @@ fun ChosenSpotSection(
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
                         .clip(CircleShape)
-                        .clickable {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onCopyAddressClick()
-                        }
+                        .clickable { onCopyAddressClick() }
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -111,7 +107,7 @@ fun ChosenSpotSection(
 private fun ChosenSpotCard(
     spotName: String,
     spotAddress: String?,
-    photoUrls: List<String>,
+    photoUrls: ImmutableList<String>,
     rating: Double?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier

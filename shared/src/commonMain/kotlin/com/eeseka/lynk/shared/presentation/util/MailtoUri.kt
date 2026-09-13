@@ -6,9 +6,7 @@ fun buildMailtoUri(
     email: String,
     subject: String,
     body: String
-): String = "mailto:$email" +
-        "?subject=${subject.percentEncoded()}" +
-        "&body=${body.percentEncoded()}"
+): String = "mailto:$email" + "?subject=${subject.percentEncoded()}" + "&body=${body.percentEncoded()}"
 
 // Letters, digits and - . _ ~ pass through; every other UTF-8 byte becomes %XX.
 // A space must be %20, not +, because mail apps show a + literally
