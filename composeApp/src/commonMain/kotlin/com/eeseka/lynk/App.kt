@@ -11,6 +11,7 @@ import com.eeseka.lynk.main_shell.presentation.navigation.MainShellGraphRoutes
 import com.eeseka.lynk.navigation.NavigationRoot
 import com.eeseka.lynk.onboarding.presentation.navigation.OnboardingGraphRoutes
 import com.eeseka.lynk.profile_setup.presentation.navigation.ProfileSetupGraphRoutes
+import com.eeseka.lynk.shared.design_system.theme.ApplyNativeTheme
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppTheme
@@ -48,6 +49,8 @@ fun App(
             }
         }
     }
+
+    ApplyNativeTheme(theme = state.theme)
 
     LynkTheme(darkTheme = isDarkTheme) {
         if (!state.isCheckingAuth) {
