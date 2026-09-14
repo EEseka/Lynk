@@ -1,6 +1,7 @@
 package com.eeseka.lynk.shared.data.lobby.network
 
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import io.ktor.client.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.CancellationException
 import platform.Foundation.NSError
 import platform.Foundation.NSURLErrorDomain
@@ -19,7 +20,7 @@ actual class ConnectionErrorHandler {
                 NSURLErrorTimedOut -> ConnectionState.ERROR_NETWORK
                 else -> ConnectionState.ERROR_UNKNOWN
             }
-        } else if (cause is IOSNetworkCancellationException) {
+        } else if (cause is IOSNetworkCancellationException || cause is SocketTimeoutException) {
             ConnectionState.ERROR_NETWORK
         } else ConnectionState.ERROR_UNKNOWN
     }
@@ -43,7 +44,7 @@ actual class ConnectionErrorHandler {
     }
 
     actual fun isRetriableError(cause: Throwable): Boolean {
-        if (cause is IOSNetworkCancellationException) {
+        if (cause is IOSNetworkCancellationException || cause is SocketTimeoutException) {
             return true
         }
 
@@ -77,6 +78,12 @@ actual class ConnectionErrorHandler {
                         code = NSURLErrorNetworkConnectionLost,
                         userInfo = null
                     )
+                message.contains(NSURLErrorTimedOutPattern) ->
+                    return NSError.errorWithDomain(
+                        domain = NSURLErrorDomain,
+                        code = NSURLErrorTimedOut,
+                        userInfo = null
+                    )
                 else -> null
             }
         }
@@ -87,5 +94,7 @@ actual class ConnectionErrorHandler {
             "Error Domain=${NSURLErrorDomain} Code=${NSURLErrorNotConnectedToInternet}"
         private val NSURLErrorNetworkConnectionLostPattern =
             "Error Domain=${NSURLErrorDomain} Code=${NSURLErrorNetworkConnectionLost}"
+        private val NSURLErrorTimedOutPattern =
+            "Error Domain=${NSURLErrorDomain} Code=${NSURLErrorTimedOut}"
     }
 }
