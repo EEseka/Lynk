@@ -367,11 +367,12 @@ class HangoutVotingViewModel(
     }
 
     private fun observeTrendingSpots() {
-        state
-            .map { it.center ?: it.myLocation }
+        combine(_hangoutId, state.map { it.center ?: it.myLocation }) { hangoutId, origin ->
+            hangoutId to origin
+        }
             .distinctUntilChanged()
-            .mapLatest { origin ->
-                if (origin == null) {
+            .mapLatest { (hangoutId, origin) ->
+                if (hangoutId == null || origin == null) {
                     _state.update { it.copy(isTrendingLoading = false) }
                     return@mapLatest
                 }
