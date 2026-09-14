@@ -8,6 +8,7 @@ import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.hangout.mappers.toHangoutPreviewUi
+import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import lynk.feature.notifications.generated.resources.Res
+import lynk.feature.notifications.generated.resources.invite_preview_cannot_join
 
 class InvitePreviewViewModel(
     private val hangoutService: HangoutService
@@ -80,6 +83,14 @@ class InvitePreviewViewModel(
 
                     when (error) {
                         DataError.Remote.NOT_FOUND -> eventChannel.send(InvitePreviewEvent.InviteWithdrawn)
+                        DataError.Remote.CONFLICT -> {
+                            val errorMessage = if (rsvpStatus == RsvpStatus.ATTENDING) {
+                                UiText.Resource(Res.string.invite_preview_cannot_join)
+                            } else {
+                                error.toUiText()
+                            }
+                            eventChannel.send(InvitePreviewEvent.Error(errorMessage))
+                        }
                         else -> eventChannel.send(InvitePreviewEvent.Error(error.toUiText()))
                     }
                 }
