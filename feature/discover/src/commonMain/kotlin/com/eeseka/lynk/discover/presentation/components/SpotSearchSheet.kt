@@ -60,6 +60,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.components.SpotDiscoverCard
 import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
@@ -68,7 +69,6 @@ import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import lynk.feature.discover.generated.resources.Res
@@ -116,7 +116,8 @@ fun SpotSearchSheet(
             onLoadNextSearchPage = onLoadNextSearchPage,
             onSelectPriceLevel = onSelectPriceLevel,
             onSelectCategory = onSelectCategory,
-            onSpotClick = onSpotClick
+            onSpotClick = onSpotClick,
+            modifier = Modifier.weight(1f, fill = false)
         )
     }
 }
@@ -370,49 +371,25 @@ private fun DiscoverEmptyState(modifier: Modifier = Modifier) {
     }
 }
 
-private val previewSpots = persistentListOf(
-    SpotUi(
-        id = "1",
-        name = "Mama Cass Restaurant",
-        photoUrls = persistentListOf(),
-        latitude = 6.443,
-        longitude = 3.455,
-        category = SpotCategory.RESTAURANT,
-        priceLevel = PriceLevel.MODERATE,
-        rating = 4.2,
-        reviewCount = 120,
-        isSaved = false,
-        isOpenNow = true,
-        shortAddress = "Victoria Island",
-        tags = persistentListOf(),
-        description = null,
-        websiteUrl = null,
-        googleMapsUrl = null
-    ),
-    SpotUi(
-        id = "2",
-        name = "Terra Kulture",
-        photoUrls = persistentListOf(),
-        latitude = 6.445,
-        longitude = 3.456,
-        category = SpotCategory.ACTIVITY,
-        priceLevel = PriceLevel.CHEAP,
-        rating = 4.6,
-        reviewCount = 980,
-        isSaved = true,
-        isOpenNow = false,
-        shortAddress = "Tiamiyu Savage",
-        tags = persistentListOf(),
-        description = null,
-        websiteUrl = null,
-        googleMapsUrl = null
-    )
+@PreviewLightDark
+@Composable
+private fun SpotSearchSheetResultsPreview() = SpotSearchSheetContentPreview()
+
+@PreviewLightDark
+@Composable
+private fun SpotSearchSheetLoadingPreview() = SpotSearchSheetContentPreview(
+    isSearchLoading = true
+)
+
+@PreviewLightDark
+@Composable
+private fun SpotSearchSheetErrorPreview() = SpotSearchSheetContentPreview(
+    searchError = "Couldn't reach the server. Check your connection and try again.",
+    selectedPriceLevel = PriceLevel.MODERATE
 )
 
 @Composable
 private fun SpotSearchSheetContentPreview(
-    spots: ImmutableList<SpotUi> = previewSpots,
-    isSearchActive: Boolean = false,
     isSearchLoading: Boolean = false,
     searchError: String? = null,
     selectedPriceLevel: PriceLevel? = null
@@ -420,8 +397,8 @@ private fun SpotSearchSheetContentPreview(
     LynkTheme {
         SpotSearchSheetContent(
             searchTextState = TextFieldState(),
-            spots = spots,
-            isSearchActive = isSearchActive,
+            spots = previewSpots,
+            isSearchActive = false,
             isSearchLoading = isSearchLoading,
             searchError = searchError,
             searchEndReached = true,
@@ -438,27 +415,3 @@ private fun SpotSearchSheetContentPreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun SpotSearchSheetResultsPreview() = SpotSearchSheetContentPreview()
-
-@PreviewLightDark
-@Composable
-private fun SpotSearchSheetEmptyPreview() = SpotSearchSheetContentPreview(
-    spots = persistentListOf(),
-    isSearchActive = true
-)
-
-@PreviewLightDark
-@Composable
-private fun SpotSearchSheetLoadingPreview() = SpotSearchSheetContentPreview(
-    isSearchLoading = true
-)
-
-@PreviewLightDark
-@Composable
-private fun SpotSearchSheetErrorPreview() = SpotSearchSheetContentPreview(
-    searchError = "Couldn't reach the server. Check your connection and try again.",
-    selectedPriceLevel = PriceLevel.MODERATE
-)
