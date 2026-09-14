@@ -49,7 +49,7 @@ import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
-import com.eeseka.lynk.discover.presentation.components.rememberSpotMapClickHandler
+import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
@@ -93,12 +93,12 @@ import lynk.feature.discover.generated.resources.show_map_attribution
 import lynk.feature.discover.generated.resources.trending_load_error_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.overlay.CompassButtonStyle
 import org.maplibre.compose.overlay.DisappearingCompassButton
 import org.maplibre.compose.overlay.DisappearingScaleBar
-import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
@@ -150,7 +150,26 @@ fun DiscoverScreen(
 ) {
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
-    val cameraState = rememberCameraState()
+
+    val isDark = when (state.mapTheme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
+
+    val mapStyle = if (isDark) MAP_STYLE_URI_DARK else MAP_STYLE_URI_LIGHT
+
+    val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
+
+    val mapState = rememberMapState(
+        baseStyle = BaseStyle.Uri(mapStyle),
+        content = {
+            SpotLocationMapMarker(
+                spots = spotsToShow,
+                selectedSpotId = state.selectedSpotId
+            )
+        }
+    )
 
     val scope = rememberCoroutineScope()
     val hapticFeedback = rememberAppHaptic()
@@ -175,7 +194,7 @@ fun DiscoverScreen(
         } else {
             onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
-            val currentPosition = cameraState.position
+            val currentPosition = mapState.cameraPosition
             val userPosition = currentPosition.copy(
                 target = Position(
                     latitude = coordinate.latitude,
@@ -185,13 +204,13 @@ fun DiscoverScreen(
             )
 
             if (isLocateMeTap) {
-                cameraState.animateTo(
-                    finalPosition = userPosition,
+                mapState.animateCameraPosition(
+                    position = userPosition,
                     duration = currentPosition.flightDurationTo(userPosition)
                 )
             } else if (!hasCenteredOnUser) {
                 // Opening the screen lands on the user straight away
-                cameraState.position = userPosition
+                mapState.setCameraPosition(userPosition)
             }
             hasCenteredOnUser = true
         }
@@ -212,16 +231,6 @@ fun DiscoverScreen(
             fetchCurrentLocationAndShowOnMap(false)
         }
     }
-
-    val isDark = when (state.mapTheme) {
-        AppTheme.SYSTEM -> isSystemInDarkTheme()
-        AppTheme.LIGHT -> false
-        AppTheme.DARK -> true
-    }
-
-    val mapStyle = if (isDark) MAP_STYLE_URI_DARK else MAP_STYLE_URI_LIGHT
-
-    val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
 
     val selectedSpot = state.selectedSpotId?.let { selectedId ->
         state.searchResults.find { it.id == selectedId }
@@ -244,7 +253,7 @@ fun DiscoverScreen(
             state.selectedCategory != null ||
             state.selectedPriceLevel != null
 
-    val onSpotPinClick = rememberSpotMapClickHandler(cameraState) { spotId ->
+    val spotMapInteractions = rememberSpotMapInteractions(mapState) { spotId ->
         hapticFeedback(AppHaptic.ImpactLight)
         onAction(DiscoverAction.OnSpotSelected(spotId))
     }
@@ -256,56 +265,52 @@ fun DiscoverScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             MaplibreMap(
                 modifier = Modifier.fillMaxSize(),
-                baseStyle = BaseStyle.Uri(mapStyle),
-                cameraState = cameraState,
-                zoomRange = 2f..20f,
-                pitchRange = 0f..60f,
-                onMapClick = onSpotPinClick,
+                state = mapState,
+                cameraConstraints = CameraConstraints(
+                    minZoom = 2.0,
+                    maxZoom = 20.0,
+                    minPitch = 0.0,
+                    maxPitch = 60.0
+                ),
+                interactions = spotMapInteractions,
                 contentWindowInsets = WindowInsets(
                     top = scaffoldPadding.calculateTopPadding() + 72.dp,
                     left = 8.dp,
                     right = 8.dp
-                ).union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
-                overlay = MapOverlay {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .height(48.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        DisappearingScaleBar(
-                            metersPerDp = cameraState.viewport?.metersPerDpAtTarget ?: 0.0,
-                            zoom = cameraState.position.zoom,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                            textStyle = MaterialTheme.typography.labelSmall.copy(
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                    }
-                    DisappearingCompassButton(
-                        cameraState = cameraState,
-                        style = CompassButtonStyle(
-                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                        ),
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    )
-
-                    if (userLatitude != null && userLongitude != null) {
-                        UserLocationMapMarker(
-                            userLatitude = userLatitude,
-                            userLongitude = userLongitude,
-                            pulseKey = state.locationFetchEpoch
-                        )
-                    }
-
-                    SelectedSpotPinOverlay(spot = selectedSpot)
-                }
+                ).union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
             ) {
-                SpotLocationMapMarker(
-                    spots = spotsToShow,
-                    selectedSpotId = state.selectedSpotId
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .height(48.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    DisappearingScaleBar(
+                        metersPerDp = mapState.viewport?.metersPerDpAtTarget ?: 0.0,
+                        zoom = mapState.cameraPosition.zoom,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                        textStyle = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+                DisappearingCompassButton(
+                    style = CompassButtonStyle(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    ),
+                    modifier = Modifier.align(Alignment.TopEnd)
                 )
+
+                if (userLatitude != null && userLongitude != null) {
+                    UserLocationMapMarker(
+                        userLatitude = userLatitude,
+                        userLongitude = userLongitude,
+                        pulseKey = state.locationFetchEpoch
+                    )
+                }
+
+                SelectedSpotPinOverlay(spot = selectedSpot)
             }
 
             // Search Bar

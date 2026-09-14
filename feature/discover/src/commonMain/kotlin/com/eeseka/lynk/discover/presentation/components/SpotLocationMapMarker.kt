@@ -34,7 +34,6 @@ import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonPrimitive
-import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.expressions.dsl.asString
 import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
@@ -43,12 +42,13 @@ import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.SymbolAnchor
+import org.maplibre.compose.interaction.ClickResult
+import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.map.MapState
 import org.maplibre.compose.overlay.MapOverlayScope
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
-import org.maplibre.compose.util.ClickResult
-import org.maplibre.compose.util.MapClickHandler
 import org.maplibre.spatialk.geojson.Position
 
 private const val SELECTED_PIN_SCALE = 1.35f
@@ -63,24 +63,30 @@ private const val NO_SELECTION_ID = ""
 private val SPOT_LAYER_IDS: Set<String> = SpotCategory.entries.map { it.layerId() }.toSet()
 
 @Composable
-fun rememberSpotMapClickHandler(
-    cameraState: CameraState,
+fun rememberSpotMapInteractions(
+    mapState: MapState,
     onSpotClick: (String) -> Unit
-): MapClickHandler {
+): MapInteractions {
     val scope = rememberCoroutineScope()
 
-    return remember(cameraState, onSpotClick) {
-        { _, offset ->
-            scope.launch {
-                val features = cameraState.queryRenderedFeatures(
-                    offset = offset,
-                    layerIds = SPOT_LAYER_IDS
-                )
-                features.firstNotNullOfOrNull { feature ->
-                    (feature.properties?.get("id") as? JsonPrimitive)?.content
-                }?.let(onSpotClick)
+    return remember(mapState, onSpotClick) {
+        MapInteractions {
+            callbacks {
+                click {
+                    onEvent { event ->
+                        scope.launch {
+                            val features = mapState.queryRenderedFeatures(
+                                offset = event.screenOffset,
+                                layerIds = SPOT_LAYER_IDS
+                            )
+                            features.firstNotNullOfOrNull { feature ->
+                                (feature.properties?.get("id") as? JsonPrimitive)?.content
+                            }?.let(onSpotClick)
+                        }
+                        ClickResult.Consume
+                    }
+                }
             }
-            ClickResult.Consume
         }
     }
 }
