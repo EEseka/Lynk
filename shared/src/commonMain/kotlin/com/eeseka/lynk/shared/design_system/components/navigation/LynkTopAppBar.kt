@@ -8,9 +8,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
@@ -62,24 +64,31 @@ fun LynkTopAppBar(
     val mappedLeading = remember(iosLeadingItems) { iosLeadingItems.toUIKitItems() }
     val mappedTrailing = remember(iosTrailingItems) { iosTrailingItems.toUIKitItems() }
 
-    AdaptiveTopBar(
-        title = {
-            title?.let { LynkText(text = it) }
-        },
-        modifier = modifier,
-        navigationIcon = navigationIcon,
-        actions = actions,
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = containerColor,
-            titleContentColor = contentColor,
-            navigationIconContentColor = contentColor,
-            actionIconContentColor = contentColor
-        ),
-        iosTitle = title.orEmpty(),
-        iosLeadingItems = mappedLeading,
-        iosTrailingItems = mappedTrailing,
-    )
+    // Workaround for Calf (0.14.0): on iOS, AdaptiveTopBar measures the native bar's height once,
+    // stops after a few steady frames, and never measures again. After a rotation the content keeps
+    // the old orientation's top padding — a big gap in landscape, or content under the bar in portrait.
+    // Keying on the window size rebuilds the bar on rotation so it measures again.
+    // Remove this key (and this comment) once Calf re-measures on its own: https://github.com/MohamedRejeb/Calf/issues/548
+    key(LocalWindowInfo.current.containerSize) {
+        AdaptiveTopBar(
+            title = {
+                title?.let { LynkText(text = it) }
+            },
+            modifier = modifier,
+            navigationIcon = navigationIcon,
+            actions = actions,
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = containerColor,
+                titleContentColor = contentColor,
+                navigationIconContentColor = contentColor,
+                actionIconContentColor = contentColor
+            ),
+            iosTitle = title.orEmpty(),
+            iosLeadingItems = mappedLeading,
+            iosTrailingItems = mappedTrailing,
+        )
+    }
 }
 
 private fun List<LynkIosBarButtonItem>.toUIKitItems(): List<UIKitUIBarButtonItem> =
