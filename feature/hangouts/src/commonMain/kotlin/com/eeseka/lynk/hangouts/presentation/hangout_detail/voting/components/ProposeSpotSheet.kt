@@ -48,7 +48,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import kotlinx.collections.immutable.ImmutableList
@@ -336,66 +336,12 @@ private fun EmptySearchState(message: String) {
     }
 }
 
-private fun previewSpot(id: String, name: String, category: SpotCategory) = SpotUi(
-    id = id,
-    name = name,
-    description = null,
-    photoUrls = persistentListOf(),
-    category = category,
-    tags = persistentListOf(),
-    priceLevel = null,
-    rating = 4.3,
-    reviewCount = 88,
-    isOpenNow = true,
-    shortAddress = "Victoria Island",
-    latitude = 6.443,
-    longitude = 3.455,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
-)
-
-private val previewSpots = persistentListOf(
-    previewSpot("1", "Mama Cass Restaurant", SpotCategory.RESTAURANT),
-    previewSpot("2", "Cafe Neo", SpotCategory.CAFE),
-    previewSpot("3", "The Good Beach Lounge", SpotCategory.LOUNGE),
-    previewSpot("4", "Terra Culture", SpotCategory.RESTAURANT)
-)
-
-@Composable
-private fun ProposeSpotSheetPreview(state: HangoutVotingState) {
-    LynkTheme {
-        ProposeSpotSheetContent(
-            state = state,
-            onTabSelected = {},
-            onPropose = {},
-            onLoadNextSpotPage = {},
-            onLoadNextFavoritePage = {},
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(vertical = 20.dp)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
 private fun ProposeSpotSheetTrendingPreview() = ProposeSpotSheetPreview(
     state = HangoutVotingState(
         center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
         trendingSpots = previewSpots
-    )
-)
-
-@PreviewLightDark
-@Composable
-private fun ProposeSpotSheetSearchResultsPreview() = ProposeSpotSheetPreview(
-    state = HangoutVotingState(
-        center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
-        proposeSpotSheetSearchTextState = TextFieldState("beach"),
-        spotSearchResults = previewSpots,
-        spotSearchEndReached = true,
-        candidates = previewSpots.filter { it.id == "2" }.toImmutableList()
     )
 )
 
@@ -420,13 +366,18 @@ private fun ProposeSpotSheetLoadingPreview() = ProposeSpotSheetPreview(
     )
 )
 
-@PreviewLightDark
 @Composable
-private fun ProposeSpotSheetFavoritesPreview() = ProposeSpotSheetPreview(
-    state = HangoutVotingState(
-        center = LocationCoordinates(latitude = 6.44, longitude = 3.42),
-        activeProposeSpotSheetSearchTab = SearchTab.FAVORITES,
-        favoriteSpotSearchResults = previewSpots.take(2).toImmutableList(),
-        favoriteSpotSearchEndReached = true
-    )
-)
+private fun ProposeSpotSheetPreview(state: HangoutVotingState) {
+    LynkTheme {
+        ProposeSpotSheetContent(
+            state = state,
+            onTabSelected = {},
+            onPropose = {},
+            onLoadNextSpotPage = {},
+            onLoadNextFavoritePage = {},
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(vertical = 20.dp)
+        )
+    }
+}

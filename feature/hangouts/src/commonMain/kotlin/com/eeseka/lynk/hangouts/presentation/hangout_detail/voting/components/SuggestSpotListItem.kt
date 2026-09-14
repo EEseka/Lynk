@@ -38,15 +38,13 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
-import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.propose_proposed
 import lynk.feature.hangouts.generated.resources.propose_suggest_action
@@ -213,76 +211,21 @@ private fun SuggestControl(
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun SuggestSpotListItemPreview(
-    spot: SpotUi = previewSuggestSpot,
-    originLat: Double? = 6.44,
-    originLng: Double? = 3.42,
-    isProposing: Boolean = false,
-    alreadyAdded: Boolean = false
-) {
+private fun SuggestSpotListItemPreview() {
+    val (nok, jazzhole, rooftop) = previewSpots
     LynkTheme {
-        SuggestSpotListItem(
-            spot = spot,
-            originLat = originLat,
-            originLng = originLng,
-            isProposing = isProposing,
-            alreadyAdded = alreadyAdded,
-            onSuggest = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        ) {
+            SuggestSpotListItem(nok, originLat = 6.44, originLng = 3.42, isProposing = false, alreadyAdded = false, onSuggest = {})
+            SuggestSpotListItem(jazzhole, originLat = null, originLng = null, isProposing = false, alreadyAdded = false, onSuggest = {})
+            SuggestSpotListItem(rooftop, originLat = 6.44, originLng = 3.42, isProposing = true, alreadyAdded = false, onSuggest = {})
+            SuggestSpotListItem(nok, originLat = 6.44, originLng = 3.42, isProposing = false, alreadyAdded = true, onSuggest = {})
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun SuggestSpotListItemDefaultPreview() = SuggestSpotListItemPreview()
-
-@PreviewLightDark
-@Composable
-private fun SuggestSpotListItemNoDistancePreview() = SuggestSpotListItemPreview(
-    spot = previewSuggestSpot.copy(
-        name = "Cafe Neo",
-        category = SpotCategory.CAFE,
-        priceLevel = PriceLevel.CHEAP
-    ),
-    originLat = null,
-    originLng = null
-)
-
-@PreviewLightDark
-@Composable
-private fun SuggestSpotListItemProposingPreview() = SuggestSpotListItemPreview(
-    spot = previewSuggestSpot.copy(
-        name = "The Good Beach Lounge",
-        category = SpotCategory.LOUNGE,
-        priceLevel = PriceLevel.LUXURY
-    ),
-    isProposing = true
-)
-
-@PreviewLightDark
-@Composable
-private fun SuggestSpotListItemAddedPreview() = SuggestSpotListItemPreview(
-    spot = previewSuggestSpot.copy(name = "Terra Culture", category = SpotCategory.ACTIVITY),
-    alreadyAdded = true
-)
-
-private val previewSuggestSpot = SpotUi(
-    id = "1",
-    name = "Mama Cass Restaurant",
-    description = null,
-    photoUrls = persistentListOf(),
-    category = SpotCategory.RESTAURANT,
-    tags = persistentListOf(),
-    priceLevel = PriceLevel.MODERATE,
-    rating = 4.2,
-    reviewCount = 120,
-    isOpenNow = true,
-    shortAddress = "Victoria Island",
-    latitude = 6.443,
-    longitude = 3.455,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
-)

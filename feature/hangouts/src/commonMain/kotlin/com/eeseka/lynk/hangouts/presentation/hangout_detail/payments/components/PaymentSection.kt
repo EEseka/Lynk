@@ -36,6 +36,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
+import com.eeseka.lynk.shared.presentation.preview.previewPayment
 import com.eeseka.lynk.shared.presentation.util.toDateLabel
 import com.eeseka.lynk.shared.presentation.util.toNairaString
 import lynk.feature.hangouts.generated.resources.Res
@@ -55,7 +56,6 @@ import lynk.feature.hangouts.generated.resources.payment_total
 import lynk.feature.hangouts.generated.resources.payment_you_paid
 import lynk.feature.hangouts.generated.resources.payment_your_share
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
 
 @Composable
 fun PaymentSection(
@@ -279,57 +279,10 @@ private fun PaymentRow(
     }
 }
 
-@Composable
-private fun PaymentSectionPreview(
-    paymentState: PaymentState = PaymentState.COLLECTING,
-    isHost: Boolean = true,
-    hasUnpaidGuests: Boolean = true,
-    hasCurrentUserPaid: Boolean = false,
-    canPay: Boolean = false,
-    isAwaitingPaymentReturn: Boolean = false,
-    canChangeDeadline: Boolean = false,
-    isChangingDeadline: Boolean = false,
-    needsDeadlineDecision: Boolean = false,
-    isDecidingAtDeadline: Boolean = false,
-    canRetryPayout: Boolean = false
-) {
-    LynkTheme {
-        PaymentSection(
-            payment = HangoutPaymentUi(
-                totalCostKobo = 2_400_000L,
-                costPerPersonKobo = 300_000L,
-                splitHeadcount = 8,
-                deadline = Instant.fromEpochSeconds(1_799_000_000L),
-                state = paymentState
-            ),
-            isHost = isHost,
-            hasUnpaidGuests = hasUnpaidGuests,
-            hasCurrentUserPaid = hasCurrentUserPaid,
-            canPay = canPay,
-            isAwaitingPaymentReturn = isAwaitingPaymentReturn,
-            canChangeDeadline = canChangeDeadline,
-            isChangingDeadline = isChangingDeadline,
-            needsDeadlineDecision = needsDeadlineDecision,
-            isDecidingAtDeadline = isDecidingAtDeadline,
-            canRetryPayout = canRetryPayout,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
 private fun PaymentSectionHostCollectingPreview() = PaymentSectionPreview(
     canChangeDeadline = true
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentSectionHostChangingDeadlinePreview() = PaymentSectionPreview(
-    canChangeDeadline = true,
-    isChangingDeadline = true
 )
 
 @PreviewLightDark
@@ -341,24 +294,9 @@ private fun PaymentSectionGuestCanPayPreview() = PaymentSectionPreview(
 
 @PreviewLightDark
 @Composable
-private fun PaymentSectionGuestConfirmingPreview() = PaymentSectionPreview(
-    isHost = false,
-    isAwaitingPaymentReturn = true
-)
-
-@PreviewLightDark
-@Composable
 private fun PaymentSectionAwaitingDecisionPreview() = PaymentSectionPreview(
     paymentState = PaymentState.AWAITING_HOST_DECISION,
     needsDeadlineDecision = true
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentSectionDecidingPreview() = PaymentSectionPreview(
-    paymentState = PaymentState.AWAITING_HOST_DECISION,
-    needsDeadlineDecision = true,
-    isDecidingAtDeadline = true
 )
 
 @PreviewLightDark
@@ -368,30 +306,31 @@ private fun PaymentSectionPayoutFailedPreview() = PaymentSectionPreview(
     canRetryPayout = true
 )
 
-@PreviewLightDark
 @Composable
-private fun PaymentSectionPaidOutPreview() = PaymentSectionPreview(
-    paymentState = PaymentState.PAID_OUT
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentSectionHostAllPaidPreview() = PaymentSectionPreview(
-    hasUnpaidGuests = false,
-    canChangeDeadline = true
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentSectionGuestHasPaidPreview() = PaymentSectionPreview(
-    isHost = false,
-    hasCurrentUserPaid = true
-)
-
-@PreviewLightDark
-@Composable
-private fun PaymentSectionGuestAllPaidPreview() = PaymentSectionPreview(
-    isHost = false,
-    hasUnpaidGuests = false,
-    hasCurrentUserPaid = true
-)
+private fun PaymentSectionPreview(
+    paymentState: PaymentState = PaymentState.COLLECTING,
+    isHost: Boolean = true,
+    canPay: Boolean = false,
+    canChangeDeadline: Boolean = false,
+    needsDeadlineDecision: Boolean = false,
+    canRetryPayout: Boolean = false
+) {
+    LynkTheme {
+        PaymentSection(
+            payment = previewPayment(paymentState),
+            isHost = isHost,
+            hasUnpaidGuests = true,
+            hasCurrentUserPaid = false,
+            canPay = canPay,
+            isAwaitingPaymentReturn = false,
+            canChangeDeadline = canChangeDeadline,
+            isChangingDeadline = false,
+            needsDeadlineDecision = needsDeadlineDecision,
+            isDecidingAtDeadline = false,
+            canRetryPayout = canRetryPayout,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        )
+    }
+}

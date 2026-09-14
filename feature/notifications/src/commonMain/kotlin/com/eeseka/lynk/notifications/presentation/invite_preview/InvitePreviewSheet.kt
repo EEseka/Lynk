@@ -38,24 +38,17 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPreviewUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.shared.presentation.preview.previewHangoutInvite
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.invite_preview_accept
 import lynk.feature.notifications.generated.resources.invite_preview_accepting
@@ -70,7 +63,6 @@ import lynk.feature.notifications.generated.resources.invite_preview_withdrawn
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Instant
 
 @Composable
 fun InvitePreviewRoot(
@@ -299,49 +291,22 @@ private fun InvitePreviewSheetContent(
     }
 }
 
-private fun previewHangout(
-    status: HangoutStatus,
-    chosenSpot: SpotUi?
-) = HangoutPreviewUi(
-    id = "h1",
-    hostId = "u1",
-    name = "Sunday Jollof Run",
-    description = "Meeting up for the good stuff before the match starts.",
-    vibe = HangoutVibe.FOOD,
-    status = status,
-    scheduledAt = Instant.fromEpochSeconds(1_790_000_000L),
-    maxAttendees = 8,
-    participantCount = 5,
-    chosenSpot = chosenSpot,
-    attendees = List(4) { index ->
-        HangoutUserUi(
-            userId = "$index",
-            username = "user$index",
-            displayName = "User $index",
-            initials = "U$index",
-            profilePictureUrl = null
-        )
-    }.toImmutableList(),
-    createdAt = Instant.fromEpochSeconds(1_789_000_000L)
+@PreviewLightDark
+@Composable
+private fun InvitePreviewSheetScheduledPreview() = InvitePreviewSheetPreview(
+    InvitePreviewState(hangoutPreview = previewHangoutInvite())
 )
 
-private val previewSpot = SpotUi(
-    id = "s1",
-    name = "Nok by Alara",
-    description = null,
-    photoUrls = persistentListOf(),
-    category = SpotCategory.RESTAURANT,
-    tags = persistentListOf(),
-    priceLevel = PriceLevel.MODERATE,
-    rating = 4.6,
-    reviewCount = 210,
-    isOpenNow = true,
-    shortAddress = "Victoria Island, Lagos",
-    latitude = 6.43,
-    longitude = 3.42,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
+@PreviewLightDark
+@Composable
+private fun InvitePreviewSheetVotingPreview() = InvitePreviewSheetPreview(
+    InvitePreviewState(hangoutPreview = previewHangoutInvite(HangoutStatus.VOTING, withSpot = false))
+)
+
+@PreviewLightDark
+@Composable
+private fun InvitePreviewSheetLoadingPreview() = InvitePreviewSheetPreview(
+    InvitePreviewState(isLoading = true)
 )
 
 @Composable
@@ -356,34 +321,3 @@ private fun InvitePreviewSheetPreview(state: InvitePreviewState) {
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun InvitePreviewSheetScheduledPreview() = InvitePreviewSheetPreview(
-    InvitePreviewState(
-        hangoutPreview = previewHangout(HangoutStatus.SCHEDULED, previewSpot)
-    )
-)
-
-@PreviewLightDark
-@Composable
-private fun InvitePreviewSheetVotingPreview() = InvitePreviewSheetPreview(
-    InvitePreviewState(
-        hangoutPreview = previewHangout(HangoutStatus.VOTING, chosenSpot = null)
-    )
-)
-
-@PreviewLightDark
-@Composable
-private fun InvitePreviewSheetRespondingPreview() = InvitePreviewSheetPreview(
-    InvitePreviewState(
-        hangoutPreview = previewHangout(HangoutStatus.SCHEDULED, previewSpot),
-        respondingTo = RsvpStatus.ATTENDING
-    )
-)
-
-@PreviewLightDark
-@Composable
-private fun InvitePreviewSheetLoadingPreview() = InvitePreviewSheetPreview(
-    InvitePreviewState(isLoading = true)
-)

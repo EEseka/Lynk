@@ -227,27 +227,6 @@ private val previewBanks = persistentListOf(
     BankUi("057", "Zenith Bank", null, "ZE")
 )
 
-@Composable
-private fun BankPickerSheetPreview(
-    banks: ImmutableList<BankUi> = previewBanks,
-    query: String = "",
-    isLoading: Boolean = false,
-    errorMessage: String? = null
-) {
-    LynkTheme {
-        BankPickerSheetContent(
-            banks = banks,
-            searchState = TextFieldState(query),
-            isLoading = isLoading,
-            errorMessage = errorMessage,
-            onBankSelected = {},
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(vertical = 20.dp)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
 private fun BankPickerSheetListPreview() = BankPickerSheetPreview()
@@ -266,9 +245,22 @@ private fun BankPickerSheetErrorPreview() = BankPickerSheetPreview(
     errorMessage = "Couldn't reach the server. Check your connection and try again."
 )
 
-@PreviewLightDark
 @Composable
-private fun BankPickerSheetEmptyPreview() = BankPickerSheetPreview(
-    banks = persistentListOf(),
-    query = "xyz"
-)
+private fun BankPickerSheetPreview(
+    banks: ImmutableList<BankUi> = previewBanks,
+    isLoading: Boolean = false,
+    errorMessage: String? = null
+) {
+    LynkTheme {
+        BankPickerSheetContent(
+            banks = banks,
+            searchState = TextFieldState(),
+            isLoading = isLoading,
+            errorMessage = errorMessage,
+            onBankSelected = {},
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(vertical = 20.dp)
+        )
+    }
+}

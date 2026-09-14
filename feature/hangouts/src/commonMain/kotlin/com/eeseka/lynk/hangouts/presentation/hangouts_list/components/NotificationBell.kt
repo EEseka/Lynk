@@ -2,6 +2,7 @@ package com.eeseka.lynk.hangouts.presentation.hangouts_list.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -87,27 +88,9 @@ fun NotificationBell(
 @Composable
 private fun NotificationBellPreview() {
     LynkTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+        Row(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
             NotificationBell(unreadCount = 3, onClick = {})
-        }
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun NotificationBellOverflowPreview() {
-    LynkTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
             NotificationBell(unreadCount = 42, onClick = {})
-        }
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun NotificationBellTonalPreview() {
-    LynkTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
             NotificationBell(unreadCount = 3, onClick = {}, isTonal = true)
         }
     }

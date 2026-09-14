@@ -374,94 +374,45 @@ private fun LeadingBadge() {
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun CandidateCardPreview(
-    spotName: String = "Mama Cass Restaurant",
-    spotAddress: String? = "Victoria Island",
+private fun CandidateCardPreview() {
+    LynkTheme {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        ) {
+            PreviewCandidateCard()
+            PreviewCandidateCard(isMyVote = true, isLeading = true, voteCount = 4, totalVotes = 6)
+            PreviewCandidateCard(isTiebreakTarget = true, voteCount = 3, totalVotes = 6)
+            PreviewCandidateCard(canRemove = true, voteCount = 1)
+        }
+    }
+}
+
+@Composable
+private fun PreviewCandidateCard(
     voteCount: Int = 2,
     totalVotes: Int = 5,
     isMyVote: Boolean = false,
     isLeading: Boolean = false,
     isTiebreakTarget: Boolean = false,
-    canRemove: Boolean = false,
-    isRemoving: Boolean = false
+    canRemove: Boolean = false
 ) {
-    LynkTheme {
-        CandidateCard(
-            spotName = spotName,
-            spotAddress = spotAddress,
-            photoUrls = persistentListOf(),
-            voteCount = voteCount,
-            totalVotes = totalVotes,
-            isMyVote = isMyVote,
-            isLeading = isLeading,
-            isTiebreakTarget = isTiebreakTarget,
-            canRemove = canRemove,
-            isRemoving = isRemoving,
-            onRemove = {},
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-        )
-    }
+    CandidateCard(
+        spotName = "Nok by Alara",
+        spotAddress = "Victoria Island, Lagos",
+        photoUrls = persistentListOf(),
+        voteCount = voteCount,
+        totalVotes = totalVotes,
+        isMyVote = isMyVote,
+        isLeading = isLeading,
+        isTiebreakTarget = isTiebreakTarget,
+        canRemove = canRemove,
+        isRemoving = false,
+        onRemove = {},
+        onClick = {}
+    )
 }
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardDefaultPreview() = CandidateCardPreview()
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardMyVotePreview() = CandidateCardPreview(
-    isMyVote = true,
-    voteCount = 3,
-    totalVotes = 5
-)
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardLeadingPreview() = CandidateCardPreview(
-    spotName = "The Good Beach Lounge",
-    spotAddress = "Lekki Phase 1",
-    isLeading = true,
-    voteCount = 4,
-    totalVotes = 6
-)
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardLeadingAndMinePreview() = CandidateCardPreview(
-    spotName = "The Good Beach Lounge",
-    spotAddress = "Lekki Phase 1",
-    isMyVote = true,
-    isLeading = true,
-    voteCount = 4,
-    totalVotes = 6
-)
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardTiebreakPreview() = CandidateCardPreview(
-    spotName = "Terra Culture",
-    isTiebreakTarget = true,
-    voteCount = 3,
-    totalVotes = 6
-)
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardHostRemovablePreview() = CandidateCardPreview(
-    spotName = "Cafe Neo",
-    canRemove = true,
-    voteCount = 1,
-    totalVotes = 5
-)
-
-@PreviewLightDark
-@Composable
-private fun CandidateCardRemovingPreview() = CandidateCardPreview(
-    spotName = "Cafe Neo",
-    canRemove = true,
-    isRemoving = true,
-    voteCount = 1,
-    totalVotes = 5
-)

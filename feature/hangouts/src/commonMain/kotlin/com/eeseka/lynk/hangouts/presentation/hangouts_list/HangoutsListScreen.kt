@@ -67,23 +67,21 @@ import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkS
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
+import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res
@@ -99,7 +97,6 @@ import lynk.feature.hangouts.generated.resources.search_ongoing_hangouts_hint
 import lynk.feature.hangouts.generated.resources.search_upcoming_hangouts_hint
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Instant
 
 @Composable
 fun HangoutsListRoot(
@@ -461,44 +458,20 @@ fun HangoutsListScreen(
     }
 }
 
-private val previewNames = listOf(
-    "Late Night Drinks" to HangoutVibe.DRINKS,
-    "Sunday BBQ" to HangoutVibe.FOOD,
-    "Chill at Mine" to HangoutVibe.CHILL,
-    "FIFA Tournament" to HangoutVibe.GAMING,
-    "Rooftop Party" to HangoutVibe.PARTY,
-    "Hiking Trip" to HangoutVibe.ACTIVE,
-    "Board Game Night" to HangoutVibe.OTHER,
-    "Brunch Run" to HangoutVibe.FOOD,
-    "Go-Kart Race" to HangoutVibe.ACTIVE,
-    "Movie Night" to HangoutVibe.CHILL
-)
+@PreviewLightDark
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
+@Composable
+private fun HangoutsListScreenFilledPreview() =
+    HangoutsListScreenPreview(HangoutsListState(hangouts = previewHangoutSummaries))
 
-private fun previewHangouts(filter: HangoutStatusFilter): ImmutableList<HangoutSummaryUi> {
-    val statuses = when (filter) {
-        HangoutStatusFilter.UPCOMING -> listOf(HangoutStatus.VOTING, HangoutStatus.SCHEDULED)
-        HangoutStatusFilter.ONGOING -> listOf(HangoutStatus.ONGOING)
-        HangoutStatusFilter.COMPLETED -> listOf(HangoutStatus.COMPLETED)
-        HangoutStatusFilter.CANCELLED -> listOf(HangoutStatus.CANCELLED)
-    }
-    return previewNames.mapIndexed { index, (name, vibe) ->
-        HangoutSummaryUi(
-            id = "preview-$index",
-            hostId = "host-1",
-            name = name,
-            vibe = vibe,
-            status = statuses[index % statuses.size],
-            scheduledAt = Instant.fromEpochSeconds(1_800_000_000L + index * 86_400L),
-            maxAttendees = if (index % 3 == 0) null else 4 + index % 8,
-            participantCount = 1 + index % 5,
-            createdAt = Instant.fromEpochSeconds(1_790_000_000L + index * 86_400L)
+@PreviewLightDark
+@Composable
+private fun HangoutsListScreenErrorPreview() = HangoutsListScreenPreview(
+    HangoutsListState(
+        loadError = UiText.DynamicString(
+            "Couldn't reach the server. Check your connection and try again."
         )
-    }.toImmutableList()
-}
-
-private fun previewState(filter: HangoutStatusFilter) = HangoutsListState(
-    hangouts = previewHangouts(filter),
-    selectedStatusFilter = filter
+    )
 )
 
 @Composable
@@ -515,38 +488,3 @@ private fun HangoutsListScreenPreview(state: HangoutsListState) {
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun HangoutsListScreenUpcomingPreview() =
-    HangoutsListScreenPreview(previewState(HangoutStatusFilter.UPCOMING))
-
-@PreviewLightDark
-@Composable
-private fun HangoutsListScreenOngoingPreview() =
-    HangoutsListScreenPreview(previewState(HangoutStatusFilter.ONGOING))
-
-@PreviewLightDark
-@Composable
-private fun HangoutsListScreenCompletedPreview() =
-    HangoutsListScreenPreview(previewState(HangoutStatusFilter.COMPLETED))
-
-@PreviewLightDark
-@Composable
-private fun HangoutsListScreenCancelledPreview() =
-    HangoutsListScreenPreview(previewState(HangoutStatusFilter.CANCELLED))
-
-@PreviewLightDark
-@Composable
-private fun HangoutsListScreenErrorPreview() = HangoutsListScreenPreview(
-    HangoutsListState(
-        loadError = UiText.DynamicString(
-            "Couldn't reach the server. Check your connection and try again."
-        )
-    )
-)
-
-@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
-@Composable
-private fun HangoutsListScreenTabletPreview() =
-    HangoutsListScreenPreview(previewState(HangoutStatusFilter.UPCOMING))

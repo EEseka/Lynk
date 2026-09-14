@@ -140,21 +140,23 @@ fun HangoutDetailTopBar(
     )
 }
 
+@PreviewLightDark
 @Composable
-private fun HangoutDetailTopBarPreview(
-    showInvite: Boolean = true,
-    inviteEnabled: Boolean = true,
-    canEdit: Boolean = true,
-    canCancel: Boolean = true,
-    canLeave: Boolean = false
-) {
+private fun HangoutDetailTopBarHostPreview() = HangoutDetailTopBarPreview(isHost = true)
+
+@PreviewLightDark
+@Composable
+private fun HangoutDetailTopBarAttendeePreview() = HangoutDetailTopBarPreview(isHost = false)
+
+@Composable
+private fun HangoutDetailTopBarPreview(isHost: Boolean) {
     LynkTheme {
         HangoutDetailTopBar(
-            showInvite = showInvite,
-            inviteEnabled = inviteEnabled,
-            canEdit = canEdit,
-            canCancel = canCancel,
-            canLeave = canLeave,
+            showInvite = isHost,
+            inviteEnabled = true,
+            canEdit = isHost,
+            canCancel = isHost,
+            canLeave = !isHost,
             isCancelling = false,
             isLeaving = false,
             isOverflowExpanded = false,
@@ -167,20 +169,3 @@ private fun HangoutDetailTopBarPreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailTopBarHostPreview() = HangoutDetailTopBarPreview()
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailTopBarInviteFullPreview() = HangoutDetailTopBarPreview(inviteEnabled = false)
-
-@PreviewLightDark
-@Composable
-private fun HangoutDetailTopBarAttendeePreview() = HangoutDetailTopBarPreview(
-    showInvite = false,
-    canEdit = false,
-    canCancel = false,
-    canLeave = true
-)

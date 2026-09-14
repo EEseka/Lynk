@@ -33,7 +33,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -188,68 +188,9 @@ fun VotingSection(
     }
 }
 
-private fun previewSpot(id: String, name: String, address: String) = SpotUi(
-    id = id,
-    name = name,
-    description = null,
-    photoUrls = persistentListOf(),
-    category = SpotCategory.RESTAURANT,
-    tags = persistentListOf(),
-    priceLevel = null,
-    rating = 4.5,
-    reviewCount = 120,
-    isOpenNow = true,
-    shortAddress = address,
-    latitude = 6.4,
-    longitude = 3.4,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
-)
-
-private val previewCandidates = persistentListOf(
-    previewSpot("s1", "The Rooftop Lounge", "12 Admiralty Way, Lekki"),
-    previewSpot("s2", "Nomad Beach Bar", "8 Elegushi Rd, Lekki"),
-    previewSpot("s3", "Craft & Co", "3 Karimu Kotun St, VI")
-)
-
-@Composable
-private fun VotingSectionPreview(
-    candidates: ImmutableList<SpotUi> = previewCandidates,
-    votes: ImmutableMap<String, String> = persistentMapOf("0" to "s1", "1" to "s1", "2" to "s2", "me" to "s3"),
-    isHost: Boolean = false,
-    tiedSpotIds: ImmutableList<String> = persistentListOf(),
-    removingSpotIds: ImmutableSet<String> = persistentSetOf(),
-    isClosingVoting: Boolean = false
-) {
-    LynkTheme {
-        VotingSection(
-            candidates = candidates,
-            votes = votes,
-            removingSpotIds = removingSpotIds,
-            currentUserId = "me",
-            isHost = isHost,
-            tiedSpotIds = tiedSpotIds,
-            isClosingVoting = isClosingVoting,
-            onCastVote = {},
-            onRemoveSpot = {},
-            onProposeClick = {},
-            onCloseVoting = {},
-            onBreakTie = {},
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
-private fun VotingSectionAttendeePreview() = VotingSectionPreview()
-
-@PreviewLightDark
-@Composable
-private fun VotingSectionHostPreview() = VotingSectionPreview(isHost = true)
+private fun VotingSectionHostPreview() = VotingSectionPreview()
 
 @PreviewLightDark
 @Composable
@@ -262,13 +203,32 @@ private fun VotingSectionEmptyPreview() = VotingSectionPreview(
 @Composable
 private fun VotingSectionTiePreview() = VotingSectionPreview(
     votes = persistentMapOf("0" to "s1", "1" to "s2"),
-    isHost = true,
     tiedSpotIds = persistentListOf("s1", "s2")
 )
 
-@PreviewLightDark
 @Composable
-private fun VotingSectionClosingPreview() = VotingSectionPreview(
-    isHost = true,
-    isClosingVoting = true
-)
+private fun VotingSectionPreview(
+    candidates: ImmutableList<SpotUi> = previewSpots,
+    votes: ImmutableMap<String, String> = persistentMapOf("0" to "s1", "1" to "s1", "2" to "s2", "me" to "s3"),
+    tiedSpotIds: ImmutableList<String> = persistentListOf()
+) {
+    LynkTheme {
+        VotingSection(
+            candidates = candidates,
+            votes = votes,
+            removingSpotIds = persistentSetOf(),
+            currentUserId = "me",
+            isHost = true,
+            tiedSpotIds = tiedSpotIds,
+            isClosingVoting = false,
+            onCastVote = {},
+            onRemoveSpot = {},
+            onProposeClick = {},
+            onCloseVoting = {},
+            onBreakTie = {},
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        )
+    }
+}

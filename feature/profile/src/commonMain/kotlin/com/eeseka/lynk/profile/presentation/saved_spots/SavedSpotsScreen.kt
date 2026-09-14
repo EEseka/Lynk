@@ -42,11 +42,9 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.UiText
@@ -263,58 +261,8 @@ fun SavedSpotsScreen(
     }
 }
 
-private val previewSpots = persistentListOf(
-    SpotUi(
-        id = "1",
-        name = "Nok by Alara",
-        description = null,
-        photoUrls = persistentListOf(),
-        category = SpotCategory.RESTAURANT,
-        tags = persistentListOf(),
-        priceLevel = PriceLevel.MODERATE,
-        rating = 4.6,
-        reviewCount = 214,
-        isOpenNow = true,
-        shortAddress = "Victoria Island, Lagos",
-        latitude = 6.4281,
-        longitude = 3.4219,
-        websiteUrl = null,
-        googleMapsUrl = null,
-        isSaved = true
-    ),
-    SpotUi(
-        id = "2",
-        name = "Jazzhole",
-        description = null,
-        photoUrls = persistentListOf(),
-        category = SpotCategory.CAFE,
-        tags = persistentListOf(),
-        priceLevel = PriceLevel.CHEAP,
-        rating = 4.4,
-        reviewCount = 88,
-        isOpenNow = false,
-        shortAddress = "Ikoyi, Lagos",
-        latitude = 6.4474,
-        longitude = 3.4362,
-        websiteUrl = null,
-        googleMapsUrl = null,
-        isSaved = true
-    )
-)
-
-@Composable
-private fun SavedSpotsScreenPreview(state: SavedSpotsState) {
-    LynkTheme {
-        SavedSpotsScreen(
-            state = state,
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() },
-            navigateBack = {}
-        )
-    }
-}
-
 @PreviewLightDark
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable
 private fun SavedSpotsScreenFilledPreview() = SavedSpotsScreenPreview(
     SavedSpotsState(spots = previewSpots, isEndReached = true)
@@ -336,8 +284,14 @@ private fun SavedSpotsScreenErrorPreview() = SavedSpotsScreenPreview(
     )
 )
 
-@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable
-private fun SavedSpotsScreenTabletPreview() = SavedSpotsScreenPreview(
-    SavedSpotsState(spots = previewSpots, isEndReached = true)
-)
+private fun SavedSpotsScreenPreview(state: SavedSpotsState) {
+    LynkTheme {
+        SavedSpotsScreen(
+            state = state,
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            navigateBack = {}
+        )
+    }
+}

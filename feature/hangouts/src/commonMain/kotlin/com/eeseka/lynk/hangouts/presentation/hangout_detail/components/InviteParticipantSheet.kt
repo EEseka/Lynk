@@ -48,6 +48,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.shared.presentation.preview.previewUser
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import kotlinx.coroutines.delay
 import lynk.feature.hangouts.generated.resources.Res
@@ -357,33 +358,33 @@ private fun HostChip(modifier: Modifier = Modifier) {
     }
 }
 
-private val previewInviteUser = HangoutUserUi(
-    userId = "u1",
-    username = "e.eseka",
-    displayName = "Eseka Emmanuel",
-    initials = "EE",
-    profilePictureUrl = null
-)
+@PreviewLightDark
+@Composable
+private fun InviteSheetIdlePreview() = InvitePreview()
+
+@PreviewLightDark
+@Composable
+private fun InviteSheetResultPreview() = InvitePreview(query = "guest2", result = previewUser(2))
+
+@PreviewLightDark
+@Composable
+private fun InviteSheetNotFoundPreview() = InvitePreview(query = "ghost_user", notFound = true)
 
 @Composable
 private fun InvitePreview(
-    query: String,
-    result: HangoutUserUi?,
-    isSearching: Boolean,
-    notFound: Boolean,
-    isInviting: Boolean,
-    alreadyInvited: Boolean,
-    isResultHost: Boolean = false
+    query: String = "",
+    result: HangoutUserUi? = null,
+    notFound: Boolean = false
 ) {
     LynkTheme {
         InviteParticipantSheetContent(
             queryState = TextFieldState(query),
             result = result,
-            isSearching = isSearching,
+            isSearching = false,
             notFound = notFound,
-            isInviting = isInviting,
-            alreadyInvited = alreadyInvited,
-            isResultHost = isResultHost,
+            isInviting = false,
+            alreadyInvited = false,
+            isResultHost = false,
             onInvite = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
@@ -391,81 +392,3 @@ private fun InvitePreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetIdlePreview() = InvitePreview(
-    query = "",
-    result = null,
-    isSearching = false,
-    notFound = false,
-    isInviting = false,
-    alreadyInvited = false
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetSearchingPreview() = InvitePreview(
-    query = "e.eseka",
-    result = null,
-    isSearching = true,
-    notFound = false,
-    isInviting = false,
-    alreadyInvited = false
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetResultPreview() = InvitePreview(
-    query = "e.eseka",
-    result = previewInviteUser,
-    isSearching = false,
-    notFound = false,
-    isInviting = false,
-    alreadyInvited = false
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetHostPreview() = InvitePreview(
-    query = "e.eseka",
-    result = previewInviteUser,
-    isSearching = false,
-    notFound = false,
-    isInviting = false,
-    alreadyInvited = false,
-    isResultHost = true
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetInvitingPreview() = InvitePreview(
-    query = "e.eseka",
-    result = previewInviteUser,
-    isSearching = false,
-    notFound = false,
-    isInviting = true,
-    alreadyInvited = false
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetAlreadyInvitedPreview() = InvitePreview(
-    query = "e.eseka",
-    result = previewInviteUser,
-    isSearching = false,
-    notFound = false,
-    isInviting = false,
-    alreadyInvited = true
-)
-
-@PreviewLightDark
-@Composable
-private fun InviteSheetNotFoundPreview() = InvitePreview(
-    query = "ghost_user",
-    result = null,
-    isSearching = false,
-    notFound = true,
-    isInviting = false,
-    alreadyInvited = false
-)

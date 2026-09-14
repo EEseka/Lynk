@@ -29,10 +29,10 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
+import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.host_badge_description
 import lynk.feature.hangouts.generated.resources.participants_attended_format
@@ -40,7 +40,6 @@ import lynk.feature.hangouts.generated.resources.participants_attended_max_forma
 import lynk.feature.hangouts.generated.resources.participants_format
 import lynk.feature.hangouts.generated.resources.participants_max_format
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
 
 @Composable
 fun HangoutSummaryCard(
@@ -182,98 +181,21 @@ fun HangoutSummaryCard(
 @Composable
 private fun HangoutSummaryCardPreview() {
     LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "1",
-                hostId = "user1",
-                name = "Gaming Night at Ikeja Arcade",
-                vibe = HangoutVibe.GAMING,
-                status = HangoutStatus.VOTING,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = 10,
-                participantCount = 4,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            scheduledDate = "Mon 15 Jun · 8:00 PM",
-            isSelected = false,
-            isHost = true,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun HangoutSummaryCardSelectedPreview() {
-    LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "2",
-                hostId = "user1",
-                name = "Friday Drinks",
-                vibe = HangoutVibe.DRINKS,
-                status = HangoutStatus.SCHEDULED,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = null,
-                participantCount = 7,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            scheduledDate = "Tue 16 Jun · 7:30 PM",
-            isSelected = true,
-            isHost = false,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun HangoutSummaryCardCompletedPreview() {
-    LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "3",
-                hostId = "user2",
-                name = "Beach Day at Tarkwa Bay",
-                vibe = HangoutVibe.ACTIVE,
-                status = HangoutStatus.COMPLETED,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = 8,
-                participantCount = 6,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            scheduledDate = "Sat 6 Jun · 10:00 AM",
-            isSelected = false,
-            isHost = false,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun HangoutSummaryCardCancelledPreview() {
-    LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "4",
-                hostId = "user1",
-                name = "Karaoke Night",
-                vibe = HangoutVibe.PARTY,
-                status = HangoutStatus.CANCELLED,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = null,
-                participantCount = 3,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            scheduledDate = "Fri 12 Jun · 9:00 PM",
-            isSelected = false,
-            isHost = true,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            previewHangoutSummaries.forEachIndexed { index, hangout ->
+                HangoutSummaryCard(
+                    hangout = hangout,
+                    scheduledDate = "Mon 15 Jun · 8:00 PM",
+                    isSelected = index == 1,
+                    isHost = index == 0,
+                    onClick = {}
+                )
+            }
+        }
     }
 }

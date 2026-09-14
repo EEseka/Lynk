@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -148,41 +149,38 @@ fun LynkDateTimeTile(
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun LynkDateTimeTilePreview(
+private fun LynkDateTimeTilePreview() {
+    LynkTheme {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .padding(16.dp)
+        ) {
+            PreviewDateTimeTile()
+            PreviewDateTimeTile(value = null)
+            PreviewDateTimeTile(errorMessage = "Please select a time")
+            PreviewDateTimeTile(isExpanded = true)
+        }
+    }
+}
+
+@Composable
+private fun PreviewDateTimeTile(
     value: String? = "8:00 PM",
     errorMessage: String? = null,
     isExpanded: Boolean = false
 ) {
-    LynkTheme {
-        LynkDateTimeTile(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
-            title = "Time",
-            value = value,
-            placeholder = "Select Time",
-            icon = Lucide.Clock,
-            errorMessage = errorMessage,
-            isExpanded = isExpanded,
-            onClick = {},
-            pickerContent = { LynkTimePicker(onTimeSelected = { _, _ -> }) }
-        )
-    }
+    LynkDateTimeTile(
+        title = "Time",
+        value = value,
+        placeholder = "Select Time",
+        icon = Lucide.Clock,
+        errorMessage = errorMessage,
+        isExpanded = isExpanded,
+        onClick = {},
+        pickerContent = { LynkTimePicker(onTimeSelected = { _, _ -> }) }
+    )
 }
-
-@PreviewLightDark
-@Composable
-private fun LynkDateTimeTileCollapsedPreview() = LynkDateTimeTilePreview()
-
-@PreviewLightDark
-@Composable
-private fun LynkDateTimeTileExpandedPreview() = LynkDateTimeTilePreview(isExpanded = true)
-
-@PreviewLightDark
-@Composable
-private fun LynkDateTimeTileEmptyPreview() = LynkDateTimeTilePreview(value = null)
-
-@PreviewLightDark
-@Composable
-private fun LynkDateTimeTileErrorPreview() = LynkDateTimeTilePreview(
-    errorMessage = "Please select a time"
-)

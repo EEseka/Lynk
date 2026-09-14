@@ -125,97 +125,38 @@ fun AuthActions(
 @Composable
 private fun AuthActionsPreview() {
     LynkTheme {
-        AuthActions(
-            isGoogleSigningIn = false,
-            isAppleSigningIn = false,
-            isGuestSigningIn = false,
-            onGoogleClick = {},
-            onAppleClick = {},
-            onGuestClick = {},
-            onGoogleTokenReceived = {},
-            onGoogleSignInCancelled = {},
-            onGoogleSignInFailed = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            PreviewAuthActions()
+            PreviewAuthActions(isGoogleSigningIn = true)
+            PreviewAuthActions(isAppleSigningIn = true)
+            PreviewAuthActions(isGuestSigningIn = true)
+            PreviewAuthActions(enableButtons = false)
+        }
     }
 }
 
-@PreviewLightDark
 @Composable
-private fun DisabledAuthActionsPreview() {
-    LynkTheme {
-        AuthActions(
-            isGoogleSigningIn = false,
-            isAppleSigningIn = false,
-            isGuestSigningIn = false,
-            onGoogleClick = {},
-            onAppleClick = {},
-            onGuestClick = {},
-            onGoogleTokenReceived = {},
-            onGoogleSignInCancelled = {},
-            onGoogleSignInFailed = {},
-            enableButtons = false,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun GoogleLoadingAuthActionsPreview() {
-    LynkTheme {
-        AuthActions(
-            isGoogleSigningIn = true,
-            isAppleSigningIn = false,
-            isGuestSigningIn = false,
-            onGoogleClick = {},
-            onAppleClick = {},
-            onGuestClick = {},
-            onGoogleTokenReceived = {},
-            onGoogleSignInCancelled = {},
-            onGoogleSignInFailed = {},
-            enableButtons = false,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun AppleLoadingAuthActionsPreview() {
-    LynkTheme {
-        AuthActions(
-            isGoogleSigningIn = false,
-            isAppleSigningIn = true,
-            isGuestSigningIn = false,
-            onGoogleClick = {},
-            onAppleClick = {},
-            onGuestClick = {},
-            onGoogleTokenReceived = {},
-            onGoogleSignInCancelled = {},
-            onGoogleSignInFailed = {},
-            enableButtons = false,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun GuestLoadingAuthActionsPreview() {
-    LynkTheme {
-        AuthActions(
-            isGoogleSigningIn = false,
-            isAppleSigningIn = false,
-            isGuestSigningIn = true,
-            onGoogleClick = {},
-            onAppleClick = {},
-            onGuestClick = {},
-            onGoogleTokenReceived = {},
-            onGoogleSignInCancelled = {},
-            onGoogleSignInFailed = {},
-            enableButtons = false,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
+private fun PreviewAuthActions(
+    isGoogleSigningIn: Boolean = false,
+    isAppleSigningIn: Boolean = false,
+    isGuestSigningIn: Boolean = false,
+    enableButtons: Boolean = !isGoogleSigningIn && !isAppleSigningIn && !isGuestSigningIn
+) {
+    AuthActions(
+        isGoogleSigningIn = isGoogleSigningIn,
+        isAppleSigningIn = isAppleSigningIn,
+        isGuestSigningIn = isGuestSigningIn,
+        onGoogleClick = {},
+        onAppleClick = {},
+        onGuestClick = {},
+        onGoogleTokenReceived = {},
+        onGoogleSignInCancelled = {},
+        onGoogleSignInFailed = {},
+        enableButtons = enableButtons
+    )
 }

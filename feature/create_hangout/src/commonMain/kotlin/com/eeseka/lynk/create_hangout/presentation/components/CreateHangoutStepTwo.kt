@@ -59,8 +59,7 @@ import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkS
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import kotlinx.collections.immutable.ImmutableList
@@ -454,61 +453,30 @@ private fun EmptySearchState(message: String) {
     }
 }
 
-private val previewSpots = persistentListOf(
-    SpotUi(
-        id = "1",
-        name = "Mama Cass Restaurant",
-        photoUrls = persistentListOf(),
-        latitude = 6.443,
-        longitude = 3.455,
-        category = SpotCategory.RESTAURANT,
-        priceLevel = PriceLevel.MODERATE,
-        rating = 4.2,
-        reviewCount = 120,
-        isSaved = false,
-        isOpenNow = true,
-        shortAddress = "Victoria Island",
-        tags = persistentListOf(),
-        description = null,
-        websiteUrl = null,
-        googleMapsUrl = null
-    ),
-    SpotUi(
-        id = "2",
-        name = "Domino's Pizza VI",
-        photoUrls = persistentListOf(),
-        latitude = 6.445,
-        longitude = 3.456,
-        category = SpotCategory.RESTAURANT,
-        priceLevel = PriceLevel.CHEAP,
-        rating = 4.5,
-        reviewCount = 300,
-        isSaved = true,
-        isOpenNow = true,
-        shortAddress = "Victoria Island",
-        tags = persistentListOf(),
-        description = null,
-        websiteUrl = null,
-        googleMapsUrl = null
-    )
+@PreviewLightDark
+@Composable
+private fun CreateHangoutStepTwoVotingPreview() = CreateHangoutStepTwoPreview(isVotingMode = true)
+
+@PreviewLightDark
+@Composable
+private fun CreateHangoutStepTwoSelectedPreview() = CreateHangoutStepTwoPreview(
+    selectedSpot = previewSpots.first()
 )
 
 @Composable
 private fun CreateHangoutStepTwoPreview(
     isVotingMode: Boolean = false,
-    searchState: TextFieldState = TextFieldState(),
-    selectedSpot: SpotUi? = null,
-    spots: ImmutableList<SpotUi> = previewSpots
+    selectedSpot: SpotUi? = null
 ) {
     LynkTheme {
         CreateHangoutStepTwo(
             isVotingMode = isVotingMode,
             activeSearchTab = SearchTab.ALL_SPOTS,
-            searchState = searchState,
+            searchState = TextFieldState(),
             selectedSpot = selectedSpot,
             userLatitude = 6.443,
             userLongitude = 3.455,
-            spots = spots,
+            spots = previewSpots,
             isLoading = false,
             isEndReached = true,
             showEmptyState = false,
@@ -523,19 +491,3 @@ private fun CreateHangoutStepTwoPreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutStepTwoVotingPreview() = CreateHangoutStepTwoPreview(isVotingMode = true)
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutStepTwoSearchingPreview() = CreateHangoutStepTwoPreview(
-    searchState = TextFieldState("Pizza")
-)
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutStepTwoSelectedPreview() = CreateHangoutStepTwoPreview(
-    selectedSpot = previewSpots.first()
-)

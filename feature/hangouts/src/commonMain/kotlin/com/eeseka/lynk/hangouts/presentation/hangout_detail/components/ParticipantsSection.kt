@@ -26,7 +26,8 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
+import com.eeseka.lynk.shared.presentation.preview.previewParticipants
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
@@ -107,33 +108,22 @@ fun ParticipantsSection(
     }
 }
 
-private fun previewParticipants(count: Int) = List(count) { index ->
-    HangoutParticipantUi(
-        user = HangoutUserUi(
-            userId = "$index",
-            username = "user$index",
-            displayName = "Guest $index",
-            initials = "G$index",
-            profilePictureUrl = null
-        ),
-        rsvpStatus = RsvpStatus.ATTENDING,
-        hasPaid = false
-    )
-}.toImmutableList()
+@PreviewLightDark
+@Composable
+private fun ParticipantsSectionDefaultPreview() = ParticipantsSectionPreview(previewParticipants(6))
+
+@PreviewLightDark
+@Composable
+private fun ParticipantsSectionEmptyPreview() = ParticipantsSectionPreview(persistentListOf())
 
 @Composable
-private fun ParticipantsSectionPreview(
-    participants: ImmutableList<HangoutParticipantUi> = previewParticipants(6),
-    participantCount: Int = 6,
-    maxAttendees: Int? = 10,
-    presentUserIds: ImmutableSet<String> = persistentSetOf("0", "2")
-) {
+private fun ParticipantsSectionPreview(participants: ImmutableList<HangoutParticipantUi>) {
     LynkTheme {
         ParticipantsSection(
             participants = participants,
-            participantCount = participantCount,
-            maxAttendees = maxAttendees,
-            presentUserIds = presentUserIds,
+            participantCount = participants.size,
+            maxAttendees = 10,
+            presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2"),
             onSeeAllClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
@@ -141,27 +131,3 @@ private fun ParticipantsSectionPreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun ParticipantsSectionDefaultPreview() = ParticipantsSectionPreview()
-
-@PreviewLightDark
-@Composable
-private fun ParticipantsSectionNoCapPreview() = ParticipantsSectionPreview(maxAttendees = null)
-
-@PreviewLightDark
-@Composable
-private fun ParticipantsSectionFullPreview() = ParticipantsSectionPreview(
-    participants = previewParticipants(10),
-    participantCount = 10,
-    maxAttendees = 10
-)
-
-@PreviewLightDark
-@Composable
-private fun ParticipantsSectionEmptyPreview() = ParticipantsSectionPreview(
-    participants = persistentListOf(),
-    participantCount = 0,
-    presentUserIds = persistentSetOf()
-)

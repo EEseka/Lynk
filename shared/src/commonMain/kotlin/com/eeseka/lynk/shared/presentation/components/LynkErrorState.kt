@@ -71,18 +71,6 @@ fun LynkErrorState(
     }
 }
 
-@Composable
-private fun LynkErrorStatePreview(title: String, message: String) {
-    LynkTheme {
-        LynkErrorState(
-            title = title,
-            message = message,
-            onRetry = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
 private fun LynkErrorStateDefaultPreview() = LynkErrorStatePreview(
@@ -96,3 +84,15 @@ private fun LynkErrorStateShortPreview() = LynkErrorStatePreview(
     title = "Couldn't load notifications",
     message = "Something went wrong."
 )
+
+@Composable
+private fun LynkErrorStatePreview(title: String, message: String) {
+    LynkTheme {
+        LynkErrorState(
+            title = title,
+            message = message,
+            onRetry = {},
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+        )
+    }
+}

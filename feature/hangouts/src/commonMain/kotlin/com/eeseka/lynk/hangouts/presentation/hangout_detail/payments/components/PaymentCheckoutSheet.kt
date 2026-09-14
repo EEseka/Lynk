@@ -113,6 +113,14 @@ private fun PaymentCheckoutSheetContent(
     }
 }
 
+@PreviewLightDark
+@Composable
+private fun PaymentCheckoutSheetLoadingPreview() = PaymentCheckoutSheetPreview(isLoading = true)
+
+@PreviewLightDark
+@Composable
+private fun PaymentCheckoutSheetLoadedPreview() = PaymentCheckoutSheetPreview(isLoading = false)
+
 @Composable
 private fun PaymentCheckoutSheetPreview(isLoading: Boolean) {
     LynkTheme {
@@ -132,11 +140,3 @@ private fun PaymentCheckoutSheetPreview(isLoading: Boolean) {
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun PaymentCheckoutSheetLoadingPreview() = PaymentCheckoutSheetPreview(isLoading = true)
-
-@PreviewLightDark
-@Composable
-private fun PaymentCheckoutSheetLoadedPreview() = PaymentCheckoutSheetPreview(isLoading = false)

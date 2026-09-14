@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -242,40 +243,23 @@ fun LynkSegmentedControl(
 
 @PreviewLightDark
 @Composable
-private fun LynkSegmentedControlScrollablePreview() {
+private fun LynkSegmentedControlPreview() {
     LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 0,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.SCROLLABLE_CHIPS
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkSegmentedControlFixedPreview() {
-    LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 1,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.FIXED_BAR
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkSegmentedControlWrappedPreview() {
-    LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 1,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.WRAPPING_CHIPS
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            LynkSegmentedStyle.entries.forEach { style ->
+                LynkSegmentedControl(
+                    items = previewItems,
+                    selectedIndex = 1,
+                    onItemSelected = {},
+                    style = style
+                )
+            }
+        }
     }
 }
 

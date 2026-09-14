@@ -109,37 +109,14 @@ fun HangoutsEmptyState(
     }
 }
 
+@PreviewLightDark
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
 @Composable
-private fun HangoutsEmptyStatePreview(currentFilter: HangoutStatusFilter) {
+private fun HangoutsEmptyStatePreview() {
     LynkTheme {
         HangoutsEmptyState(
-            currentFilter = currentFilter,
+            currentFilter = HangoutStatusFilter.UPCOMING,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateUpcomingPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.UPCOMING)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateOngoingPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.ONGOING)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateCompletedPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.COMPLETED)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateCancelledPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.CANCELLED)
-
-@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
-@Composable
-private fun HangoutsEmptyStateLandscapePreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.UPCOMING)

@@ -393,20 +393,28 @@ fun ProfileScreen(
     }
 }
 
-private fun previewState(isGuest: Boolean = false) = ProfileState(
-    isGuest = isGuest,
-    email = "john.doe@example.com",
-    username = "johndoe",
-    displayNameTextState = TextFieldState("John Doe"),
-    hostedCount = 12L,
-    attendedCount = 34L
-)
+@PreviewLightDark
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
+@Composable
+private fun ProfileScreenSignedInPreview() = ProfileScreenPreview(isGuest = false)
+
+@PreviewLightDark
+@Composable
+private fun ProfileScreenGuestPreview() = ProfileScreenPreview(isGuest = true)
 
 @Composable
-private fun ProfileScreenPreview(state: ProfileState) {
+private fun ProfileScreenPreview(isGuest: Boolean) {
     LynkTheme {
         ProfileScreen(
-            state = state,
+            state = ProfileState(
+                isGuest = isGuest,
+                email = "john.doe@example.com",
+                username = "johndoe",
+                displayNameTextState = TextFieldState("John Doe"),
+                hostedCount = 12L,
+                attendedCount = 34L
+            ),
             onAction = {},
             snackbarHostState = remember { SnackbarHostState() },
             navigateToSavedSpots = {},
@@ -414,19 +422,3 @@ private fun ProfileScreenPreview(state: ProfileState) {
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun ProfileScreenPreview() = ProfileScreenPreview(previewState())
-
-@PreviewLightDark
-@Composable
-private fun ProfileScreenGuestPreview() = ProfileScreenPreview(previewState(isGuest = true))
-
-@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
-@Composable
-private fun ProfileScreenLandscapePreview() = ProfileScreenPreview(previewState())
-
-@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
-@Composable
-private fun ProfileScreenTabletPreview() = ProfileScreenPreview(previewState())

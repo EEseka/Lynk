@@ -86,18 +86,9 @@ fun NotificationsEmptyState(modifier: Modifier = Modifier) {
 }
 
 @PreviewLightDark
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
 @Composable
 private fun NotificationsEmptyStatePreview() {
-    LynkTheme {
-        NotificationsEmptyState(
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@Preview(widthDp = 900, heightDp = 400)
-@Composable
-private fun NotificationsEmptyStateLandscapePreview() {
     LynkTheme {
         NotificationsEmptyState(
             modifier = Modifier.background(MaterialTheme.colorScheme.background)

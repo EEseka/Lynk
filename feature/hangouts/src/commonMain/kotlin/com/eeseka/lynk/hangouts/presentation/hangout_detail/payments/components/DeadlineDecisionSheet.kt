@@ -57,6 +57,14 @@ fun DeadlineDecisionSheet(
     )
 }
 
+@PreviewLightDark
+@Composable
+private fun DeadlineDecisionSheetDefaultPreview() = DeadlineDecisionSheetPreview()
+
+@PreviewLightDark
+@Composable
+private fun DeadlineDecisionSheetOneUnpaidPreview() = DeadlineDecisionSheetPreview(unpaidCount = 1)
+
 @Composable
 private fun DeadlineDecisionSheetPreview(unpaidCount: Int = 3) {
     LynkTheme {
@@ -67,11 +75,3 @@ private fun DeadlineDecisionSheetPreview(unpaidCount: Int = 3) {
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun DeadlineDecisionSheetDefaultPreview() = DeadlineDecisionSheetPreview()
-
-@PreviewLightDark
-@Composable
-private fun DeadlineDecisionSheetOneUnpaidPreview() = DeadlineDecisionSheetPreview(unpaidCount = 1)

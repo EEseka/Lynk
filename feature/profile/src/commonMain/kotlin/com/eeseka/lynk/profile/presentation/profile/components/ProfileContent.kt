@@ -256,14 +256,6 @@ private fun ProfileDetailsSection(
     }
 }
 
-private fun previewState() = ProfileState(
-    email = "john.doe@example.com",
-    username = "johndoe",
-    displayNameTextState = TextFieldState("John Doe"),
-    hostedCount = 12L,
-    attendedCount = 34L
-)
-
 @PreviewLightDark
 @Composable
 private fun SinglePaneProfilePreview() {
@@ -295,3 +287,11 @@ private fun TwoPaneProfilePreview() {
         )
     }
 }
+
+private fun previewState() = ProfileState(
+    email = "john.doe@example.com",
+    username = "johndoe",
+    displayNameTextState = TextFieldState("John Doe"),
+    hostedCount = 12L,
+    attendedCount = 34L
+)

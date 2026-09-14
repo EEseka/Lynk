@@ -1,7 +1,9 @@
 package com.eeseka.lynk.shared.design_system.components.textfields
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,11 +42,6 @@ import lynk.shared.generated.resources.search
 import lynk.shared.generated.resources.search_placeholder
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * A flat filled search bar, the shape both platforms have settled on: a grey pill, no outline, no
- * focus ring. It deliberately does not use [LynkTextFieldLayout] — that one exists for labelled
- * form fields, and a search bar wants none of its title, helper text, error text or border.
- */
 @Composable
 fun LynkSearchField(
     state: TextFieldState,
@@ -131,29 +128,19 @@ fun LynkSearchField(
     )
 }
 
+@PreviewLightDark
 @Composable
-private fun LynkSearchFieldPreview(
-    text: String = "Kotlin",
-    enabled: Boolean = true
-) {
+private fun LynkSearchFieldPreview() {
     LynkTheme {
-        LynkSearchField(
-            state = TextFieldState(text),
-            enabled = enabled,
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            LynkSearchField(state = TextFieldState("Kotlin"))
+            LynkSearchField(state = TextFieldState())
+            LynkSearchField(state = TextFieldState(), enabled = false)
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun LynkSearchFieldFilledPreview() = LynkSearchFieldPreview()
-
-@PreviewLightDark
-@Composable
-private fun LynkSearchFieldPlaceholderPreview() = LynkSearchFieldPreview(text = "")
-
-@PreviewLightDark
-@Composable
-private fun LynkSearchFieldDisabledPreview() =
-    LynkSearchFieldPreview(text = "", enabled = false)

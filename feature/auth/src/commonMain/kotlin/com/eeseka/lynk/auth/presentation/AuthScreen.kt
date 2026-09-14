@@ -203,20 +203,9 @@ private fun AuthActionsPanel(
 }
 
 @PreviewLightDark
-@Composable
-private fun AuthScreenPreview() {
-    LynkTheme {
-        AuthScreen(
-            state = AuthState(),
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
-        )
-    }
-}
-
 @Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
 @Composable
-private fun AuthScreenLandscapePreview() {
+private fun AuthScreenPreview() {
     LynkTheme {
         AuthScreen(
             state = AuthState(),

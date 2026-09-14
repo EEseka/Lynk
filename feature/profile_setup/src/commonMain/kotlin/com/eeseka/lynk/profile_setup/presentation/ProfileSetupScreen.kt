@@ -332,32 +332,10 @@ fun ProfileSetupScreen(
 }
 
 @PreviewLightDark
-@Composable
-private fun ProfileSetupScreenPreview() {
-    LynkTheme {
-        ProfileSetupScreen(
-            state = ProfileSetupState(email = "eseka@lynk.app"),
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
-        )
-    }
-}
-
 @Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
-@Composable
-private fun ProfileSetupScreenLandscapePreview() {
-    LynkTheme {
-        ProfileSetupScreen(
-            state = ProfileSetupState(email = "eseka@lynk.app"),
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
-        )
-    }
-}
-
 @Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable
-private fun ProfileSetupScreenTabletPreview() {
+private fun ProfileSetupScreenPreview() {
     LynkTheme {
         ProfileSetupScreen(
             state = ProfileSetupState(email = "eseka@lynk.app"),

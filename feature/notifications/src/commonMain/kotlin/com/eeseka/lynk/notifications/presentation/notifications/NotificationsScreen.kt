@@ -44,9 +44,8 @@ import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkPr
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.notification.model.NotificationType
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
-import com.eeseka.lynk.shared.presentation.notification.model.NotificationUi
+import com.eeseka.lynk.shared.presentation.preview.previewNotifications
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
@@ -58,8 +57,6 @@ import lynk.feature.notifications.generated.resources.notifications
 import lynk.feature.notifications.generated.resources.notifications_load_error_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
 
 @Composable
 fun NotificationsRoot(
@@ -281,42 +278,8 @@ fun NotificationsScreen(
     }
 }
 
-private val previewNotifications = persistentListOf(
-    NotificationUi(
-        id = "1",
-        type = NotificationType.PARTICIPANT_INVITED,
-        hangoutId = "h1",
-        hangoutName = "Sunday Jollof Run",
-        actorDisplayName = "Tolu",
-        amountKobo = null,
-        isRead = false,
-        createdAt = Clock.System.now() - 3.hours
-    ),
-    NotificationUi(
-        id = "2",
-        type = NotificationType.PAYOUT_SUCCEEDED,
-        hangoutId = "h2",
-        hangoutName = "Game Night",
-        actorDisplayName = null,
-        amountKobo = 2_400_000L,
-        isRead = true,
-        createdAt = Clock.System.now() - 50.hours
-    )
-)
-
-@Composable
-private fun NotificationsScreenPreview(state: NotificationsState) {
-    LynkTheme {
-        NotificationsScreen(
-            state = state,
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() },
-            navigateBack = {}
-        )
-    }
-}
-
 @PreviewLightDark
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable
 private fun NotificationsScreenListPreview() = NotificationsScreenPreview(
     NotificationsState(
@@ -331,11 +294,14 @@ private fun NotificationsScreenEmptyPreview() = NotificationsScreenPreview(
     NotificationsState(isEndReached = true)
 )
 
-@Preview(widthDp = 1280, heightDp = 800)
 @Composable
-private fun NotificationsScreenTabletPreview() = NotificationsScreenPreview(
-    NotificationsState(
-        notifications = previewNotifications,
-        isEndReached = true
-    )
-)
+private fun NotificationsScreenPreview(state: NotificationsState) {
+    LynkTheme {
+        NotificationsScreen(
+            state = state,
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            navigateBack = {}
+        )
+    }
+}

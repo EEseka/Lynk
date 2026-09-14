@@ -29,11 +29,12 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
+import com.eeseka.lynk.shared.presentation.preview.previewParticipants
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_group_declined
 import lynk.feature.hangouts.generated.resources.detail_group_going
@@ -201,55 +202,18 @@ private fun WithdrawControl(
     }
 }
 
-private fun previewParticipant(
-    id: String,
-    name: String,
-    username: String,
-    initials: String,
-    status: RsvpStatus,
-    hasPaid: Boolean = false
-) = HangoutParticipantUi(
-    user = HangoutUserUi(
-        userId = id,
-        username = username,
-        displayName = name,
-        initials = initials,
-        profilePictureUrl = null
-    ),
-    rsvpStatus = status,
-    hasPaid = hasPaid
-)
-
-private val previewRoster = persistentListOf(
-    // "1" is the host in the previews: marked paid by the server, but never badged.
-    previewParticipant("1", "Eseka Emmanuel", "e.eseka", "EE", RsvpStatus.ATTENDING, hasPaid = true),
-    previewParticipant("2", "Ada Obi", "ada", "AO", RsvpStatus.ATTENDING, hasPaid = true),
-    previewParticipant("3", "Tunde Bello", "tunde", "TB", RsvpStatus.ATTENDING),
-    previewParticipant("4", "Chidi Okafor", "chidi", "CO", RsvpStatus.PENDING),
-    previewParticipant("5", "Zainab Musa", "zainab", "ZM", RsvpStatus.PENDING),
-    previewParticipant("6", "Femi Ade", "femi", "FA", RsvpStatus.DECLINED)
-)
-
-@Composable
-private fun ParticipantsSheetPreview(
-    isHost: Boolean,
-    withdrawingUserIds: ImmutableSet<String> = persistentSetOf()
-) {
-    LynkTheme {
-        ParticipantsSheetContent(
-            participants = previewRoster,
-            isHost = isHost,
-            onWithdraw = {},
-            withdrawingUserIds = withdrawingUserIds,
-            presentUserIds = persistentSetOf("1", "3"),
-            arePaymentsOn = true,
-            hostId = "1",
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(vertical = 20.dp)
+// The host is paid by the server but never badged; the guests split across going, pending and declined.
+private val previewRoster = previewParticipants(count = 6, paidGuestCount = 1)
+    .mapIndexed { index, participant ->
+        participant.copy(
+            rsvpStatus = when (index) {
+                in 0..2 -> RsvpStatus.ATTENDING
+                3, 4 -> RsvpStatus.PENDING
+                else -> RsvpStatus.DECLINED
+            }
         )
     }
-}
+    .toImmutableList()
 
 @PreviewLightDark
 @Composable
@@ -259,6 +223,20 @@ private fun ParticipantsSheetHostPreview() = ParticipantsSheetPreview(isHost = t
 @Composable
 private fun ParticipantsSheetAttendeePreview() = ParticipantsSheetPreview(isHost = false)
 
-@PreviewLightDark
 @Composable
-private fun ParticipantsSheetWithdrawingPreview() = ParticipantsSheetPreview(isHost = true, withdrawingUserIds = persistentSetOf("4"))
+private fun ParticipantsSheetPreview(isHost: Boolean) {
+    LynkTheme {
+        ParticipantsSheetContent(
+            participants = previewRoster,
+            isHost = isHost,
+            onWithdraw = {},
+            withdrawingUserIds = persistentSetOf(),
+            presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2"),
+            arePaymentsOn = true,
+            hostId = PREVIEW_HOST_ID,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(vertical = 20.dp)
+        )
+    }
+}

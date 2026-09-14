@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -76,29 +77,13 @@ private fun PulseDot(color: Color) {
     )
 }
 
+@PreviewLightDark
 @Composable
-private fun ConnectionBannerPreview(connectionState: ConnectionState) {
+private fun ConnectionBannerPreview() {
     LynkTheme {
-        ConnectionBanner(connectionState = connectionState)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ConnectionState.entries
+                .forEach { ConnectionBanner(connectionState = it) }
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerConnectingPreview() =
-    ConnectionBannerPreview(ConnectionState.CONNECTING)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerDisconnectedPreview() =
-    ConnectionBannerPreview(ConnectionState.DISCONNECTED)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerErrorNetworkPreview() =
-    ConnectionBannerPreview(ConnectionState.ERROR_NETWORK)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerErrorUnknownPreview() =
-    ConnectionBannerPreview(ConnectionState.ERROR_UNKNOWN)

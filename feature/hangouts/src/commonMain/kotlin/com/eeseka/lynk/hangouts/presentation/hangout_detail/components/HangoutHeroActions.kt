@@ -163,14 +163,16 @@ fun HangoutHeroActions(
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun HangoutHeroActionsPreview(
-    showInvite: Boolean = true,
-    inviteEnabled: Boolean = true,
-    canEdit: Boolean = true,
-    canCancel: Boolean = true,
-    canLeave: Boolean = false
-) {
+private fun HangoutHeroActionsHostPreview() = HangoutHeroActionsPreview(isHost = true)
+
+@PreviewLightDark
+@Composable
+private fun HangoutHeroActionsAttendeePreview() = HangoutHeroActionsPreview(isHost = false)
+
+@Composable
+private fun HangoutHeroActionsPreview(isHost: Boolean) {
     LynkTheme {
         Box(
             modifier = Modifier
@@ -178,12 +180,12 @@ private fun HangoutHeroActionsPreview(
                 .padding(16.dp)
         ) {
             HangoutHeroActions(
-                showInvite = showInvite,
-                inviteEnabled = inviteEnabled,
+                showInvite = isHost,
+                inviteEnabled = true,
                 overflowItems = detailOverflowItems(
-                    canEdit = canEdit,
-                    canCancel = canCancel,
-                    canLeave = canLeave,
+                    canEdit = isHost,
+                    canCancel = isHost,
+                    canLeave = !isHost,
                     isCancelling = false,
                     isLeaving = false,
                     onEditClick = {},
@@ -197,20 +199,3 @@ private fun HangoutHeroActionsPreview(
         }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun HangoutHeroActionsHostPreview() = HangoutHeroActionsPreview()
-
-@PreviewLightDark
-@Composable
-private fun HangoutHeroActionsInviteFullPreview() = HangoutHeroActionsPreview(inviteEnabled = false)
-
-@PreviewLightDark
-@Composable
-private fun HangoutHeroActionsAttendeePreview() = HangoutHeroActionsPreview(
-    showInvite = false,
-    canEdit = false,
-    canCancel = false,
-    canLeave = true
-)

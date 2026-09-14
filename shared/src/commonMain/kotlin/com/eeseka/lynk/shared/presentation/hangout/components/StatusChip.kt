@@ -1,7 +1,9 @@
 package com.eeseka.lynk.shared.presentation.hangout.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -46,32 +48,20 @@ fun StatusChip(
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun StatusChipPreview(status: HangoutStatus) {
+private fun StatusChipPreview() {
     LynkTheme {
-        StatusChip(
-            status = status,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            HangoutStatus.entries.forEach { status ->
+                StatusChip(status = status)
+            }
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun StatusChipVotingPreview() = StatusChipPreview(HangoutStatus.VOTING)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipScheduledPreview() = StatusChipPreview(HangoutStatus.SCHEDULED)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipOngoingPreview() = StatusChipPreview(HangoutStatus.ONGOING)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipCompletedPreview() = StatusChipPreview(HangoutStatus.COMPLETED)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipCancelledPreview() = StatusChipPreview(HangoutStatus.CANCELLED)

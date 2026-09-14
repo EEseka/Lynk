@@ -5,11 +5,14 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -199,72 +202,18 @@ private fun LynkButtonContent(
 
 @PreviewLightDark
 @Composable
-private fun LynkPrimaryButtonPreview() {
+private fun LynkButtonPreview() {
     LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.PRIMARY
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkSecondaryButtonPreview() {
-    LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.SECONDARY
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkTextButtonPreview() {
-    LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.TEXT
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkDestructivePrimaryButtonPreview() {
-    LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.DESTRUCTIVE_PRIMARY
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkDestructiveSecondaryButtonPreview() {
-    LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            style = LynkButtonStyle.DESTRUCTIVE_SECONDARY
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkDisabledButtonPreview() {
-    LynkTheme {
-        LynkButton(
-            text = "Click me!",
-            onClick = {},
-            enabled = false
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            LynkButtonStyle.entries.forEach { style ->
+                LynkButton(text = style.name, onClick = {}, style = style)
+            }
+            LynkButton(text = "Disabled", onClick = {}, enabled = false)
+        }
     }
 }

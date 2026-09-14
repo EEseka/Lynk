@@ -136,34 +136,9 @@ fun HangoutHero(
     }
 }
 
-@Composable
-private fun HangoutHeroPreview(
-    name: String = "Rooftop Party in Lekki",
-    vibe: HangoutVibe = HangoutVibe.PARTY,
-    status: HangoutStatus = HangoutStatus.SCHEDULED,
-    isHost: Boolean = true
-) {
-    LynkTheme {
-        HangoutHero(
-            name = name,
-            vibe = vibe,
-            status = status,
-            scheduledDate = "Mon 12 Oct · 8:00 PM",
-            isHost = isHost,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
 private fun HangoutHeroHostPreview() = HangoutHeroPreview()
-
-@PreviewLightDark
-@Composable
-private fun HangoutHeroAttendeePreview() = HangoutHeroPreview(isHost = false)
 
 @PreviewLightDark
 @Composable
@@ -178,3 +153,23 @@ private fun HangoutHeroLongNamePreview() = HangoutHeroPreview(
     name = "Sunday Afternoon Rooftop Listening Party and Small Chops Tasting",
     status = HangoutStatus.ONGOING
 )
+
+@Composable
+private fun HangoutHeroPreview(
+    name: String = "Rooftop Party in Lekki",
+    vibe: HangoutVibe = HangoutVibe.PARTY,
+    status: HangoutStatus = HangoutStatus.SCHEDULED
+) {
+    LynkTheme {
+        HangoutHero(
+            name = name,
+            vibe = vibe,
+            status = status,
+            scheduledDate = "Mon 12 Oct · 8:00 PM",
+            isHost = true,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        )
+    }
+}

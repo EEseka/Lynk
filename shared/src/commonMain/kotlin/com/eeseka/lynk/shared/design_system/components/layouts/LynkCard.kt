@@ -1,5 +1,8 @@
 package com.eeseka.lynk.shared.design_system.components.layouts
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -86,66 +89,29 @@ fun LynkCard(
 
 @PreviewLightDark
 @Composable
-private fun LynkFilledCardPreview() {
+private fun LynkCardPreview() {
     LynkTheme {
-        LynkCard(
-            style = LynkCardStyle.FILLED
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
         ) {
-            LynkText(
-                text = "Hello World",
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(4.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            LynkText(
-                text = "This is a Filled Card Style",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkOutlinedCardPreview() {
-    LynkTheme {
-        LynkCard(
-            style = LynkCardStyle.OUTLINED
-        ) {
-            LynkText(
-                text = "Hello World",
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(4.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            LynkText(
-                text = "This is an Outlined Card Style",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkElevatedCardPreview() {
-    LynkTheme {
-        LynkCard(
-            style = LynkCardStyle.ELEVATED
-        ) {
-            LynkText(
-                text = "Hello World",
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(4.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            LynkText(
-                text = "This is an Elevated Card Style",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(4.dp)
-            )
+            LynkCardStyle.entries.forEach { style ->
+                LynkCard(style = style) {
+                    LynkText(
+                        text = "Hello World",
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    LynkText(
+                        text = "This is a ${style.name} card",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+            }
         }
     }
 }

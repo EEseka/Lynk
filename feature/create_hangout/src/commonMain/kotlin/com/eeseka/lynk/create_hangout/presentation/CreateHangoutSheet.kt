@@ -442,42 +442,26 @@ private fun CreateHangoutSheetContent(
     }
 }
 
+@PreviewLightDark
+@Preview(name = "Tablet landscape", widthDp = 1280, heightDp = 800)
 @Composable
-private fun CreateHangoutSheetPreview(state: CreateHangoutState) {
+private fun CreateHangoutSheetPreview() {
     LynkTheme {
         CreateHangoutSheetContent(
-            state = state,
+            state = CreateHangoutState(
+                currentStep = 1,
+                hangoutNameTextState = TextFieldState("Suya Night 🔥"),
+                hangoutDescriptionTextState = TextFieldState("Friday night chills with the guys."),
+                hangoutVibe = HangoutVibe.CHILL,
+                hangoutDate = LocalDate(2026, 5, 20),
+                hangoutTime = LocalTime(20, 0),
+                maxAttendees = 8,
+                canProceedToStepThree = true,
+                canSubmit = true
+            ),
             onAction = {},
             onDismissRequest = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
         )
     }
 }
-
-private fun previewState(currentStep: Int) = CreateHangoutState(
-    currentStep = currentStep,
-    hangoutNameTextState = TextFieldState("Suya Night 🔥"),
-    hangoutDescriptionTextState = TextFieldState("Friday night chills with the guys."),
-    hangoutVibe = HangoutVibe.CHILL,
-    hangoutDate = LocalDate(2026, 5, 20),
-    hangoutTime = LocalTime(20, 0),
-    maxAttendees = 8,
-    canProceedToStepThree = true,
-    canSubmit = true
-)
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutSheetStepOnePreview() = CreateHangoutSheetPreview(previewState(1))
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutSheetStepTwoPreview() = CreateHangoutSheetPreview(previewState(2))
-
-@PreviewLightDark
-@Composable
-private fun CreateHangoutSheetStepThreePreview() = CreateHangoutSheetPreview(previewState(3))
-
-@Preview(widthDp = 1280, heightDp = 800)
-@Composable
-private fun CreateHangoutSheetDesktopPreview() = CreateHangoutSheetPreview(previewState(3))
