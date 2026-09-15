@@ -14,15 +14,13 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.LegalUrls
 import lynk.feature.auth.generated.resources.Res
 import lynk.feature.auth.generated.resources.auth_disclosure_conjunction
 import lynk.feature.auth.generated.resources.auth_disclosure_prefix
 import lynk.feature.auth.generated.resources.privacy_policy
 import lynk.feature.auth.generated.resources.terms_of_service
 import org.jetbrains.compose.resources.stringResource
-
-private const val TERMS_URL = "https://example.com/terms"
-private const val PRIVACY_URL = "https://example.com/privacy"
 
 @Composable
 fun AuthDisclosure(modifier: Modifier = Modifier) {
@@ -37,13 +35,13 @@ fun AuthDisclosure(modifier: Modifier = Modifier) {
         text = buildAnnotatedString {
             append(stringResource(Res.string.auth_disclosure_prefix))
 
-            withLink(LinkAnnotation.Url(url = TERMS_URL, styles = linkStyles)) {
+            withLink(LinkAnnotation.Url(url = LegalUrls.TERMS, styles = linkStyles)) {
                 append(stringResource(Res.string.terms_of_service))
             }
 
             append(stringResource(Res.string.auth_disclosure_conjunction))
 
-            withLink(LinkAnnotation.Url(url = PRIVACY_URL, styles = linkStyles)) {
+            withLink(LinkAnnotation.Url(url = LegalUrls.PRIVACY, styles = linkStyles)) {
                 append(stringResource(Res.string.privacy_policy))
             }
         },

@@ -49,6 +49,7 @@ import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.LegalUrls
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.buildMailtoUri
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
@@ -81,8 +82,6 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-private const val TERMS_URL = "https://example.com/terms"
-private const val PRIVACY_URL = "https://example.com/privacy"
 private const val SUPPORT_EMAIL = "support@lynk.com.ng"
 private const val APP_VERSION = "1.0.0"
 
@@ -338,8 +337,8 @@ fun ProfileScreen(
                     )
                 )
             },
-            onTermsClick = { uriHandler.openUri(TERMS_URL) },
-            onPrivacyClick = { uriHandler.openUri(PRIVACY_URL) },
+            onTermsClick = { uriHandler.openUri(LegalUrls.TERMS) },
+            onPrivacyClick = { uriHandler.openUri(LegalUrls.PRIVACY) },
             onSignOutClick = { onAction(ProfileAction.OnSignOutClick) },
             onDeleteAccountClick = { onAction(ProfileAction.OnDeleteAccountClick) },
             onDismissRequest = { onAction(ProfileAction.OnDismissSettings) }
