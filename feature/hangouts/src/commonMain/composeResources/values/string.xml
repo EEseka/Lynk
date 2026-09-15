@@ -132,6 +132,7 @@
     <string name="payment_state_paid_out_host">Paid out to your account</string>
     <string name="payment_state_payout_failed_host">Your payout didn't go through</string>
     <string name="payment_state_settled_guest">Everyone has paid</string>
+    <string name="payment_state_cancelled">Everyone who paid gets their share back</string>
     <string name="payment_paid_badge">Paid</string>
     <string name="payment_host_badge">Host</string>
     <string name="payment_you_paid">You've paid your share</string>

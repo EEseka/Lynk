@@ -5,6 +5,7 @@ import com.eeseka.lynk.shared.presentation.util.UiText
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_state_awaiting_decision_guest
 import lynk.feature.hangouts.generated.resources.payment_state_awaiting_decision_host
+import lynk.feature.hangouts.generated.resources.payment_state_cancelled
 import lynk.feature.hangouts.generated.resources.payment_state_collecting_guest
 import lynk.feature.hangouts.generated.resources.payment_state_collecting_host
 import lynk.feature.hangouts.generated.resources.payment_state_paid_out_host
@@ -50,6 +51,8 @@ fun PaymentState.toUiText(isHost: Boolean): UiText {
         } else {
             Res.string.payment_state_settled_guest
         }
+
+        PaymentState.CANCELLED -> Res.string.payment_state_cancelled
     }
     return UiText.Resource(resource)
 }

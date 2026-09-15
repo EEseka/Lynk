@@ -285,7 +285,9 @@ fun HangoutDetailScreen(
     }
     val canCancel = hangout != null && isHost &&
             hangout.status != HangoutStatus.COMPLETED &&
-            hangout.status != HangoutStatus.CANCELLED
+            hangout.status != HangoutStatus.CANCELLED &&
+            hangout.payment?.state != PaymentState.PAYING_OUT &&
+            hangout.payment?.state != PaymentState.PAID_OUT
     val canLeave = hangout != null && !isHost && isUpcoming
     val canEdit = isHost && isUpcoming
     val canComplete = hangout != null && isHost && hangout.status == HangoutStatus.ONGOING
