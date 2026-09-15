@@ -43,6 +43,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
+import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.profile.generated.resources.Res
@@ -66,6 +67,7 @@ fun SavedSpotListItem(
     val primaryPhotoUrl = remember(spotPhotos) {
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spotPhotos)
     }
+    val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
 
     LynkCard(
         style = LynkCardStyle.FILLED,
@@ -87,7 +89,7 @@ fun SavedSpotListItem(
             ) {
                 if (primaryPhotoUrl != null) {
                     AsyncImage(
-                        model = primaryPhotoUrl,
+                        model = imageRequest,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
