@@ -7,6 +7,7 @@ import com.eeseka.lynk.shared.presentation.util.UiText
 data class ProfileState(
     val isGuest: Boolean = false,
 
+    val userId: String = "",
     val email: String = "",
     val username: String = "",
     val profilePictureUrl: String? = null,

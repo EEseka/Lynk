@@ -15,11 +15,11 @@ class OnboardingViewModel(
 
     fun onAction(action: OnboardingAction) {
         when (action) {
-            OnboardingAction.OnGetStartedClick -> onGetStartedClick()
+            OnboardingAction.OnGetStartedClick -> completeOnboarding()
         }
     }
 
-    private fun onGetStartedClick() {
+    private fun completeOnboarding() {
         viewModelScope.launch {
             appPreferences.setOnboardingCompleted()
             eventChannel.send(OnboardingEvent.Success)

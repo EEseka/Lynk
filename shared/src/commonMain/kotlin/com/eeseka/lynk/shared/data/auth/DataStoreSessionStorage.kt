@@ -27,7 +27,11 @@ class DataStoreSessionStorage(
         return dataStore.data.map { preferences ->
             val serializedJson = preferences[authInfoKey]
             serializedJson?.let {
-                json.decodeFromString<AuthInfoSerializable>(it).toDomain()
+                try {
+                    json.decodeFromString<AuthInfoSerializable>(it).toDomain()
+                } catch (_: Exception) {
+                    null
+                }
             }
         }
     }

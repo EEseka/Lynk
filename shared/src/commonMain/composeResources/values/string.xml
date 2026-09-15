@@ -6,6 +6,7 @@
     <string name="confirm_date">Confirm Date</string>
     <string name="confirm_time">Confirm Time</string>
     <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
 
     <string name="error_disk_full">Oops, it looks like your device storage is full.</string>
     <string name="error_not_found">We couldn't find the requested item.</string>
@@ -22,6 +23,9 @@
     <string name="error_service_unavailable">The service is currently unavailable. Please try again later.</string>
     <string name="error_serialization">We had trouble loading this data. Please refresh.</string>
     <string name="error_lobby_send_failed">That didn't go through. Please try again.</string>
+
+    <string name="error_display_name_blank">Display name cannot be empty.</string>
+    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
 
     <string name="lobby_error_not_attending">You're not part of this hangout.</string>
     <string name="lobby_error_voting_closed">Voting isn't open for this hangout.</string>

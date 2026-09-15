@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,7 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.hangouts.presentation.util.toUiText
+import com.eeseka.lynk.hangouts.presentation.mappers.toUiText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
@@ -76,29 +77,13 @@ private fun PulseDot(color: Color) {
     )
 }
 
+@PreviewLightDark
 @Composable
-private fun ConnectionBannerPreview(connectionState: ConnectionState) {
+private fun ConnectionBannerPreview() {
     LynkTheme {
-        ConnectionBanner(connectionState = connectionState)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ConnectionState.entries
+                .forEach { ConnectionBanner(connectionState = it) }
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerConnectingPreview() =
-    ConnectionBannerPreview(ConnectionState.CONNECTING)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerDisconnectedPreview() =
-    ConnectionBannerPreview(ConnectionState.DISCONNECTED)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerErrorNetworkPreview() =
-    ConnectionBannerPreview(ConnectionState.ERROR_NETWORK)
-
-@PreviewLightDark
-@Composable
-private fun ConnectionBannerErrorUnknownPreview() =
-    ConnectionBannerPreview(ConnectionState.ERROR_UNKNOWN)

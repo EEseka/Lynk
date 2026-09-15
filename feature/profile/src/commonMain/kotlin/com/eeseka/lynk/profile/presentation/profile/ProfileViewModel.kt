@@ -17,9 +17,9 @@ import com.eeseka.lynk.shared.domain.profile.validation.DisplayNameValidator
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.Result
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.profile.mappers.toUiText
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,8 +38,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.error_delete_account_blocked
-import lynk.feature.profile.generated.resources.error_display_name_blank
-import lynk.feature.profile.generated.resources.error_display_name_too_long
 import lynk.feature.profile.generated.resources.error_image_read_failure
 
 class ProfileViewModel(
@@ -62,6 +61,9 @@ class ProfileViewModel(
 
     private var compressedImageUrl: String? = null
 
+    // Errors stay quiet until the first press, then track every keystroke.
+    private var hasAttemptedSave = false
+
     private val _state = MutableStateFlow(ProfileState())
 
     val state = combine(
@@ -78,6 +80,7 @@ class ProfileViewModel(
             if (!hasLoadedInitialData) {
                 loadProfile()
                 observeCanSave()
+                observeDisplayNameValidation()
                 hasLoadedInitialData = true
             }
         }
@@ -87,19 +90,19 @@ class ProfileViewModel(
             initialValue = ProfileState()
         )
 
-    // Blank-check only — real validation (too long) runs on Save press via validateFormInputs()
-    private val isDisplayNameValidFlow =
-        snapshotFlow { _state.value.displayNameTextState.text.toString() }
-            .map { it.isNotBlank() }
-            .distinctUntilChanged()
+    private val displayNameFlow = snapshotFlow { _state.value.displayNameTextState.text.toString() }
+        .map { it.trim() }
+        .distinctUntilChanged()
+
+    private val currentPhotoFlow = state.map {
+        it.localPhotoUri ?: it.profilePictureUrl
+    }.distinctUntilChanged()
 
     private val isFormDirtyFlow = combine(
-        snapshotFlow { _state.value.displayNameTextState.text.toString() },
-        state
-    ) { displayName, currentState ->
-        val currentPhoto = currentState.localPhotoUri ?: currentState.profilePictureUrl
-
-        displayName.trim() != originalDisplayName || currentPhoto != originalPhotoUrl
+        displayNameFlow,
+        currentPhotoFlow
+    ) { displayName, currentPhoto ->
+        displayName != originalDisplayName || currentPhoto != originalPhotoUrl
     }.distinctUntilChanged()
 
     private val isBusyFlow = state.map {
@@ -107,20 +110,32 @@ class ProfileViewModel(
     }.distinctUntilChanged()
 
     private fun observeCanSave() {
-        combine(
-            isDisplayNameValidFlow,
-            isFormDirtyFlow,
-            isBusyFlow
-        ) { isDisplayNameValid, isFormDirty, isBusy ->
-            _state.update { it.copy(canSave = !isBusy && isFormDirty && isDisplayNameValid) }
+        combine(isFormDirtyFlow, isBusyFlow) { isFormDirty, isBusy ->
+            _state.update { it.copy(canSave = !isBusy && isFormDirty) }
         }.launchIn(viewModelScope)
+    }
+
+    private fun observeDisplayNameValidation() {
+        snapshotFlow { _state.value.displayNameTextState.text.toString() }
+            .onEach { displayName ->
+                val validationState = DisplayNameValidator.validate(displayName)
+
+                _state.update {
+                    it.copy(displayNameError = if (hasAttemptedSave) validationState.toUiText() else null)
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onAction(action: ProfileAction) {
         when (action) {
             ProfileAction.OnImageClick -> _state.update { it.copy(showFullScreenImage = true) }
             ProfileAction.OnDismissFullScreenImage -> _state.update { it.copy(showFullScreenImage = false) }
-            is ProfileAction.OnImagePicked -> processAndPreviewImage(action.rawPath, action.mimeType)
+            is ProfileAction.OnImagePicked -> processAndPreviewImage(
+                action.rawPath,
+                action.mimeType
+            )
+
             ProfileAction.OnRemoveImageClick -> {
                 compressedImageUrl = null
                 _state.update {
@@ -132,6 +147,7 @@ class ProfileViewModel(
                     )
                 }
             }
+
             ProfileAction.OnSaveClick -> saveProfile()
             ProfileAction.OnSettingsClick -> _state.update { it.copy(showSettingsSheet = true) }
             ProfileAction.OnDismissSettings -> _state.update { it.copy(showSettingsSheet = false) }
@@ -144,13 +160,16 @@ class ProfileViewModel(
                     it.copy(showSettingsSheet = false, showSignOutConfirmation = true)
                 }
             }
+
             ProfileAction.OnConfirmSignOut -> signOut()
             ProfileAction.OnDismissSignOutConfirmation -> _state.update {
                 it.copy(showSignOutConfirmation = false)
             }
+
             ProfileAction.OnDeleteAccountClick -> _state.update {
                 it.copy(showSettingsSheet = false, showDeleteAccountConfirmation = true)
             }
+
             ProfileAction.OnConfirmDeleteAccount -> deleteAccount()
             ProfileAction.OnDismissDeleteAccountConfirmation -> _state.update {
                 it.copy(showDeleteAccountConfirmation = false)
@@ -169,9 +188,7 @@ class ProfileViewModel(
         }
 
         viewModelScope.launch {
-            val compressed = imageCompressor.compress(rawPath)
-            compressedImageUrl = compressed
-
+            compressedImageUrl = imageCompressor.compress(rawPath)
             _state.update { it.copy(isCompressingImage = false) }
         }
     }
@@ -179,10 +196,12 @@ class ProfileViewModel(
     private fun saveProfile() {
         val currentState = state.value
 
-        if (!validateFormInputs() ||
-            currentState.isSaving ||
+        hasAttemptedSave = true
+
+        if (currentState.isSaving ||
             currentState.isUploadingImage ||
-            currentState.isCompressingImage
+            currentState.isCompressingImage ||
+            !validateFormInputs()
         ) return
 
         _state.update { it.copy(isSaving = true) }
@@ -247,42 +266,32 @@ class ProfileViewModel(
             return null
         }
 
-        return when (val urlResult = userService.getProfilePictureUploadUrl(mimeType)) {
-            is Result.Success -> {
-                val uploadResult = userService.uploadProfilePicture(
-                    uploadUrl = urlResult.data.uploadUrl,
-                    headers = urlResult.data.headers,
+        var publicUrl: String? = null
+
+        userService.getProfilePictureUploadUrl(mimeType)
+            .onSuccess { uploadUrls ->
+                userService.uploadProfilePicture(
+                    uploadUrl = uploadUrls.uploadUrl,
+                    headers = uploadUrls.headers,
                     imageBytes = imageBytes
                 )
-
-                when (uploadResult) {
-                    is Result.Success -> {
+                    .onSuccess {
+                        publicUrl = uploadUrls.publicUrl
                         _state.update { it.copy(isUploadingImage = false) }
-                        urlResult.data.publicUrl
                     }
-
-                    is Result.Failure -> {
+                    .onFailure { error ->
                         _state.update {
-                            it.copy(
-                                isUploadingImage = false,
-                                imageError = uploadResult.error.toUiText()
-                            )
+                            it.copy(isUploadingImage = false, imageError = error.toUiText())
                         }
-                        null
                     }
+            }
+            .onFailure { error ->
+                _state.update { it.copy(isUploadingImage = false, imageError = error.toUiText()
+                )
                 }
             }
 
-            is Result.Failure -> {
-                _state.update {
-                    it.copy(
-                        isUploadingImage = false,
-                        imageError = urlResult.error.toUiText()
-                    )
-                }
-                null
-            }
-        }
+        return publicUrl
     }
 
     private fun selectTheme(theme: AppTheme) {
@@ -340,6 +349,11 @@ class ProfileViewModel(
             authService.deleteAccount()
                 .onSuccess { sessionStorage.set(null) }
                 .onFailure { error ->
+                    if (error == DataError.Remote.NOT_FOUND) {
+                        sessionStorage.set(null)
+                        return@onFailure
+                    }
+
                     val errorMessage = if (error == DataError.Remote.CONFLICT) {
                         UiText.Resource(Res.string.error_delete_account_blocked)
                     } else {
@@ -381,7 +395,7 @@ class ProfileViewModel(
 
     private fun applyUser(user: User) {
         when (user) {
-            is User.Guest -> _state.update { it.copy(isGuest = true) }
+            is User.Guest -> _state.update { it.copy(isGuest = true, userId = user.id) }
 
             is User.Authenticated -> {
                 originalDisplayName = user.displayName
@@ -390,6 +404,7 @@ class ProfileViewModel(
                 _state.update {
                     it.copy(
                         isGuest = false,
+                        userId = user.id,
                         email = user.email,
                         username = user.username,
                         profilePictureUrl = user.profilePictureUrl
@@ -405,6 +420,7 @@ class ProfileViewModel(
                 _state.update {
                     it.copy(
                         isGuest = false,
+                        userId = user.id,
                         email = user.email,
                         username = "",
                         profilePictureUrl = user.profilePictureUrl
@@ -440,13 +456,7 @@ class ProfileViewModel(
         val displayName = _state.value.displayNameTextState.text.toString()
         val displayNameState = DisplayNameValidator.validate(displayName)
 
-        val displayNameError = when (displayNameState) {
-            DisplayNameValidationState.BLANK -> UiText.Resource(Res.string.error_display_name_blank)
-            DisplayNameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_display_name_too_long)
-            DisplayNameValidationState.VALID -> null
-        }
-
-        _state.update { it.copy(displayNameError = displayNameError) }
+        _state.update { it.copy(displayNameError = displayNameState.toUiText()) }
 
         return displayNameState == DisplayNameValidationState.VALID
     }

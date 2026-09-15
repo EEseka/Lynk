@@ -1,12 +1,13 @@
 package com.eeseka.lynk.shared.presentation.hangout.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Instant
 
-@Stable
+@Immutable
 data class HangoutUi(
     val id: String,
     val hostId: String,
@@ -18,7 +19,7 @@ data class HangoutUi(
     val maxAttendees: Int?,
     val participantCount: Int,
     val chosenSpot: SpotUi?,
-    val participants: List<HangoutParticipantUi>,
+    val participants: ImmutableList<HangoutParticipantUi>,
     val payment: HangoutPaymentUi?,
     val createdAt: Instant
 )

@@ -1,5 +1,6 @@
 package com.eeseka.lynk.discover.presentation
 
+import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 
@@ -21,4 +22,6 @@ sealed interface DiscoverAction {
     data class OnCategorySelected(val category: SpotCategory?) : DiscoverAction
     data class OnPriceLevelSelected(val priceLevel: PriceLevel?) : DiscoverAction
     data object LoadNextSearchPage : DiscoverAction
+
+    data object RetryTrending : DiscoverAction
 }

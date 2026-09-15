@@ -6,7 +6,6 @@ import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.data.payment.dto.BankAccountDto
 import com.eeseka.lynk.shared.data.payment.dto.BankDto
 import com.eeseka.lynk.shared.data.payment.dto.PaymentInitializationDto
-import com.eeseka.lynk.shared.data.payment.dto.PaymentSettingsDto
 import com.eeseka.lynk.shared.data.payment.dto.PaymentVerificationDto
 import com.eeseka.lynk.shared.data.payment.dto.requests.ChangeDeadlineRequest
 import com.eeseka.lynk.shared.data.payment.dto.requests.DeadlineDecisionRequest
@@ -17,7 +16,6 @@ import com.eeseka.lynk.shared.domain.payment.model.Bank
 import com.eeseka.lynk.shared.domain.payment.model.BankAccount
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
-import com.eeseka.lynk.shared.domain.payment.model.PaymentSettings
 import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
@@ -55,8 +53,8 @@ class KtorPaymentService(
         paymentDeadline: Instant,
         accountNumber: String,
         bankCode: String
-    ): Result<PaymentSettings, DataError.Remote> {
-        return httpClient.patch<EnablePaymentsRequest, PaymentSettingsDto>(
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.patch<EnablePaymentsRequest, Unit>(
             route = "/payments/hangouts/$hangoutId",
             body = EnablePaymentsRequest(
                 totalCostKobo = totalCostKobo,
@@ -64,7 +62,7 @@ class KtorPaymentService(
                 accountNumber = accountNumber,
                 bankCode = bankCode
             )
-        ).map { it.toDomain() }
+        )
     }
 
     override suspend fun initializePayment(

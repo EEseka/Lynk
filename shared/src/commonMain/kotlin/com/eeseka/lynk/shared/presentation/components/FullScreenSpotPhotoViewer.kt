@@ -20,6 +20,7 @@ import com.composables.icons.lucide.X
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.ImmutableList
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.close_image
 import org.jetbrains.compose.resources.stringResource
@@ -33,7 +34,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 fun FullScreenSpotPhotoViewer(
-    rawPhotoNames: List<String>,
+    rawPhotoNames: ImmutableList<String>,
     initialIndex: Int,
     onDismiss: () -> Unit
 ) {

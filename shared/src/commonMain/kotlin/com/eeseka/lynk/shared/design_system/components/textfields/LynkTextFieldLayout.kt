@@ -19,23 +19,22 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun LynkTextFieldLayout(
+    modifier: Modifier = Modifier,
     title: String? = null,
     errorMessage: String? = null,
     helperText: String? = null,
     enabled: Boolean = true,
     shape: Shape = MaterialTheme.shapes.medium,
-    onFocusChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
     textField: @Composable (Modifier, MutableInteractionSource) -> Unit
 ) {
     val isError = errorMessage != null
@@ -43,16 +42,12 @@ fun LynkTextFieldLayout(
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
-    LaunchedEffect(isFocused) {
-        onFocusChanged(isFocused)
-    }
-
     val textFieldStyleModifier = Modifier
         .fillMaxWidth()
         .background(
             color = when {
                 isFocused -> scheme.primary.copy(alpha = 0.05f)
-                enabled -> scheme.surface
+                enabled -> Color.Transparent
                 else -> scheme.surfaceVariant.copy(alpha = 0.5f)
             },
             shape = shape

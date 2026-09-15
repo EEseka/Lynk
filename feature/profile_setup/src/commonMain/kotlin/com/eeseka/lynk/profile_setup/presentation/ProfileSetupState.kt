@@ -21,7 +21,7 @@ data class ProfileSetupState(
     val isCompressingImage: Boolean = false,
     val isUploadingImage: Boolean = false,
     val isSubmitting: Boolean = false,
-    val canSubmit: Boolean = false,
+    val canSubmit: Boolean = true,
 
     val isUsernameAvailable: Boolean? = null
 )

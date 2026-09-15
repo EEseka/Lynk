@@ -21,10 +21,10 @@ import com.mohamedrejeb.calf.ui.button.LiquidGlassButtonColors
 @Composable
 fun LynkTonalIconButton(
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme

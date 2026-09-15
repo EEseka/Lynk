@@ -22,9 +22,9 @@ import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 @Composable
 fun LynkAdaptiveSheet(
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
     skipBottomSheetPartiallyExpanded: Boolean = true,
     isDismissibleByGesture: Boolean = true,
-    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val configuration = currentDeviceConfiguration()

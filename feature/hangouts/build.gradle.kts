@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.compose.navigationevent)
 
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.collections.immutable)
 
             implementation(libs.compose.lottie.animations)
 

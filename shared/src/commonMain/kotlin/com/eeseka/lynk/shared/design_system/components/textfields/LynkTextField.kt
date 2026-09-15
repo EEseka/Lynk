@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.User
@@ -26,6 +26,7 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 @Composable
 fun LynkTextField(
     state: TextFieldState,
+    modifier: Modifier = Modifier,
     label: String? = null,
     placeholder: String? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -34,10 +35,10 @@ fun LynkTextField(
     errorMessage: String? = null,
     helperText: String? = null,
     singleLine: Boolean = true,
+    maxLines: Int = 5,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     inputTransformation: InputTransformation? = null,
-    outputTransformation: OutputTransformation? = null,
-    modifier: Modifier = Modifier
+    outputTransformation: OutputTransformation? = null
 ) {
     val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
@@ -47,14 +48,13 @@ fun LynkTextField(
         errorMessage = errorMessage,
         helperText = helperText,
         enabled = enabled,
-        onFocusChanged = {},
         modifier = modifier
     ) { styleModifier, interactionSource ->
 
         BasicTextField(
             state = state,
             enabled = enabled,
-            lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.Default,
+            lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines),
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
             ),
@@ -98,7 +98,7 @@ fun LynkTextField(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkTextFieldPreview() {
     LynkTheme {
@@ -115,45 +115,10 @@ private fun LynkTextFieldPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkTextFieldPreviewDark() {
-    LynkTheme(true) {
-        LynkTextField(
-            state = TextFieldState("Emmanuel"),
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.User,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        )
-    }
-}
-
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkErrorTextFieldPreview() {
     LynkTheme {
-        LynkTextField(
-            state = TextFieldState("Emmanuel"),
-            leadingIcon = {
-                Icon(
-                    imageVector = Lucide.User,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            errorMessage = "Invalid name"
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkErrorTextFieldPreviewDark() {
-    LynkTheme(true) {
         LynkTextField(
             state = TextFieldState("Emmanuel"),
             leadingIcon = {

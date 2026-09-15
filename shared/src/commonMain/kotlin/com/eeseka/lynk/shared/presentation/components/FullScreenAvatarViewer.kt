@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FullScreenAvatarViewer(
-    model: Any?,
+    model: String,
     onDismiss: () -> Unit
 ) {
     Dialog(

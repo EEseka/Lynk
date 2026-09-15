@@ -1,5 +1,6 @@
 package com.eeseka.lynk.profile_setup.presentation
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -8,23 +9,20 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalTestApi::class)
 class ProfileSetupRobot(private val composeTestRule: ComposeUiTest) {
 
     fun setContent(
         state: ProfileSetupState = ProfileSetupState(),
-        events: Flow<ProfileSetupEvent> = emptyFlow(),
-        onAction: (ProfileSetupAction) -> Unit = {}
+        onAction: (ProfileSetupAction) -> Unit = {},
+        snackbarHostState: SnackbarHostState = SnackbarHostState()
     ) = apply {
         composeTestRule.setContent {
             ProfileSetupScreen(
                 state = state,
-                events = events,
                 onAction = onAction,
-                onProfileSetupComplete = {}
+                snackbarHostState = snackbarHostState
             )
         }
     }

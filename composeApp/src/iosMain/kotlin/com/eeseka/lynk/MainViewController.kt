@@ -1,7 +1,6 @@
 package com.eeseka.lynk
 
 import androidx.compose.ui.window.ComposeUIViewController
-import com.eeseka.lynk.di.initKoin
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import platform.UIKit.UIViewController
@@ -12,13 +11,5 @@ fun MainViewController(): UIViewController {
     GoogleAuthProvider.create(
         credentials = GoogleAuthCredentials(serverId = AppConfig.WEB_CLIENT_ID)
     )
-
-    // Return the UI
-    return ComposeUIViewController(
-        configure = {
-            initKoin()
-        }
-    ) {
-        App()
-    }
+    return ComposeUIViewController { App() }
 }

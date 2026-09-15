@@ -14,10 +14,10 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.util.DataErrorException
 import com.eeseka.lynk.shared.domain.util.Paginator
-import com.eeseka.lynk.shared.domain.util.onFailure
-import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.hangout.mappers.toHangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -64,7 +64,7 @@ class HangoutsListViewModel(
                         currentUserId = authInfo?.user?.id
                     )
                 }
-                observeFilters()
+                observeSearchFilters()
                 hasLoadedInitialData = true
             }
         }
@@ -89,6 +89,7 @@ class HangoutsListViewModel(
             }
 
             HangoutsListAction.LoadNextPage -> loadNextPage()
+            HangoutsListAction.OnRetryClick -> retryLoad()
             HangoutsListAction.OnNotificationPermissionDenied -> disablePushNotifications()
             HangoutsListAction.Refresh -> refresh()
             HangoutsListAction.SignOutGuest -> signOutGuest()
@@ -106,23 +107,20 @@ class HangoutsListViewModel(
 
         viewModelScope.launch {
             authService.deleteAccount()
-                .onSuccess {
-                    _state.update { it.copy(isGuestSigningOut = false) }
-                }
-                .onFailure { _ ->
-                    _state.update { it.copy(isGuestSigningOut = false) }
-                }
-
+            _state.update { it.copy(isGuestSigningOut = false) }
             // Clear local session regardless of backend result.
             // MainViewModel.observeSession() detects the null and navigates to auth.
             sessionStorage.set(null)
         }
     }
 
+    private fun refresh() {
+        refreshTrigger.update { it + 1 }
+    }
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    private fun observeFilters() {
+    private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString() }
-            .distinctUntilChanged()
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
 
         val statusFilterFlow = state.map { it.selectedStatusFilter }.distinctUntilChanged()
@@ -139,17 +137,14 @@ class HangoutsListViewModel(
             setupHangoutsPaginator(query, statusFilter, vibe)
             _state.update {
                 it.copy(
-                    hangouts = emptyList(),
-                    isSearchEndReached = false,
-                    searchResetEpoch = it.searchResetEpoch + 1
+                    hangouts = persistentListOf(),
+                    isEndReached = false,
+                    searchResetEpoch = it.searchResetEpoch + 1,
+                    loadError = null
                 )
             }
             hangoutsPaginator?.loadNextItems()
         }.launchIn(viewModelScope)
-    }
-
-    private fun refresh() {
-        refreshTrigger.update { it + 1 }
     }
 
     private fun setupHangoutsPaginator(
@@ -160,7 +155,7 @@ class HangoutsListViewModel(
         hangoutsPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->
-                _state.update { it.copy(isSearchLoading = isLoading) }
+                _state.update { it.copy(isLoading = isLoading) }
             },
             onRequest = { beforeTimestamp ->
                 hangoutService.getHangouts(
@@ -175,14 +170,21 @@ class HangoutsListViewModel(
             },
             onError = { throwable ->
                 if (throwable is DataErrorException) {
-                    eventChannel.send(HangoutsListEvent.Error(throwable.error.toUiText()))
+                    val message = throwable.error.toUiText()
+
+                    if (state.value.hangouts.isEmpty()) {
+                        _state.update { it.copy(loadError = message) }
+                    } else {
+                        eventChannel.send(HangoutsListEvent.Error(message))
+                    }
                 }
             },
             onSuccess = { newHangouts, _ ->
                 _state.update {
                     it.copy(
-                        hangouts = it.hangouts + newHangouts.map { hangout -> hangout.toHangoutSummaryUi() },
-                        isSearchEndReached = newHangouts.isEmpty()
+                        hangouts = (it.hangouts + newHangouts.map { hangout -> hangout.toHangoutSummaryUi() }).toImmutableList(),
+                        isEndReached = newHangouts.isEmpty(),
+                        loadError = null
                     )
                 }
             }
@@ -193,5 +195,10 @@ class HangoutsListViewModel(
         viewModelScope.launch {
             hangoutsPaginator?.loadNextItems()
         }
+    }
+
+    private fun retryLoad() {
+        _state.update { it.copy(loadError = null) }
+        loadNextPage()
     }
 }

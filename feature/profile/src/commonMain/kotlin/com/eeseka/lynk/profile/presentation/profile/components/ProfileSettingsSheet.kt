@@ -17,8 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
+import com.composables.icons.lucide.FileText
+import com.composables.icons.lucide.LifeBuoy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldCheck
+import com.eeseka.lynk.profile.presentation.mappers.getIcon
+import com.eeseka.lynk.profile.presentation.mappers.getTitle
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
@@ -30,22 +34,24 @@ import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkS
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.profile.presentation.mappers.getIcon
-import com.eeseka.lynk.profile.presentation.mappers.getTitle
 import com.eeseka.lynk.shared.domain.settings.AppTheme
+import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.about
 import lynk.feature.profile.generated.resources.appearance
+import lynk.feature.profile.generated.resources.contact_support
 import lynk.feature.profile.generated.resources.delete_account
 import lynk.feature.profile.generated.resources.deleting_account
 import lynk.feature.profile.generated.resources.made_with_love
 import lynk.feature.profile.generated.resources.preferences
+import lynk.feature.profile.generated.resources.privacy_policy
 import lynk.feature.profile.generated.resources.push_notifications
 import lynk.feature.profile.generated.resources.push_notifications_message
 import lynk.feature.profile.generated.resources.settings
 import lynk.feature.profile.generated.resources.sign_out
 import lynk.feature.profile.generated.resources.signing_out
-import lynk.feature.profile.generated.resources.terms_and_privacy
+import lynk.feature.profile.generated.resources.support
+import lynk.feature.profile.generated.resources.terms_of_service
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -56,9 +62,12 @@ fun ProfileSettingsSheet(
     isSigningOut: Boolean,
     isDeletingAccount: Boolean,
     appVersion: String,
+    supportEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
+    onContactSupportClick: () -> Unit,
     onTermsClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
     onSignOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onDismissRequest: () -> Unit,
@@ -75,11 +84,15 @@ fun ProfileSettingsSheet(
             isSigningOut = isSigningOut,
             isDeletingAccount = isDeletingAccount,
             appVersion = appVersion,
+            supportEmail = supportEmail,
             onThemeSelected = onThemeSelected,
             onPushNotificationsToggled = onPushNotificationsToggled,
+            onContactSupportClick = onContactSupportClick,
             onTermsClick = onTermsClick,
+            onPrivacyClick = onPrivacyClick,
             onSignOutClick = onSignOutClick,
-            onDeleteAccountClick = onDeleteAccountClick
+            onDeleteAccountClick = onDeleteAccountClick,
+            modifier = Modifier.weight(1f, fill = false)
         )
     }
 }
@@ -92,9 +105,12 @@ private fun ProfileSettingsSheetContent(
     isSigningOut: Boolean,
     isDeletingAccount: Boolean,
     appVersion: String,
+    supportEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
+    onContactSupportClick: () -> Unit,
     onTermsClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
     onSignOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -103,7 +119,7 @@ private fun ProfileSettingsSheetContent(
 
     val themeItems = AppTheme.entries.map {
         LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
-    }
+    }.toImmutableList()
 
     Column(
         modifier = modifier
@@ -132,22 +148,35 @@ private fun ProfileSettingsSheetContent(
             )
         }
 
+        if (!isGuest) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ProfileSection(title = stringResource(Res.string.preferences)) {
+                ProfileSectionRow(
+                    icon = Lucide.Bell,
+                    title = stringResource(Res.string.push_notifications),
+                    subtitle = stringResource(Res.string.push_notifications_message),
+                    trailing = {
+                        LynkSwitch(
+                            checked = arePushNotificationsEnabled,
+                            onCheckedChange = { isEnabled ->
+                                hapticFeedback(AppHaptic.Selection)
+                                onPushNotificationsToggled(isEnabled)
+                            }
+                        )
+                    }
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        ProfileSection(title = stringResource(Res.string.preferences)) {
+        ProfileSection(title = stringResource(Res.string.support)) {
             ProfileSectionRow(
-                icon = Lucide.Bell,
-                title = stringResource(Res.string.push_notifications),
-                subtitle = stringResource(Res.string.push_notifications_message),
-                trailing = {
-                    LynkSwitch(
-                        checked = arePushNotificationsEnabled,
-                        onCheckedChange = { isEnabled ->
-                            hapticFeedback(AppHaptic.Selection)
-                            onPushNotificationsToggled(isEnabled)
-                        }
-                    )
-                }
+                icon = Lucide.LifeBuoy,
+                title = stringResource(Res.string.contact_support),
+                subtitle = supportEmail,
+                onClick = onContactSupportClick
             )
         }
 
@@ -155,9 +184,17 @@ private fun ProfileSettingsSheetContent(
 
         ProfileSection(title = stringResource(Res.string.about)) {
             ProfileSectionRow(
-                icon = Lucide.ShieldCheck,
-                title = stringResource(Res.string.terms_and_privacy),
+                icon = Lucide.FileText,
+                title = stringResource(Res.string.terms_of_service),
                 onClick = onTermsClick
+            )
+
+            ProfileSectionDivider()
+
+            ProfileSectionRow(
+                icon = Lucide.ShieldCheck,
+                title = stringResource(Res.string.privacy_policy),
+                onClick = onPrivacyClick
             )
         }
 
@@ -225,9 +262,12 @@ private fun ProfileSettingsSheetPreview() {
             isSigningOut = false,
             isDeletingAccount = false,
             appVersion = "Version 1.0.0",
+            supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
             onPushNotificationsToggled = {},
+            onContactSupportClick = {},
             onTermsClick = {},
+            onPrivacyClick = {},
             onSignOutClick = {},
             onDeleteAccountClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surface)
@@ -246,9 +286,12 @@ private fun ProfileSettingsSheetGuestPreview() {
             isSigningOut = false,
             isDeletingAccount = false,
             appVersion = "Version 1.0.0",
+            supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
             onPushNotificationsToggled = {},
+            onContactSupportClick = {},
             onTermsClick = {},
+            onPrivacyClick = {},
             onSignOutClick = {},
             onDeleteAccountClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surface)

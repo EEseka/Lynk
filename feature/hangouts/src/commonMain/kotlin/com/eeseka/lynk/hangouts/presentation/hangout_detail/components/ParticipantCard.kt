@@ -19,11 +19,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import lynk.feature.hangouts.generated.resources.Res
@@ -34,11 +34,11 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ParticipantCard(
     participant: HangoutParticipantUi,
+    modifier: Modifier = Modifier,
     isOnline: Boolean = false,
     showPaidBadge: Boolean = false,
     showHostBadge: Boolean = false,
-    trailing: @Composable (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier,

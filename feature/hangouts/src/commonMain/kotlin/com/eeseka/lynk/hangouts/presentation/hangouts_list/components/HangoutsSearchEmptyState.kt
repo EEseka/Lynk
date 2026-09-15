@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.UserRoundSearch
+import com.composables.icons.lucide.Search
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
@@ -45,7 +45,7 @@ fun HangoutsSearchEmptyState(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Lucide.UserRoundSearch,
+                    imageVector = Lucide.Search,
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

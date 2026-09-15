@@ -1,13 +1,16 @@
 package com.eeseka.lynk.shared.presentation.hangout.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -38,37 +41,27 @@ fun StatusChip(
         LynkText(
             text = status.getTitle(),
             style = MaterialTheme.typography.labelSmall,
-            color = foreground
+            color = foreground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
 
+@PreviewLightDark
 @Composable
-private fun StatusChipPreview(status: HangoutStatus) {
+private fun StatusChipPreview() {
     LynkTheme {
-        StatusChip(
-            status = status,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            HangoutStatus.entries.forEach { status ->
+                StatusChip(status = status)
+            }
+        }
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun StatusChipVotingPreview() = StatusChipPreview(HangoutStatus.VOTING)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipScheduledPreview() = StatusChipPreview(HangoutStatus.SCHEDULED)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipOngoingPreview() = StatusChipPreview(HangoutStatus.ONGOING)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipCompletedPreview() = StatusChipPreview(HangoutStatus.COMPLETED)
-
-@PreviewLightDark
-@Composable
-private fun StatusChipCancelledPreview() = StatusChipPreview(HangoutStatus.CANCELLED)

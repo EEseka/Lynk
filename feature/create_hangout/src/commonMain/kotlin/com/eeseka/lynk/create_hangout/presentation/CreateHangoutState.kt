@@ -2,18 +2,19 @@ package com.eeseka.lynk.create_hangout.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
-import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
 @Stable
 data class CreateHangoutState(
-    val mode: HangoutFormMode = HangoutFormMode.CREATE,
     val originalHangout: HangoutUi? = null,
 
     val currentStep: Int = 1,
@@ -33,10 +34,10 @@ data class CreateHangoutState(
     val hangoutTime: LocalTime? = null,
     val hangoutTimeError: UiText? = null,
 
+    val expandedPicker: PickerType? = null,
+
     val maxAttendees: Int? = null,
     val minAttendees: Int = 2,
-
-    val canProceedToStepTwo: Boolean = false,
 
     val isVotingMode: Boolean = true,
     val selectedSpot: SpotUi? = null,
@@ -46,16 +47,16 @@ data class CreateHangoutState(
 
     val spotSearchTextState: TextFieldState = TextFieldState(),
 
-    val trendingSpots: List<SpotUi> = emptyList(),
+    val trendingSpots: ImmutableList<SpotUi> = persistentListOf(),
     val isTrendingLoading: Boolean = false,
 
-    val favoriteSpotSearchResults: List<SpotUi> = emptyList(),
+    val favoriteSpotSearchResults: ImmutableList<SpotUi> = persistentListOf(),
     val isFavoriteSpotSearchLoading: Boolean = false,
     val favoriteSpotSearchError: UiText? = null,
     val favoriteSpotSearchEndReached: Boolean = false,
-    val favoriteSearchResetEpoch: Int = 0,
+    val favoriteSpotSearchResetEpoch: Int = 0,
 
-    val spotSearchResults: List<SpotUi> = emptyList(),
+    val spotSearchResults: ImmutableList<SpotUi> = persistentListOf(),
     val isSpotSearchLoading: Boolean = false,
     val spotSearchError: UiText? = null,
     val spotSearchEndReached: Boolean = false,

@@ -16,11 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -47,6 +50,11 @@ fun HangoutsEmptyState(
         LottieCompositionSpec.JsonString(
             Res.readBytes("files/$ANIMATION_BORED_MAN").decodeToString()
         )
+    }
+
+    val animationSize = when (currentDeviceConfiguration()) {
+        DeviceConfiguration.MOBILE_LANDSCAPE -> 200.dp
+        else -> 300.dp
     }
 
     val titleRes = when (currentFilter) {
@@ -77,7 +85,7 @@ fun HangoutsEmptyState(
                     iterations = Compottie.IterateForever
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(300.dp)
+                modifier = Modifier.size(animationSize)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -101,32 +109,14 @@ fun HangoutsEmptyState(
     }
 }
 
+@PreviewLightDark
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
 @Composable
-private fun HangoutsEmptyStatePreview(currentFilter: HangoutStatusFilter) {
+private fun HangoutsEmptyStatePreview() {
     LynkTheme {
         HangoutsEmptyState(
-            currentFilter = currentFilter,
+            currentFilter = HangoutStatusFilter.UPCOMING,
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateUpcomingPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.UPCOMING)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateOngoingPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.ONGOING)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateCompletedPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.COMPLETED)
-
-@PreviewLightDark
-@Composable
-private fun HangoutsEmptyStateCancelledPreview() =
-    HangoutsEmptyStatePreview(HangoutStatusFilter.CANCELLED)

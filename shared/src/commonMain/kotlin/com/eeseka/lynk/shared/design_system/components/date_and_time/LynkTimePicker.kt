@@ -25,9 +25,14 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun LynkTimePicker(
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialHour: Int? = null,
+    initialMinute: Int? = null
 ) {
-    val state = rememberAdaptiveTimePickerState()
+    val state = rememberAdaptiveTimePickerState(
+        initialHour = initialHour ?: 0,
+        initialMinute = initialMinute ?: 0
+    )
     val scheme = MaterialTheme.colorScheme
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -47,7 +52,7 @@ fun LynkTimePicker(
             onClick = { onTimeSelected(state.hour, state.minute) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(16.dp),
             style = LynkButtonStyle.TEXT
         )
     }

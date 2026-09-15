@@ -1,17 +1,18 @@
 package com.eeseka.lynk.shared.presentation.spot.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import kotlinx.collections.immutable.ImmutableList
 
-@Stable
+@Immutable
 data class SpotUi(
     val id: String,
     val name: String,
     val description: String?,
-    val photoUrls: List<String>,
+    val photoUrls: ImmutableList<String>,
     val category: SpotCategory,
-    val tags: List<String>,
+    val tags: ImmutableList<String>,
     val priceLevel: PriceLevel?,
     val rating: Double?,
     val reviewCount: Int?,

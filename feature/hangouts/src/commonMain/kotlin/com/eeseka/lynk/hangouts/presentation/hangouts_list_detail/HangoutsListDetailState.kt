@@ -1,9 +1,9 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list_detail
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 
-@Stable
+@Immutable
 data class HangoutsListDetailState(
     val selectedHangoutId: String? = null,
     val sheetState: SheetState = SheetState.Hidden

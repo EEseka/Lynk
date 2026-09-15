@@ -4,7 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.eeseka.lynk.main_shell.presentation.MainShell
+import com.eeseka.lynk.main_shell.presentation.MainShellRoot
 
 fun NavGraphBuilder.mainShellGraph(
     navController: NavHostController
@@ -13,7 +13,7 @@ fun NavGraphBuilder.mainShellGraph(
         startDestination = MainShellGraphRoutes.MainShell
     ) {
         composable<MainShellGraphRoutes.MainShell> {
-            MainShell()
+            MainShellRoot()
         }
     }
 }

@@ -25,6 +25,7 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
+import kotlinx.collections.immutable.toImmutableList
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.active
 import lynk.shared.generated.resources.cancelled
@@ -91,7 +92,7 @@ fun Hangout.toHangoutUi() = HangoutUi(
     maxAttendees = maxAttendees,
     participantCount = participantCount,
     chosenSpot = chosenSpot?.toSpotUi(),
-    participants = participants.map { it.toHangoutParticipantUi() },
+    participants = participants.map { it.toHangoutParticipantUi() }.toImmutableList(),
     payment = payment?.toHangoutPaymentUi(),
     createdAt = createdAt
 )
@@ -129,7 +130,7 @@ fun HangoutPreview.toHangoutPreviewUi() = HangoutPreviewUi(
     maxAttendees = maxAttendees,
     participantCount = participantCount,
     chosenSpot = chosenSpot?.toSpotUi(),
-    attendees = attendees.map { it.toHangoutUserUi() },
+    attendees = attendees.map { it.toHangoutUserUi() }.toImmutableList(),
     createdAt = createdAt
 )
 
@@ -147,8 +148,10 @@ fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
     hasPaid = hasPaid
 )
 
+private val whitespaceRegex = Regex("\\s+")
+
 private fun String.toInitials(): String {
-    val words = trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    val words = trim().split(whitespaceRegex).filter { it.isNotBlank() }
     return when {
         words.isEmpty() -> ""
         words.size == 1 -> words.first().take(2).uppercase()

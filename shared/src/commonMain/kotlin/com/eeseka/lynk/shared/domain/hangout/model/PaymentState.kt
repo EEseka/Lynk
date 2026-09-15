@@ -7,4 +7,5 @@ enum class PaymentState {
     PAYING_OUT,
     PAID_OUT,
     PAYOUT_FAILED,
+    CANCELLED,
 }

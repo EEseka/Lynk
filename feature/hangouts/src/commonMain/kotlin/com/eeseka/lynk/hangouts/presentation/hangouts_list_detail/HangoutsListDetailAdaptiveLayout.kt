@@ -12,22 +12,19 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailAction
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailScreen
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailRoot
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListAction
-import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListScreen
+import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListRoot
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -35,30 +32,26 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HangoutsListDetailAdaptiveLayout(
     initialHangoutId: String?,
-    sharedState: HangoutsListDetailState,
-    events: Flow<HangoutsListDetailEvent>,
-    onAction: (HangoutsListDetailAction) -> Unit,
-    onDetailPaneFullScreenChange: (Boolean) -> Unit,
+    onDetailPaneFullScreenChanged: (Boolean) -> Unit,
     mainShellPadding: PaddingValues,
     unreadNotificationCount: Int,
-    onNavigateToNotifications: () -> Unit
+    navigateToNotifications: () -> Unit,
+    hangoutsListDetailViewModel: HangoutsListDetailViewModel = koinViewModel()
 ) {
+    val sharedState by hangoutsListDetailViewModel.state.collectAsStateWithLifecycle()
     val scaffoldDirective = createNoSpacingPaneScaffoldDirective()
-    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator(
-        scaffoldDirective = scaffoldDirective
-    )
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator(scaffoldDirective = scaffoldDirective)
     val scope = rememberCoroutineScope()
 
-    // The id arrives as a route argument and never changes, so without this guard the effect
-    // opens the detail pane again every time this screen is recomposed from scratch — which is
-    // what happens on the way back from the notifications screen.
+    // Opens the initial hangout only once. Coming back from notifications rebuilds this screen and
+    // runs the effect again; rememberSaveable keeps the flag through that rebuild.
     var hasOpenedInitialHangout by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(initialHangoutId) {
         if (initialHangoutId == null || hasOpenedInitialHangout) return@LaunchedEffect
 
         hasOpenedInitialHangout = true
-        onAction(HangoutsListDetailAction.OnSelectHangout(initialHangoutId))
+        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(initialHangoutId))
         scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
     }
 
@@ -68,7 +61,7 @@ fun HangoutsListDetailAdaptiveLayout(
         onBackCompleted = {
             scope.launch {
                 scaffoldNavigator.navigateBack()
-                onAction(HangoutsListDetailAction.OnSelectHangout(null))
+                hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
             }
         }
     )
@@ -81,18 +74,18 @@ fun HangoutsListDetailAdaptiveLayout(
 
     LaunchedEffect(detailPane, sharedState.selectedHangoutId) {
         if (detailPane == PaneAdaptedValue.Hidden && sharedState.selectedHangoutId != null) {
-            onAction(HangoutsListDetailAction.OnSelectHangout(null))
+            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
         }
     }
 
     LaunchedEffect(isDetailPaneFullScreen) {
-        onDetailPaneFullScreenChange(isDetailPaneFullScreen)
+        onDetailPaneFullScreenChanged(isDetailPaneFullScreen)
     }
     // Safety net: if this whole layout is torn down while the detail pane owns the screen
     // (e.g. a notification/deep-link jumps out of it), the LaunchedEffect never gets to
     // report that it is gone — so guarantee it here on dispose.
     DisposableEffect(Unit) {
-        onDispose { onDetailPaneFullScreenChange(false) }
+        onDispose { onDetailPaneFullScreenChanged(false) }
     }
 
     ListDetailPaneScaffold(
@@ -100,80 +93,57 @@ fun HangoutsListDetailAdaptiveLayout(
         value = scaffoldNavigator.scaffoldValue,
         listPane = {
             AnimatedPane {
-                val viewModel = koinViewModel<HangoutsListViewModel>()
-                val state by viewModel.state.collectAsStateWithLifecycle()
+                val listViewModel = koinViewModel<HangoutsListViewModel>()
 
-                LaunchedEffect(sharedState.selectedHangoutId) {
-                    viewModel.onAction(HangoutsListAction.OnSelectHangout(sharedState.selectedHangoutId))
-                }
-
-                ObserveAsEvents(events) { event ->
+                ObserveAsEvents(hangoutsListDetailViewModel.events) { event ->
                     when (event) {
                         HangoutsListDetailEvent.RefreshList -> {
-                            viewModel.onAction(HangoutsListAction.Refresh)
+                            listViewModel.onAction(HangoutsListAction.Refresh)
                         }
                     }
                 }
 
-                HangoutsListScreen(
-                    state = state,
-                    events = viewModel.events,
-                    onAction = { action ->
-                        when (action) {
-                            is HangoutsListAction.OnSelectHangout -> {
-                                onAction(HangoutsListDetailAction.OnSelectHangout(action.hangoutId))
-                                scope.launch {
-                                    scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
-                                }
-                            }
-
-                            else -> Unit
+                HangoutsListRoot(
+                    selectedHangoutId = sharedState.selectedHangoutId,
+                    onHangoutClick = { hangoutId ->
+                        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(hangoutId))
+                        scope.launch {
+                            scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
                         }
-                        viewModel.onAction(action)
                     },
                     onCreateHangoutClick = {
-                        onAction(HangoutsListDetailAction.OnCreateHangoutClick)
+                        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnCreateHangoutClick)
                     },
+                    navigateToNotifications = navigateToNotifications,
                     unreadNotificationCount = unreadNotificationCount,
-                    onNavigateToNotifications = onNavigateToNotifications,
-                    mainShellPadding = mainShellPadding
+                    mainShellPadding = mainShellPadding,
+                    viewModel = listViewModel
                 )
             }
         },
         detailPane = {
             AnimatedPane {
-                val viewModel = koinViewModel<HangoutDetailViewModel>()
-                val state by viewModel.state.collectAsStateWithLifecycle()
-
-                LaunchedEffect(sharedState.selectedHangoutId) {
-                    viewModel.onAction(HangoutDetailAction.OnSelectHangout(sharedState.selectedHangoutId))
-                }
-
-                HangoutDetailScreen(
-                    state = state,
-                    events = viewModel.events,
-                    onAction = viewModel::onAction,
+                HangoutDetailRoot(
+                    hangoutId = sharedState.selectedHangoutId,
                     isDetailPaneFullScreen = isDetailPaneFullScreen,
-                    onBackClick = {
+                    navigateBack = {
                         scope.launch {
                             if (scaffoldNavigator.canNavigateBack()) {
                                 scaffoldNavigator.navigateBack()
                             }
                         }
                     },
-                    onLeave = {
+                    onHangoutLeft = {
                         scope.launch {
                             if (scaffoldNavigator.canNavigateBack()) {
                                 scaffoldNavigator.navigateBack()
                             }
-                            onAction(HangoutsListDetailAction.OnSelectHangout(null))
-                            onAction(HangoutsListDetailAction.RefreshList)
+                            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
+                            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.RefreshList)
                         }
                     },
-                    onEditClick = {
-                        state.hangout?.let { hangout ->
-                            onAction(HangoutsListDetailAction.OnEditHangoutClick(hangout))
-                        }
+                    onEditHangoutClick = { hangout ->
+                        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnEditHangoutClick(hangout))
                     }
                 )
             }
@@ -183,15 +153,15 @@ fun HangoutsListDetailAdaptiveLayout(
     CreateHangoutRoot(
         visible = sharedState.sheetState is SheetState.CreateHangout || sharedState.sheetState is SheetState.EditHangout,
         originalHangout = (sharedState.sheetState as? SheetState.EditHangout)?.hangout,
-        onDismiss = { onAction(HangoutsListDetailAction.OnDismissCurrentSheet) },
+        onDismiss = { hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnDismissCurrentSheet) },
         onSuccess = { hangoutId ->
             val wasEdit = sharedState.sheetState is SheetState.EditHangout
 
-            onAction(HangoutsListDetailAction.OnDismissCurrentSheet)
+            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnDismissCurrentSheet)
             if (!wasEdit) {
-                onAction(HangoutsListDetailAction.RefreshList)
+                hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.RefreshList)
             }
-            onAction(HangoutsListDetailAction.OnSelectHangout(hangoutId))
+            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(hangoutId))
             scope.launch {
                 scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
             }

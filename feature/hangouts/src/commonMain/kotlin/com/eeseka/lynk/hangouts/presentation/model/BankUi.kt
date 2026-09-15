@@ -1,8 +1,8 @@
 package com.eeseka.lynk.hangouts.presentation.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 
-@Stable
+@Immutable
 data class BankUi(
     val code: String,
     val name: String,

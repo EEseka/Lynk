@@ -5,9 +5,10 @@ sealed interface User {
     val provider: AuthProvider
 
     data class Guest(
-        override val id: String,
-        override val provider: AuthProvider = AuthProvider.GUEST
-    ) : User
+        override val id: String
+    ) : User {
+        override val provider = AuthProvider.GUEST
+    }
 
     data class ProfileIncomplete(
         override val id: String,

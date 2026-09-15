@@ -2,29 +2,42 @@ package com.eeseka.lynk.create_hangout.presentation
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.util.UiText
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.test.runTest
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
+import kotlin.time.Instant
 
 @OptIn(ExperimentalTestApi::class)
 class CreateHangoutSheetTest {
 
+    private val editedHangout = HangoutUi(
+        id = "hangout_1", hostId = "host_1",
+        name = "Existing Hangout", description = "Fun times",
+        vibe = HangoutVibe.FOOD, status = HangoutStatus.SCHEDULED,
+        scheduledAt = Instant.fromEpochMilliseconds(4102444800000L), maxAttendees = 10,
+        participantCount = 3, chosenSpot = null,
+        participants = persistentListOf(),
+        payment = null,
+        createdAt = Instant.fromEpochMilliseconds(4102444800000L)
+    )
+
     @Test
-    fun `step 1 shows The Basics title and next button`() = runComposeUiTest {
+    fun `step 1 shows The Basics title`() = runComposeUiTest {
         val robot = CreateHangoutRobot(this)
         robot.setContent(state = CreateHangoutState(currentStep = 1))
             .assertTitleVisible("The Basics")
-            .assertNextButtonDisabled("Next: Pick Location →")
     }
 
     @Test
-    fun `step 1 next button enabled when canProceedToStepTwo is true`() = runComposeUiTest {
-        val robot = CreateHangoutRobot(this)
-        robot.setContent(state = CreateHangoutState(currentStep = 1, canProceedToStepTwo = true))
-            .assertNextButtonEnabled("Next: Pick Location →")
-    }
+    fun `step 1 next button is never gated so pressing it can reveal errors`() =
+        runComposeUiTest {
+            val robot = CreateHangoutRobot(this)
+            robot.setContent(state = CreateHangoutState(currentStep = 1))
+                .assertNextButtonEnabled("Next: Pick Location →")
+        }
 
     @Test
     fun `step 2 shows Pick Location title`() = runComposeUiTest {
@@ -49,8 +62,7 @@ class CreateHangoutSheetTest {
         val robot = CreateHangoutRobot(this)
         robot.setContent(
             state = CreateHangoutState(
-                currentStep = 3,
-                mode = HangoutFormMode.CREATE
+                currentStep = 3
             )
         )
             .assertTitleVisible("Review & Confirm")
@@ -63,7 +75,7 @@ class CreateHangoutSheetTest {
         robot.setContent(
             state = CreateHangoutState(
                 currentStep = 3,
-                mode = HangoutFormMode.EDIT
+                originalHangout = editedHangout
             )
         ).assertNextButtonDisabled("Save Changes")
     }
@@ -74,7 +86,6 @@ class CreateHangoutSheetTest {
         robot.setContent(
             state = CreateHangoutState(
                 currentStep = 3,
-                mode = HangoutFormMode.CREATE,
                 canSubmit = true
             )
         ).assertNextButtonEnabled("Create Hangout")
@@ -92,18 +103,13 @@ class CreateHangoutSheetTest {
     }
 
     @Test
-    fun `submit error visible on step 3`() = runTest {
-        val eventFlow = MutableSharedFlow<CreateHangoutEvent>()
-        runComposeUiTest {
-            val robot = CreateHangoutRobot(this)
-            robot.setContent(
-                state = CreateHangoutState(
-                    currentStep = 3,
-                    submitError = UiText.DynamicString("Something went wrong")
-                ),
-                events = eventFlow
+    fun `submit error visible on step 3`() = runComposeUiTest {
+        val robot = CreateHangoutRobot(this)
+        robot.setContent(
+            state = CreateHangoutState(
+                currentStep = 3,
+                submitError = UiText.DynamicString("Something went wrong")
             )
-            robot.assertTextVisible("Something went wrong")
-        }
+        ).assertTextVisible("Something went wrong")
     }
 }

@@ -12,10 +12,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.Lucide
@@ -28,7 +29,10 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
+@Immutable
 data class LynkDropDownItem(
     val title: String,
     val icon: ImageVector? = null,
@@ -43,7 +47,7 @@ data class LynkDropDownItem(
 fun LynkDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    items: List<LynkDropDownItem>,
+    items: ImmutableList<LynkDropDownItem>,
     modifier: Modifier = Modifier,
     anchor: @Composable () -> Unit
 ) {
@@ -122,7 +126,7 @@ fun LynkDropDownMenu(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkDropDownMenuPreview() {
     LynkTheme {
@@ -142,27 +146,7 @@ private fun LynkDropDownMenuPreview() {
     }
 }
 
-@Preview
-@Composable
-private fun LynkDropDownMenuPreviewDark() {
-    LynkTheme(true) {
-        LynkDropDownMenu(
-            expanded = true,
-            onDismissRequest = {},
-            anchor = {
-                LynkIconButton(onClick = {}) {
-                    Icon(
-                        imageVector = Lucide.EllipsisVertical,
-                        contentDescription = null
-                    )
-                }
-            },
-            items = previewItems
-        )
-    }
-}
-
-private val previewItems = listOf(
+private val previewItems = persistentListOf(
     LynkDropDownItem(title = "Share", icon = Lucide.Share2, onClick = {}),
     LynkDropDownItem(title = "Delete", icon = Lucide.Trash2, isDestructive = true, onClick = {})
 )

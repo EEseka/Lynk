@@ -34,10 +34,11 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.presentation.preview.previewSpot
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import kotlinx.collections.immutable.ImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_chosen_spot
 import lynk.feature.hangouts.generated.resources.detail_get_a_ride
@@ -49,12 +50,10 @@ import org.jetbrains.compose.resources.stringResource
 fun ChosenSpotSection(
     chosenSpot: SpotUi?,
     onSpotClick: () -> Unit,
+    modifier: Modifier = Modifier,
     canCopyAddress: Boolean = false,
-    onCopyAddressClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onCopyAddressClick: () -> Unit = {}
 ) {
-    val hapticFeedback = rememberAppHaptic()
-
     DetailSection(
         title = stringResource(Res.string.detail_chosen_spot),
         trailing = if (canCopyAddress) {
@@ -63,10 +62,7 @@ fun ChosenSpotSection(
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
                         .clip(CircleShape)
-                        .clickable {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onCopyAddressClick()
-                        }
+                        .clickable { onCopyAddressClick() }
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -110,7 +106,7 @@ fun ChosenSpotSection(
 private fun ChosenSpotCard(
     spotName: String,
     spotAddress: String?,
-    photoUrls: List<String>,
+    photoUrls: ImmutableList<String>,
     rating: Double?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -199,35 +195,21 @@ private fun ChosenSpotCard(
     }
 }
 
-private val previewSpot = SpotUi(
-    id = "s1",
-    name = "The Rooftop Lounge",
-    description = "Skyline views",
-    photoUrls = emptyList(),
-    category = SpotCategory.RESTAURANT,
-    tags = emptyList(),
-    priceLevel = null,
-    rating = 4.6,
-    reviewCount = 214,
-    isOpenNow = true,
-    shortAddress = "12 Admiralty Way, Lekki",
-    latitude = 6.4,
-    longitude = 3.4,
-    websiteUrl = null,
-    googleMapsUrl = null,
-    isSaved = false
-)
+@PreviewLightDark
+@Composable
+private fun ChosenSpotSectionDefaultPreview() = ChosenSpotSectionPreview(previewSpot())
+
+@PreviewLightDark
+@Composable
+private fun ChosenSpotSectionEmptyPreview() = ChosenSpotSectionPreview(chosenSpot = null)
 
 @Composable
-private fun ChosenSpotSectionPreview(
-    chosenSpot: SpotUi? = previewSpot,
-    canCopyAddress: Boolean = false
-) {
+private fun ChosenSpotSectionPreview(chosenSpot: SpotUi?) {
     LynkTheme {
         ChosenSpotSection(
             chosenSpot = chosenSpot,
             onSpotClick = {},
-            canCopyAddress = canCopyAddress,
+            canCopyAddress = chosenSpot != null,
             onCopyAddressClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
@@ -235,22 +217,3 @@ private fun ChosenSpotSectionPreview(
         )
     }
 }
-
-@PreviewLightDark
-@Composable
-private fun ChosenSpotSectionDefaultPreview() = ChosenSpotSectionPreview()
-
-@PreviewLightDark
-@Composable
-private fun ChosenSpotSectionNoRatingPreview() = ChosenSpotSectionPreview(
-    chosenSpot = previewSpot.copy(rating = null, shortAddress = null)
-)
-
-@PreviewLightDark
-@Composable
-private fun ChosenSpotSectionEmptyPreview() = ChosenSpotSectionPreview(chosenSpot = null)
-
-@PreviewLightDark
-@Composable
-private fun ChosenSpotSectionCopyAddressPreview() =
-    ChosenSpotSectionPreview(canCopyAddress = true)

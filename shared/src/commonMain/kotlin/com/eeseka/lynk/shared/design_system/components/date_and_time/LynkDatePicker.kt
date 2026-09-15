@@ -8,6 +8,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -15,19 +16,31 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.toPickerMillis
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.confirm_date
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LynkDatePicker(
     onDateSelected: (Long?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialSelectedDateMillis: Long? = null
 ) {
-    val state = rememberAdaptiveDatePickerState()
+    val seedMillis = remember(initialSelectedDateMillis) {
+        initialSelectedDateMillis ?: Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+            .toPickerMillis()
+    }
+
+    val state = rememberAdaptiveDatePickerState(initialSelectedDateMillis = seedMillis)
     val scheme = MaterialTheme.colorScheme
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -47,7 +60,7 @@ fun LynkDatePicker(
             onClick = { onDateSelected(state.selectedDateMillis) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(16.dp),
             style = LynkButtonStyle.TEXT
         )
     }

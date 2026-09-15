@@ -1,11 +1,11 @@
 package com.eeseka.lynk.shared.presentation.hangout.model
 
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.Immutable
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import kotlin.time.Instant
 
-@Stable
+@Immutable
 data class HangoutSummaryUi(
     val id: String,
     val hostId: String,

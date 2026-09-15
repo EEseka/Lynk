@@ -16,10 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -39,6 +42,11 @@ fun NotificationsEmptyState(modifier: Modifier = Modifier) {
         )
     }
 
+    val animationSize = when (currentDeviceConfiguration()) {
+        DeviceConfiguration.MOBILE_LANDSCAPE -> 200.dp
+        else -> 300.dp
+    }
+
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -53,7 +61,7 @@ fun NotificationsEmptyState(modifier: Modifier = Modifier) {
                     iterations = Compottie.IterateForever
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(300.dp)
+                modifier = Modifier.size(animationSize)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -78,6 +86,7 @@ fun NotificationsEmptyState(modifier: Modifier = Modifier) {
 }
 
 @PreviewLightDark
+@Preview(name = "Mobile landscape", widthDp = 900, heightDp = 400)
 @Composable
 private fun NotificationsEmptyStatePreview() {
     LynkTheme {

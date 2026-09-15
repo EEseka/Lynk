@@ -1,8 +1,10 @@
 package com.eeseka.lynk.create_hangout.presentation
 
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import app.cash.turbine.test
 import assertk.assertThat
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
@@ -18,6 +20,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -27,6 +30,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.LocalTime
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -43,6 +48,7 @@ class CreateHangoutViewModelTest {
     private lateinit var viewModel: CreateHangoutViewModel
 
     private val futureDate = LocalDate(2030, 12, 31)
+    private val futureDateMillis = futureDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
     private val futureTime = LocalTime(18, 0)
     private val futureInstant = Instant.fromEpochMilliseconds(4102444800000L) // 2100-01-01
 
@@ -58,10 +64,10 @@ class CreateHangoutViewModelTest {
     private val dummySpotUi = SpotUi(
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
-        photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
+        photoUrls = persistentListOf(), rating = 4.5, reviewCount = 100,
         isOpenNow = true, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList()
+        description = null, tags = persistentListOf()
     )
 
     private val dummyHangoutUi = HangoutUi(
@@ -70,7 +76,7 @@ class CreateHangoutViewModelTest {
         vibe = HangoutVibe.FOOD, status = HangoutStatus.SCHEDULED,
         scheduledAt = futureInstant, maxAttendees = 10,
         participantCount = 3, chosenSpot = dummySpotUi,
-        participants = emptyList(),
+        participants = persistentListOf(),
         payment = null,
         createdAt = futureInstant
     )
@@ -90,8 +96,8 @@ class CreateHangoutViewModelTest {
 
     private fun setValidStepOneInputs() {
         viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Hangout Night")
-        viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDate))
-        viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime))
+        viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDateMillis))
+        viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime.hour, futureTime.minute))
     }
 
 
@@ -124,7 +130,7 @@ class CreateHangoutViewModelTest {
         }
 
         assertThat(viewModel.state.value.isTrendingLoading).isFalse()
-        assertThat(viewModel.state.value.trendingSpots).isEqualTo(emptyList())
+        assertThat(viewModel.state.value.trendingSpots).isEmpty()
     }
 
     @Test
@@ -142,50 +148,73 @@ class CreateHangoutViewModelTest {
 
 
     @Test
-    fun `all step 1 fields valid enables canProceedToStepTwo`() = runTest {
+    fun `all step 1 fields valid advances to step 2 on OnNextStep`() = runTest {
         viewModel.state.test {
             awaitItem()
             setValidStepOneInputs()
             advanceUntilIdle()
 
-            assertThat(expectMostRecentItem().canProceedToStepTwo).isTrue()
-        }
-    }
-
-    @Test
-    fun `blank name blocks canProceedToStepTwo`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDate))
-            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime))
+            viewModel.onAction(CreateHangoutAction.OnNextStep)
             advanceUntilIdle()
 
-            assertThat(expectMostRecentItem().canProceedToStepTwo).isFalse()
+            val state = expectMostRecentItem()
+            assertThat(state.currentStep).isEqualTo(2)
+            assertThat(state.hangoutNameError).isNull()
         }
     }
 
     @Test
-    fun `missing date blocks canProceedToStepTwo`() = runTest {
+    fun `step 1 errors stay hidden until the first OnNextStep`() = runTest {
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime.hour, futureTime.minute))
+            advanceUntilIdle()
+
+            // Nothing pressed yet, so a blank name and missing date are not errors on screen.
+            val beforePress = expectMostRecentItem()
+            assertThat(beforePress.hangoutNameError).isNull()
+            assertThat(beforePress.hangoutDateError).isNull()
+
+            viewModel.onAction(CreateHangoutAction.OnNextStep)
+            advanceUntilIdle()
+
+            val afterPress = expectMostRecentItem()
+            assertThat(afterPress.hangoutNameError).isNotNull()
+            assertThat(afterPress.hangoutDateError).isNotNull()
+            assertThat(afterPress.currentStep).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `after the first OnNextStep a step 1 error clears on the next keystroke`() = runTest {
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(CreateHangoutAction.OnNextStep)
+            advanceUntilIdle()
+            assertThat(expectMostRecentItem().hangoutNameError).isNotNull()
+
+            viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Night Out")
+            advanceUntilIdle()
+
+            assertThat(expectMostRecentItem().hangoutNameError).isNull()
+        }
+    }
+
+    @Test
+    fun `missing time surfaces hangoutTimeError and stays on step 1`() = runTest {
         viewModel.state.test {
             awaitItem()
             viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Night Out")
-            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime))
-            advanceUntilIdle()
-
-            assertThat(expectMostRecentItem().canProceedToStepTwo).isFalse()
-        }
-    }
-
-    @Test
-    fun `missing time blocks canProceedToStepTwo`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Night Out")
-            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDate))
+            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDateMillis))
             // No time set
             advanceUntilIdle()
 
-            assertThat(expectMostRecentItem().canProceedToStepTwo).isFalse()
+            viewModel.onAction(CreateHangoutAction.OnNextStep)
+            advanceUntilIdle()
+
+            val state = expectMostRecentItem()
+            assertThat(state.hangoutTimeError).isNotNull()
+            assertThat(state.currentStep).isEqualTo(1)
         }
     }
 
@@ -195,8 +224,8 @@ class CreateHangoutViewModelTest {
         viewModel.state.test {
             awaitItem()
             viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Night Out")
-            viewModel.onAction(CreateHangoutAction.OnDateSelected(LocalDate(2020, 1, 1)))
-            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime))
+            viewModel.onAction(CreateHangoutAction.OnDateSelected(LocalDate(2020, 1, 1).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()))
+            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime.hour, futureTime.minute))
             advanceUntilIdle()
 
             viewModel.onAction(CreateHangoutAction.OnNextStep)
@@ -214,8 +243,8 @@ class CreateHangoutViewModelTest {
             awaitItem()
             viewModel.state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd("Night Out")
             viewModel.state.value.hangoutDescriptionTextState.setTextAndPlaceCursorAtEnd("a".repeat(501))
-            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDate))
-            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime))
+            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDateMillis))
+            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime.hour, futureTime.minute))
             advanceUntilIdle()
 
             viewModel.onAction(CreateHangoutAction.OnNextStep)
@@ -289,7 +318,7 @@ class CreateHangoutViewModelTest {
             viewModel.state.value.spotSearchTextState.setTextAndPlaceCursorAtEnd("Lounge")
 
             advanceTimeBy(400.milliseconds)
-            assertThat(expectMostRecentItem().spotSearchResults).isEqualTo(emptyList())
+            assertThat(expectMostRecentItem().spotSearchResults).isEmpty()
 
             advanceTimeBy(101.milliseconds)
             advanceUntilIdle()
@@ -307,11 +336,11 @@ class CreateHangoutViewModelTest {
         advanceTimeBy(501.milliseconds)
         advanceUntilIdle()
 
-        viewModel.onAction(CreateHangoutAction.OnSearchQueryCleared)
+        viewModel.state.value.spotSearchTextState.clearText()
         advanceTimeBy(501.milliseconds)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.spotSearchResults).isEqualTo(emptyList())
+        assertThat(viewModel.state.value.spotSearchResults).isEmpty()
     }
 
     @Test

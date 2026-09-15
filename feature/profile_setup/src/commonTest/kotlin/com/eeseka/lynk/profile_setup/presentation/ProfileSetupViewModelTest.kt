@@ -116,10 +116,13 @@ class ProfileSetupViewModelTest {
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
+            viewModel.onAction(ProfileSetupAction.OnSubmitClick)
+            advanceUntilIdle()
+
             val finalState = expectMostRecentItem()
             assertThat(finalState.isUsernameAvailable).isEqualTo(false)
-            assertThat(finalState.canSubmit).isFalse()
             assertThat(finalState.usernameError).isNotNull()
+            assertThat(finalState.isSubmitting).isFalse()
         }
     }
 
@@ -138,7 +141,6 @@ class ProfileSetupViewModelTest {
             advanceUntilIdle()
 
             val finalState = expectMostRecentItem()
-            assertThat(finalState.canSubmit).isFalse()
             assertThat(finalState.displayNameError).isNotNull()
             assertThat(finalState.isSubmitting).isFalse()
         }

@@ -9,12 +9,16 @@
     <string name="search_upcoming_hangouts_hint">Search upcoming hangouts…</string>
     <string name="search_ongoing_hangouts_hint">Search ongoing hangouts…</string>
     <string name="search_completed_hangouts_hint">Search completed hangouts…</string>
-    <string name="search_cancelled_hangouts_hint">Search canceled hangouts…</string>
+    <string name="search_cancelled_hangouts_hint">Search cancelled hangouts…</string>
     <string name="create_hangout">Create Hangout</string>
     <string name="create_a_hangout">Create a hangout</string>
     <string name="filter_vibe">Filter by vibe</string>
     <string name="host_badge_description">You are the host</string>
     <string name="any_vibe">Any Vibe</string>
+
+    <string name="notifications">Notifications</string>
+    <string name="notifications_with_unread">Notifications, %1$d unread</string>
+    <string name="unread_count_overflow">9+</string>
 
     <string name="participants_format">%1$d going</string>
     <string name="participants_max_format">%1$d / %2$d going</string>
@@ -30,11 +34,12 @@
     <string name="empty_hangouts_completed_title">No past hangouts</string>
     <string name="empty_hangouts_completed_message">Hangouts you've finished will appear here.</string>
 
-    <string name="empty_hangouts_cancelled_title">No canceled hangouts</string>
+    <string name="empty_hangouts_cancelled_title">No cancelled hangouts</string>
     <string name="empty_hangouts_cancelled_message">Nothing to see here right now.</string>
 
     <string name="empty_search_title">No hangouts found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
+    <string name="hangouts_load_error_title">Couldn't load your hangouts</string>
 
     <string name="connection_online">Connected</string>
     <string name="connection_offline">Offline</string>
@@ -45,7 +50,6 @@
     <string name="detail_select_title">No hangout selected</string>
     <string name="detail_select_message">Pick a hangout to see the crew and the full plan.</string>
     <string name="detail_load_error_title">Couldn't load this hangout</string>
-    <string name="detail_retry">Retry</string>
     <string name="detail_about">About</string>
     <string name="detail_going">Going</string>
     <string name="detail_going_count">%1$d going</string>
@@ -123,11 +127,12 @@
     <string name="payment_state_collecting_guest">Waiting for everyone to pay</string>
     <string name="payment_state_awaiting_decision_host">The deadline passed with people still unpaid</string>
     <string name="payment_state_awaiting_decision_guest">The host is sorting out the payments</string>
-    <string name="payment_state_ready_for_payout_host">Everyone has paid. Your payout is queued</string>
+    <string name="payment_state_ready_for_payout_host">Everyone has paid. Your payout is queued.</string>
     <string name="payment_state_paying_out_host">Sending your payout</string>
     <string name="payment_state_paid_out_host">Paid out to your account</string>
     <string name="payment_state_payout_failed_host">Your payout didn't go through</string>
     <string name="payment_state_settled_guest">Everyone has paid</string>
+    <string name="payment_state_cancelled">Everyone who paid gets their share back</string>
     <string name="payment_paid_badge">Paid</string>
     <string name="payment_host_badge">Host</string>
     <string name="payment_you_paid">You've paid your share</string>
@@ -135,21 +140,25 @@
     <string name="payment_deadline_in_past">Pick a day that hasn't passed yet.</string>
     <string name="payment_deadline_after_hangout">The deadline has to be on or before the hangout.</string>
 
-    <!-- Enable payments sheet -->
+    <!-- Enable payments form -->
     <string name="payment_collect_title">Collect payments</string>
     <string name="payment_collect_hint">Ask your guests to pay their share before the hangout. The bill is split between whoever is in when you turn this on, so invite everyone first.</string>
     <string name="payment_total_cost_label">Total cost</string>
     <string name="payment_total_cost_placeholder">0</string>
     <string name="payment_total_cost_helper">The full bill for everyone, you included. We split it for you.</string>
     <string name="payment_share_too_low">That splits to under ₦1 each. Put in the full bill.</string>
+    <string name="payment_total_cost_required">Put in the total cost.</string>
     <string name="payment_deadline_label">Pay by</string>
     <string name="payment_deadline_placeholder">Pick a day</string>
+    <string name="payment_deadline_required">Pick the day everyone has to pay by.</string>
     <string name="payment_bank_label">Bank</string>
     <string name="payment_bank_placeholder">Choose your bank</string>
+    <string name="payment_bank_required">Choose the bank your payout goes to.</string>
     <string name="payment_account_number_label">Account number</string>
     <string name="payment_account_number_placeholder">10 digits</string>
     <string name="payment_account_not_found">No account with that number at this bank. Check both.</string>
     <string name="payment_account_check_limit">Checking too fast! Please wait a moment.</string>
+    <string name="payment_account_required">Put in your 10-digit account number and wait for the name to show.</string>
     <string name="payment_enable_confirm">Turn on payments</string>
     <string name="payment_enabling">Turning on…</string>
     <string name="payment_enable_warning">Once payments are on, none of this can change. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out. Check the details.</string>
@@ -176,6 +185,7 @@
     <string name="payment_deadline_changed">Deadline updated</string>
     <string name="payment_decision_saved">Sorted. Everyone has been told.</string>
     <string name="payment_decide_action">Decide what happens</string>
+    <string name="payment_deciding">Saving…</string>
     <string name="payment_decision_title">Not everyone has paid</string>
     <string name="payment_decision_message">%1$d still to pay. Pick how you want to handle it.</string>
     <string name="payment_decision_extend">Give them more time</string>
@@ -216,10 +226,4 @@
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
-    <string name="km">km</string>
-    <string name="m">m</string>
-
-    <string name="notifications">Notifications</string>
-    <string name="notifications_with_unread">Notifications, %1$d unread</string>
-    <string name="unread_count_overflow">9+</string>
 </resources>

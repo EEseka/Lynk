@@ -13,6 +13,7 @@ import com.eeseka.lynk.discover.data.FakeAppPreferences
 import com.eeseka.lynk.discover.data.FakeAuthService
 import com.eeseka.lynk.discover.data.FakeSessionStorage
 import com.eeseka.lynk.discover.data.FakeSpotService
+import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User

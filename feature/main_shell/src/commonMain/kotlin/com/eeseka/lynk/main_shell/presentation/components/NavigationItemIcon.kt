@@ -14,7 +14,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.CalendarRange
+import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.main_shell.generated.resources.Res
 import lynk.feature.main_shell.generated.resources.unread_notifications
 import org.jetbrains.compose.resources.stringResource
@@ -22,14 +26,13 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun NavigationItemIcon(
     icon: ImageVector,
-    contentDescription: String,
     hasUnread: Boolean,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         Icon(
             imageVector = icon,
-            contentDescription = contentDescription
+            contentDescription = null
         )
 
         if (hasUnread) {
@@ -43,6 +46,34 @@ fun NavigationItemIcon(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.error)
                     .clearAndSetSemantics { this.contentDescription = unreadLabel }
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun NavigationItemIconPreview() {
+    LynkTheme {
+        NavigationItemIcon(
+            icon = Lucide.CalendarRange,
+            hasUnread = false,
+            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun NavigationItemIconUnreadPreview() {
+    LynkTheme {
+        Box(
+            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            NavigationItemIcon(
+                icon = Lucide.CalendarRange,
+                hasUnread = true
             )
         }
     }

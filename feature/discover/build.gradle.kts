@@ -25,6 +25,10 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.maplibre.native.ffi.runtime.opengl)
+        }
+
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -46,6 +50,8 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+
+            implementation(libs.kotlinx.collections.immutable)
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)

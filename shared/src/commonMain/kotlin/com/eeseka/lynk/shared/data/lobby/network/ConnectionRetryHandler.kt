@@ -9,7 +9,7 @@ class ConnectionRetryHandler(
 ) {
     private var shouldSkipBackoff = false
 
-    fun shouldRetry(cause: Throwable, attempt: Long): Boolean {
+    fun shouldRetry(cause: Throwable): Boolean {
         return connectionErrorHandler.isRetriableError(cause)
     }
 

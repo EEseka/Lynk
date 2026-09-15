@@ -2,34 +2,38 @@ package com.eeseka.lynk.shared.data.di
 
 import com.eeseka.lynk.shared.data.auth.DataStoreSessionStorage
 import com.eeseka.lynk.shared.data.auth.KtorAuthService
-import com.eeseka.lynk.shared.data.logging.KermitLogger
-import com.eeseka.lynk.shared.data.media.NativeImageCompressionService
-import com.eeseka.lynk.shared.data.networking.HttpClientFactory
-import com.eeseka.lynk.shared.data.notification.KtorDeviceTokenService
-import com.eeseka.lynk.shared.data.notification.KtorNotificationService
-import com.eeseka.lynk.shared.data.payment.KtorPaymentService
-import com.eeseka.lynk.shared.data.profile.KtorUserService
-import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
+import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutParticipantService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutService
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyConnectionClient
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyService
 import com.eeseka.lynk.shared.data.lobby.network.ConnectionRetryHandler
 import com.eeseka.lynk.shared.data.lobby.network.KtorLobbyWebSocketConnector
+import com.eeseka.lynk.shared.data.logging.KermitLogger
+import com.eeseka.lynk.shared.data.media.NativeImageCompressionService
+import com.eeseka.lynk.shared.data.networking.HttpClientFactory
+import com.eeseka.lynk.shared.data.notification.InMemoryUnreadNotificationCounter
+import com.eeseka.lynk.shared.data.notification.KtorDeviceTokenService
+import com.eeseka.lynk.shared.data.notification.KtorNotificationService
+import com.eeseka.lynk.shared.data.payment.KtorPaymentService
+import com.eeseka.lynk.shared.data.profile.KtorUserService
+import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
 import com.eeseka.lynk.shared.data.spot.KtorSpotService
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
-import com.eeseka.lynk.shared.domain.logging.LynkLogger
-import com.eeseka.lynk.shared.domain.media.ImageCompressionService
-import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
-import com.eeseka.lynk.shared.domain.notification.NotificationService
-import com.eeseka.lynk.shared.domain.payment.PaymentService
-import com.eeseka.lynk.shared.domain.profile.UserService
-import com.eeseka.lynk.shared.domain.settings.AppPreferences
+import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
+import com.eeseka.lynk.shared.domain.logging.LynkLogger
+import com.eeseka.lynk.shared.domain.media.ImageCompressionService
+import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
+import com.eeseka.lynk.shared.domain.notification.NotificationService
+import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
+import com.eeseka.lynk.shared.domain.payment.PaymentService
+import com.eeseka.lynk.shared.domain.profile.UserService
+import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
@@ -56,7 +60,8 @@ val sharedDataModule = module {
     singleOf(::KtorPaymentService) bind PaymentService::class
     singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class
     singleOf(::KtorNotificationService) bind NotificationService::class
-
+    singleOf(::InMemoryUnreadNotificationCounter) bind UnreadNotificationCounter::class
+    singleOf(::InMemoryHangoutDetailRepository) bind HangoutDetailRepository::class
     single {
         Json {
             ignoreUnknownKeys = true

@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.gesture.adaptiveClickable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class LynkSegmentedItem(
     val title: String,
@@ -56,7 +59,7 @@ enum class LynkSegmentedStyle {
 
 @Composable
 fun LynkSegmentedControl(
-    items: List<LynkSegmentedItem>,
+    items: ImmutableList<LynkSegmentedItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,6 +67,8 @@ fun LynkSegmentedControl(
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp)
 ) {
     val scheme = MaterialTheme.colorScheme
+
+    if (items.isEmpty()) return
 
     when (style) {
         LynkSegmentedStyle.SCROLLABLE_CHIPS -> {
@@ -175,7 +180,7 @@ fun LynkSegmentedControl(
                             }
                             LynkText(
                                 text = item.title,
-                                style = MaterialTheme.typography.labelMedium,
+                                style = MaterialTheme.typography.labelLarge,
                                 color = contentColor
                             )
                         }
@@ -238,44 +243,27 @@ fun LynkSegmentedControl(
 
 @PreviewLightDark
 @Composable
-private fun LynkSegmentedControlScrollablePreview() {
+private fun LynkSegmentedControlPreview() {
     LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 0,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.SCROLLABLE_CHIPS
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            LynkSegmentedStyle.entries.forEach { style ->
+                LynkSegmentedControl(
+                    items = previewItems,
+                    selectedIndex = 1,
+                    onItemSelected = {},
+                    style = style
+                )
+            }
+        }
     }
 }
 
-@PreviewLightDark
-@Composable
-private fun LynkSegmentedControlFixedPreview() {
-    LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 1,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.FIXED_BAR
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun LynkSegmentedControlWrappedPreview() {
-    LynkTheme {
-        LynkSegmentedControl(
-            items = previewItems,
-            selectedIndex = 1,
-            onItemSelected = {},
-            style = LynkSegmentedStyle.WRAPPING_CHIPS
-        )
-    }
-}
-
-private val previewItems = listOf(
+private val previewItems = persistentListOf(
     LynkSegmentedItem("All"),
     LynkSegmentedItem("Unread"),
     LynkSegmentedItem("Archived")

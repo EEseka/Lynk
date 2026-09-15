@@ -51,16 +51,14 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.getPriceLevelSymbol
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.about_this_spot
 import lynk.shared.generated.resources.closed
 import lynk.shared.generated.resources.create_hangout_here
-import lynk.shared.generated.resources.km
-import lynk.shared.generated.resources.m
 import lynk.shared.generated.resources.no_description_available
 import lynk.shared.generated.resources.open_in_google_maps
 import lynk.shared.generated.resources.open_now
@@ -280,20 +278,12 @@ fun SpotDetailSheet(
                         )
                     }
 
-                    val kmStr = stringResource(Res.string.km)
-                    val mStr = stringResource(Res.string.m)
-
-                    val distanceString = remember(spot.latitude, spot.longitude, userLat, userLng) {
-                        if (userLat != null && userLng != null) {
-                            val meters = DistanceCalculator.calculateDistanceInMeters(
-                                userLat = userLat,
-                                userLng = userLng,
-                                spotLat = spot.latitude,
-                                spotLng = spot.longitude
-                            )
-                            if (meters > 1000) "${(meters / 1000.0).toInt()} $kmStr" else "$meters $mStr"
-                        } else null
-                    }
+                    val distanceString = rememberSpotDistanceLabel(
+                        userLatitude = userLat,
+                        userLongitude = userLng,
+                        spotLatitude = spot.latitude,
+                        spotLongitude = spot.longitude
+                    )
 
                     distanceString?.let { dist ->
                         LynkText(

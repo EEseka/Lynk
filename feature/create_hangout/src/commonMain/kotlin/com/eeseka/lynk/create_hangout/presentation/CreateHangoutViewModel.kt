@@ -1,6 +1,5 @@
 package com.eeseka.lynk.create_hangout.presentation
 
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -13,7 +12,7 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidationSta
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
-import com.eeseka.lynk.create_hangout.presentation.model.HangoutFormMode
+import com.eeseka.lynk.create_hangout.presentation.mappers.toUiText
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
@@ -28,8 +27,10 @@ import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.shared.presentation.util.toPickerDate
 import com.eeseka.lynk.shared.presentation.util.toUiText
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -52,14 +54,6 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import lynk.feature.create_hangout.generated.resources.Res
-import lynk.feature.create_hangout.generated.resources.error_hangout_date_missing
-import lynk.feature.create_hangout.generated.resources.error_hangout_date_past
-import lynk.feature.create_hangout.generated.resources.error_hangout_description_too_long
-import lynk.feature.create_hangout.generated.resources.error_hangout_name_blank
-import lynk.feature.create_hangout.generated.resources.error_hangout_name_too_long
-import lynk.feature.create_hangout.generated.resources.error_hangout_time_missing
-import lynk.feature.create_hangout.generated.resources.error_hangout_time_past
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -82,7 +76,8 @@ class CreateHangoutViewModel(
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
-                observeValidationStates()
+                observeGatingStates()
+                observeStepOneValidation()
                 observeSearchFilters()
                 hasLoadedInitialData = true
             }
@@ -93,45 +88,62 @@ class CreateHangoutViewModel(
             initialValue = CreateHangoutState()
         )
 
-    // Blank-check only — real validation (too long) runs on Next press via validateFormInputs()
-    private val isHangoutNameValidFlow =
-        snapshotFlow { _state.value.hangoutNameTextState.text.toString() }
-            .map { it.isNotBlank() }
-            .distinctUntilChanged()
-    // Description is optional — TOO_LONG caught on Next press, never blocks the button
-
-    // Null-check only — real validation (past date/time) runs on Next press via validateFormInputs()
-    private val isHangoutDateValidFlow = state.map { it.hangoutDate != null }.distinctUntilChanged()
-    private val isHangoutTimeValidFlow = state.map { it.hangoutTime != null }.distinctUntilChanged()
-
     private val isStepTwoValidFlow = state.map {
         it.isVotingMode || it.selectedSpot != null
     }.distinctUntilChanged()
 
     private val isBusyFlow = state.map { it.isSubmitting }.distinctUntilChanged()
 
-    private fun observeValidationStates() {
-        val stepOneValidFlow = combine(
-            isHangoutNameValidFlow,
-            isHangoutDateValidFlow,
-            isHangoutTimeValidFlow
-        ) { isNameValid, isDateValid, isTimeValid ->
-            isNameValid && isDateValid && isTimeValid
-        }.distinctUntilChanged()
+    // Errors stay quiet until the first Next press, then track every keystroke.
+    private var hasAttemptedStepOne = false
 
-        combine(
-            stepOneValidFlow,
-            isStepTwoValidFlow,
-            isBusyFlow
-        ) { isStepOneValid, isStepTwoValid, isBusy ->
-            _state.update {
-                it.copy(
-                    canProceedToStepTwo = isStepOneValid,
-                    canProceedToStepThree = isStepTwoValid,
-                    canSubmit = isStepOneValid && isStepTwoValid && !isBusy
-                )
+    private fun observeGatingStates() {
+        isStepTwoValidFlow
+            .onEach { isStepTwoValid ->
+                _state.update { it.copy(canProceedToStepThree = isStepTwoValid) }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
+
+        isBusyFlow
+            .onEach { isBusy -> _state.update { it.copy(canSubmit = !isBusy) } }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeStepOneValidation() {
+        snapshotFlow { _state.value.hangoutNameTextState.text.toString() }
+            .onEach { name ->
+                val validationState = HangoutNameValidator.validate(name)
+                _state.update {
+                    it.copy(hangoutNameError = if (hasAttemptedStepOne) validationState.toUiText() else null)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        snapshotFlow { _state.value.hangoutDescriptionTextState.text.toString() }
+            .onEach { description ->
+                val validationState = HangoutDescriptionValidator.validate(description)
+                _state.update {
+                    it.copy(hangoutDescriptionError = if (hasAttemptedStepOne) validationState.toUiText() else null)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        // The time validator reads the date, so a change to either re-runs both.
+        state.map { it.hangoutDate to it.hangoutTime }
+            .distinctUntilChanged()
+            .onEach { (date, time) ->
+                val (currentDate, currentTime) = getCurrentDateAndTime()
+                val dateState = HangoutDateValidator.validate(date, currentDate)
+                val timeState = HangoutTimeValidator.validate(time, date, currentDate, currentTime)
+
+                _state.update {
+                    it.copy(
+                        hangoutDateError = if (hasAttemptedStepOne) dateState.toUiText() else null,
+                        hangoutTimeError = if (hasAttemptedStepOne) timeState.toUiText() else null
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onAction(action: CreateHangoutAction) {
@@ -156,12 +168,26 @@ class CreateHangoutViewModel(
                 _state.update { it.copy(hangoutVibe = action.vibe) }
             }
 
+            is CreateHangoutAction.OnPickerToggled -> {
+                _state.update {
+                    it.copy(expandedPicker = if (it.expandedPicker == action.picker) null else action.picker)
+                }
+            }
+
             is CreateHangoutAction.OnDateSelected -> {
-                _state.update { it.copy(hangoutDate = action.date) }
+                val date = action.epochMilliseconds?.toPickerDate()
+                _state.update {
+                    it.copy(hangoutDate = date ?: it.hangoutDate, expandedPicker = null)
+                }
             }
 
             is CreateHangoutAction.OnTimeSelected -> {
-                _state.update { it.copy(hangoutTime = action.time) }
+                _state.update {
+                    it.copy(
+                        hangoutTime = LocalTime(action.hour, action.minute),
+                        expandedPicker = null
+                    )
+                }
             }
 
             is CreateHangoutAction.OnSpotSelected -> {
@@ -173,11 +199,15 @@ class CreateHangoutViewModel(
             }
 
             CreateHangoutAction.OnNextStep -> {
-                if (state.value.currentStep == 1 && state.value.canProceedToStepTwo) {
-                    // Real date/time validation (past checks) runs here and surfaces errors if needed
-                    if (validateFormInputs()) _state.update { it.copy(currentStep = 2) }
-                } else if (state.value.currentStep == 2 && state.value.canProceedToStepThree) {
-                    _state.update { it.copy(currentStep = 3) }
+                when (state.value.currentStep) {
+                    1 -> {
+                        hasAttemptedStepOne = true
+                        if (validateFormInputs()) _state.update { it.copy(currentStep = 2) }
+                    }
+
+                    2 -> if (state.value.canProceedToStepThree) {
+                        _state.update { it.copy(currentStep = 3) }
+                    }
                 }
             }
 
@@ -203,7 +233,6 @@ class CreateHangoutViewModel(
 
             CreateHangoutAction.LoadNextSpotSearchPage -> loadNextSpotSearchPage()
             CreateHangoutAction.LoadNextFavoriteSpotSearchPage -> loadNextFavoriteSpotSearchPage()
-            CreateHangoutAction.OnSearchQueryCleared -> _state.value.spotSearchTextState.clearText()
             CreateHangoutAction.OnSubmitClick -> submit()
         }
     }
@@ -213,7 +242,6 @@ class CreateHangoutViewModel(
 
         _state.update {
             it.copy(
-                mode = HangoutFormMode.CREATE,
                 selectedSpot = spot,
                 isVotingMode = spot == null, // If passed a spot, default to dictator
             )
@@ -224,9 +252,7 @@ class CreateHangoutViewModel(
         if (state.value.originalHangout != null) return // Already initialized
 
         _state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd(hangout.name)
-        _state.value.hangoutDescriptionTextState.setTextAndPlaceCursorAtEnd(
-            hangout.description ?: ""
-        )
+        _state.value.hangoutDescriptionTextState.setTextAndPlaceCursorAtEnd(hangout.description ?: "")
 
         val localDateTime = hangout.scheduledAt.toLocalDateTime(TimeZone.currentSystemDefault())
         val activeCount = hangout.participants.count {
@@ -234,7 +260,6 @@ class CreateHangoutViewModel(
         }
         _state.update {
             it.copy(
-                mode = HangoutFormMode.EDIT,
                 originalHangout = hangout,
                 hangoutVibe = hangout.vibe,
                 hangoutDate = localDateTime.date,
@@ -258,7 +283,7 @@ class CreateHangoutViewModel(
                     _state.update {
                         it.copy(
                             isTrendingLoading = false,
-                            trendingSpots = spots.map { spot -> spot.toSpotUi() }
+                            trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
                         )
                     }
                 }
@@ -271,51 +296,50 @@ class CreateHangoutViewModel(
 
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.spotSearchTextState.text.toString() }
-            .distinctUntilChanged()
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
-
         val tabFlow = state.map { it.activeSearchTab }.distinctUntilChanged()
+        val locationFlow = state.map { it.userLatitude to it.userLongitude }.distinctUntilChanged()
 
-        combine(searchQueryFlow, tabFlow) { query, activeTab ->
-            query to activeTab
-        }.mapLatest { (query, activeTab) ->
+        combine(searchQueryFlow, tabFlow, locationFlow) { query, activeTab, location ->
+            Triple(query, activeTab, location)
+        }.mapLatest { (query, activeTab, location) ->
             when (activeTab) {
                 SearchTab.FAVORITES -> {
                     setupFavoriteSpotSearchPaginator(query.takeIf { it.isNotBlank() })
                     _state.update {
                         it.copy(
-                            favoriteSpotSearchResults = emptyList(),
+                            favoriteSpotSearchResults = persistentListOf(),
                             favoriteSpotSearchEndReached = false,
-                            favoriteSearchResetEpoch = it.favoriteSearchResetEpoch + 1
+                            favoriteSpotSearchError = null,
+                            favoriteSpotSearchResetEpoch = it.favoriteSpotSearchResetEpoch + 1
                         )
                     }
                     favoriteSpotSearchPaginator?.loadNextItems()
                 }
 
                 SearchTab.ALL_SPOTS -> {
-                    if (query.isBlank()) {
+                    val (latitude, longitude) = location
+                    if (query.isBlank() || latitude == null || longitude == null) {
                         _state.update {
                             it.copy(
-                                spotSearchResults = emptyList(),
+                                spotSearchResults = persistentListOf(),
                                 spotSearchEndReached = false,
                                 isSpotSearchLoading = false,
+                                spotSearchError = null,
                                 spotSearchResetEpoch = it.spotSearchResetEpoch + 1
                             )
                         }
                     } else {
-                        val lat = state.value.userLatitude
-                        val lng = state.value.userLongitude
-                        if (lat != null && lng != null) {
-                            setupSpotSearchPaginator(lat, lng, query)
-                            _state.update {
-                                it.copy(
-                                    spotSearchResults = emptyList(),
-                                    spotSearchEndReached = false,
-                                    spotSearchResetEpoch = it.spotSearchResetEpoch + 1
-                                )
-                            }
-                            spotSearchPaginator?.loadNextItems()
+                        setupSpotSearchPaginator(latitude, longitude, query)
+                        _state.update {
+                            it.copy(
+                                spotSearchResults = persistentListOf(),
+                                spotSearchEndReached = false,
+                                spotSearchError = null,
+                                spotSearchResetEpoch = it.spotSearchResetEpoch + 1
+                            )
                         }
+                        spotSearchPaginator?.loadNextItems()
                     }
                 }
             }
@@ -356,7 +380,7 @@ class CreateHangoutViewModel(
             onSuccess = { newSpots, newKey ->
                 _state.update {
                     it.copy(
-                        spotSearchResults = it.spotSearchResults + newSpots.map { newSpot -> newSpot.toSpotUi() },
+                        spotSearchResults = (it.spotSearchResults + newSpots.map { newSpot -> newSpot.toSpotUi() }).toImmutableList(),
                         spotSearchEndReached = newKey == null,
                         spotSearchError = null
                     )
@@ -389,7 +413,7 @@ class CreateHangoutViewModel(
             onSuccess = { favoriteSpots, _ ->
                 _state.update {
                     it.copy(
-                        favoriteSpotSearchResults = it.favoriteSpotSearchResults + favoriteSpots.map { favoriteSpot -> favoriteSpot.toSpotUi() },
+                        favoriteSpotSearchResults = (it.favoriteSpotSearchResults + favoriteSpots.map { favoriteSpot -> favoriteSpot.toSpotUi() }).toImmutableList(),
                         favoriteSpotSearchEndReached = favoriteSpots.isEmpty(),
                         favoriteSpotSearchError = null
                     )
@@ -399,9 +423,16 @@ class CreateHangoutViewModel(
     }
 
     private fun submit() {
-        if (!validateFormInputs() || state.value.isSubmitting) return
+        if (state.value.isSubmitting) return
 
-        if (!state.value.isVotingMode && state.value.selectedSpot == null) return
+        hasAttemptedStepOne = true
+
+        // The clock moves while the form is open, so a time that passed step one can be stale by
+        // now. Its error belongs to a field on step one, so send the user back to where it shows.
+        if (!validateFormInputs()) {
+            _state.update { it.copy(currentStep = 1) }
+            return
+        }
 
         _state.update { it.copy(isSubmitting = true, submitError = null) }
 
@@ -418,8 +449,9 @@ class CreateHangoutViewModel(
             }
 
             val hangoutName = _state.value.hangoutNameTextState.text.toString().trim()
-            val hangoutDescription =
-                _state.value.hangoutDescriptionTextState.text.toString().trim()
+            val hangoutDescription = _state.value.hangoutDescriptionTextState.text.toString()
+                .trim()
+                .takeIf { it.isNotBlank() }
             val hangoutScheduledAt =
                 LocalDateTime(date, time).toInstant(TimeZone.currentSystemDefault())
 
@@ -455,27 +487,14 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun clearAllFormErrors() {
-        _state.update {
-            it.copy(
-                hangoutNameError = null,
-                hangoutDescriptionError = null,
-                hangoutDateError = null,
-                hangoutTimeError = null
-            )
-        }
-    }
-
     private fun validateFormInputs(): Boolean {
-        clearAllFormErrors()
-
         val currentState = state.value
+        val (currentDate, currentTime) = getCurrentDateAndTime()
 
         val hangoutNameState =
             HangoutNameValidator.validate(_state.value.hangoutNameTextState.text.toString())
         val hangoutDescriptionState =
             HangoutDescriptionValidator.validate(_state.value.hangoutDescriptionTextState.text.toString())
-        val (currentDate, currentTime) = getCurrentDateAndTime()
         val hangoutDateState = HangoutDateValidator.validate(
             selectedDate = currentState.hangoutDate,
             today = currentDate
@@ -487,35 +506,12 @@ class CreateHangoutViewModel(
             currentTime = currentTime
         )
 
-        val hangoutNameError = when (hangoutNameState) {
-            HangoutNameValidationState.BLANK -> UiText.Resource(Res.string.error_hangout_name_blank)
-            HangoutNameValidationState.TOO_LONG -> UiText.Resource(Res.string.error_hangout_name_too_long)
-            HangoutNameValidationState.VALID -> null
-        }
-
-        val hangoutDescriptionError = when (hangoutDescriptionState) {
-            HangoutDescriptionValidationState.TOO_LONG -> UiText.Resource(Res.string.error_hangout_description_too_long)
-            HangoutDescriptionValidationState.VALID -> null
-        }
-
-        val hangoutDateError = when (hangoutDateState) {
-            HangoutDateValidationState.MISSING -> UiText.Resource(Res.string.error_hangout_date_missing)
-            HangoutDateValidationState.PAST_DATE -> UiText.Resource(Res.string.error_hangout_date_past)
-            HangoutDateValidationState.VALID -> null
-        }
-
-        val hangoutTimeError = when (hangoutTimeState) {
-            HangoutTimeValidationState.MISSING -> UiText.Resource(Res.string.error_hangout_time_missing)
-            HangoutTimeValidationState.PAST_TIME -> UiText.Resource(Res.string.error_hangout_time_past)
-            HangoutTimeValidationState.VALID -> null
-        }
-
         _state.update {
             it.copy(
-                hangoutNameError = hangoutNameError,
-                hangoutDescriptionError = hangoutDescriptionError,
-                hangoutDateError = hangoutDateError,
-                hangoutTimeError = hangoutTimeError
+                hangoutNameError = hangoutNameState.toUiText(),
+                hangoutDescriptionError = hangoutDescriptionState.toUiText(),
+                hangoutDateError = hangoutDateState.toUiText(),
+                hangoutTimeError = hangoutTimeState.toUiText()
             )
         }
 

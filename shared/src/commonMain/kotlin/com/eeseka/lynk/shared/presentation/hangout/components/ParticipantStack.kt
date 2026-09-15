@@ -27,6 +27,11 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
+import com.eeseka.lynk.shared.presentation.preview.previewUsers
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.detail_online
 import lynk.shared.generated.resources.detail_participants_overflow
@@ -34,11 +39,11 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantStack(
-    users: List<HangoutUserUi>,
-    presentUserIds: Set<String> = emptySet(),
+    users: ImmutableList<HangoutUserUi>,
+    modifier: Modifier = Modifier,
+    presentUserIds: ImmutableSet<String> = persistentSetOf(),
     maxVisible: Int = 5,
-    avatarSize: Dp = 40.dp,
-    modifier: Modifier = Modifier
+    avatarSize: Dp = 40.dp
 ) {
     val overlap = avatarSize / 3
     val visible = users.take(maxVisible)
@@ -82,9 +87,9 @@ fun ParticipantAvatar(
     displayName: String,
     initials: String,
     profilePictureUrl: String?,
+    modifier: Modifier = Modifier,
     isOnline: Boolean = false,
-    size: Dp = 40.dp,
-    modifier: Modifier = Modifier
+    size: Dp = 40.dp
 ) {
     val onlineLabel = stringResource(Res.string.detail_online)
     val description = if (isOnline) "$displayName · $onlineLabel" else displayName
@@ -152,16 +157,8 @@ private fun AvatarBubble(
 private fun ParticipantStackPreview() {
     LynkTheme {
         ParticipantStack(
-            users = List(7) { index ->
-                HangoutUserUi(
-                    userId = "$index",
-                    username = "user$index",
-                    displayName = "User $index",
-                    initials = "U$index",
-                    profilePictureUrl = null
-                )
-            },
-            presentUserIds = setOf("0", "2", "3")
+            users = previewUsers(7),
+            presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2", "user-3")
         )
     }
 }

@@ -5,9 +5,6 @@
     <string name="error_username_too_long">Username cannot exceed 20 characters.</string>
     <string name="error_username_taken">This username is already taken.</string>
 
-    <string name="error_display_name_blank">Display name cannot be empty.</string>
-    <string name="error_display_name_too_long">Display name cannot exceed 50 characters.</string>
-
     <string name="error_username_network_drop">No connection. Check your internet.</string>
     <string name="error_username_rate_limit">Checking too fast! Please wait a moment.</string>
     <string name="error_username_generic_verify">Verification failed. Please try again.</string>
@@ -19,7 +16,7 @@
     <string name="display_name">Display Name</string>
     <string name="display_name_placeholder">e.g. John Doe</string>
     <string name="username">Username</string>
-    <string name="username_placeholder">e.g. johndoe</string>
+    <string name="username_placeholder">e.g. john_doe</string>
 
     <string name="complete_profile">Complete Profile</string>
     <string name="complete_profile_loading">Completing Profile...</string>

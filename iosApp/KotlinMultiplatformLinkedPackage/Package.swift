@@ -13,13 +13,13 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_google_3_0_5")
+    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_google_3_0_6")
   ],
   targets: [
     .target(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
-        .product(name: "io_github_mirzemehdi_kmpauth_google_3_0_5", package: "io_github_mirzemehdi_kmpauth_google_3_0_5")
+        .product(name: "io_github_mirzemehdi_kmpauth_google_3_0_6", package: "io_github_mirzemehdi_kmpauth_google_3_0_6")
       ]
     )
   ]

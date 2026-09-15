@@ -74,11 +74,8 @@ fun ProfileAvatarSection(
                         enabled = enabled,
                         onClick = {
                             haptic(AppHaptic.Selection)
-                            if (onViewImageClick != null && hasImage) {
-                                onViewImageClick()
-                            } else {
-                                onImageClick()
-                            }
+                            if (onViewImageClick != null && hasImage) onViewImageClick()
+                            else onImageClick()
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -107,7 +104,7 @@ fun ProfileAvatarSection(
                             .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        LynkProgressIndicator()
+                        LynkProgressIndicator(color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }

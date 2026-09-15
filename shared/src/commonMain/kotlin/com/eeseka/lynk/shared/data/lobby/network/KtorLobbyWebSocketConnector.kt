@@ -145,7 +145,7 @@ class KtorLobbyWebSocketConnector(
                 .retryWhen { t, attempt ->
                     logger.info("Connection failed on attempt $attempt")
 
-                    val shouldRetry = connectionRetryHandler.shouldRetry(t, attempt)
+                    val shouldRetry = connectionRetryHandler.shouldRetry(t)
 
                     if (shouldRetry) {
                         _connectionState.value = ConnectionState.CONNECTING
@@ -186,10 +186,14 @@ class KtorLobbyWebSocketConnector(
                     when (frame) {
                         is Frame.Text -> {
                             val text = frame.readText()
-                            logger.info("Received raw text frame: $text")
+                            val messageDto = try {
+                                json.decodeFromString<WebSocketMessageDto>(text)
+                            } catch (e: Exception) {
+                                logger.error("Could not read WebSocket frame, skipping it", e)
+                                null
+                            }
 
-                            val messageDto = json.decodeFromString<WebSocketMessageDto>(text)
-                            send(messageDto)
+                            messageDto?.let { send(it) }
                         }
 
                         is Frame.Ping -> {

@@ -1,11 +1,9 @@
 package com.eeseka.lynk.shared.design_system.components.buttons
 
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -20,14 +18,14 @@ fun LynkIconButton(
 ) {
     AdaptiveIconButton(
         onClick = onClick,
-        modifier = modifier.size(48.dp),
+        modifier = modifier,
         enabled = enabled
     ) {
         content()
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkIconButtonPreview() {
     LynkTheme {
@@ -42,7 +40,7 @@ private fun LynkIconButtonPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun LynkDisabledIconButtonPreview() {
     LynkTheme {

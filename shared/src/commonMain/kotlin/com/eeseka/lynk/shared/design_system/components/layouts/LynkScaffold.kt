@@ -4,9 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHostState
@@ -28,6 +32,7 @@ fun LynkScaffold(
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = MaterialTheme.colorScheme.onBackground,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets.union(WindowInsets.ime),
+    applyHorizontalInsets: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     AdaptiveScaffold(
@@ -38,7 +43,19 @@ fun LynkScaffold(
         contentColor = contentColor,
         contentWindowInsets = contentWindowInsets,
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (applyHorizontalInsets) {
+                        Modifier.windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+        ) {
 
             content(paddingValues)
 

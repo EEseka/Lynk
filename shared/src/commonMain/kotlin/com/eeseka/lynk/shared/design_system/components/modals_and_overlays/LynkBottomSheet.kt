@@ -17,7 +17,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
@@ -63,31 +63,10 @@ fun LynkBottomSheet(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkBottomSheetPreview() {
     LynkTheme {
-        LynkBottomSheet(onDismissRequest = {}) {
-            LynkText(
-                text = "Hello World",
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(4.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            LynkText(
-                text = "This is a Bottom Sheet",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
-@Composable
-private fun LynkBottomSheetPreviewDark() {
-    LynkTheme(true) {
         LynkBottomSheet(onDismissRequest = {}) {
             LynkText(
                 text = "Hello World",

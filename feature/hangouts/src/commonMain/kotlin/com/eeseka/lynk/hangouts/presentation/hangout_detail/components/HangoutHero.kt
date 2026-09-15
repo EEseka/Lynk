@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,12 +22,12 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import lynk.feature.hangouts.generated.resources.Res
@@ -40,7 +41,8 @@ fun HangoutHero(
     status: HangoutStatus,
     scheduledDate: String,
     isHost: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -105,7 +107,8 @@ fun HangoutHero(
                     LynkText(
                         text = vibe.getTitle(),
                         style = MaterialTheme.typography.titleMedium,
-                        color = scheme.onBackground
+                        color = scheme.onBackground,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     StatusChip(status = status)
                 }
@@ -127,38 +130,15 @@ fun HangoutHero(
                     )
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun HangoutHeroPreview(
-    name: String = "Rooftop Party in Lekki",
-    vibe: HangoutVibe = HangoutVibe.PARTY,
-    status: HangoutStatus = HangoutStatus.SCHEDULED,
-    isHost: Boolean = true
-) {
-    LynkTheme {
-        HangoutHero(
-            name = name,
-            vibe = vibe,
-            status = status,
-            scheduledDate = "Sat, 12 Oct · 8:00 PM",
-            isHost = isHost,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        )
+            actions()
+        }
     }
 }
 
 @PreviewLightDark
 @Composable
 private fun HangoutHeroHostPreview() = HangoutHeroPreview()
-
-@PreviewLightDark
-@Composable
-private fun HangoutHeroAttendeePreview() = HangoutHeroPreview(isHost = false)
 
 @PreviewLightDark
 @Composable
@@ -173,3 +153,23 @@ private fun HangoutHeroLongNamePreview() = HangoutHeroPreview(
     name = "Sunday Afternoon Rooftop Listening Party and Small Chops Tasting",
     status = HangoutStatus.ONGOING
 )
+
+@Composable
+private fun HangoutHeroPreview(
+    name: String = "Rooftop Party in Lekki",
+    vibe: HangoutVibe = HangoutVibe.PARTY,
+    status: HangoutStatus = HangoutStatus.SCHEDULED
+) {
+    LynkTheme {
+        HangoutHero(
+            name = name,
+            vibe = vibe,
+            status = status,
+            scheduledDate = "Mon 12 Oct · 8:00 PM",
+            isHost = true,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        )
+    }
+}

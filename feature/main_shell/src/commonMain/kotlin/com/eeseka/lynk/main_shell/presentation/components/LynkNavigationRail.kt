@@ -4,7 +4,6 @@ import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
@@ -15,9 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.main_shell.domain.LynkNavigationItem
+import com.eeseka.lynk.main_shell.presentation.mappers.getIcon
+import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
+import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
@@ -28,7 +29,7 @@ import kotlinx.coroutines.flow.emptyFlow
 fun LynkNavigationRail(
     selectedItem: LynkNavigationItem,
     onItemSelected: (LynkNavigationItem) -> Unit,
-    hasUnseenNotifications: Boolean = false,
+    hasUnseenNotifications: Boolean,
     modifier: Modifier = Modifier
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -55,18 +56,15 @@ fun LynkNavigationRail(
                     onClick = { onItemSelected(item) },
                     icon = {
                         NavigationItemIcon(
-                            icon = item.icon,
-                            contentDescription = item.title.asString(),
-                            hasUnread = hasUnseenNotifications &&
-                                    item == LynkNavigationItem.HANGOUTS
+                            icon = item.getIcon(),
+                            hasUnread = hasUnseenNotifications && item == LynkNavigationItem.HANGOUTS
                         )
                     },
                     label = {
                         LynkText(
-                            item.title.asString(),
+                            item.toTitle().asString(),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
+                            overflow = TextOverflow.Ellipsis
                         )
                     },
                     colors = colors,
@@ -91,24 +89,26 @@ private class NoRippleInteractionSource : MutableInteractionSource {
     override fun tryEmit(interaction: Interaction) = true
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LynkNavigationRailPreview() {
     LynkTheme {
         LynkNavigationRail(
             selectedItem = LynkNavigationItem.PROFILE,
-            onItemSelected = {}
+            onItemSelected = {},
+            hasUnseenNotifications = false
         )
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
-private fun LynkNavigationRailPreviewDark() {
-    LynkTheme(true) {
+private fun LynkNavigationRailUnreadPreview() {
+    LynkTheme {
         LynkNavigationRail(
             selectedItem = LynkNavigationItem.PROFILE,
-            onItemSelected = {}
+            onItemSelected = {},
+            hasUnseenNotifications = true
         )
     }
 }

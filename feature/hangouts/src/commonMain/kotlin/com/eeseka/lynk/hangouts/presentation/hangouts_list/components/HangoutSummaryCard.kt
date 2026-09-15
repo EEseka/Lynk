@@ -23,17 +23,16 @@ import com.composables.icons.lucide.Calendar
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Users
-import com.eeseka.lynk.shared.presentation.util.toHangoutDisplayDate
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.presentation.hangout.components.StatusChip
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
-import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
+import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.host_badge_description
 import lynk.feature.hangouts.generated.resources.participants_attended_format
@@ -41,11 +40,11 @@ import lynk.feature.hangouts.generated.resources.participants_attended_max_forma
 import lynk.feature.hangouts.generated.resources.participants_format
 import lynk.feature.hangouts.generated.resources.participants_max_format
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
 
 @Composable
 fun HangoutSummaryCard(
     hangout: HangoutSummaryUi,
+    scheduledDate: String,
     isSelected: Boolean,
     isHost: Boolean,
     onClick: () -> Unit,
@@ -53,22 +52,10 @@ fun HangoutSummaryCard(
 ) {
     val scheme = MaterialTheme.colorScheme
 
-    val (statusBackground, statusForeground) = when (hangout.status) {
-        HangoutStatus.ONGOING -> scheme.extended.success to scheme.extended.onSuccess
-        HangoutStatus.SCHEDULED -> scheme.secondary to scheme.onSecondary
-        HangoutStatus.VOTING -> scheme.tertiary to scheme.onTertiary
-        HangoutStatus.COMPLETED -> scheme.surfaceVariant to scheme.onSurfaceVariant
-        HangoutStatus.CANCELLED -> scheme.error to scheme.onError
-    }
-
     val participantsText = when (hangout.status) {
         HangoutStatus.COMPLETED -> {
             hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(
-                    Res.string.participants_attended_max_format,
-                    hangout.participantCount,
-                    maxAttendees
-                )
+                stringResource(Res.string.participants_attended_max_format, hangout.participantCount, maxAttendees)
             } ?: stringResource(Res.string.participants_attended_format, hangout.participantCount)
         }
 
@@ -76,11 +63,7 @@ fun HangoutSummaryCard(
 
         else -> {
             hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(
-                    Res.string.participants_max_format,
-                    hangout.participantCount,
-                    maxAttendees
-                )
+                stringResource(Res.string.participants_max_format, hangout.participantCount, maxAttendees)
             } ?: stringResource(Res.string.participants_format, hangout.participantCount)
         }
     }
@@ -114,13 +97,15 @@ fun HangoutSummaryCard(
                 }
 
                 if (isHost) {
+                    val cardColor = if (isSelected) scheme.surface else scheme.surfaceContainerHighest
+
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .size(20.dp)
                             .clip(CircleShape)
                             .background(scheme.extended.gold)
-                            .border(2.dp, scheme.surface, CircleShape),
+                            .border(2.dp, cardColor, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -149,18 +134,7 @@ fun HangoutSummaryCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(statusBackground)
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        LynkText(
-                            text = hangout.status.getTitle(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = statusForeground
-                        )
-                    }
+                    StatusChip(status = hangout.status)
                 }
 
                 Row(
@@ -174,7 +148,7 @@ fun HangoutSummaryCard(
                         modifier = Modifier.size(12.dp)
                     )
                     LynkText(
-                        text = hangout.scheduledAt.toHangoutDisplayDate(),
+                        text = scheduledDate,
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant
                     )
@@ -207,46 +181,21 @@ fun HangoutSummaryCard(
 @Composable
 private fun HangoutSummaryCardPreview() {
     LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "1",
-                hostId = "user1",
-                name = "Gaming Night at Ikeja Arcade",
-                vibe = HangoutVibe.GAMING,
-                status = HangoutStatus.VOTING,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = 10,
-                participantCount = 4,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            isSelected = false,
-            isHost = true,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun HangoutSummaryCardSelectedPreview() {
-    LynkTheme {
-        HangoutSummaryCard(
-            hangout = HangoutSummaryUi(
-                id = "2",
-                hostId = "user1",
-                name = "Friday Drinks",
-                vibe = HangoutVibe.DRINKS,
-                status = HangoutStatus.SCHEDULED,
-                scheduledAt = Instant.fromEpochSeconds(1_750_000_000),
-                maxAttendees = null,
-                participantCount = 7,
-                createdAt = Instant.fromEpochSeconds(1_749_000_000)
-            ),
-            isSelected = true,
-            isHost = false,
-            onClick = {},
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            previewHangoutSummaries.forEachIndexed { index, hangout ->
+                HangoutSummaryCard(
+                    hangout = hangout,
+                    scheduledDate = "Mon 15 Jun · 8:00 PM",
+                    isSelected = index == 1,
+                    isHost = index == 0,
+                    onClick = {}
+                )
+            }
+        }
     }
 }

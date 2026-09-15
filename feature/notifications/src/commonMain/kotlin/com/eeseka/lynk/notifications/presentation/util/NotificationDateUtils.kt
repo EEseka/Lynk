@@ -1,13 +1,7 @@
 package com.eeseka.lynk.notifications.presentation.util
 
 import androidx.compose.runtime.Composable
-import com.eeseka.lynk.shared.presentation.util.yearSuffixIfNotCurrent
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
-import kotlinx.datetime.format.MonthNames
-import kotlinx.datetime.format.char
-import kotlinx.datetime.toLocalDateTime
+import com.eeseka.lynk.shared.presentation.util.toDateLabel
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.time_days_ago
 import lynk.feature.notifications.generated.resources.time_hours_ago
@@ -30,17 +24,6 @@ fun Instant.toNotificationTimeLabel(): String {
         minutes < 60 -> stringResource(Res.string.time_minutes_ago, minutes)
         hours < 24 -> stringResource(Res.string.time_hours_ago, hours)
         days < 7 -> stringResource(Res.string.time_days_ago, days)
-        else -> toShortDate()
+        else -> toDateLabel()
     }
-}
-
-private fun Instant.toShortDate(): String {
-    val date = toLocalDateTime(TimeZone.currentSystemDefault()).date
-    return date.format(
-        LocalDate.Format {
-            day()
-            char(' ')
-            monthName(MonthNames.ENGLISH_ABBREVIATED)
-        }
-    ) + date.yearSuffixIfNotCurrent()
 }

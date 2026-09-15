@@ -5,6 +5,8 @@
     <string name="mark_all_read">Mark all as read</string>
     <string name="unread">Unread</string>
 
+    <string name="notifications_load_error_title">Couldn't load notifications</string>
+
     <string name="notifications_empty_title">Nothing yet</string>
     <string name="notifications_empty_message">Invites, spot picks and payment updates for your hangouts will show up here.</string>
 
@@ -59,4 +61,5 @@
     <string name="invite_preview_spot_pending">Spot still being voted on</string>
     <string name="invite_preview_attendees">Already going</string>
     <string name="invite_preview_withdrawn">That invite was withdrawn</string>
+    <string name="invite_preview_cannot_join">You can't join this hangout right now</string>
 </resources>

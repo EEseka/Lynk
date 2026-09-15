@@ -89,9 +89,7 @@ fun GuestProfileSection(
             style = LynkButtonStyle.PRIMARY,
             isLoading = isDeletingAccount,
             loadingText = "",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

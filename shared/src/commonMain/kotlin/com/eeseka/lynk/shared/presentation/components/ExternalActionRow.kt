@@ -61,7 +61,7 @@ fun ExternalActionRow(
 
 @PreviewLightDark
 @Composable
-fun ExternalActionRowPreview() {
+private fun ExternalActionRowPreview() {
     LynkTheme {
         ExternalActionRow(
             text = "Visit Website",

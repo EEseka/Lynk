@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
@@ -47,7 +48,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -306,83 +306,35 @@ private fun LynkFlashPill(
     }
 }
 
-@Preview
-@Composable
-private fun LynkSuccessSnackbarPreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Something occurred successfully!",
-            type = LynkFlashType.Success
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkErrorSnackbarPreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Something went wrong!",
-            type = LynkFlashType.Error
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkWarningSnackbarPreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Something might go wrong!",
-            type = LynkFlashType.Warning
-        )
-    }
-}
-
 @PreviewLightDark
 @Composable
-private fun LynkInfoSnackbarPreview() {
+private fun LynkSnackbarPreview() {
     LynkTheme {
-        LynkFlashPill(
-            message = "Here is some information.",
-            type = LynkFlashType.Info
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkSnackbarWithActionPreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Could not send your RSVP.",
-            type = LynkFlashType.Error,
-            actionLabel = "Retry"
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkSnackbarDismissiblePreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Uploading your photo in the background.",
-            type = LynkFlashType.Info,
-            showDismissAction = true
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun LynkSnackbarActionAndDismissPreview() {
-    LynkTheme {
-        LynkFlashPill(
-            message = "Your changes could not be saved to the server.",
-            type = LynkFlashType.Warning,
-            actionLabel = "Retry",
-            showDismissAction = true
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            LynkFlashType.entries.forEach { type ->
+                LynkFlashPill(message = "Something happened.", type = type)
+            }
+            LynkFlashPill(
+                message = "Could not send your RSVP.",
+                type = LynkFlashType.Error,
+                actionLabel = "Retry"
+            )
+            LynkFlashPill(
+                message = "Uploading your photo in the background.",
+                type = LynkFlashType.Info,
+                showDismissAction = true
+            )
+            LynkFlashPill(
+                message = "Your changes could not be saved to the server.",
+                type = LynkFlashType.Warning,
+                actionLabel = "Retry",
+                showDismissAction = true
+            )
+        }
     }
 }
