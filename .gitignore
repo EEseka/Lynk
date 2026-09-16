@@ -21,6 +21,10 @@ node_modules/
 # Swift Package Manager caches, written when the iOS tests run
 .swiftpm-locks/
 
+# Release signing keys, kept outside git and backed up offline
+*.jks
+*.keystore
+
 # Firebase config
 androidApp/google-services.json
 iosApp/iosApp/GoogleService-Info.plist

@@ -41,10 +41,6 @@ val googlePlacesIosApiKey: String = localProperties.getProperty("GOOGLE_PLACES_I
     ?: System.getenv("GOOGLE_PLACES_IOS_API_KEY")
     ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_IOS_API_KEY not found in local.properties or environment variables!")
 
-val googlePlacesAndroidSHA1: String = localProperties.getProperty("GOOGLE_PLACES_ANDROID_SHA1")
-    ?: System.getenv("GOOGLE_PLACES_ANDROID_SHA1")
-    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_ANDROID_SHA1 not found in local.properties or environment variables!")
-
 val isDebug: String = localProperties.getProperty("IS_DEBUG")
     ?: System.getenv("IS_DEBUG")
     ?: "false"
@@ -61,7 +57,6 @@ buildkonfig {
         buildConfigField(STRING, "MAP_TILER_API_KEY", mapTilerApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
-        buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_SHA1", googlePlacesAndroidSHA1)
         buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
     }
 }

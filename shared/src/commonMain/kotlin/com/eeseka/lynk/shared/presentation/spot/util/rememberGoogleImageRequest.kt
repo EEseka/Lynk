@@ -15,7 +15,7 @@ fun rememberGoogleImageRequest(url: String): ImageRequest? {
         if (url.isBlank()) null
         else {
             val headers = NetworkHeaders.Builder().apply {
-                getGoogleApiHeaders().forEach { (key, value) -> set(key, value) }
+                getGoogleApiHeaders(context).forEach { (key, value) -> set(key, value) }
             }.build()
 
             ImageRequest.Builder(context)
