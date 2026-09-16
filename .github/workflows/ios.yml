@@ -22,7 +22,6 @@ jobs:
       MAP_TILER_API_KEY: ${{ secrets.MAP_TILER_API_KEY }}
       GOOGLE_PLACES_ANDROID_API_KEY: ${{ secrets.GOOGLE_PLACES_ANDROID_API_KEY }}
       GOOGLE_PLACES_IOS_API_KEY: ${{ secrets.GOOGLE_PLACES_IOS_API_KEY }}
-      GOOGLE_PLACES_ANDROID_SHA1: ${{ secrets.GOOGLE_PLACES_ANDROID_SHA1 }}
 
     steps:
       - name: Checkout Repository

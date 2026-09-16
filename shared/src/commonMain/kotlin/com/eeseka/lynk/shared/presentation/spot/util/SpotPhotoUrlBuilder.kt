@@ -1,5 +1,7 @@
 package com.eeseka.lynk.shared.presentation.spot.util
 
+import coil3.PlatformContext
+
 object SpotPhotoUrlBuilder {
     private const val BASE_URL = "https://places.googleapis.com/v1"
     private const val MAX_DIMENSION = 1200
@@ -26,4 +28,4 @@ object SpotPhotoUrlBuilder {
 
 expect fun getGooglePlacesApiKey(): String
 
-expect fun getGoogleApiHeaders(): Map<String, String>
+expect fun getGoogleApiHeaders(context: PlatformContext): Map<String, String>
