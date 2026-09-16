@@ -2,7 +2,7 @@ package com.eeseka.lynk.shared.data.lobby.network
 
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.shared.data.lobby.dto.WebSocketMessageDto
-import com.eeseka.lynk.shared.data.lobby.lifecycle.AppLifecycleObserver
+import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import com.eeseka.lynk.shared.data.networking.UrlConstants
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState

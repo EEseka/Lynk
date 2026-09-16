@@ -1,5 +1,6 @@
 package com.eeseka.lynk.shared.data.lobby.lifecycle
 
+import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -14,8 +15,8 @@ import platform.UIKit.UIApplicationState
 import platform.UIKit.UIApplicationWillEnterForegroundNotification
 import platform.UIKit.UIApplicationWillResignActiveNotification
 
-actual class AppLifecycleObserver {
-    actual val isInForeground: Flow<Boolean> = callbackFlow {
+actual class NativeAppLifecycleObserver : AppLifecycleObserver {
+    actual override val isInForeground: Flow<Boolean> = callbackFlow {
         val currentState = UIApplication.sharedApplication.applicationState
         val isCurrentlyInForeground = when (currentState) {
             UIApplicationState.UIApplicationStateActive -> true

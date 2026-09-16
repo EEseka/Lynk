@@ -1,6 +1,6 @@
 package com.eeseka.lynk.shared.data.notification
 
-import com.eeseka.lynk.shared.data.lobby.lifecycle.AppLifecycleObserver
+import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.notification.NotificationService
