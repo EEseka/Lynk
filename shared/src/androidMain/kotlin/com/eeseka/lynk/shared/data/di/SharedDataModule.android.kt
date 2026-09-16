@@ -2,7 +2,8 @@ package com.eeseka.lynk.shared.data.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.eeseka.lynk.shared.data.lobby.lifecycle.AppLifecycleObserver
+import com.eeseka.lynk.shared.data.lobby.lifecycle.NativeAppLifecycleObserver
+import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import com.eeseka.lynk.shared.data.lobby.network.ConnectionErrorHandler
 import com.eeseka.lynk.shared.data.lobby.network.ConnectivityObserver
 import com.eeseka.lynk.shared.data.media.ImageCompressor
@@ -22,7 +23,7 @@ actual val platformSharedDataModule = module {
         createDataStore(androidContext())
     }
     singleOf(::ImageCompressor)
-    singleOf(::AppLifecycleObserver)
+    singleOf(::NativeAppLifecycleObserver) bind AppLifecycleObserver::class
     singleOf(::ConnectivityObserver)
     singleOf(::ConnectionErrorHandler)
     singleOf(::FirebasePushNotificationService) bind PushNotificationService::class

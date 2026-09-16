@@ -12,6 +12,8 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
         namespace = "com.eeseka.lynk.discover"
         experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+
+        withHostTest {}
     }
 
     listOf(
@@ -58,11 +60,7 @@ kotlin {
         }
 
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.turbine)
-            implementation(libs.assertk)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.ui.test)
+            implementation(projects.testing)
         }
     }
 }

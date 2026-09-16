@@ -1,0 +1,118 @@
+package com.eeseka.lynk.main_shell.presentation
+
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
+import com.eeseka.lynk.testing.collectInBackground
+import com.eeseka.lynk.testing.data.FakeUnreadNotificationCounter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainShellViewModelTest {
+
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    private lateinit var unreadNotificationCounter: FakeUnreadNotificationCounter
+    private lateinit var viewModel: MainShellViewModel
+
+    @BeforeTest
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+
+        unreadNotificationCounter = FakeUnreadNotificationCounter()
+        viewModel = MainShellViewModel(unreadNotificationCounter)
+    }
+
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `unread notifications show a count and light the dot`() = runTest {
+        collectInBackground(viewModel.state)
+
+        unreadNotificationCounter.count.value = 3
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.unreadNotificationCount).isEqualTo(3)
+        assertThat(viewModel.state.value.hasUnseenNotifications).isTrue()
+    }
+
+    @Test
+    fun `opening the hangouts tab puts the dot out and asks for a fresh count`() = runTest {
+        collectInBackground(viewModel.state)
+        unreadNotificationCounter.count.value = 3
+        advanceUntilIdle()
+
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = true))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.hasUnseenNotifications).isFalse()
+        assertThat(viewModel.state.value.unreadNotificationCount).isEqualTo(3)
+        assertThat(unreadNotificationCounter.refreshCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `notifications arriving while the tab is open do not light the dot`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = true))
+        advanceUntilIdle()
+
+        unreadNotificationCounter.count.value = 4
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.unreadNotificationCount).isEqualTo(4)
+        assertThat(viewModel.state.value.hasUnseenNotifications).isFalse()
+    }
+
+    @Test
+    fun `notifications arriving after leaving the tab light the dot`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = true))
+        unreadNotificationCounter.count.value = 2
+        advanceUntilIdle()
+
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = false))
+        unreadNotificationCounter.count.value = 5
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.hasUnseenNotifications).isTrue()
+    }
+
+    @Test
+    fun `a count that only drops does not light the dot`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = true))
+        unreadNotificationCounter.count.value = 5
+        advanceUntilIdle()
+        viewModel.onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = false))
+
+        unreadNotificationCounter.count.value = 2
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.unreadNotificationCount).isEqualTo(2)
+        assertThat(viewModel.state.value.hasUnseenNotifications).isFalse()
+    }
+
+    @Test
+    fun `the hangout detail pane remembers it is full screen`() = runTest {
+        collectInBackground(viewModel.state)
+
+        viewModel.onAction(MainShellAction.OnHangoutDetailPaneFullScreenChanged(isFullScreen = true))
+        assertThat(viewModel.state.value.isHangoutDetailPaneFullScreen).isTrue()
+
+        viewModel.onAction(MainShellAction.OnHangoutDetailPaneFullScreenChanged(isFullScreen = false))
+        assertThat(viewModel.state.value.isHangoutDetailPaneFullScreen).isFalse()
+    }
+}

@@ -1,6 +1,5 @@
 package com.eeseka.lynk.profile_setup.presentation
 
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.isEqualTo
@@ -8,12 +7,14 @@ import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
-import com.eeseka.lynk.profile_setup.data.FakeImageCompressionService
-import com.eeseka.lynk.profile_setup.data.FakeSessionStorage
-import com.eeseka.lynk.profile_setup.data.FakeUserService
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.testing.data.FakeImageCompressionService
+import com.eeseka.lynk.testing.data.FakeSessionStorage
+import com.eeseka.lynk.testing.collectInBackground
+import com.eeseka.lynk.testing.data.FakeUserService
+import com.eeseka.lynk.testing.typeText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -50,23 +51,6 @@ class ProfileSetupViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private suspend fun createViewModel(): ProfileSetupViewModel {
-        sessionStorage.set(
-            AuthInfo(
-                accessToken = "token",
-                refreshToken = "refresh",
-                user = User.ProfileIncomplete(
-                    id = "1",
-                    email = "test@test.com",
-                    provider = AuthProvider.GOOGLE,
-                    displayName = "Test",
-                    profilePictureUrl = null
-                )
-            )
-        )
-        return ProfileSetupViewModel(userService, sessionStorage, imageCompressor)
-    }
-
     @Test
     fun `picking image updates state with local URI and sets compressing state`() = runTest {
         val viewModel = createViewModel()
@@ -91,7 +75,7 @@ class ProfileSetupViewModelTest {
             val initialState = awaitItem()
             assertThat(initialState.isUsernameAvailable).isNull()
 
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
+            viewModel.state.value.usernameTextState.typeText("valid_user")
 
             // Fast-forward virtual time to bypass the 500ms debounce
             advanceTimeBy(501.milliseconds)
@@ -110,8 +94,8 @@ class ProfileSetupViewModelTest {
         userService.isAvailable = false
 
         viewModel.state.test {
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("taken_user")
+            viewModel.state.value.displayNameTextState.typeText("Valid Name")
+            viewModel.state.value.usernameTextState.typeText("taken_user")
 
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
@@ -131,8 +115,8 @@ class ProfileSetupViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.state.test {
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("   ")
+            viewModel.state.value.usernameTextState.typeText("valid_user")
+            viewModel.state.value.displayNameTextState.typeText("   ")
 
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
@@ -149,17 +133,18 @@ class ProfileSetupViewModelTest {
     @Test
     fun `image upload failure aborts submission and emits error`() = runTest {
         val viewModel = createViewModel()
-        userService.shouldReturnError = true
 
         viewModel.state.test {
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
+            viewModel.state.value.usernameTextState.typeText("valid_user")
+            viewModel.state.value.displayNameTextState.typeText("Valid Name")
 
             viewModel.onAction(ProfileSetupAction.OnImagePicked("local/path.jpg", "image/jpeg"))
 
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
 
+            // Fail only after the username check has passed, so it is the upload that fails
+            userService.shouldReturnError = true
             viewModel.onAction(ProfileSetupAction.OnSubmitClick)
             advanceUntilIdle()
 
@@ -173,10 +158,11 @@ class ProfileSetupViewModelTest {
     fun `successful profile submit emits Success event`() = runTest {
         val viewModel = createViewModel()
         userService.isAvailable = true
+        collectInBackground(viewModel.state)
 
         viewModel.events.test {
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_username")
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
+            viewModel.state.value.usernameTextState.typeText("valid_username")
+            viewModel.state.value.displayNameTextState.typeText("Valid Name")
 
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
@@ -238,8 +224,8 @@ class ProfileSetupViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.state.test {
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_user")
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
+            viewModel.state.value.usernameTextState.typeText("valid_user")
+            viewModel.state.value.displayNameTextState.typeText("Valid Name")
             viewModel.onAction(ProfileSetupAction.OnImagePicked("local/path.jpg", "image/jpeg"))
 
             advanceTimeBy(501.milliseconds)
@@ -253,6 +239,8 @@ class ProfileSetupViewModelTest {
             val finalState = expectMostRecentItem()
             assertThat(finalState.isSubmitting).isFalse()
             assertThat(finalState.imageError).isNotNull()
+            // The profile must not be created behind the error
+            assertThat(userService.currentUser.username).isEqualTo("tester")
         }
     }
 
@@ -260,10 +248,11 @@ class ProfileSetupViewModelTest {
     fun `network error during updateProfile emits Error event`() = runTest {
         val viewModel = createViewModel()
         userService.isAvailable = true
+        collectInBackground(viewModel.state)
 
         viewModel.events.test {
-            viewModel.state.value.usernameTextState.setTextAndPlaceCursorAtEnd("valid_username")
-            viewModel.state.value.displayNameTextState.setTextAndPlaceCursorAtEnd("Valid Name")
+            viewModel.state.value.usernameTextState.typeText("valid_username")
+            viewModel.state.value.displayNameTextState.typeText("Valid Name")
 
             advanceTimeBy(501.milliseconds)
             advanceUntilIdle()
@@ -274,5 +263,22 @@ class ProfileSetupViewModelTest {
             val event = awaitItem()
             assertThat(event).isInstanceOf(ProfileSetupEvent.Error::class)
         }
+    }
+
+    private suspend fun createViewModel(): ProfileSetupViewModel {
+        sessionStorage.set(
+            AuthInfo(
+                accessToken = "token",
+                refreshToken = "refresh",
+                user = User.ProfileIncomplete(
+                    id = "1",
+                    email = "test@test.com",
+                    provider = AuthProvider.GOOGLE,
+                    displayName = "Test",
+                    profilePictureUrl = null
+                )
+            )
+        )
+        return ProfileSetupViewModel(userService, sessionStorage, imageCompressor)
     }
 }

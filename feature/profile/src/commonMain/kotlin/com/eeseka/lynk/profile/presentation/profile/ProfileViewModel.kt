@@ -56,8 +56,8 @@ class ProfileViewModel(
 
     private var hasLoadedInitialData = false
 
-    private var originalDisplayName: String = ""
-    private var originalPhotoUrl: String? = null
+    // What the form is compared against. Saving replaces it, so a saved form counts as clean again.
+    private val savedProfile = MutableStateFlow(SavedProfile())
 
     private var compressedImageUrl: String? = null
 
@@ -100,9 +100,10 @@ class ProfileViewModel(
 
     private val isFormDirtyFlow = combine(
         displayNameFlow,
-        currentPhotoFlow
-    ) { displayName, currentPhoto ->
-        displayName != originalDisplayName || currentPhoto != originalPhotoUrl
+        currentPhotoFlow,
+        savedProfile
+    ) { displayName, currentPhoto, saved ->
+        displayName != saved.displayName || currentPhoto != saved.photoUrl
     }.distinctUntilChanged()
 
     private val isBusyFlow = state.map {
@@ -209,14 +210,14 @@ class ProfileViewModel(
         viewModelScope.launch {
             val displayName = _state.value.displayNameTextState.text.toString().trim()
 
-            val uploadedUrl = uploadLocalImageIfPresent()
+            val upload = uploadLocalImageIfPresent()
 
-            if (state.value.imageError != null) {
+            if (upload is ImageUpload.Failed) {
                 _state.update { it.copy(isSaving = false) }
                 return@launch
             }
 
-            val finalPhotoUrl = uploadedUrl ?: state.value.profilePictureUrl
+            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: state.value.profilePictureUrl
 
             userService.updateProfile(displayName = displayName, profilePhotoUrl = finalPhotoUrl)
                 .onSuccess { updatedUser ->
@@ -225,8 +226,7 @@ class ProfileViewModel(
                         sessionStorage.set(currentAuth.copy(user = updatedUser))
                     }
 
-                    originalDisplayName = displayName
-                    originalPhotoUrl = finalPhotoUrl
+                    savedProfile.value = SavedProfile(displayName = displayName, photoUrl = finalPhotoUrl)
                     compressedImageUrl = null
 
                     _state.update {
@@ -247,11 +247,11 @@ class ProfileViewModel(
         }
     }
 
-    private suspend fun uploadLocalImageIfPresent(): String? {
+    private suspend fun uploadLocalImageIfPresent(): ImageUpload {
         val compressedUri = compressedImageUrl ?: state.value.localPhotoUri
         val mimeType = state.value.localPhotoMimeType
 
-        if (compressedUri == null || mimeType == null) return null
+        if (compressedUri == null || mimeType == null) return ImageUpload.None
 
         _state.update { it.copy(isUploadingImage = true) }
 
@@ -263,10 +263,10 @@ class ProfileViewModel(
                     imageError = UiText.Resource(Res.string.error_image_read_failure)
                 )
             }
-            return null
+            return ImageUpload.Failed
         }
 
-        var publicUrl: String? = null
+        var upload: ImageUpload = ImageUpload.Failed
 
         userService.getProfilePictureUploadUrl(mimeType)
             .onSuccess { uploadUrls ->
@@ -276,7 +276,7 @@ class ProfileViewModel(
                     imageBytes = imageBytes
                 )
                     .onSuccess {
-                        publicUrl = uploadUrls.publicUrl
+                        upload = ImageUpload.Uploaded(uploadUrls.publicUrl)
                         _state.update { it.copy(isUploadingImage = false) }
                     }
                     .onFailure { error ->
@@ -291,7 +291,7 @@ class ProfileViewModel(
                 }
             }
 
-        return publicUrl
+        return upload
     }
 
     private fun selectTheme(theme: AppTheme) {
@@ -383,8 +383,7 @@ class ProfileViewModel(
                 }
 
                 val typedName = _state.value.displayNameTextState.text.toString()
-                val hasUnsavedEdits = state.value.localPhotoUri != null ||
-                        typedName != originalDisplayName
+                val hasUnsavedEdits = state.value.localPhotoUri != null || typedName != savedProfile.value.displayName
 
                 if (!hasUnsavedEdits) {
                     applyUser(freshUser)
@@ -398,8 +397,10 @@ class ProfileViewModel(
             is User.Guest -> _state.update { it.copy(isGuest = true, userId = user.id) }
 
             is User.Authenticated -> {
-                originalDisplayName = user.displayName
-                originalPhotoUrl = user.profilePictureUrl
+                savedProfile.value = SavedProfile(
+                    displayName = user.displayName,
+                    photoUrl = user.profilePictureUrl
+                )
 
                 _state.update {
                     it.copy(
@@ -414,8 +415,10 @@ class ProfileViewModel(
             }
 
             is User.ProfileIncomplete -> {
-                originalDisplayName = user.displayName.orEmpty()
-                originalPhotoUrl = user.profilePictureUrl
+                savedProfile.value = SavedProfile(
+                    displayName = user.displayName.orEmpty(),
+                    photoUrl = user.profilePictureUrl
+                )
 
                 _state.update {
                     it.copy(
@@ -463,5 +466,16 @@ class ProfileViewModel(
 
     private fun clearAllFormErrors() {
         _state.update { it.copy(displayNameError = null, imageError = null) }
+    }
+
+    private data class SavedProfile(
+        val displayName: String = "",
+        val photoUrl: String? = null
+    )
+
+    private sealed interface ImageUpload {
+        data object None : ImageUpload
+        data class Uploaded(val url: String) : ImageUpload
+        data object Failed : ImageUpload
     }
 }

@@ -4,10 +4,11 @@ import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
-import com.eeseka.lynk.auth.data.FakeAuthService
-import com.eeseka.lynk.auth.data.FakeSessionStorage
 import com.eeseka.lynk.shared.domain.util.DataError
+import com.eeseka.lynk.testing.data.FakeAuthService
+import com.eeseka.lynk.testing.data.FakeSessionStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -100,7 +101,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `empty Google token resets loading state without calling service`() = runTest {
+    fun `empty Google token still clears the loading state`() = runTest {
         viewModel.state.test {
             skipItems(1)
             viewModel.onAction(AuthAction.OnGoogleSignInClick)
@@ -108,6 +109,28 @@ class AuthViewModelTest {
 
             viewModel.onAction(AuthAction.OnGoogleTokenReceived(""))
             assertThat(awaitItem().isGoogleSigningIn).isFalse()
+        }
+    }
+
+    @Test
+    fun `backing out of Google sign in clears the loading state without an error`() = runTest {
+        viewModel.events.test {
+            viewModel.onAction(AuthAction.OnGoogleSignInClick)
+            viewModel.onAction(AuthAction.OnGoogleSignInCancelled)
+
+            assertThat(viewModel.state.value.isGoogleSigningIn).isFalse()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `a Google sign in that fails on the phone shows an error`() = runTest {
+        viewModel.events.test {
+            viewModel.onAction(AuthAction.OnGoogleSignInClick)
+            viewModel.onAction(AuthAction.OnGoogleSignInFailed)
+
+            assertThat(awaitItem()).isInstanceOf(AuthEvent.Error::class)
+            assertThat(viewModel.state.value.isGoogleSigningIn).isFalse()
         }
     }
 
