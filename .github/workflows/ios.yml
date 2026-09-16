@@ -57,12 +57,12 @@ jobs:
       - name: Run Unit Tests on the iOS Simulator
         run: ./gradlew iosSimulatorArm64Test
 
-      # Unsigned because signing needs an Apple Developer account. Built by target because the
-      # iosApp scheme is not shared, and with indexing off because CI never needs it.
+      # Unsigned because signing needs an Apple Developer account. arm64 only because the Kotlin
+      # framework is only built for Apple Silicon simulators. Indexing off because CI never needs it.
       - name: Build the iOS App for the Simulator
         run: >
-          xcodebuild -project iosApp/iosApp.xcodeproj -target iosApp
-          -configuration Debug -sdk iphonesimulator -arch arm64
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp
+          -configuration Debug -destination 'generic/platform=iOS Simulator' ARCHS=arm64
           CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO build
 
       - name: Upload Test Report
