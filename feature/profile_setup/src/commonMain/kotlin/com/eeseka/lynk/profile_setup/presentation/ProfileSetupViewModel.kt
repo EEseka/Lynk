@@ -208,7 +208,10 @@ class ProfileSetupViewModel(
             // The debounced check may not have run for what is on screen right now, so an answer
             // is only trusted when it belongs to this exact username. Anything else is asked again.
             val isUsernameFree = if (checkedUsername == username) {
-                state.value.isUsernameAvailable == true
+                val isAvailable = state.value.isUsernameAvailable == true
+                // validateFormInputs just cleared the taken message, so put it back
+                if (!isAvailable) _state.update { it.copy(usernameError = UiText.Resource(Res.string.error_username_taken)) }
+                isAvailable
             } else {
                 confirmUsernameAvailable(username)
             }
@@ -219,16 +222,15 @@ class ProfileSetupViewModel(
             }
 
             // Handle the image upload if a new one was picked
-            val uploadedUrl = uploadLocalImageIfPresent()
+            val upload = uploadLocalImageIfPresent()
 
-            // If the upload failed, the helper function already set the error state. Just abort.
-            if (state.value.imageError != null) {
+            if (upload is ImageUpload.Failed) {
                 _state.update { it.copy(isSubmitting = false) }
                 return@launch
             }
 
             // Determine final URL (New uploaded URL, or the existing one)
-            val finalPhotoUrl = uploadedUrl ?: state.value.profilePictureUrl
+            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: state.value.profilePictureUrl
 
             userService.createProfile(
                 username = username,
@@ -281,11 +283,11 @@ class ProfileSetupViewModel(
         return isAvailable
     }
 
-    private suspend fun uploadLocalImageIfPresent(): String? {
+    private suspend fun uploadLocalImageIfPresent(): ImageUpload {
         val compressedUri = compressedImageUrl ?: state.value.localPhotoUri
         val mimeType = state.value.localPhotoMimeType
 
-        if (compressedUri == null || mimeType == null) return null
+        if (compressedUri == null || mimeType == null) return ImageUpload.None
 
         _state.update { it.copy(isUploadingImage = true) }
 
@@ -297,10 +299,10 @@ class ProfileSetupViewModel(
                     imageError = UiText.Resource(Res.string.error_image_read_failure)
                 )
             }
-            return null
+            return ImageUpload.Failed
         }
 
-        var uploadedUrl: String? = null
+        var upload: ImageUpload = ImageUpload.Failed
 
         userService.getProfilePictureUploadUrl(mimeType)
             .onSuccess { uploadUrls ->
@@ -310,7 +312,7 @@ class ProfileSetupViewModel(
                     imageBytes = imageBytes
                 )
                     .onSuccess {
-                        uploadedUrl = uploadUrls.publicUrl
+                        upload = ImageUpload.Uploaded(uploadUrls.publicUrl)
                         _state.update { it.copy(isUploadingImage = false) }
                     }
                     .onFailure { error ->
@@ -325,7 +327,7 @@ class ProfileSetupViewModel(
                 }
             }
 
-        return uploadedUrl
+        return upload
     }
 
     private fun validateFormInputs(): Boolean {
@@ -350,5 +352,11 @@ class ProfileSetupViewModel(
 
     private fun clearAllFormErrors() {
         _state.update { it.copy(usernameError = null, displayNameError = null, imageError = null) }
+    }
+
+    private sealed interface ImageUpload {
+        data object None : ImageUpload
+        data class Uploaded(val url: String) : ImageUpload
+        data object Failed : ImageUpload
     }
 }
