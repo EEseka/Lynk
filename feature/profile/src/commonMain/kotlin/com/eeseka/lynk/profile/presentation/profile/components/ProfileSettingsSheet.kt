@@ -21,6 +21,7 @@ import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.LifeBuoy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldCheck
+import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.profile.presentation.mappers.getIcon
 import com.eeseka.lynk.profile.presentation.mappers.getTitle
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
@@ -261,7 +262,7 @@ private fun ProfileSettingsSheetPreview() {
             isGuest = false,
             isSigningOut = false,
             isDeletingAccount = false,
-            appVersion = "Version 1.0.0",
+            appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
             onPushNotificationsToggled = {},
@@ -285,7 +286,7 @@ private fun ProfileSettingsSheetGuestPreview() {
             isGuest = true,
             isSigningOut = false,
             isDeletingAccount = false,
-            appVersion = "Version 1.0.0",
+            appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
             onPushNotificationsToggled = {},

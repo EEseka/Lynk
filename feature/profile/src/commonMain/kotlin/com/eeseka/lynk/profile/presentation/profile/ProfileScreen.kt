@@ -27,6 +27,7 @@ import com.composables.icons.lucide.Camera
 import com.composables.icons.lucide.Image
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
+import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.profile.presentation.profile.components.ProfileSettingsSheet
 import com.eeseka.lynk.profile.presentation.profile.components.SinglePaneProfile
 import com.eeseka.lynk.profile.presentation.profile.components.TwoPaneProfile
@@ -83,7 +84,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val SUPPORT_EMAIL = "support@lynk.com.ng"
-private const val APP_VERSION = "1.0.0"
 
 @Composable
 fun ProfileRoot(
@@ -303,7 +303,7 @@ fun ProfileScreen(
             isGuest = state.isGuest,
             isSigningOut = state.isSigningOut,
             isDeletingAccount = state.isDeletingAccount,
-            appVersion = stringResource(Res.string.app_version, APP_VERSION),
+            appVersion = stringResource(Res.string.app_version, AppConfig.APP_VERSION),
             supportEmail = SUPPORT_EMAIL,
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
             onPushNotificationsToggled = { isEnabled ->

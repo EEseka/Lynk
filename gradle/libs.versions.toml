@@ -1,4 +1,7 @@
 [versions]
+app-versionName = "1.0.1"
+app-versionCode = "2"
+
 agp = "9.4.0"
 android-compileSdk = "37"
 android-minSdk = "24"

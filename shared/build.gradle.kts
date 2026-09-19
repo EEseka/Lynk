@@ -57,6 +57,7 @@ buildkonfig {
         buildConfigField(STRING, "MAP_TILER_API_KEY", mapTilerApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
+        buildConfigField(STRING, "APP_VERSION", libs.versions.app.versionName.get())
         buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
     }
 }

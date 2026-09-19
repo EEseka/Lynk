@@ -21,15 +21,15 @@ Android and iOS against a live Spring Boot backend.
 
 ## What it does
 
-|                   |                                                                                                                          |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------|
-| **Sign in**       | Google Sign-In or a guest account, then a profile with a live username availability check and an optional photo          |
-| **Discover**      | A map of trending spots near you, search, a price filter, and saved spots, with real photos from Google Places           |
-| **Hangouts**      | Create one in two steps, invite friends by username, RSVP, edit, cancel, and filter your list by status                  |
-| **Live lobby**    | Propose spots, vote in real time, see who is in the room, and let the host break a tie                                   |
-| **Payments**      | The host turns on bill-splitting, everyone pays their share through Paystack inside the app, the host gets paid out      |
-| **Notifications** | Push notifications, an inbox with an unread badge, and invite previews you can accept or decline from the notification   |
-| **Profile**       | Edit your profile, saved spots, light and dark theme, push settings, account deletion that refuses to strand money       |
+|                   |                                                                                                                             |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| **Sign in**       | Google Sign-In or a guest account, then a profile with a live username availability check and an optional photo             |
+| **Discover**      | A map of trending spots near you, search, a price filter, and saving the ones you like, with real photos from Google Places |
+| **Hangouts**      | Create one in two steps, invite friends by username, RSVP, edit, cancel, and filter your list by status                     |
+| **Live lobby**    | Propose spots, vote in real time, see who is in the room, and let the host break a tie                                      |
+| **Payments**      | The host turns on bill-splitting, everyone pays their share through Paystack inside the app, the host gets paid out         |
+| **Notifications** | Push notifications, an inbox with an unread badge, and invite previews you can accept or decline from the notification      |
+| **Profile**       | Edit your profile, saved spots, light and dark theme, push settings, account deletion that refuses to strand money          |
 
 It adapts to the screen: a bottom bar on phones, a navigation rail and a side-by-side hangout list and detail on tablets
 and foldables, bottom sheets on phones and dialogs on wide screens.
@@ -102,7 +102,7 @@ feature/
   auth           Google and guest sign-in
   profile_setup  username, display name and photo for a new account
   main_shell     tab navigation and the unread notification badge
-  discover       map, trending spots, search, saved spots
+  discover       map, trending spots, search, saving a spot
   create_hangout the two-step create sheet
   hangouts       hangout list, detail, live voting, payments
   notifications  inbox and invite previews
@@ -178,8 +178,7 @@ checked on real Android and iOS devices.
 | `release.yml` | a `v*` tag: tests, then a signed, R8-shrunk APK published to a GitHub Release as `lynk.apk`        |
 
 The release APK is always named `lynk.apk`, because the website's Download button links to
-`releases/latest/download/lynk.apk`. The signing key never enters the repository: it reaches CI as an encrypted secret
-and is rebuilt into a file only for the length of the job.
+`releases/latest/download/lynk.apk`.
 
 ## Running it
 
@@ -218,8 +217,9 @@ Firebase needs `androidApp/google-services.json`, also ignored by git.
 
 ## Status
 
-Android is released as a direct download. The iOS app builds and runs on a real iPhone; push notifications and the App
-Store release wait on an Apple Developer account. Google Play comes next.
+Android is released as a direct download. Bill-splitting is built end to end, but real charges start only once Paystack
+approves the business account. The iOS app builds and runs on a real iPhone; push notifications and the App Store
+release wait on an Apple Developer account. Google Play comes next.
 
 ## License
 
