@@ -59,7 +59,7 @@ class MainShellViewModelTest {
     }
 
     @Test
-    fun `a guest account is never asked, because it cannot be in a hangout`() = runTest {
+    fun `a guest account is never asked because it cannot be in a hangout`() = runTest {
         collectInBackground(viewModel.state)
 
         sessionStorage.set(session(User.Guest(id = "guest_1")))
