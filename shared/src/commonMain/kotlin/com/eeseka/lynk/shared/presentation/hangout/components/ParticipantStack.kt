@@ -22,7 +22,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
@@ -108,7 +108,7 @@ fun ParticipantAvatar(
                 overflow = TextOverflow.Clip
             )
             if (!profilePictureUrl.isNullOrBlank()) {
-                AsyncImage(
+                LynkAsyncImage(
                     model = profilePictureUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,

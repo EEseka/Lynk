@@ -16,14 +16,12 @@ import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.testing.collectInBackground
-import com.eeseka.lynk.testing.data.FakeAppPreferences
 import com.eeseka.lynk.testing.data.FakeAuthService
 import com.eeseka.lynk.testing.data.FakeHangoutService
 import com.eeseka.lynk.testing.data.FakeSessionStorage
 import com.eeseka.lynk.testing.typeText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -44,7 +42,6 @@ class HangoutsListViewModelTest {
     private lateinit var hangoutService: FakeHangoutService
     private lateinit var sessionStorage: FakeSessionStorage
     private lateinit var authService: FakeAuthService
-    private lateinit var appPreferences: FakeAppPreferences
     private lateinit var viewModel: HangoutsListViewModel
 
     @BeforeTest
@@ -54,8 +51,7 @@ class HangoutsListViewModelTest {
         hangoutService = FakeHangoutService()
         sessionStorage = FakeSessionStorage()
         authService = FakeAuthService()
-        appPreferences = FakeAppPreferences()
-        viewModel = HangoutsListViewModel(hangoutService, sessionStorage, authService, appPreferences)
+        viewModel = HangoutsListViewModel(hangoutService, sessionStorage, authService)
     }
 
     @AfterTest
@@ -212,7 +208,10 @@ class HangoutsListViewModelTest {
         viewModel.onAction(HangoutsListAction.Refresh)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly("Night Out", "Brunch")
+        assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly(
+            "Night Out",
+            "Brunch"
+        )
     }
 
     @Test
@@ -222,14 +221,6 @@ class HangoutsListViewModelTest {
         viewModel.onAction(HangoutsListAction.OnSelectHangout("hangout_1"))
 
         assertThat(viewModel.state.value.selectedHangoutId).isEqualTo("hangout_1")
-    }
-
-    @Test
-    fun `denying notification permission turns push notifications off`() = runTest {
-        viewModel.onAction(HangoutsListAction.OnNotificationPermissionDenied)
-        advanceUntilIdle()
-
-        assertThat(appPreferences.arePushNotificationsEnabled.first()).isFalse()
     }
 
     @Test

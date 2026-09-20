@@ -13,6 +13,10 @@ class FakeUnreadNotificationCounter : UnreadNotificationCounter {
         refreshCount++
     }
 
+    override fun increment() {
+        count.update { current -> current + 1 }
+    }
+
     override fun decrement() {
         count.update { current -> (current - 1).coerceAtLeast(0L) }
     }

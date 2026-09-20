@@ -448,7 +448,7 @@ class ProfileViewModel(
                 }
             }
             .onFailure {
-                // Counts are decoration; a failure leaves the zeroes rather than shouting.
+                // Counts are decoration; a failure leaves them unknown rather than shouting.
                 _state.update { it.copy(isStatsLoading = false) }
             }
     }

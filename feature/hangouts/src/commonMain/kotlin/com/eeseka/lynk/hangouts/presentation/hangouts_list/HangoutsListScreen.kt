@@ -72,9 +72,6 @@ import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
-import com.eeseka.lynk.shared.presentation.permissions.Permission
-import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
@@ -166,20 +163,6 @@ fun HangoutsListScreen(
     val focusManager = LocalFocusManager.current
     val inputModeManager = LocalInputModeManager.current
     var hasTappedSearch by remember { mutableStateOf(false) }
-
-    val permissionController = rememberPermissionController()
-
-    LaunchedEffect(state.currentUserId, state.isGuest) {
-        if (state.currentUserId == null || state.isGuest) return@LaunchedEffect
-
-        var permissionState = permissionController.getPermissionState(Permission.NOTIFICATIONS)
-        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
-            permissionState = permissionController.requestPermission(Permission.NOTIFICATIONS)
-        }
-        if (permissionState != PermissionState.GRANTED) {
-            onAction(HangoutsListAction.OnNotificationPermissionDenied)
-        }
-    }
 
     PaginationScrollListener(
         lazyListState = listState,

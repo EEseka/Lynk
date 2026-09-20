@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UsersRound
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
@@ -90,7 +90,7 @@ fun SuggestSpotListItem(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 if (imageRequest != null) {
-                    AsyncImage(
+                    LynkAsyncImage(
                         model = imageRequest,
                         contentDescription = spot.name,
                         contentScale = ContentScale.Crop,

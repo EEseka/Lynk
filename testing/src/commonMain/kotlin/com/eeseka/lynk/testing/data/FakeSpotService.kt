@@ -17,6 +17,7 @@ class FakeSpotService : SpotService {
     var searchSpotsList = mutableListOf<Spot>()
     var savedSpotsList = mutableListOf<Spot>()
     var savedSpots = mutableSetOf<String>()
+    var trendingRequestLocations = mutableListOf<Pair<Double, Double>>()
 
     override suspend fun getTrendingSpots(
         latitude: Double,
@@ -24,6 +25,7 @@ class FakeSpotService : SpotService {
         limit: Int
     ): Result<List<Spot>, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
+        trendingRequestLocations.add(latitude to longitude)
         return Result.Success(trendingSpotsList.take(limit))
     }
 

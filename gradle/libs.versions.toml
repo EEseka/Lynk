@@ -1,4 +1,7 @@
 [versions]
+app-versionName = "1.0.2"
+app-versionCode = "3"
+
 agp = "9.4.0"
 android-compileSdk = "37"
 android-minSdk = "24"
@@ -59,6 +62,7 @@ calf = "0.14.0"
 map = "0.16.0"
 mapNativeFfi = "0.202609.1"
 moko-geo = "0.8.0"
+play-services-location = "21.3.0"
 zoom = "1.6.0"
 
 # Testing
@@ -165,6 +169,7 @@ moko-permissions-location = { module = "dev.icerock.moko:permissions-location", 
 # Geolocation
 moko-geo = { module = "dev.icerock.moko:geo", version.ref = "moko-geo" }
 moko-geo-compose = { module = "dev.icerock.moko:geo-compose", version.ref = "moko-geo" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 
 # Logging
 touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }

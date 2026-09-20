@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.util.UiText
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.auth.generated.resources.Res
 import lynk.feature.auth.generated.resources.error_google_sign_in_failed
+import lynk.feature.auth.generated.resources.error_sign_in_failed
 
 class AuthViewModel(
     private val authService: AuthService,
@@ -54,7 +56,7 @@ class AuthViewModel(
                     eventChannel.send(AuthEvent.Success(authInfo.user))
                 }.onFailure { error ->
                     _state.update { it.copy(isGoogleSigningIn = false) }
-                    eventChannel.send(AuthEvent.Error(error.toUiText()))
+                    eventChannel.send(AuthEvent.Error(error.toSignInUiText()))
                 }
         }
     }
@@ -78,8 +80,15 @@ class AuthViewModel(
                     eventChannel.send(AuthEvent.Success(authInfo.user))
                 }.onFailure { error ->
                     _state.update { it.copy(isGuestSigningIn = false) }
-                    eventChannel.send(AuthEvent.Error(error.toUiText()))
+                    eventChannel.send(AuthEvent.Error(error.toSignInUiText()))
                 }
         }
+    }
+
+    // No session exists yet, so a 401 here is not one running out. Most likely our x-api-key
+    // is wrong, as in v1.0.0. Nothing the user can fix, so all they get is "try again".
+    private fun DataError.Remote.toSignInUiText(): UiText = when (this) {
+        DataError.Remote.UNAUTHORIZED -> UiText.Resource(Res.string.error_sign_in_failed)
+        else -> toUiText()
     }
 }

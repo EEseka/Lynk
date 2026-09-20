@@ -18,6 +18,9 @@ import kotlin.time.Instant
 class FakeHangoutService : HangoutService {
     var shouldReturnError = false
     var errorToReturn = DataError.Remote.SERVER_ERROR
+
+    // Fails only the RSVP call, so a test can refuse an answer while the hangout still reads fine.
+    var rsvpErrorToReturn: DataError.Remote? = null
     var currentUserId = "user_1"
     var hangouts = mutableListOf<Hangout>()
     var statsToReturn = HangoutStats(hostedCount = 0, attendedCount = 0)
@@ -195,6 +198,7 @@ class FakeHangoutService : HangoutService {
         rsvpStatus: RsvpStatus
     ): Result<HangoutParticipant, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
+        rsvpErrorToReturn?.let { return Result.Failure(it) }
 
         val hangout = hangouts.find { it.id == hangoutId }
             ?: return Result.Failure(DataError.Remote.NOT_FOUND)

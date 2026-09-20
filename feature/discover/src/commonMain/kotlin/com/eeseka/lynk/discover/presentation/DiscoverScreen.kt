@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
+import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
@@ -59,15 +61,20 @@ import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkD
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
+import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.shared.domain.location.LocationError
 import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.shared.domain.util.onFailure
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
+import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
@@ -77,8 +84,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
 import lynk.feature.discover.generated.resources.create_a_hangout
+import lynk.feature.discover.generated.resources.finding_your_location
 import lynk.feature.discover.generated.resources.locate_me
-import lynk.feature.discover.generated.resources.location_fetch_error
 import lynk.feature.discover.generated.resources.location_required
 import lynk.feature.discover.generated.resources.location_required_message
 import lynk.feature.discover.generated.resources.map_data_label
@@ -182,46 +189,66 @@ fun DiscoverScreen(
 
     var hasCenteredOnUser by rememberSaveable { mutableStateOf(false) }
 
-    val locationFetchError = stringResource(Res.string.location_fetch_error)
+    var isFindingLocation by remember { mutableStateOf(false) }
+
+    val openSettingsLabel = stringResource(Res.string.open_settings)
 
     val fetchCurrentLocationAndShowOnMap: suspend (isLocateMeTap: Boolean) -> Unit = { isLocateMeTap ->
-        val coordinate = locationController.getCurrentLocation()
-        if (coordinate == null) {
-            snackbarHostState.showFlashMessage(
-                message = locationFetchError,
-                type = LynkFlashType.Error
-            )
-        } else {
-            onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
+        isFindingLocation = true
+        // The cached fix opens the map, the tracker's fix sharpens it. Only the first one may
+        // move the camera, so a later refinement never yanks the map out from under a pan.
+        var hasMovedCameraThisFetch = false
 
-            val currentPosition = mapState.cameraPosition
-            val userPosition = currentPosition.copy(
-                target = Position(
-                    latitude = coordinate.latitude,
-                    longitude = coordinate.longitude
-                ),
-                zoom = 14.0
-            )
+        locationController.observeCurrentLocation().collect { locationResult ->
+            locationResult
+                .onSuccess { coordinate ->
+                    isFindingLocation = false
+                    onAction(DiscoverAction.OnLocationFetched(coordinate.latitude, coordinate.longitude))
 
-            if (isLocateMeTap) {
-                mapState.animateCameraPosition(
-                    position = userPosition,
-                    duration = currentPosition.flightDurationTo(userPosition)
-                )
-            } else if (!hasCenteredOnUser) {
-                // Opening the screen lands on the user straight away
-                mapState.setCameraPosition(userPosition)
-            }
-            hasCenteredOnUser = true
+                    if (!hasMovedCameraThisFetch) {
+                        val currentPosition = mapState.cameraPosition
+                        val userPosition = currentPosition.copy(
+                            target = Position(
+                                latitude = coordinate.latitude,
+                                longitude = coordinate.longitude
+                            ),
+                            zoom = 14.0
+                        )
+
+                        if (isLocateMeTap) {
+                            mapState.animateCameraPosition(
+                                position = userPosition,
+                                duration = currentPosition.flightDurationTo(userPosition)
+                            )
+                        } else if (!hasCenteredOnUser) {
+                            // Opening the screen lands on the user straight away
+                            mapState.setCameraPosition(userPosition)
+                        }
+                        hasMovedCameraThisFetch = true
+                        hasCenteredOnUser = true
+                    }
+                }
+                .onFailure { error ->
+                    isFindingLocation = false
+                    onAction(DiscoverAction.OnLocationUnavailable)
+
+                    val message = error.toUiText() ?: return@onFailure
+                    val flashResult = snackbarHostState.showFlashMessage(
+                        message = message.asStringAsync(),
+                        type = LynkFlashType.Error,
+                        // Only a refused permission is something they can go and change.
+                        actionLabel = openSettingsLabel.takeIf { error == LocationError.PERMISSION_DENIED }
+                    )
+                    if (flashResult == SnackbarResult.ActionPerformed) {
+                        permissionController.openAppSettings()
+                    }
+                }
         }
     }
 
-    LaunchedEffect(Unit) {
-        permissionState = permissionController.getPermissionState(Permission.LOCATION)
-        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
-            permissionState = permissionController.requestPermission(Permission.LOCATION)
-        }
-        if (permissionState == PermissionState.PERMANENTLY_DENIED) {
+    LocationPermissionEffect(isEnabled = true) { resolvedPermissionState ->
+        permissionState = resolvedPermissionState
+        if (resolvedPermissionState == PermissionState.PERMANENTLY_DENIED) {
             showSettingsDialog = true
         }
     }
@@ -427,6 +454,28 @@ fun DiscoverScreen(
                     imageVector = Lucide.Locate,
                     contentDescription = stringResource(Res.string.locate_me)
                 )
+            }
+
+            if (isFindingLocation) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = mainShellPadding.calculateBottomPadding() + 16.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    LynkProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    LynkText(
+                        text = stringResource(Res.string.finding_your_location),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
 
             if (showTrendingError) {

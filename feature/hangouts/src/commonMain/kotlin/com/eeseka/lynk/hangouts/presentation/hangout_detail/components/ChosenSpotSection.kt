@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Copy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
@@ -142,7 +142,7 @@ private fun ChosenSpotCard(
             ) {
                 // Photo when there is one; the pin icon is the fallback.
                 if (imageRequest != null) {
-                    AsyncImage(
+                    LynkAsyncImage(
                         model = imageRequest,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,

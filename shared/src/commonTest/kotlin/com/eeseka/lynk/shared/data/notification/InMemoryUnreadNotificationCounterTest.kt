@@ -85,6 +85,19 @@ class InMemoryUnreadNotificationCounterTest {
     }
 
     @Test
+    fun `a push arriving while the app is open raises the badge`() = runTest {
+        signIn()
+        notificationService.notifications = mutableListOf(unread("n1"))
+        val counter = createCounter()
+        appLifecycleObserver.isInForeground.value = true
+        runCurrent()
+
+        counter.increment()
+
+        assertThat(counter.count.value).isEqualTo(2L)
+    }
+
+    @Test
     fun `the badge never goes below zero`() = runTest {
         signIn()
         val counter = createCounter()

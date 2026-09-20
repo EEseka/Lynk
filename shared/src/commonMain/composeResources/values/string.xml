@@ -13,7 +13,7 @@
     <string name="error_unknown">Something unexpected happened. Please try again.</string>
     <string name="error_bad_request">Something went wrong with this action. Please try again.</string>
     <string name="error_request_timeout">Your connection timed out. Please try again.</string>
-    <string name="error_unauthorized">Invalid credentials. Please log in again.</string>
+    <string name="error_unauthorized">Your session has ended. Please sign in again.</string>
     <string name="error_forbidden">You don't have permission to do this.</string>
     <string name="error_conflict">That's not possible right now. Please refresh and try again.</string>
     <string name="error_too_many_requests">You're making requests too quickly. Please slow down.</string>
@@ -87,4 +87,6 @@
     <string name="pm">PM</string>
     <string name="detail_participants_overflow">+%1$d</string>
     <string name="detail_online">Online</string>
+
+    <string name="notification_channel_hangouts">Hangout updates</string>
 </resources>

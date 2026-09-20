@@ -32,15 +32,18 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.stat_attended
 import lynk.feature.profile.generated.resources.stat_hosted
+import lynk.feature.profile.generated.resources.stat_unknown
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProfileStatsRow(
-    hostedCount: String,
-    attendedCount: String,
+    hostedCount: Long?,
+    attendedCount: Long?,
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
+    // A count we do not have yet reads as a dash, never as a zero they might believe.
+    val unknownCount = stringResource(Res.string.stat_unknown)
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -60,7 +63,7 @@ fun ProfileStatsRow(
             ) {
                 StatItem(
                     icon = Lucide.Crown,
-                    value = hostedCount,
+                    value = hostedCount?.toString() ?: unknownCount,
                     label = stringResource(Res.string.stat_hosted)
                 )
 
@@ -71,7 +74,7 @@ fun ProfileStatsRow(
 
                 StatItem(
                     icon = Lucide.UsersRound,
-                    value = attendedCount,
+                    value = attendedCount?.toString() ?: unknownCount,
                     label = stringResource(Res.string.stat_attended)
                 )
             }
@@ -123,8 +126,8 @@ private fun RowScope.StatItem(
 private fun ProfileStatsRowPreview() {
     LynkTheme {
         ProfileStatsRow(
-            hostedCount = "12",
-            attendedCount = "34",
+            hostedCount = 12L,
+            attendedCount = 34L,
             isLoading = false,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
@@ -138,9 +141,24 @@ private fun ProfileStatsRowPreview() {
 private fun ProfileStatsRowLoadingPreview() {
     LynkTheme {
         ProfileStatsRow(
-            hostedCount = "0",
-            attendedCount = "0",
+            hostedCount = null,
+            attendedCount = null,
             isLoading = true,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ProfileStatsRowUnknownPreview() {
+    LynkTheme {
+        ProfileStatsRow(
+            hostedCount = null,
+            attendedCount = null,
+            isLoading = false,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)

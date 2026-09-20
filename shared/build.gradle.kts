@@ -57,6 +57,7 @@ buildkonfig {
         buildConfigField(STRING, "MAP_TILER_API_KEY", mapTilerApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
+        buildConfigField(STRING, "APP_VERSION", libs.versions.app.versionName.get())
         buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
     }
 }
@@ -91,6 +92,8 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.messaging)
             implementation(libs.koin.android)
+
+            implementation(libs.play.services.location)
         }
         commonMain.dependencies {
             implementation(libs.runtime)

@@ -37,12 +37,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.composables.icons.lucide.Globe
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -109,7 +109,7 @@ fun SpotDetailSheet(
                         }
                         val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
                         if (imageRequest != null) {
-                            AsyncImage(
+                            LynkAsyncImage(
                                 model = imageRequest,
                                 contentDescription = spot.name,
                                 contentScale = ContentScale.Crop,
@@ -138,7 +138,7 @@ fun SpotDetailSheet(
                                 val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
 
                                 if (imageRequest != null) {
-                                    AsyncImage(
+                                    LynkAsyncImage(
                                         model = imageRequest,
                                         contentDescription = spot.name,
                                         contentScale = ContentScale.Crop,

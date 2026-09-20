@@ -24,8 +24,8 @@ data class ProfileState(
     val isSaving: Boolean = false,
     val canSave: Boolean = false,
 
-    val hostedCount: Long = 0L,
-    val attendedCount: Long = 0L,
+    val hostedCount: Long? = null,
+    val attendedCount: Long? = null,
     val isStatsLoading: Boolean = false,
 
     val appTheme: AppTheme = AppTheme.SYSTEM,

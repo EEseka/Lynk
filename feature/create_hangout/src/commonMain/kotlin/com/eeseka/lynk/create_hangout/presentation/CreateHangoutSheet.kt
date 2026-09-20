@@ -54,10 +54,10 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
-import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.DialogSheetScopedViewModel
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
@@ -99,17 +99,11 @@ fun CreateHangoutRoot(
     onSuccess: (hangoutId: String) -> Unit
 ) {
     val hapticFeedback = rememberAppHaptic()
-    val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
-    LaunchedEffect(visible) {
-        if (visible) {
-            permissionState = permissionController.getPermissionState(Permission.LOCATION)
-            if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
-                permissionState = permissionController.requestPermission(Permission.LOCATION)
-            }
-        }
+    LocationPermissionEffect(isEnabled = visible) { resolvedPermissionState ->
+        permissionState = resolvedPermissionState
     }
 
     DialogSheetScopedViewModel(visible = visible) {
@@ -118,10 +112,12 @@ fun CreateHangoutRoot(
 
         LaunchedEffect(permissionState) {
             if (permissionState == PermissionState.GRANTED) {
-                locationController.getCurrentLocation()?.let { coordinate ->
-                    viewModel.onAction(
-                        CreateHangoutAction.OnLocationFetched(coordinate.latitude, coordinate.longitude)
-                    )
+                locationController.observeCurrentLocation().collect { locationResult ->
+                    locationResult.onSuccess { coordinate ->
+                        viewModel.onAction(
+                            CreateHangoutAction.OnLocationFetched(coordinate.latitude, coordinate.longitude)
+                        )
+                    }
                 }
             }
         }

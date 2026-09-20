@@ -26,7 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Camera
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.User
@@ -81,7 +81,7 @@ fun ProfileAvatarSection(
                 contentAlignment = Alignment.Center
             ) {
                 if (currentImagePayload != null) {
-                    AsyncImage(
+                    LynkAsyncImage(
                         model = currentImagePayload,
                         contentDescription = stringResource(Res.string.profile_picture),
                         contentScale = ContentScale.Crop,

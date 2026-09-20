@@ -18,6 +18,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
 import com.eeseka.lynk.testing.data.FakeAuthService
+import com.eeseka.lynk.testing.data.FakeLastKnownLocationStorage
 import com.eeseka.lynk.testing.data.FakeSessionStorage
 import com.eeseka.lynk.testing.data.FakeSpotService
 import com.eeseka.lynk.testing.typeText
@@ -43,6 +44,7 @@ class DiscoverViewModelTest {
     private lateinit var sessionStorage: FakeSessionStorage
     private lateinit var authService: FakeAuthService
     private lateinit var appPreferences: FakeAppPreferences
+    private lateinit var lastKnownLocationStorage: FakeLastKnownLocationStorage
     private lateinit var viewModel: DiscoverViewModel
 
     private val dummySpot = Spot(
@@ -61,7 +63,14 @@ class DiscoverViewModelTest {
         sessionStorage = FakeSessionStorage()
         authService = FakeAuthService()
         appPreferences = FakeAppPreferences()
-        viewModel = DiscoverViewModel(spotService, sessionStorage, authService, appPreferences)
+        lastKnownLocationStorage = FakeLastKnownLocationStorage()
+        viewModel = DiscoverViewModel(
+            spotService,
+            sessionStorage,
+            authService,
+            appPreferences,
+            lastKnownLocationStorage
+        )
     }
 
     @AfterTest
@@ -87,6 +96,74 @@ class DiscoverViewModelTest {
             assertThat(state.trendingSpots.first().id).isEqualTo("1")
             assertThat(state.isTrendingLoading).isFalse()
         }
+    }
+
+    @Test
+    fun `the same fix twice only loads trending spots once`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        assertThat(spotService.trendingRequestLocations.size).isEqualTo(1)
+    }
+
+    @Test
+    fun `a newer fix loads trending spots around it`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+
+        // The cached fix, then the sharper one the tracker found
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+        viewModel.onAction(DiscoverAction.OnLocationFetched(9.06, 7.49))
+        advanceUntilIdle()
+
+        assertThat(spotService.trendingRequestLocations.last()).isEqualTo(9.06 to 7.49)
+        assertThat(viewModel.state.value.userLatitude).isEqualTo(9.06)
+    }
+
+    @Test
+    fun `an unavailable location loads trending spots around the last known one`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        lastKnownLocationStorage.setLastKnownLocation(6.5, 3.3)
+
+        viewModel.state.test {
+            awaitItem()
+
+            viewModel.onAction(DiscoverAction.OnLocationUnavailable)
+            advanceUntilIdle()
+
+            val state = expectMostRecentItem()
+            assertThat(state.trendingSpots.size).isEqualTo(1)
+            // The map still has no blue dot, because we never actually found them.
+            assertThat(state.userLatitude).isNull()
+        }
+    }
+
+    @Test
+    fun `an unavailable location with nothing cached leaves the list empty`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+
+        viewModel.onAction(DiscoverAction.OnLocationUnavailable)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.trendingSpots).isEmpty()
+    }
+
+    @Test
+    fun `fetching location remembers it for next time`() = runTest {
+        collectInBackground(viewModel.state)
+
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        val lastKnownLocation = lastKnownLocationStorage.lastKnownLocation.first()
+        assertThat(lastKnownLocation?.latitude).isEqualTo(6.5)
+        assertThat(lastKnownLocation?.longitude).isEqualTo(3.3)
     }
 
     @Test

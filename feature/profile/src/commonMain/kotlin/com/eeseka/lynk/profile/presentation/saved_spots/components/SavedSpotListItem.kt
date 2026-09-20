@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Star
@@ -88,7 +88,7 @@ fun SavedSpotListItem(
                 contentAlignment = Alignment.Center
             ) {
                 if (primaryPhotoUrl != null) {
-                    AsyncImage(
+                    LynkAsyncImage(
                         model = imageRequest,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,

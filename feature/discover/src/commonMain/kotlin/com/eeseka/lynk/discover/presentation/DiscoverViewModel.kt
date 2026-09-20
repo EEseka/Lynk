@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -45,7 +48,8 @@ class DiscoverViewModel(
     private val spotService: SpotService,
     private val sessionStorage: SessionStorage,
     private val authService: AuthService,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val lastKnownLocationStorage: LastKnownLocationStorage
 ) : ViewModel() {
 
     private val eventChannel = Channel<DiscoverEvent>()
@@ -59,6 +63,8 @@ class DiscoverViewModel(
 
     private val saveJobs = mutableMapOf<String, Job>()
 
+    private val trendingLocation = MutableStateFlow<LocationCoordinates?>(null)
+
     val state = combine(
         _state,
         appPreferences.theme
@@ -70,6 +76,7 @@ class DiscoverViewModel(
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
                 _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
+                observeTrendingLocation()
                 hasLoadedInitialData = true
             }
         }
@@ -82,6 +89,7 @@ class DiscoverViewModel(
     fun onAction(action: DiscoverAction) {
         when (action) {
             is DiscoverAction.OnLocationFetched -> handleLocationFetched(action.latitude, action.longitude)
+            DiscoverAction.OnLocationUnavailable -> loadTrendingAroundLastKnownLocation()
             is DiscoverAction.OnSpotSelected -> _state.update { it.copy(selectedSpotId = action.spotId) }
             is DiscoverAction.OnToggleSaveSpot -> toggleSaveSpot(action.spotId, action.isCurrentlySaved)
             is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
@@ -116,39 +124,56 @@ class DiscoverViewModel(
                 locationFetchEpoch = it.locationFetchEpoch + 1
             )
         }
-        fetchTrendingSpots(latitude, longitude)
+        trendingLocation.value = LocationCoordinates(latitude = latitude, longitude = longitude)
+
+        viewModelScope.launch {
+            lastKnownLocationStorage.setLastKnownLocation(latitude, longitude)
+        }
+    }
+
+    private fun loadTrendingAroundLastKnownLocation() {
+        viewModelScope.launch {
+            trendingLocation.value = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeTrendingLocation() {
+        trendingLocation
+            .filterNotNull()
+            .distinctUntilChanged()
+            .mapLatest { location -> fetchTrendingSpots(location) }
+            .launchIn(viewModelScope)
     }
 
     private fun retryTrending() {
-        val latitude = state.value.userLatitude ?: return
-        val longitude = state.value.userLongitude ?: return
-        fetchTrendingSpots(latitude, longitude)
-    }
-
-    private fun fetchTrendingSpots(latitude: Double, longitude: Double) {
-        if (state.value.isTrendingLoading || state.value.trendingSpots.isNotEmpty()) return
-
-        _state.update { it.copy(isTrendingLoading = true, trendingError = null) }
+        val location = trendingLocation.value ?: return
 
         viewModelScope.launch {
-            spotService.getTrendingSpots(latitude, longitude)
-                .onSuccess { spots ->
-                    _state.update {
-                        it.copy(
-                            isTrendingLoading = false,
-                            trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            isTrendingLoading = false,
-                            trendingError = error.toUiText()
-                        )
-                    }
-                }
+            fetchTrendingSpots(location)
         }
+    }
+
+    private suspend fun fetchTrendingSpots(location: LocationCoordinates) {
+        _state.update { it.copy(isTrendingLoading = true, trendingError = null) }
+
+        spotService.getTrendingSpots(location.latitude, location.longitude)
+            .onSuccess { spots ->
+                _state.update {
+                    it.copy(
+                        isTrendingLoading = false,
+                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                    )
+                }
+            }
+            .onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isTrendingLoading = false,
+                        trendingError = error.toUiText()
+                    )
+                }
+            }
     }
 
     private fun toggleSaveSpot(spotId: String, isCurrentlySaved: Boolean) {

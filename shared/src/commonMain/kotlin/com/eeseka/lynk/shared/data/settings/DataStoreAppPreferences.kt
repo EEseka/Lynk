@@ -15,7 +15,6 @@ class DataStoreAppPreferences(
 ) : AppPreferences {
 
     private val themePreferenceKey = stringPreferencesKey("KEY_THEME_PREFERENCE")
-    private val hasSeenOnboardingKey = booleanPreferencesKey("KEY_HAS_SEEN_ONBOARDING")
     private val arePushNotificationsEnabledKey = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
 
     override val theme: Flow<AppTheme> = dataStore.data.map { preferences ->
@@ -27,10 +26,6 @@ class DataStoreAppPreferences(
         }
     }
 
-    override val hasSeenOnboarding: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[hasSeenOnboardingKey] ?: false
-    }
-
     override val arePushNotificationsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[arePushNotificationsEnabledKey] ?: true
     }
@@ -38,12 +33,6 @@ class DataStoreAppPreferences(
     override suspend fun setTheme(theme: AppTheme) {
         dataStore.edit { preferences ->
             preferences[themePreferenceKey] = theme.name
-        }
-    }
-
-    override suspend fun setOnboardingCompleted() {
-        dataStore.edit { preferences ->
-            preferences[hasSeenOnboardingKey] = true
         }
     }
 

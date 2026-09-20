@@ -10,7 +10,10 @@
     <string name="open_settings">Open Settings</string>
     <string name="not_now">Not Now</string>
     <string name="locate_me">Locate Me</string>
-    <string name="location_fetch_error">We couldn't find your location. Please ensure Location Services are enabled.</string>
+    <string name="finding_your_location">Finding your location</string>
+    <string name="location_not_found">We couldn't find your location. Please try again in a moment.</string>
+    <string name="location_turned_off">Location is turned off on this device. Turn it on to see spots near you.</string>
+    <string name="location_permission_needed">Lynk needs permission to use your location.</string>
 
     <string name="open_spot_search">Open spot search</string>
     <string name="trending_load_error_title">Couldn't load nearby spots</string>

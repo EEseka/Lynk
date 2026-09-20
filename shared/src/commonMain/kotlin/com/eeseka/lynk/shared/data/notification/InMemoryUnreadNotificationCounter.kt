@@ -56,6 +56,10 @@ class InMemoryUnreadNotificationCounter(
             .onSuccess { unreadCount -> _count.value = unreadCount }
     }
 
+    override fun increment() {
+        _count.update { current -> current + 1 }
+    }
+
     override fun decrement() {
         _count.update { current -> (current - 1).coerceAtLeast(0L) }
     }

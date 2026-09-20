@@ -17,6 +17,7 @@ import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.util.DataErrorException
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -73,12 +75,15 @@ class CreateHangoutViewModel(
 
     private var favoriteSpotSearchPaginator: Paginator<String?, Spot>? = null
 
+    private val trendingLocation = MutableStateFlow<LocationCoordinates?>(null)
+
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
                 observeGatingStates()
                 observeStepOneValidation()
                 observeSearchFilters()
+                observeTrendingLocation()
                 hasLoadedInitialData = true
             }
         }
@@ -157,7 +162,10 @@ class CreateHangoutViewModel(
                         userLongitude = action.longitude
                     )
                 }
-                fetchTrendingSpots(action.latitude, action.longitude)
+                trendingLocation.value = LocationCoordinates(
+                    latitude = action.latitude,
+                    longitude = action.longitude
+                )
             }
 
             is CreateHangoutAction.OnSearchTabSelected -> {
@@ -272,26 +280,30 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun fetchTrendingSpots(latitude: Double, longitude: Double) {
-        if (state.value.isTrendingLoading || state.value.trendingSpots.isNotEmpty()) return
+    private fun observeTrendingLocation() {
+        trendingLocation
+            .filterNotNull()
+            .distinctUntilChanged()
+            .mapLatest { location -> fetchTrendingSpots(location) }
+            .launchIn(viewModelScope)
+    }
 
+    private suspend fun fetchTrendingSpots(location: LocationCoordinates) {
         _state.update { it.copy(isTrendingLoading = true) }
 
-        viewModelScope.launch {
-            spotService.getTrendingSpots(latitude, longitude)
-                .onSuccess { spots ->
-                    _state.update {
-                        it.copy(
-                            isTrendingLoading = false,
-                            trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
-                        )
-                    }
+        spotService.getTrendingSpots(location.latitude, location.longitude)
+            .onSuccess { spots ->
+                _state.update {
+                    it.copy(
+                        isTrendingLoading = false,
+                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                    )
                 }
-                .onFailure { _ ->
-                    // For zero-state, if trending fails, we just fail silently and let them search
-                    _state.update { it.copy(isTrendingLoading = false) }
-                }
-        }
+            }
+            .onFailure { _ ->
+                // For zero-state, if trending fails, we just fail silently and let them search
+                _state.update { it.copy(isTrendingLoading = false) }
+            }
     }
 
     private fun observeSearchFilters() {

@@ -6,6 +6,7 @@ import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
 import com.eeseka.lynk.shared.domain.notification.PushNotificationService
 import com.eeseka.lynk.shared.domain.notification.model.DevicePlatform
+import com.eeseka.lynk.shared.domain.onboarding.OnboardingStorage
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.util.PlatformUtils
 import com.eeseka.lynk.shared.domain.util.onSuccess
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     private val sessionStorage: SessionStorage,
     private val appPreferences: AppPreferences,
+    private val onboardingStorage: OnboardingStorage,
     private val deviceTokenService: DeviceTokenService,
     private val pushNotificationService: PushNotificationService
 ) : ViewModel() {
@@ -39,7 +41,7 @@ class MainViewModel(
     val state = combine(
         _state,
         appPreferences.theme,
-        appPreferences.hasSeenOnboarding
+        onboardingStorage.hasSeenOnboarding
     ) { authState, theme, hasSeenOnboarding ->
         authState.copy(
             theme = theme,

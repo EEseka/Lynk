@@ -40,7 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
@@ -129,7 +129,7 @@ fun CandidateCard(
                 contentAlignment = Alignment.Center
             ) {
                 if (imageRequest != null) {
-                    AsyncImage(
+                    LynkAsyncImage(
                         model = imageRequest,
                         contentDescription = spotName,
                         contentScale = ContentScale.Crop,
