@@ -7,6 +7,8 @@ interface UnreadNotificationCounter {
 
     suspend fun refresh()
 
+    fun increment()
+
     fun decrement()
 
     fun clear()

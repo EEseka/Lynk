@@ -2,7 +2,10 @@ package com.eeseka.lynk.main_shell.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
+import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.launchIn
@@ -13,7 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainShellViewModel(
-    private val unreadNotificationCounter: UnreadNotificationCounter
+    private val unreadNotificationCounter: UnreadNotificationCounter,
+    private val sessionStorage: SessionStorage,
+    private val appPreferences: AppPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainShellState())
@@ -25,6 +30,7 @@ class MainShellViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 observeUnreadCount()
+                observeCanReceiveNotifications()
                 hasLoadedInitialData = true
             }
         }
@@ -36,10 +42,26 @@ class MainShellViewModel(
 
     fun onAction(action: MainShellAction) {
         when (action) {
+            MainShellAction.OnNotificationPermissionDenied -> disablePushNotifications()
             is MainShellAction.OnHangoutsTabActiveChanged -> setHangoutsTabActive(action.isActive)
             is MainShellAction.OnHangoutDetailPaneFullScreenChanged -> {
                 _state.update { it.copy(isHangoutDetailPaneFullScreen = action.isFullScreen) }
             }
+        }
+    }
+
+    private fun observeCanReceiveNotifications() {
+        sessionStorage.observeAuthInfo()
+            .onEach { authInfo ->
+                val user = authInfo?.user
+                _state.update { it.copy(canReceiveNotifications = user != null && user !is User.Guest) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun disablePushNotifications() {
+        viewModelScope.launch {
+            appPreferences.setPushNotificationsEnabled(false)
         }
     }
 

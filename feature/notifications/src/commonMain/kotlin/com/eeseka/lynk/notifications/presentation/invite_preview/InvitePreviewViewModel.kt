@@ -37,31 +37,6 @@ class InvitePreviewViewModel(
         }
     }
 
-    private fun loadPreview(hangoutId: String) {
-        _state.update { it.copy(isLoading = true) }
-
-        viewModelScope.launch {
-            hangoutService.getHangoutPreview(hangoutId)
-                .onSuccess { preview ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            hangoutPreview = preview.toHangoutPreviewUi()
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _state.update { it.copy(isLoading = false) }
-
-                    when (error) {
-                        DataError.Remote.FORBIDDEN -> eventChannel.send(InvitePreviewEvent.AlreadyAnswered(hangoutId))
-                        DataError.Remote.NOT_FOUND -> eventChannel.send(InvitePreviewEvent.InviteWithdrawn)
-                        else -> eventChannel.send(InvitePreviewEvent.Error(error.toUiText()))
-                    }
-                }
-        }
-    }
-
     private fun submitRsvp(rsvpStatus: RsvpStatus) {
         val hangoutId = state.value.hangoutPreview?.id ?: return
 
@@ -90,7 +65,33 @@ class InvitePreviewViewModel(
                                 error.toUiText()
                             }
                             eventChannel.send(InvitePreviewEvent.Error(errorMessage))
+                            loadPreview(hangoutId) // The server refused for a reason we cannot read from a 409, so show them the hangout as it stands now: canceled, full, or already answered.
                         }
+                        else -> eventChannel.send(InvitePreviewEvent.Error(error.toUiText()))
+                    }
+                }
+        }
+    }
+
+    private fun loadPreview(hangoutId: String) {
+        _state.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            hangoutService.getHangoutPreview(hangoutId)
+                .onSuccess { preview ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            hangoutPreview = preview.toHangoutPreviewUi()
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(isLoading = false) }
+
+                    when (error) {
+                        DataError.Remote.FORBIDDEN -> eventChannel.send(InvitePreviewEvent.AlreadyAnswered(hangoutId))
+                        DataError.Remote.NOT_FOUND -> eventChannel.send(InvitePreviewEvent.InviteWithdrawn)
                         else -> eventChannel.send(InvitePreviewEvent.Error(error.toUiText()))
                     }
                 }

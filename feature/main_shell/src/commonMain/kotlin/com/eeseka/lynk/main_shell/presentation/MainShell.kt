@@ -41,6 +41,8 @@ import com.eeseka.lynk.profile.presentation.navigation.profileGraph
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
 import com.eeseka.lynk.shared.presentation.navigation.DeepLinkListener
+import com.eeseka.lynk.shared.presentation.permissions.NotificationPermissionEffect
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -88,6 +90,12 @@ fun MainShellScreen(
 
     LaunchedEffect(selectedItem) {
         onAction(MainShellAction.OnHangoutsTabActiveChanged(isActive = selectedItem == LynkNavigationItem.HANGOUTS))
+    }
+
+    NotificationPermissionEffect(isEnabled = state.canReceiveNotifications) { permissionState ->
+        if (permissionState != PermissionState.GRANTED) {
+            onAction(MainShellAction.OnNotificationPermissionDenied)
+        }
     }
 
     // Common navigation action passed to both Rail and BottomBar

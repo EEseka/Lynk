@@ -95,12 +95,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     //   completionHandler(.newData)
     // }
     //
-    // Show the banner even while the app is open.
+    // Show the banner even while the app is open. iOS draws that banner itself, but nothing
+    // tells the unread badge, so the bridge object in composeApp/iosMain does, exactly as
+    // onMessageReceived does on Android.
     // func userNotificationCenter(
     //   _ center: UNUserNotificationCenter,
     //   willPresent notification: UNNotification,
     //   withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     // ) {
+    //   UnreadNotificationCounterBridge.shared.onPushReceivedInForeground()
     //   completionHandler([.banner])
     // }
     //

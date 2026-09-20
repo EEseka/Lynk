@@ -6,6 +6,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.util.DataError
@@ -128,8 +129,7 @@ class InvitePreviewViewModelTest {
         val hangoutId = createInvite()
         viewModel.onAction(InvitePreviewAction.Init(hangoutId))
         advanceUntilIdle()
-        hangoutService.shouldReturnError = true
-        hangoutService.errorToReturn = DataError.Remote.CONFLICT
+        hangoutService.rsvpErrorToReturn = DataError.Remote.CONFLICT
 
         viewModel.events.test {
             viewModel.onAction(InvitePreviewAction.OnAcceptClick)
@@ -138,6 +138,28 @@ class InvitePreviewViewModelTest {
             assertThat(awaitItem()).isInstanceOf(InvitePreviewEvent.Error::class)
             assertThat(viewModel.state.value.respondingTo).isNull()
         }
+    }
+
+    @Test
+    fun `a refused accept reloads the preview so the screen shows why`() = runTest {
+        val hangoutId = createInvite()
+        viewModel.onAction(InvitePreviewAction.Init(hangoutId))
+        advanceUntilIdle()
+
+        // The host canceled while the invite sat unopened
+        hangoutService.rsvpErrorToReturn = DataError.Remote.CONFLICT
+        hangoutService.hangouts = hangoutService.hangouts
+            .map { if (it.id == hangoutId) it.copy(status = HangoutStatus.CANCELLED) else it }
+            .toMutableList()
+
+        viewModel.events.test {
+            viewModel.onAction(InvitePreviewAction.OnAcceptClick)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isInstanceOf(InvitePreviewEvent.Error::class)
+        }
+
+        assertThat(viewModel.state.value.hangoutPreview?.status).isEqualTo(HangoutStatus.CANCELLED)
     }
 
     @Test
