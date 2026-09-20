@@ -32,7 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
@@ -196,7 +196,7 @@ private fun BankRow(
             contentAlignment = Alignment.Center
         ) {
             if (bank.logoUrl != null) {
-                AsyncImage(
+                LynkAsyncImage(
                     model = bank.logoUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Fit,

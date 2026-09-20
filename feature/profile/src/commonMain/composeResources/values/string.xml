@@ -22,6 +22,7 @@
 
     <string name="stat_hosted">Hosted</string>
     <string name="stat_attended">Attended</string>
+    <string name="stat_unknown">—</string>
 
     <string name="saved_spots">Saved Spots</string>
     <string name="saved_spots_empty_title">No saved spots yet</string>

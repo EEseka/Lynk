@@ -114,13 +114,15 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `hangout counts that fail to load stay at zero without a message`() = runTest {
+    fun `hangout counts that fail to load stay unknown without a message`() = runTest {
         hangoutService.shouldReturnError = true
 
         val viewModel = createViewModel(signedInAs = ada)
 
         viewModel.events.test {
-            assertThat(viewModel.state.value.hostedCount).isEqualTo(0L)
+            // Null, not zero: a zero would tell someone who has hosted plenty that they have not.
+            assertThat(viewModel.state.value.hostedCount).isNull()
+            assertThat(viewModel.state.value.attendedCount).isNull()
             assertThat(viewModel.state.value.isStatsLoading).isFalse()
             expectNoEvents()
         }
