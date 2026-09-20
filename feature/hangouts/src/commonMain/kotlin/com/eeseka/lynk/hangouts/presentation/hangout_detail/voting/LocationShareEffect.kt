@@ -6,10 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.eeseka.lynk.shared.domain.util.onSuccess
+import com.eeseka.lynk.shared.presentation.location.LocationAccuracy
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
-import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 
 @Composable
 fun LocationShareEffect(
@@ -17,24 +18,22 @@ fun LocationShareEffect(
     isConnected: Boolean,
     onShareLocation: (Double, Double) -> Unit
 ) {
-    val permissionController = rememberPermissionController()
-    val locationController = rememberLocationController()
+    // The lobby pins you on a shared map, so this is the one place the sharper fix is worth the wait.
+    val locationController = rememberLocationController(LocationAccuracy.Precise)
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
-    LaunchedEffect(enabled) {
-        if (!enabled) return@LaunchedEffect
-
-        permissionState = permissionController.getPermissionState(Permission.LOCATION)
-        if (permissionState == PermissionState.NOT_DETERMINED || permissionState == PermissionState.DENIED) {
-            permissionState = permissionController.requestPermission(Permission.LOCATION)
-        }
+    LocationPermissionEffect(isEnabled = enabled) { resolvedPermissionState ->
+        permissionState = resolvedPermissionState
     }
 
     LaunchedEffect(permissionState, enabled, isConnected) {
         if (!enabled || !isConnected) return@LaunchedEffect
         if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
 
-        val coordinate = locationController.getCurrentLocation() ?: return@LaunchedEffect
-        onShareLocation(coordinate.latitude, coordinate.longitude)
+        locationController.observeCurrentLocation().collect { locationResult ->
+            locationResult.onSuccess { coordinate ->
+                onShareLocation(coordinate.latitude, coordinate.longitude)
+            }
+        }
     }
 }

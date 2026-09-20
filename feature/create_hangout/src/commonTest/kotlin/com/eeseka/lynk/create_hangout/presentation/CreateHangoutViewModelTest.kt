@@ -129,7 +129,21 @@ class CreateHangoutViewModelTest {
     }
 
     @Test
-    fun `second OnLocationFetched does not re-fetch if trending already loaded`() = runTest {
+    fun `the same OnLocationFetched twice does not re-fetch trending`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        spotService.trendingSpotsList = mutableListOf(dummySpot, dummySpot.copy(id = "spot_2"))
+        viewModel.onAction(CreateHangoutAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.trendingSpots.size).isEqualTo(1)
+    }
+
+    @Test
+    fun `a sharper OnLocationFetched re-fetches trending around it`() = runTest {
         spotService.trendingSpotsList = mutableListOf(dummySpot)
         collectInBackground(viewModel.state)
         viewModel.onAction(CreateHangoutAction.OnLocationFetched(6.5, 3.3))
@@ -139,7 +153,8 @@ class CreateHangoutViewModelTest {
         viewModel.onAction(CreateHangoutAction.OnLocationFetched(7.0, 4.0))
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.trendingSpots.size).isEqualTo(1)
+        assertThat(viewModel.state.value.trendingSpots.size).isEqualTo(2)
+        assertThat(spotService.trendingRequestLocations.last()).isEqualTo(7.0 to 4.0)
     }
 
 

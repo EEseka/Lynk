@@ -17,6 +17,8 @@ import com.eeseka.lynk.shared.data.notification.KtorDeviceTokenService
 import com.eeseka.lynk.shared.data.notification.KtorNotificationService
 import com.eeseka.lynk.shared.data.payment.KtorPaymentService
 import com.eeseka.lynk.shared.data.profile.KtorUserService
+import com.eeseka.lynk.shared.data.location.DataStoreLastKnownLocationStorage
+import com.eeseka.lynk.shared.data.onboarding.DataStoreOnboardingStorage
 import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
 import com.eeseka.lynk.shared.data.spot.KtorSpotService
 import com.eeseka.lynk.shared.domain.auth.AuthService
@@ -33,6 +35,8 @@ import com.eeseka.lynk.shared.domain.notification.NotificationService
 import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
 import com.eeseka.lynk.shared.domain.payment.PaymentService
 import com.eeseka.lynk.shared.domain.profile.UserService
+import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
+import com.eeseka.lynk.shared.domain.onboarding.OnboardingStorage
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import kotlinx.serialization.json.Json
@@ -53,6 +57,8 @@ val sharedDataModule = module {
     singleOf(::KtorUserService) bind UserService::class
     singleOf(::DataStoreSessionStorage) bind SessionStorage::class
     singleOf(::DataStoreAppPreferences) bind AppPreferences::class
+    singleOf(::DataStoreOnboardingStorage) bind OnboardingStorage::class
+    singleOf(::DataStoreLastKnownLocationStorage) bind LastKnownLocationStorage::class
     singleOf(::NativeImageCompressionService) bind ImageCompressionService::class
     singleOf(::KtorSpotService) bind SpotService::class
     singleOf(::KtorHangoutService) bind HangoutService::class

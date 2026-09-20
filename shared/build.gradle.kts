@@ -92,6 +92,8 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.messaging)
             implementation(libs.koin.android)
+
+            implementation(libs.play.services.location)
         }
         commonMain.dependencies {
             implementation(libs.runtime)

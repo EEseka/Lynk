@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
-import com.eeseka.lynk.testing.data.FakeAppPreferences
+import com.eeseka.lynk.testing.data.FakeOnboardingStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -22,15 +22,15 @@ class OnboardingViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private lateinit var appPreferences: FakeAppPreferences
+    private lateinit var onboardingStorage: FakeOnboardingStorage
     private lateinit var viewModel: OnboardingViewModel
 
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
 
-        appPreferences = FakeAppPreferences()
-        viewModel = OnboardingViewModel(appPreferences)
+        onboardingStorage = FakeOnboardingStorage()
+        viewModel = OnboardingViewModel(onboardingStorage)
     }
 
     @AfterTest
@@ -43,7 +43,7 @@ class OnboardingViewModelTest {
         viewModel.onAction(OnboardingAction.OnGetStartedClick)
         advanceUntilIdle()
 
-        assertThat(appPreferences.hasSeenOnboarding.first()).isTrue()
+        assertThat(onboardingStorage.hasSeenOnboarding.first()).isTrue()
     }
 
     @Test

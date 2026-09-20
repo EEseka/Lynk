@@ -36,7 +36,7 @@ actual fun rememberMediaPicker(): MediaPicker {
     return remember { MediaPickerIos() }
 }
 
-class MediaPickerIos : MediaPicker {
+private class MediaPickerIos : MediaPicker {
     private var strongPickerDelegate: NSObject? = null
     private var strongCameraDelegate: NSObject? = null
 

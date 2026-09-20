@@ -9,18 +9,11 @@ class FakeAppPreferences : AppPreferences {
     private val themeFlow = MutableStateFlow(AppTheme.SYSTEM)
     override val theme: Flow<AppTheme> = themeFlow
 
-    private val hasSeenOnboardingFlow = MutableStateFlow(false)
-    override val hasSeenOnboarding: Flow<Boolean> = hasSeenOnboardingFlow
-
     private val arePushNotificationsEnabledFlow = MutableStateFlow(true)
     override val arePushNotificationsEnabled: Flow<Boolean> = arePushNotificationsEnabledFlow
 
     override suspend fun setTheme(theme: AppTheme) {
         themeFlow.value = theme
-    }
-
-    override suspend fun setOnboardingCompleted() {
-        hasSeenOnboardingFlow.value = true
     }
 
     override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {

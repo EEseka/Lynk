@@ -43,7 +43,7 @@ actual fun rememberMediaPicker(): MediaPicker {
     return mediaPicker
 }
 
-class MediaPickerAndroid(private val context: Context) : MediaPicker {
+private class MediaPickerAndroid(private val context: Context) : MediaPicker {
     private var galleryLauncher: (() -> Unit)? = null
     private var cameraLauncher: ((Uri) -> Unit)? = null
     private var permissionLauncher: (() -> Unit)? = null

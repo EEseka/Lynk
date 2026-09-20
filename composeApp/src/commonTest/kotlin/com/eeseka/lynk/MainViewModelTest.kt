@@ -14,6 +14,7 @@ import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
+import com.eeseka.lynk.testing.data.FakeOnboardingStorage
 import com.eeseka.lynk.testing.data.FakeDeviceTokenService
 import com.eeseka.lynk.testing.data.FakePushNotificationService
 import com.eeseka.lynk.testing.data.FakeSessionStorage
@@ -36,6 +37,7 @@ class MainViewModelTest {
 
     private lateinit var sessionStorage: FakeSessionStorage
     private lateinit var appPreferences: FakeAppPreferences
+    private lateinit var onboardingStorage: FakeOnboardingStorage
     private lateinit var deviceTokenService: FakeDeviceTokenService
     private lateinit var pushNotificationService: FakePushNotificationService
 
@@ -45,6 +47,7 @@ class MainViewModelTest {
 
         sessionStorage = FakeSessionStorage()
         appPreferences = FakeAppPreferences()
+        onboardingStorage = FakeOnboardingStorage()
         deviceTokenService = FakeDeviceTokenService()
         pushNotificationService = FakePushNotificationService()
     }
@@ -75,7 +78,7 @@ class MainViewModelTest {
     @Test
     fun `the theme and the onboarding flag come from the saved settings`() = runTest {
         appPreferences.setTheme(AppTheme.DARK)
-        appPreferences.setOnboardingCompleted()
+        onboardingStorage.setOnboardingCompleted()
 
         val viewModel = createViewModel()
 
@@ -191,6 +194,7 @@ class MainViewModelTest {
         val viewModel = MainViewModel(
             sessionStorage = sessionStorage,
             appPreferences = appPreferences,
+            onboardingStorage = onboardingStorage,
             deviceTokenService = deviceTokenService,
             pushNotificationService = pushNotificationService
         )
