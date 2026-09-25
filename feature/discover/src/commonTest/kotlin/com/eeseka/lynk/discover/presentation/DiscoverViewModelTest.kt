@@ -211,6 +211,20 @@ class DiscoverViewModelTest {
     }
 
     @Test
+    fun `search works off the last known location when there is no fix`() = runTest {
+        spotService.searchSpotsList = mutableListOf(dummySpot)
+        lastKnownLocationStorage.setLastKnownLocation(6.5, 3.3)
+        collectInBackground(viewModel.state)
+
+        viewModel.onAction(DiscoverAction.OnLocationUnavailable)
+        viewModel.state.value.searchTextState.typeText("Cafe")
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.searchResults.size).isEqualTo(1)
+        assertThat(viewModel.state.value.userLatitude).isNull()
+    }
+
+    @Test
     fun `saving a spot optimistically updates UI before API call`() = runTest {
         spotService.trendingSpotsList = mutableListOf(dummySpot)
         viewModel.onAction(DiscoverAction.OnLocationFetched(0.0, 0.0))

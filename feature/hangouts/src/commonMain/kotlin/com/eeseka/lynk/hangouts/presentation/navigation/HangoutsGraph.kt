@@ -21,6 +21,7 @@ fun NavGraphBuilder.hangoutsGraph(
     ) {
         composable<HangoutsGraphRoutes.HangoutsListDetail>(
             deepLinks = listOf(
+                navDeepLink { uriPattern = "https://lynk.com.ng/hangouts/{hangoutId}" },
                 navDeepLink { uriPattern = "lynk://hangout_detail/{hangoutId}" }
             )
         ) { backStackEntry ->

@@ -7,11 +7,11 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         namespace = "com.eeseka.lynk.profile_setup"
-        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+        androidResources { enable = true }
 
         withHostTest {}
     }
