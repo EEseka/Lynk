@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -100,12 +101,16 @@ import lynk.feature.discover.generated.resources.show_map_attribution
 import lynk.feature.discover.generated.resources.trending_load_error_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.maplibre.compose.camera.CameraAnimation
+import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.overlay.CompassButtonStyle
 import org.maplibre.compose.overlay.DisappearingCompassButton
 import org.maplibre.compose.overlay.DisappearingScaleBar
+import org.maplibre.compose.overlay.LocalViewportInsets
+import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
@@ -216,9 +221,9 @@ fun DiscoverScreen(
                         )
 
                         if (isLocateMeTap) {
-                            mapState.animateCameraPosition(
-                                position = userPosition,
-                                duration = currentPosition.flightDurationTo(userPosition)
+                            mapState.animateCamera(
+                                update = CameraUpdate(target = userPosition.target, zoom = userPosition.zoom),
+                                animation = CameraAnimation.Fly(duration = currentPosition.flightDurationTo(userPosition))
                             )
                         } else if (!hasCenteredOnUser) {
                             // Opening the screen lands on the user straight away
@@ -300,34 +305,39 @@ fun DiscoverScreen(
                     maxPitch = 60.0
                 ),
                 interactions = spotMapInteractions,
-                contentWindowInsets = WindowInsets(
-                    top = scaffoldPadding.calculateTopPadding() + 72.dp,
-                    left = 8.dp,
-                    right = 8.dp
-                ).union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                viewportInsets = WindowInsets(top = scaffoldPadding.calculateTopPadding() + 72.dp)
+                    .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .asPaddingValues()
             ) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .height(48.dp),
-                    contentAlignment = Alignment.CenterStart
+                        .fillMaxSize()
+                        .padding(LocalViewportInsets.current)
+                        .padding(horizontal = MapOverlay.Spacing)
                 ) {
-                    DisappearingScaleBar(
-                        metersPerDp = mapState.viewport?.metersPerDpAtTarget ?: 0.0,
-                        zoom = mapState.cameraPosition.zoom,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                        textStyle = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .height(48.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        DisappearingScaleBar(
+                            metersPerDp = { mapState.viewport?.metersPerDpAtTarget ?: 0.0 },
+                            zoom = { mapState.cameraPosition.zoom },
+                            color = MaterialTheme.colorScheme.onSurface,
+                            haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                            textStyle = MaterialTheme.typography.labelSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         )
+                    }
+                    DisappearingCompassButton(
+                        style = CompassButtonStyle(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd)
                     )
                 }
-                DisappearingCompassButton(
-                    style = CompassButtonStyle(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                    ),
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
 
                 if (userLatitude != null && userLongitude != null) {
                     UserLocationMapMarker(
