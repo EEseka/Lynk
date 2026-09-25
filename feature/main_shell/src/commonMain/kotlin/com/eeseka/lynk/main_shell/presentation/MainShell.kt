@@ -99,10 +99,14 @@ fun MainShellScreen(
     }
 
     // Common navigation action passed to both Rail and BottomBar
-    val onNavigate: (LynkNavigationItem) -> Unit = remember(innerNavController) {
-        { item ->
+    val onNavigate: (LynkNavigationItem) -> Unit = { item ->
+        val startDestinationId = innerNavController.graph.findStartDestination().id
+
+        if (item == LynkNavigationItem.DISCOVER) {
+            innerNavController.popBackStack(startDestinationId, inclusive = false, saveState = true)
+        } else {
             innerNavController.navigate(item.route) {
-                popUpTo(innerNavController.graph.findStartDestination().id) {
+                popUpTo(startDestinationId) {
                     saveState = true
                 }
                 launchSingleTop = true
