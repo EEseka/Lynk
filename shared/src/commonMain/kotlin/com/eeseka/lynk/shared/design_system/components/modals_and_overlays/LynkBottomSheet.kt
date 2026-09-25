@@ -13,7 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,13 +28,14 @@ import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 fun LynkBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+    sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
     isDismissibleByGesture: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
 
     // There is a weird scroll issue on ios with adaptive bottom sheet, so I'll just use m3
+    // Calf's native sheet also traps Compose dialogs inside it (full-screen photos) and only has medium/large heights
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = modifier,

@@ -23,7 +23,7 @@ composeBom = "2026.09.00"
 composeNavigationEvent = "1.1.0"
 
 # Compose
-material3 = "1.9.0"
+material3 = "1.12.0-alpha03" # Calf 0.14.0 pulls this exact version in at runtime
 
 # Extra Versions
 buildkonfig = "0.23.0"
