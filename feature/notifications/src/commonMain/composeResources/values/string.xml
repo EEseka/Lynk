@@ -33,7 +33,7 @@
 
     <!-- Money the host has to act on -->
     <string name="notification_payment_deadline_resolved">The payment deadline for %1$s has been settled</string>
-    <string name="notification_payment_deadline_needs_decision">%1$s needs your call on the guests who did not pay</string>
+    <string name="notification_payment_deadline_needs_decision">%1$s needs your call on the people who did not pay</string>
     <string name="notification_payment_deadline_changed">%1$s changed the payment deadline for %2$s</string>
     <string name="notification_payout_succeeded">%1$s from %2$s is on its way to your bank</string>
     <string name="notification_payout_failed">The %1$s payout for %2$s did not go through</string>
