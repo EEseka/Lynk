@@ -219,7 +219,7 @@ class DiscoverViewModel(
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
-        val locationFlow = state.map { Pair(it.userLatitude, it.userLongitude) }.distinctUntilChanged()
+        val locationFlow = trendingLocation.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
 
         combine(
             searchQueryFlow,
