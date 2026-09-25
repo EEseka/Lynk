@@ -40,6 +40,17 @@
                 <data android:host="hangout_detail" />
                 <data android:host="notifications" />
             </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
+                <data android:host="lynk.com.ng" />
+                <data android:pathPrefix="/hangouts/" />
+            </intent-filter>
         </activity>
 
         <provider
