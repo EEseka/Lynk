@@ -104,7 +104,7 @@ class SavedSpotsViewModel(
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeSearchQuery() {
-        snapshotFlow { _state.value.searchTextState.text.toString() }
+        snapshotFlow { _state.value.searchTextState.text.toString().trim() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .mapLatest { query ->
                 setupSavedSpotsPaginator(query.takeIf { it.isNotBlank() })

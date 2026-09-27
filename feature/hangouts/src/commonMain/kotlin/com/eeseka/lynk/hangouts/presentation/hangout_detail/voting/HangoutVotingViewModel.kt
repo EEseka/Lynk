@@ -396,7 +396,7 @@ class HangoutVotingViewModel(
 
     private fun observeProposeSpotSheetSearchFilters() {
         val searchQueryFlow =
-            snapshotFlow { _state.value.proposeSpotSheetSearchTextState.text.toString() }
+            snapshotFlow { _state.value.proposeSpotSheetSearchTextState.text.toString().trim() }
                 .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
         val tabFlow = state.map { it.activeProposeSpotSheetSearchTab }.distinctUntilChanged()
         val hasOriginFlow = state.map { it.center != null || it.myLocation != null }.distinctUntilChanged()
