@@ -7,6 +7,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.asEmptyResult
+import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +48,11 @@ class InMemoryHangoutDetailRepository(
             .getHangoutDetails(hangoutId)
             .onSuccess { hangout ->
                 hangouts.update { it + (hangoutId to hangout) }
+            }
+            .onFailure { error ->
+                if (error == DataError.Remote.NOT_FOUND || error == DataError.Remote.FORBIDDEN) {
+                    hangouts.update { it - hangoutId }
+                }
             }
             .asEmptyResult()
     }
