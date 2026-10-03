@@ -382,14 +382,21 @@ fun DiscoverScreen(
                 )
             }
 
+            // The larger of the two, not the sum: a corner hole punch in landscape counts as a bottom inset
+            val cornerControlsBottomPadding = maxOf(
+                mainShellPadding.calculateBottomPadding(),
+                WindowInsets.displayCutout.asPaddingValues().calculateBottomPadding()
+            ) + 16.dp
+
             // Attribution
             LynkDropDownMenu(
                 expanded = showAttributionMenu,
                 onDismissRequest = { showAttributionMenu = false },
                 modifier = Modifier
                     .align(Alignment.BottomStart)
+                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
                     .padding(
-                        bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
+                        bottom = cornerControlsBottomPadding,
                         start = 16.dp
                     ),
                 items = persistentListOf(
@@ -456,7 +463,7 @@ fun DiscoverScreen(
                     .align(Alignment.BottomEnd)
                     .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
                     .padding(
-                        bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
+                        bottom = cornerControlsBottomPadding,
                         end = 16.dp
                     )
             ) {
