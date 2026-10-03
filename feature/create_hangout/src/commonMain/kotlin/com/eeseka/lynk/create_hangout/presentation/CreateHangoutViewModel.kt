@@ -6,8 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidator
-import com.eeseka.lynk.create_hangout.domain.validation.HangoutDescriptionValidationState
-import com.eeseka.lynk.create_hangout.domain.validation.HangoutDescriptionValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidator
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidationState
@@ -15,6 +13,7 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
 import com.eeseka.lynk.create_hangout.presentation.mappers.toUiText
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
@@ -62,6 +61,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class CreateHangoutViewModel(
     private val hangoutService: HangoutService,
+    private val hangoutDetailRepository: HangoutDetailRepository,
     private val spotService: SpotService
 ) : ViewModel() {
     private val eventChannel = Channel<CreateHangoutEvent>()
@@ -120,15 +120,6 @@ class CreateHangoutViewModel(
                 val validationState = HangoutNameValidator.validate(name)
                 _state.update {
                     it.copy(hangoutNameError = if (hasAttemptedStepOne) validationState.toUiText() else null)
-                }
-            }
-            .launchIn(viewModelScope)
-
-        snapshotFlow { _state.value.hangoutDescriptionTextState.text.toString() }
-            .onEach { description ->
-                val validationState = HangoutDescriptionValidator.validate(description)
-                _state.update {
-                    it.copy(hangoutDescriptionError = if (hasAttemptedStepOne) validationState.toUiText() else null)
                 }
             }
             .launchIn(viewModelScope)
@@ -490,6 +481,7 @@ class CreateHangoutViewModel(
 
             result
                 .onSuccess { hangout ->
+                    if (currentState.originalHangout != null) hangoutDetailRepository.refreshHangout(hangout.id)
                     _state.update { it.copy(isSubmitting = false) }
                     eventChannel.send(CreateHangoutEvent.Success(hangout.id))
                 }
@@ -505,8 +497,6 @@ class CreateHangoutViewModel(
 
         val hangoutNameState =
             HangoutNameValidator.validate(_state.value.hangoutNameTextState.text.toString())
-        val hangoutDescriptionState =
-            HangoutDescriptionValidator.validate(_state.value.hangoutDescriptionTextState.text.toString())
         val hangoutDateState = HangoutDateValidator.validate(
             selectedDate = currentState.hangoutDate,
             today = currentDate
@@ -521,14 +511,12 @@ class CreateHangoutViewModel(
         _state.update {
             it.copy(
                 hangoutNameError = hangoutNameState.toUiText(),
-                hangoutDescriptionError = hangoutDescriptionState.toUiText(),
                 hangoutDateError = hangoutDateState.toUiText(),
                 hangoutTimeError = hangoutTimeState.toUiText()
             )
         }
 
         return hangoutNameState == HangoutNameValidationState.VALID &&
-                hangoutDescriptionState == HangoutDescriptionValidationState.VALID &&
                 hangoutDateState == HangoutDateValidationState.VALID &&
                 hangoutTimeState == HangoutTimeValidationState.VALID
     }

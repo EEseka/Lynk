@@ -7,6 +7,8 @@ import com.composables.icons.lucide.BadgeCheck
 import com.composables.icons.lucide.CalendarClock
 import com.composables.icons.lucide.CircleDollarSign
 import com.composables.icons.lucide.Clock
+import com.composables.icons.lucide.Hourglass
+import com.composables.icons.lucide.Images
 import com.composables.icons.lucide.Landmark
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
@@ -27,6 +29,7 @@ import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.notification_details_edited
 import lynk.feature.notifications.generated.resources.notification_hangout_cancelled
 import lynk.feature.notifications.generated.resources.notification_hangout_completed
+import lynk.feature.notifications.generated.resources.notification_hangout_completion_reminder
 import lynk.feature.notifications.generated.resources.notification_hangout_started
 import lynk.feature.notifications.generated.resources.notification_invite_cancelled
 import lynk.feature.notifications.generated.resources.notification_participant_invited
@@ -40,6 +43,7 @@ import lynk.feature.notifications.generated.resources.notification_payments_enab
 import lynk.feature.notifications.generated.resources.notification_payout_failed
 import lynk.feature.notifications.generated.resources.notification_payout_nothing_to_send
 import lynk.feature.notifications.generated.resources.notification_payout_succeeded
+import lynk.feature.notifications.generated.resources.notification_photos_added
 import lynk.feature.notifications.generated.resources.notification_refund_issued
 import lynk.feature.notifications.generated.resources.notification_removed_for_non_payment
 import lynk.feature.notifications.generated.resources.notification_schedule_changed
@@ -109,8 +113,18 @@ fun NotificationUi.toUiText(): UiText {
             arrayOf(hangoutName)
         )
 
+        NotificationType.HANGOUT_COMPLETION_REMINDER -> UiText.Resource(
+            Res.string.notification_hangout_completion_reminder,
+            arrayOf(hangoutName)
+        )
+
         NotificationType.HANGOUT_CANCELLED -> UiText.Resource(
             Res.string.notification_hangout_cancelled,
+            arrayOf(actor, hangoutName)
+        )
+
+        NotificationType.PHOTOS_ADDED -> UiText.Resource(
+            Res.string.notification_photos_added,
             arrayOf(actor, hangoutName)
         )
 
@@ -178,7 +192,9 @@ fun NotificationType.getIcon(): ImageVector {
 
         NotificationType.HANGOUT_STARTED -> Lucide.Play
         NotificationType.HANGOUT_COMPLETED -> Lucide.PartyPopper
+        NotificationType.HANGOUT_COMPLETION_REMINDER -> Lucide.Hourglass
         NotificationType.HANGOUT_CANCELLED -> Lucide.Ban
+        NotificationType.PHOTOS_ADDED -> Lucide.Images
 
         NotificationType.PAYMENT_DEADLINE_RESOLVED -> Lucide.BadgeCheck
         NotificationType.PAYMENT_DEADLINE_NEEDS_DECISION -> Lucide.TriangleAlert

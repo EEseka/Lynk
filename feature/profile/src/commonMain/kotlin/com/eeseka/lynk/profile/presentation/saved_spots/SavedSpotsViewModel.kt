@@ -8,6 +8,7 @@ import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.util.DataErrorException
 import com.eeseka.lynk.shared.domain.util.Paginator
 import com.eeseka.lynk.shared.domain.util.onFailure
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,6 +44,9 @@ class SavedSpotsViewModel(
 
     private val saveJobs = mutableMapOf<String, Job>()
 
+    // Spots whose cover already got one fresh look this visit, so a cover that is truly gone cannot loop
+    private val refreshedCoverSpotIds = mutableSetOf<String>()
+
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
@@ -58,7 +62,8 @@ class SavedSpotsViewModel(
 
     fun onAction(action: SavedSpotsAction) {
         when (action) {
-            is SavedSpotsAction.OnSpotSelected -> _state.update { it.copy(selectedSpotId = action.spotId) }
+            is SavedSpotsAction.OnSpotSelected -> selectSpot(action.spotId)
+            is SavedSpotsAction.OnCoverPhotoLoadFailed -> refreshCoverPhoto(action.spotId)
             SavedSpotsAction.OnDismissSpotDetail -> _state.update { it.copy(selectedSpotId = null) }
             is SavedSpotsAction.OnToggleSaveSpot -> toggleSaveSpot(
                 action.spotId,
@@ -66,6 +71,40 @@ class SavedSpotsViewModel(
             )
             SavedSpotsAction.LoadNextPage -> loadNextPage()
             SavedSpotsAction.OnRetryClick -> retryLoad()
+        }
+    }
+
+    private fun selectSpot(spotId: String) {
+        _state.update { it.copy(selectedSpotId = spotId) }
+
+        viewModelScope.launch {
+            spotService
+                .getSpotDetails(spotId)
+                .onSuccess { spot -> replaceSpot(spot) }
+                .onFailure { error -> eventChannel.send(SavedSpotsEvent.Error(error.toUiText())) }
+        }
+    }
+
+    // Google expires photo names, so a saved cover that fails to load gets the place fetched afresh, once
+    private fun refreshCoverPhoto(spotId: String) {
+        val isFirstAttempt = refreshedCoverSpotIds.add(spotId)
+        if (!isFirstAttempt) return
+
+        viewModelScope.launch {
+            spotService
+                .getSpotDetails(spotId)
+                .onSuccess { spot -> replaceSpot(spot) }
+        }
+    }
+
+    private fun replaceSpot(spot: Spot) {
+        _state.update { currentState ->
+            currentState.copy(
+                spots = currentState.spots.map {
+                    // The list's saved state wins, since an unsave may have happened while this was loading
+                    if (it.id == spot.id) spot.toSpotUi().copy(isSaved = it.isSaved) else it
+                }.toImmutableList()
+            )
         }
     }
 

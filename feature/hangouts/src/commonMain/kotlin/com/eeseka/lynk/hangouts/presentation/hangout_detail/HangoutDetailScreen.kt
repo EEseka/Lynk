@@ -32,6 +32,11 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHe
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesEvent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.components.MemoriesSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsEvent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsState
@@ -56,7 +61,9 @@ import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkPr
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_PHOTOS_PER_UPLOAD
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PAYMENTS
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PHOTOS
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
@@ -65,6 +72,7 @@ import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.coroutines.launch
@@ -86,6 +94,7 @@ import lynk.feature.hangouts.generated.resources.detail_leave_confirm_title
 import lynk.feature.hangouts.generated.resources.detail_left_message
 import lynk.feature.hangouts.generated.resources.detail_load_error_title
 import lynk.feature.hangouts.generated.resources.detail_withdrawn_message
+import lynk.feature.hangouts.generated.resources.memories_photos_added
 import lynk.feature.hangouts.generated.resources.payment_deadline_changed
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_title
@@ -100,6 +109,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 private sealed interface DetailBodyState {
     data object Loading : DetailBodyState
@@ -115,13 +125,16 @@ fun HangoutDetailRoot(
     navigateBack: () -> Unit,
     onHangoutLeft: () -> Unit,
     onEditHangoutClick: (HangoutUi) -> Unit,
+    navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
     viewModel: HangoutDetailViewModel = koinViewModel(),
     votingViewModel: HangoutVotingViewModel = koinViewModel(),
-    paymentsViewModel: HangoutPaymentsViewModel = koinViewModel()
+    paymentsViewModel: HangoutPaymentsViewModel = koinViewModel(),
+    memoriesViewModel: HangoutMemoriesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val votingState by votingViewModel.state.collectAsStateWithLifecycle()
     val paymentsState by paymentsViewModel.state.collectAsStateWithLifecycle()
+    val memoriesState by memoriesViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     ObserveAsEvents(viewModel.events) { event ->
@@ -138,12 +151,12 @@ fun HangoutDetailRoot(
 
             HangoutDetailEvent.HangoutCancelled -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.detail_cancelled_message),
-                type = LynkFlashType.Success
+                type = LynkFlashType.Info
             )
 
             HangoutDetailEvent.HangoutLeft -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.detail_left_message),
-                type = LynkFlashType.Success
+                type = LynkFlashType.Info
             )
 
             HangoutDetailEvent.InviteSent -> snackbarHostState.showFlashMessage(
@@ -153,7 +166,7 @@ fun HangoutDetailRoot(
 
             HangoutDetailEvent.InviteWithdrawn -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.detail_withdrawn_message),
-                type = LynkFlashType.Success
+                type = LynkFlashType.Info
             )
 
             is HangoutDetailEvent.LobbyAnnouncement -> snackbarHostState.showFlashMessage(
@@ -208,7 +221,7 @@ fun HangoutDetailRoot(
 
             HangoutPaymentsEvent.PayoutQueued -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.payment_payout_queued),
-                type = LynkFlashType.Success
+                type = LynkFlashType.Info
             )
 
             HangoutPaymentsEvent.PaymentPending -> snackbarHostState.showFlashMessage(
@@ -223,10 +236,25 @@ fun HangoutDetailRoot(
         }
     }
 
+    ObserveAsEvents(memoriesViewModel.events) { event ->
+        when (event) {
+            is HangoutMemoriesEvent.Error -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = LynkFlashType.Error
+            )
+
+            HangoutMemoriesEvent.PhotosAdded -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.memories_photos_added),
+                type = LynkFlashType.Success
+            )
+        }
+    }
+
     LaunchedEffect(hangoutId) {
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
         votingViewModel.onAction(HangoutVotingAction.OnSelectHangout(hangoutId))
         paymentsViewModel.onAction(HangoutPaymentsAction.OnSelectHangout(hangoutId))
+        memoriesViewModel.onAction(HangoutMemoriesAction.OnSelectHangout(hangoutId))
     }
 
     HangoutDetailScreen(
@@ -236,10 +264,13 @@ fun HangoutDetailRoot(
         onVotingAction = votingViewModel::onAction,
         paymentsState = paymentsState,
         onPaymentsAction = paymentsViewModel::onAction,
+        memoriesState = memoriesState,
+        onMemoriesAction = memoriesViewModel::onAction,
         snackbarHostState = snackbarHostState,
         isDetailPaneFullScreen = isDetailPaneFullScreen,
         navigateBack = navigateBack,
-        onEditClick = { state.hangout?.let(onEditHangoutClick) }
+        onEditClick = { state.hangout?.let(onEditHangoutClick) },
+        navigateToAlbum = navigateToAlbum
     )
 }
 
@@ -251,14 +282,18 @@ fun HangoutDetailScreen(
     onVotingAction: (HangoutVotingAction) -> Unit,
     paymentsState: HangoutPaymentsState,
     onPaymentsAction: (HangoutPaymentsAction) -> Unit,
+    memoriesState: HangoutMemoriesState,
+    onMemoriesAction: (HangoutMemoriesAction) -> Unit,
     snackbarHostState: SnackbarHostState,
     isDetailPaneFullScreen: Boolean,
     navigateBack: () -> Unit,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = rememberAppHaptic()
+    val mediaPicker = rememberMediaPicker()
 
     var showParticipantsSheet by remember { mutableStateOf(false) }
     var showChosenSpotSheet by remember { mutableStateOf(false) }
@@ -268,12 +303,18 @@ fun HangoutDetailScreen(
     var showOverflowMenu by remember { mutableStateOf(false) }
     var pendingCancelDecision by remember { mutableStateOf(false) }
 
+    // True while the picked photos are copied out of the picker, before the upload itself starts
+    var isPreparingPhotos by remember { mutableStateOf(false) }
+
     val hangout = state.hangout
     val isHost = hangout != null && hangout.hostId == state.currentUserId
     val isUpcoming = hangout != null &&
             (hangout.status == HangoutStatus.VOTING || hangout.status == HangoutStatus.SCHEDULED)
-    val showInvite = isHost && isUpcoming &&
+    // Invites stay open until the hangout ends, matching the server
+    val areInvitesOpen = isUpcoming || hangout?.status == HangoutStatus.ONGOING
+    val showInvite = isHost && areInvitesOpen &&
             hangout.payment.let { it == null || it.state == PaymentState.COLLECTING }
+    val canWithdraw = isHost && areInvitesOpen
     val inviteEnabled = run {
         if (hangout == null) return@run true
         val activeCount = hangout.participants.count {
@@ -291,6 +332,12 @@ fun HangoutDetailScreen(
     val canLeave = hangout != null && !isHost && isUpcoming
     val canEdit = isHost && isUpcoming
     val canComplete = hangout != null && isHost && hangout.status == HangoutStatus.ONGOING
+    val showCompletionReminder = canComplete && Clock.System.now() - hangout.scheduledAt > 1.days
+
+    val attendees = hangout?.participants?.filter { it.rsvpStatus == RsvpStatus.ATTENDING }.orEmpty()
+    val showMemories = hangout?.status == HangoutStatus.COMPLETED &&
+            attendees.size >= MIN_ATTENDEES_FOR_PHOTOS &&
+            attendees.any { it.user.userId == state.currentUserId }
 
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
@@ -400,6 +447,7 @@ fun HangoutDetailScreen(
                                 tiedSpotIds = votingState.tiedSpotIds,
                                 isClosingVoting = votingState.isClosingVoting,
                                 isCompleting = state.isCompleting,
+                                showCompletionReminder = showCompletionReminder,
                                 canCopyAddress = canCopyAddress,
                                 hasUnpaidGuests = unpaidCount > 0,
                                 hasCurrentUserPaid = hasCurrentUserPaid,
@@ -451,6 +499,36 @@ fun HangoutDetailScreen(
                                         CollectPaymentsSetup(
                                             state = paymentsState,
                                             onAction = onPaymentsAction
+                                        )
+                                    }
+                                },
+                                memories = {
+                                    if (showMemories) {
+                                        MemoriesSection(
+                                            photos = memoriesState.photos,
+                                            photoCount = memoriesState.photoCount,
+                                            remainingPhotoSlots = memoriesState.remainingPhotoSlots,
+                                            isLoadingPhotos = memoriesState.isLoadingPhotos,
+                                            isUploadingPhotos = memoriesState.isUploadingPhotos || isPreparingPhotos,
+                                            onPhotoClick = { photoId ->
+                                                navigateToAlbum(target.hangout.id, photoId)
+                                            },
+                                            onPhotoLoadFailed = {
+                                                onMemoriesAction(HangoutMemoriesAction.OnPhotoLoadFailed)
+                                            },
+                                            onSeeAllClick = { navigateToAlbum(target.hangout.id, null) },
+                                            onAddPhotosClick = {
+                                                coroutineScope.launch {
+                                                    isPreparingPhotos = true
+                                                    val images = mediaPicker.pickImages(
+                                                        minOf(MAX_PHOTOS_PER_UPLOAD, memoriesState.remainingPhotoSlots)
+                                                    )
+                                                    onMemoriesAction(
+                                                        HangoutMemoriesAction.OnPhotosPicked(images.map { it.uri })
+                                                    )
+                                                    isPreparingPhotos = false
+                                                }
+                                            }
                                         )
                                     }
                                 },
@@ -511,6 +589,7 @@ fun HangoutDetailScreen(
         ParticipantsSheet(
             participants = state.hangout.participants,
             isHost = isHost,
+            canWithdraw = canWithdraw,
             onDismiss = { showParticipantsSheet = false },
             onWithdraw = { onAction(HangoutDetailAction.OnWithdrawParticipantInvite(it)) },
             withdrawingUserIds = state.withdrawingUserIds,

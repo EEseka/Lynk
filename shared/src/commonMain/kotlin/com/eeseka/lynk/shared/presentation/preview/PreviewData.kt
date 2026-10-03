@@ -141,10 +141,7 @@ fun previewPayment(state: PaymentState = PaymentState.COLLECTING) = HangoutPayme
 )
 
 // The invite sheet's slimmer hangout: attendees only, no payment or RSVP detail.
-fun previewHangoutInvite(
-    status: HangoutStatus = HangoutStatus.SCHEDULED,
-    withSpot: Boolean = true
-) = HangoutPreviewUi(
+fun previewHangoutInvite(status: HangoutStatus = HangoutStatus.SCHEDULED) = HangoutPreviewUi(
     id = "h1",
     hostId = PREVIEW_HOST_ID,
     name = "Sunday Jollof Run",
@@ -154,7 +151,7 @@ fun previewHangoutInvite(
     scheduledAt = PREVIEW_SCHEDULED_AT,
     maxAttendees = 8,
     participantCount = 5,
-    chosenSpot = if (withSpot) previewSpot() else null,
+    chosenSpot = previewSpot(),
     attendees = previewUsers(4),
     createdAt = PREVIEW_CREATED_AT
 )

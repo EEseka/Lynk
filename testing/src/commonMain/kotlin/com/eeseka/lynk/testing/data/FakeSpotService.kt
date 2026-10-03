@@ -19,6 +19,10 @@ class FakeSpotService : SpotService {
     var savedSpots = mutableSetOf<String>()
     var trendingRequestLocations = mutableListOf<Pair<Double, Double>>()
 
+    // What Google would say about a place right now, when it differs from a saved snapshot
+    var spotDetailsList = mutableListOf<Spot>()
+    val detailsRequestIds = mutableListOf<String>()
+
     override suspend fun getTrendingSpots(
         latitude: Double,
         longitude: Double,
@@ -51,9 +55,10 @@ class FakeSpotService : SpotService {
     }
 
     override suspend fun getSpotDetails(spotId: String): Result<Spot, DataError.Remote> {
+        detailsRequestIds.add(spotId)
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
-        val spot = (trendingSpotsList + searchSpotsList + savedSpotsList).find { it.id == spotId }
+        val spot = (spotDetailsList + trendingSpotsList + searchSpotsList + savedSpotsList).find { it.id == spotId }
             ?: return Result.Failure(DataError.Remote.NOT_FOUND)
         return Result.Success(spot)
     }

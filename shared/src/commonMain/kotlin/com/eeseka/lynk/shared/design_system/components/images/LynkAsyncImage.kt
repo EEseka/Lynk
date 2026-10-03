@@ -29,7 +29,8 @@ fun LynkAsyncImage(
     model: Any?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale
+    contentScale: ContentScale,
+    onLoadFailed: () -> Unit = {}
 ) {
     var isLoading by remember(model) { mutableStateOf(true) }
     var hasFailed by remember(model) { mutableStateOf(false) }
@@ -62,6 +63,7 @@ fun LynkAsyncImage(
             onState = { state ->
                 isLoading = state is AsyncImagePainter.State.Loading
                 hasFailed = state is AsyncImagePainter.State.Error
+                if (hasFailed) onLoadFailed()
             },
             modifier = Modifier.matchParentSize()
         )

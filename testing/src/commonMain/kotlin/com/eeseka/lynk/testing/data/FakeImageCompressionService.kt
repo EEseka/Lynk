@@ -6,7 +6,7 @@ class FakeImageCompressionService : ImageCompressionService {
     var shouldFailCompress = false
     var shouldFailRead = false
 
-    override suspend fun compress(contentPath: String, thresholdBytes: Long): String? {
+    override suspend fun compress(contentPath: String, maxWidth: Int, thresholdBytes: Long): String? {
         if (shouldFailCompress) return null
         return "compressed_$contentPath"
     }

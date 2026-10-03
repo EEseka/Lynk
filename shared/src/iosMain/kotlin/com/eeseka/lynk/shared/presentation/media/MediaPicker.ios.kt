@@ -3,6 +3,9 @@ package com.eeseka.lynk.shared.presentation.media
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.eeseka.lynk.shared.domain.media.model.PickedImage
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.AVFoundation.AVAuthorizationStatusAuthorized
 import platform.AVFoundation.AVCaptureDevice
@@ -20,6 +23,7 @@ import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
+import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
@@ -28,6 +32,8 @@ import platform.UIKit.UIImagePickerControllerDelegateProtocol
 import platform.UIKit.UIImagePickerControllerOriginalImage
 import platform.UIKit.UIImagePickerControllerSourceType
 import platform.UIKit.UINavigationControllerDelegateProtocol
+import platform.UIKit.UIPresentationController
+import platform.UIKit.presentationController
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
@@ -41,43 +47,51 @@ private class MediaPickerIos : MediaPicker {
     private var strongCameraDelegate: NSObject? = null
 
     override suspend fun pickImage(): PickedImage? {
+        return pickImages(maxCount = 1).firstOrNull()
+    }
+
+    override suspend fun pickImages(maxCount: Int): List<PickedImage> {
+        if (maxCount < 1) return emptyList()
+
+        val results = presentPhotoPicker(selectionLimit = maxCount)
+        // iOS writes each photo out to a file, which can take a while for iCloud or HEIC photos
+        return coroutineScope {
+            results
+                .map { result -> async { loadPickedImage(result) } }
+                .awaitAll()
+                .filterNotNull()
+        }
+    }
+
+    private suspend fun presentPhotoPicker(selectionLimit: Int): List<PHPickerResult> {
         return suspendCancellableCoroutine { cont ->
             val controller = PHPickerViewController(PHPickerConfiguration().apply {
-                selectionLimit = 1
+                this.selectionLimit = selectionLimit.toLong()
                 filter = PHPickerFilter.imagesFilter
             })
 
-            val delegate = object : NSObject(), PHPickerViewControllerDelegateProtocol {
+            val delegate = object : NSObject(), PHPickerViewControllerDelegateProtocol,
+                UIAdaptivePresentationControllerDelegateProtocol {
                 override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
                     // Clear the strong ref to allow cleanup
                     strongPickerDelegate = null
 
                     picker.dismissViewControllerAnimated(true, null)
 
-                    val result = didFinishPicking.firstOrNull() as? PHPickerResult
-                    if (result != null) {
-                        result.itemProvider.loadFileRepresentationForTypeIdentifier("public.image") { url, _ ->
-                            if (url is NSURL) {
-                                // Copy to temp to ensure we own the file
-                                val newPath = copyToTemp(url)
-                                if (newPath != null) {
-                                    cont.resume(PickedImage(newPath, "image/jpeg"))
-                                } else {
-                                    cont.resume(null)
-                                }
-                            } else {
-                                cont.resume(null)
-                            }
-                        }
-                    } else {
-                        cont.resume(null)
-                    }
+                    cont.resume(didFinishPicking.filterIsInstance<PHPickerResult>())
+                }
+
+                // Swiping the picker down skips didFinishPicking, so it counts as picking nothing
+                override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {
+                    strongPickerDelegate = null
+                    if (cont.isActive) cont.resume(emptyList())
                 }
             }
 
             // Assign to strong reference BEFORE assigning to controller
             strongPickerDelegate = delegate
             controller.delegate = delegate
+            controller.presentationController?.delegate = delegate
 
             UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
                 controller,
@@ -145,6 +159,16 @@ private class MediaPickerIos : MediaPicker {
             cont.invokeOnCancellation {
                 controller.dismissViewControllerAnimated(true, null)
                 strongCameraDelegate = null
+            }
+        }
+    }
+
+    private suspend fun loadPickedImage(result: PHPickerResult): PickedImage? {
+        return suspendCancellableCoroutine { cont ->
+            result.itemProvider.loadFileRepresentationForTypeIdentifier("public.image") { url, _ ->
+                // Copy to temp to ensure we own the file
+                val newPath = url?.let(::copyToTemp)
+                cont.resume(newPath?.let { PickedImage(it, "image/jpeg") })
             }
         }
     }

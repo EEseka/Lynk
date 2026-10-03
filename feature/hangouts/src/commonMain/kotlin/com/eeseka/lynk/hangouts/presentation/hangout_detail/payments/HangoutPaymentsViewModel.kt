@@ -508,20 +508,24 @@ class HangoutPaymentsViewModel(
             paymentService
                 .initializePayment(hangoutId)
                 .onSuccess { initialization ->
+                    // A late answer for a hangout the user already left must not open its payment on the next one
+                    if (hangoutId != _hangoutId.value) return@onSuccess
                     _state.update {
                         it.copy(
                             paymentQuote = PaymentQuoteUi(
                                 shareLabel = initialization.netAmountKobo.toNairaString(),
                                 chargeLabel = initialization.amountKobo.toNairaString(),
                                 authorizationUrl = initialization.authorizationUrl
-                            )
+                            ),
+                            isInitializingPayment = false
                         )
                     }
                 }
                 .onFailure { error ->
+                    if (hangoutId != _hangoutId.value) return@onFailure
+                    _state.update { it.copy(isInitializingPayment = false) }
                     eventChannel.send(HangoutPaymentsEvent.Error(error.toUiText()))
                 }
-            _state.update { it.copy(isInitializingPayment = false) }
         }
     }
 
@@ -548,24 +552,27 @@ class HangoutPaymentsViewModel(
             paymentService
                 .verifyPayment(hangoutId)
                 .onSuccess { status ->
+                    if (hangoutId != _hangoutId.value) return@onSuccess
                     when (status) {
                         PaymentStatus.SUCCESS -> {
                             hangoutDetailRepository.refreshHangout(hangoutId)
-                            _state.update { it.copy(isAwaitingPaymentReturn = false) }
+                            _state.update { it.copy(isAwaitingPaymentReturn = false, isVerifyingPayment = false) }
                         }
                         PaymentStatus.PENDING -> {
+                            _state.update { it.copy(isVerifyingPayment = false) }
                             eventChannel.send(HangoutPaymentsEvent.PaymentPending)
                         }
                         PaymentStatus.FAILED, PaymentStatus.ABANDONED -> {
-                            _state.update { it.copy(isAwaitingPaymentReturn = false) }
+                            _state.update { it.copy(isAwaitingPaymentReturn = false, isVerifyingPayment = false) }
                             eventChannel.send(HangoutPaymentsEvent.PaymentNotCompleted)
                         }
                     }
                 }
                 .onFailure { error ->
+                    if (hangoutId != _hangoutId.value) return@onFailure
+                    _state.update { it.copy(isVerifyingPayment = false) }
                     eventChannel.send(HangoutPaymentsEvent.Error(error.toUiText()))
                 }
-            _state.update { it.copy(isVerifyingPayment = false) }
         }
     }
 

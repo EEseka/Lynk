@@ -247,8 +247,6 @@ fun ProfileScreen(
                         hapticFeedback(AppHaptic.ImpactLight)
                         onAction(ProfileAction.OnSettingsClick)
                     },
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(top = scaffoldPadding.calculateTopPadding(), end = 24.dp)

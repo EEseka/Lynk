@@ -105,6 +105,7 @@ class HangoutsListDetailViewModelTest {
                 rsvpStatus = RsvpStatus.ATTENDING
             ),
             LobbyEvent.HangoutUpdated(hangoutId = "hangout_1", hostDisplayName = "Ada"),
+            LobbyEvent.HangoutStarted(hangoutId = "hangout_1"),
             LobbyEvent.HangoutCompleted(hangoutId = "hangout_1", hostDisplayName = "Ada"),
             LobbyEvent.HangoutCancelled(hangoutId = "hangout_1", hostDisplayName = "Ada")
         )

@@ -237,6 +237,25 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
+    fun `a hangout that starts on its own refreshes without an announcement`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        joinAsGuest(hangoutId)
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            val index = hangoutService.hangouts.indexOfFirst { it.id == hangoutId }
+            hangoutService.hangouts[index] = hangoutService.hangouts[index].copy(status = HangoutStatus.ONGOING)
+            connectionClient.sendEvent(LobbyEvent.HangoutStarted(hangoutId))
+            advanceUntilIdle()
+
+            expectNoEvents()
+            assertThat(viewModel.state.value.hangout?.status).isEqualTo(HangoutStatus.ONGOING)
+        }
+    }
+
+    @Test
     fun `a payer is not told about their own payment`() = runTest {
         val hangoutId = createHangoutAsHost()
         joinAsGuest(hangoutId)
@@ -440,7 +459,27 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
-    fun `the invite sheet closes once the hangout is no longer upcoming`() = runTest {
+    fun `an invite already withdrawn from another device counts as withdrawn`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        hangoutService.inviteParticipant(hangoutId, GUEST_ID)
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+        hangoutService.removeParticipant(hangoutId, GUEST_ID)
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnWithdrawParticipantInvite(GUEST_ID))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.InviteWithdrawn)
+            val invitee = viewModel.state.value.hangout?.participants?.find { it.user.userId == GUEST_ID }
+            assertThat(invitee).isNull()
+            assertThat(viewModel.state.value.withdrawingUserIds).isEmpty()
+        }
+    }
+
+    @Test
+    fun `the invite sheet closes once the hangout is over`() = runTest {
         val hangoutId = createHangoutAsHost()
         joinAsGuest(hangoutId)
         val viewModel = createViewModel()
@@ -453,6 +492,22 @@ class HangoutDetailViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.isInviteSheetOpen).isFalse()
+    }
+
+    @Test
+    fun `the invite sheet stays open when the hangout starts`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+        viewModel.onAction(HangoutDetailAction.OnInviteClick)
+
+        val index = hangoutService.hangouts.indexOfFirst { it.id == hangoutId }
+        hangoutService.hangouts[index] = hangoutService.hangouts[index].copy(status = HangoutStatus.ONGOING)
+        connectionClient.sendEvent(LobbyEvent.HangoutStarted(hangoutId))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isInviteSheetOpen).isTrue()
     }
 
     @Test

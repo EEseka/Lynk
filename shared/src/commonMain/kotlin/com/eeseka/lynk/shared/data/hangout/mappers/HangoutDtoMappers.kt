@@ -3,14 +3,20 @@ package com.eeseka.lynk.shared.data.hangout.mappers
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutParticipantDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutPaymentDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutPhotoDto
+import com.eeseka.lynk.shared.data.hangout.dto.HangoutPhotoStatsDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutPreviewDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutStatsDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutSummaryDto
 import com.eeseka.lynk.shared.data.hangout.dto.HangoutUserDto
+import com.eeseka.lynk.shared.data.hangout.dto.response.HangoutPhotoUploadUrlsResponse
 import com.eeseka.lynk.shared.data.spot.mappers.toDomain
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPayment
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhoto
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhotoStats
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhotoUploadUrls
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
@@ -96,5 +102,33 @@ fun HangoutStatsDto.toDomain(): HangoutStats {
     return HangoutStats(
         hostedCount = hostedCount,
         attendedCount = attendedCount
+    )
+}
+
+fun HangoutPhotoDto.toDomain(): HangoutPhoto {
+    return HangoutPhoto(
+        id = id,
+        uploader = uploader.toDomain(),
+        caption = caption,
+        fullUrl = fullUrl,
+        thumbnailUrl = thumbnailUrl,
+        urlsExpireAt = urlsExpireAt,
+        createdAt = createdAt
+    )
+}
+
+fun HangoutPhotoStatsDto.toDomain(): HangoutPhotoStats {
+    return HangoutPhotoStats(
+        photoCount = photoCount,
+        myPhotoCount = myPhotoCount
+    )
+}
+
+fun HangoutPhotoUploadUrlsResponse.toDomain(): HangoutPhotoUploadUrls {
+    return HangoutPhotoUploadUrls(
+        photoId = photoId,
+        fullUploadUrl = fullUploadUrl,
+        thumbnailUploadUrl = thumbnailUploadUrl,
+        headers = headers
     )
 }

@@ -65,6 +65,8 @@
     <!-- Host actions -->
     <string name="detail_complete">Complete hangout</string>
     <string name="detail_completing">Completing…</string>
+    <string name="detail_completion_reminder_title">Did it end?</string>
+    <string name="detail_completion_reminder_message">Mark it complete to open the album for everyone who went.</string>
     <string name="detail_cancel">Cancel hangout</string>
     <string name="detail_update">Edit hangout</string>
     <string name="detail_completed_message">Hangout completed</string>
@@ -226,4 +228,40 @@
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
+
+    <!-- Memories -->
+    <string name="memories_title">Memories</string>
+    <string name="memories_title_with_count">Memories · %1$d</string>
+    <string name="memories_limit_reached">You have added the most you can, %1$d photos. Remove one to add another.</string>
+    <string name="memories_empty_title">No photos yet</string>
+    <string name="memories_empty_message">Add your shots from this hangout so everyone who went can see them.</string>
+    <string name="memories_add_photos">Add photos</string>
+    <string name="memories_adding_photos">Adding photos…</string>
+    <string name="memories_photos_added">Photos added</string>
+    <string name="memories_photo">Hangout photo</string>
+
+    <!-- Album and photo viewer -->
+    <string name="album_back">Back</string>
+    <string name="album_load_error_title">Couldn't load the album</string>
+    <string name="album_photo_position">%1$d / %2$d</string>
+    <string name="album_close_viewer">Close photo</string>
+    <string name="album_save_photo">Save to device</string>
+    <string name="album_share_photo">Share photo</string>
+    <string name="album_edit_caption">Edit caption</string>
+    <string name="album_delete_photo">Remove photo</string>
+    <string name="album_photo_saved">Saved to your photos</string>
+    <string name="album_save_failed">Couldn't save this photo. Check that Lynk may add to your photos, then try again.</string>
+    <string name="album_share_failed">Couldn't share this photo. Try again.</string>
+    <string name="album_caption_title">Caption</string>
+    <string name="album_caption_hint">Say something about this photo</string>
+    <string name="album_caption_counter">%1$d / %2$d</string>
+    <string name="album_caption_save">Save caption</string>
+    <string name="album_caption_saving">Saving…</string>
+    <string name="album_caption_updated">Caption updated</string>
+    <string name="album_delete_confirm_title">Remove this photo?</string>
+    <string name="album_delete_confirm_message">It will be gone from the album for everyone who went. This can't be undone.</string>
+    <string name="album_delete_confirm_action">Remove</string>
+    <string name="album_photo_deleted">Photo removed</string>
+    <string name="album_new_photos">New photos were added</string>
+    <string name="album_show_new_photos">Show</string>
 </resources>

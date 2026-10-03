@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.stringResource
 fun ParticipantsSheet(
     participants: ImmutableList<HangoutParticipantUi>,
     isHost: Boolean,
+    canWithdraw: Boolean,
     onDismiss: () -> Unit,
     onWithdraw: (String) -> Unit,
     withdrawingUserIds: ImmutableSet<String>,
@@ -62,6 +63,7 @@ fun ParticipantsSheet(
         ParticipantsSheetContent(
             participants = participants,
             isHost = isHost,
+            canWithdraw = canWithdraw,
             onWithdraw = onWithdraw,
             withdrawingUserIds = withdrawingUserIds,
             presentUserIds = presentUserIds,
@@ -76,6 +78,7 @@ fun ParticipantsSheet(
 private fun ParticipantsSheetContent(
     participants: ImmutableList<HangoutParticipantUi>,
     isHost: Boolean,
+    canWithdraw: Boolean,
     onWithdraw: (String) -> Unit,
     withdrawingUserIds: ImmutableSet<String>,
     presentUserIds: ImmutableSet<String>,
@@ -117,12 +120,14 @@ private fun ParticipantsSheetContent(
                 participantGroup(
                     title = pendingTitle,
                     participants = pending,
-                    trailing = { participant ->
-                        WithdrawControl(
-                            isLoading = participant.user.userId in withdrawingUserIds,
-                            onClick = { onWithdraw(participant.user.userId) }
-                        )
-                    }
+                    trailing = if (canWithdraw) {
+                        { participant ->
+                            WithdrawControl(
+                                isLoading = participant.user.userId in withdrawingUserIds,
+                                onClick = { onWithdraw(participant.user.userId) }
+                            )
+                        }
+                    } else null
                 )
             }
 
@@ -229,6 +234,7 @@ private fun ParticipantsSheetPreview(isHost: Boolean) {
         ParticipantsSheetContent(
             participants = previewRoster,
             isHost = isHost,
+            canWithdraw = isHost,
             onWithdraw = {},
             withdrawingUserIds = persistentSetOf(),
             presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2"),

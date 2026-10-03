@@ -4,10 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.media.ExifInterface
 import android.net.Uri
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import androidx.exifinterface.media.ExifInterface
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -23,11 +23,7 @@ import kotlin.math.roundToInt
 
 actual class ImageCompressor(private val context: Context, private val logger: LynkLogger) {
 
-    private companion object {
-        const val MAX_WIDTH = 1080
-    }
-
-    actual suspend fun compress(contentPath: String, thresholdBytes: Long): String? {
+    actual suspend fun compress(contentPath: String, maxWidth: Int, thresholdBytes: Long): String? {
         return withContext(Dispatchers.IO) {
             try {
                 val cleanPath = contentPath.trim()
@@ -77,7 +73,7 @@ actual class ImageCompressor(private val context: Context, private val logger: L
                 val displayWidth = if (quarterTurned) options.outHeight else options.outWidth
 
                 // Calculate Scale
-                options.inSampleSize = calculateInSampleSize(displayWidth)
+                options.inSampleSize = calculateInSampleSize(displayWidth, maxWidth)
                 options.inJustDecodeBounds = false
 
                 // Decode Bitmap
@@ -106,12 +102,12 @@ actual class ImageCompressor(private val context: Context, private val logger: L
                     currentCoroutineContext().ensureActive()
 
                     // Resize (if needed)
-                    if (bitmap.width > MAX_WIDTH) {
+                    if (bitmap.width > maxWidth) {
                         val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
-                        val targetHeight = (MAX_WIDTH * aspectRatio).roundToInt()
+                        val targetHeight = (maxWidth * aspectRatio).roundToInt()
 
                         try {
-                            val scaledBitmap = bitmap.scale(MAX_WIDTH, targetHeight)
+                            val scaledBitmap = bitmap.scale(maxWidth, targetHeight)
                             if (scaledBitmap != bitmap) {
                                 bitmap.recycle()
                                 bitmap = scaledBitmap
@@ -252,14 +248,14 @@ actual class ImageCompressor(private val context: Context, private val logger: L
     }
 
     // Only the width is capped, so only the width may drive the sample size.
-    // Testing the height here would shrink tall images below MAX_WIDTH.
-    private fun calculateInSampleSize(width: Int): Int {
+    // Testing the height here would shrink tall images below maxWidth.
+    private fun calculateInSampleSize(width: Int, maxWidth: Int): Int {
         var inSampleSize = 1
 
-        if (width > MAX_WIDTH) {
+        if (width > maxWidth) {
             val halfWidth = width / 2
 
-            while ((halfWidth / inSampleSize) >= MAX_WIDTH) {
+            while ((halfWidth / inSampleSize) >= maxWidth) {
                 inSampleSize *= 2
             }
         }

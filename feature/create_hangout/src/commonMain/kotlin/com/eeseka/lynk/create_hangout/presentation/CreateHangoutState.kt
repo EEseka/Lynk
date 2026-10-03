@@ -24,7 +24,6 @@ data class CreateHangoutState(
     val hangoutNameError: UiText? = null,
 
     val hangoutDescriptionTextState: TextFieldState = TextFieldState(),
-    val hangoutDescriptionError: UiText? = null,
 
     val hangoutVibe: HangoutVibe = HangoutVibe.CHILL,
 

@@ -22,6 +22,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Hourglass
+import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.VotingSection
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
@@ -52,6 +54,8 @@ import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_about
 import lynk.feature.hangouts.generated.resources.detail_complete
 import lynk.feature.hangouts.generated.resources.detail_completing
+import lynk.feature.hangouts.generated.resources.detail_completion_reminder_message
+import lynk.feature.hangouts.generated.resources.detail_completion_reminder_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -66,6 +70,7 @@ fun HangoutDetailContent(
     tiedSpotIds: ImmutableList<String>,
     isClosingVoting: Boolean,
     isCompleting: Boolean,
+    showCompletionReminder: Boolean,
     canCopyAddress: Boolean,
     hasUnpaidGuests: Boolean,
     hasCurrentUserPaid: Boolean,
@@ -83,6 +88,7 @@ fun HangoutDetailContent(
     onChosenSpotClick: () -> Unit,
     onCopyAddressClick: () -> Unit,
     paymentSetup: @Composable () -> Unit,
+    memories: @Composable () -> Unit,
     onPayClick: () -> Unit,
     onCheckPaymentClick: () -> Unit,
     onChangeDeadlineClick: () -> Unit,
@@ -197,6 +203,17 @@ fun HangoutDetailContent(
                 )
             }
 
+            memories()
+
+            if (showCompletionReminder) {
+                PlaceholderCard(
+                    icon = Lucide.Hourglass,
+                    title = stringResource(Res.string.detail_completion_reminder_title),
+                    message = stringResource(Res.string.detail_completion_reminder_message),
+                    iconTint = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
             if (isHost && hangout.status == HangoutStatus.ONGOING) {
                 LynkButton(
                     text = stringResource(Res.string.detail_complete),
@@ -257,6 +274,7 @@ private fun HangoutDetailContentPreview(
             tiedSpotIds = persistentListOf(),
             isClosingVoting = false,
             isCompleting = false,
+            showCompletionReminder = false,
             canCopyAddress = hangout.chosenSpot != null,
             hasUnpaidGuests = hangout.participants.any {
                 it.rsvpStatus == RsvpStatus.ATTENDING && !it.hasPaid
@@ -278,6 +296,7 @@ private fun HangoutDetailContentPreview(
             onChosenSpotClick = {},
             onCopyAddressClick = {},
             paymentSetup = {},
+            memories = {},
             onPayClick = {},
             onCheckPaymentClick = {},
             onChangeDeadlineClick = {},

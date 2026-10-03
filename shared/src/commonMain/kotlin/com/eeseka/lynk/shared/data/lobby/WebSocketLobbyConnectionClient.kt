@@ -10,6 +10,8 @@ import com.eeseka.lynk.shared.data.lobby.dto.LobbyHangoutDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyHostActionDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyParticipantDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyPayoutDto
+import com.eeseka.lynk.shared.data.lobby.dto.LobbyPhotoDto
+import com.eeseka.lynk.shared.data.lobby.dto.LobbyPhotosAddedDto
 import com.eeseka.lynk.shared.data.lobby.dto.LobbyRsvpDto
 import com.eeseka.lynk.shared.data.lobby.dto.PresenceDto
 import com.eeseka.lynk.shared.data.lobby.dto.VoteTallyDto
@@ -99,6 +101,11 @@ class WebSocketLobbyConnectionClient(
                 LobbyEvent.HangoutUpdated(dto.hangoutId, dto.hostDisplayName)
             }
 
+            IncomingLobbyMessageType.HANGOUT_STARTED -> {
+                val dto = json.decodeFromString<LobbyHangoutDto>(payload)
+                LobbyEvent.HangoutStarted(dto.hangoutId)
+            }
+
             IncomingLobbyMessageType.HANGOUT_COMPLETED -> {
                 val dto = json.decodeFromString<LobbyHostActionDto>(payload)
                 LobbyEvent.HangoutCompleted(dto.hangoutId, dto.hostDisplayName)
@@ -107,6 +114,16 @@ class WebSocketLobbyConnectionClient(
             IncomingLobbyMessageType.HANGOUT_CANCELLED -> {
                 val dto = json.decodeFromString<LobbyHostActionDto>(payload)
                 LobbyEvent.HangoutCancelled(dto.hangoutId, dto.hostDisplayName)
+            }
+
+            IncomingLobbyMessageType.PHOTOS_ADDED -> {
+                val dto = json.decodeFromString<LobbyPhotosAddedDto>(payload)
+                LobbyEvent.PhotosAdded(dto.hangoutId, dto.uploaderIds)
+            }
+
+            IncomingLobbyMessageType.PHOTO_DELETED -> {
+                val dto = json.decodeFromString<LobbyPhotoDto>(payload)
+                LobbyEvent.PhotoDeleted(dto.hangoutId, dto.photoId)
             }
 
             IncomingLobbyMessageType.PRESENCE_UPDATE -> {

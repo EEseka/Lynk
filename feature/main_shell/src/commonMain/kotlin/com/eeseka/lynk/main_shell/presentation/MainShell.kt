@@ -74,7 +74,9 @@ fun MainShellScreen(
     // open, so it is the only one that still reports up to us.
     val isFullScreenRoute = remember(currentDestination) {
         currentDestination?.hierarchy?.any {
-            it.hasRoute(HangoutsGraphRoutes.Notifications::class) || it.hasRoute(ProfileGraphRoutes.SavedSpots::class)
+            it.hasRoute(HangoutsGraphRoutes.Notifications::class) ||
+                    it.hasRoute(HangoutsGraphRoutes.HangoutAlbum::class) ||
+                    it.hasRoute(ProfileGraphRoutes.SavedSpots::class)
         } == true
     }
 

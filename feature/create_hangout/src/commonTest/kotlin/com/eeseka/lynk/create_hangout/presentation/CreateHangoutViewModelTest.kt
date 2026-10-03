@@ -2,6 +2,7 @@ package com.eeseka.lynk.create_hangout.presentation
 
 import app.cash.turbine.test
 import assertk.assertThat
+import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
@@ -18,6 +19,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.testing.collectInBackground
+import com.eeseka.lynk.testing.data.FakeHangoutDetailRepository
 import com.eeseka.lynk.testing.data.FakeHangoutService
 import com.eeseka.lynk.testing.data.FakeSpotService
 import com.eeseka.lynk.testing.typeText
@@ -45,6 +47,7 @@ class CreateHangoutViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var hangoutService: FakeHangoutService
+    private lateinit var hangoutDetailRepository: FakeHangoutDetailRepository
     private lateinit var spotService: FakeSpotService
     private lateinit var viewModel: CreateHangoutViewModel
 
@@ -86,8 +89,9 @@ class CreateHangoutViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         hangoutService = FakeHangoutService()
+        hangoutDetailRepository = FakeHangoutDetailRepository()
         spotService = FakeSpotService()
-        viewModel = CreateHangoutViewModel(hangoutService, spotService)
+        viewModel = CreateHangoutViewModel(hangoutService, hangoutDetailRepository, spotService)
     }
 
     @AfterTest
@@ -249,25 +253,6 @@ class CreateHangoutViewModelTest {
     }
 
     @Test
-    fun `OnNextStep with too long description surfaces hangoutDescriptionError and stays on step 1`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.state.value.hangoutNameTextState.typeText("Night Out")
-            viewModel.state.value.hangoutDescriptionTextState.typeText("a".repeat(501))
-            viewModel.onAction(CreateHangoutAction.OnDateSelected(futureDateMillis))
-            viewModel.onAction(CreateHangoutAction.OnTimeSelected(futureTime.hour, futureTime.minute))
-            advanceUntilIdle()
-
-            viewModel.onAction(CreateHangoutAction.OnNextStep)
-            advanceUntilIdle()
-
-            val state = expectMostRecentItem()
-            assertThat(state.hangoutDescriptionError).isNotNull()
-            assertThat(state.currentStep).isEqualTo(1)
-        }
-    }
-
-    @Test
     fun `OnNextStep with valid step 1 inputs advances to step 2`() = runTest {
         viewModel.state.test {
             awaitItem()
@@ -417,6 +402,30 @@ class CreateHangoutViewModelTest {
             val event = awaitItem()
             assertThat(event).isInstanceOf(CreateHangoutEvent.Success::class)
         }
+    }
+
+    @Test
+    fun `saving an edit refreshes the hangout everyone is watching`() = runTest {
+        hangoutService.createHangout(
+            name = "Existing Hangout",
+            description = null,
+            vibe = HangoutVibe.FOOD,
+            scheduledAt = futureInstant,
+            maxAttendees = null,
+            spotId = null
+        )
+        val hangoutId = hangoutService.hangouts.last().id
+        collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.InitEditMode(dummyHangoutUi.copy(id = hangoutId)))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(CreateHangoutAction.OnSubmitClick)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isInstanceOf(CreateHangoutEvent.Success::class)
+        }
+        assertThat(hangoutDetailRepository.refreshedHangoutIds).containsExactly(hangoutId)
     }
 
     @Test

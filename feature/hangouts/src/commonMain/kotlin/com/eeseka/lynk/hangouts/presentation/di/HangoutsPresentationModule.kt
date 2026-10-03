@@ -1,6 +1,8 @@
 package com.eeseka.lynk.hangouts.presentation.di
 
+import com.eeseka.lynk.hangouts.presentation.hangout_album.HangoutAlbumViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingViewModel
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListViewModel
@@ -14,4 +16,6 @@ val hangoutsPresentationModule = module {
     viewModelOf(::HangoutDetailViewModel)
     viewModelOf(::HangoutVotingViewModel)
     viewModelOf(::HangoutPaymentsViewModel)
+    viewModelOf(::HangoutMemoriesViewModel)
+    viewModelOf(::HangoutAlbumViewModel)
 }
