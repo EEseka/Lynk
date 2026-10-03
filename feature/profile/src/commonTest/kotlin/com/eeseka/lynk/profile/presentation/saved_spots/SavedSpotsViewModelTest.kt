@@ -180,6 +180,49 @@ class SavedSpotsViewModelTest {
         assertThat(viewModel.state.value.selectedSpotId).isNull()
     }
 
+    @Test
+    fun `selecting a spot swaps the saved snapshot for the full spot`() = runTest {
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+        spotService.spotDetailsList = mutableListOf(
+            savedSpot(id = "spot_1", name = "The Lounge").copy(photoUrls = listOf("fresh_1", "fresh_2"))
+        )
+
+        viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_1"))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.spots.first { it.id == "spot_1" }.photoUrls)
+            .containsExactly("fresh_1", "fresh_2")
+    }
+
+    @Test
+    fun `an unsave made while the full spot loads is kept`() = runTest {
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+
+        viewModel.onAction(SavedSpotsAction.OnToggleSaveSpot(spotId = "spot_1", isCurrentlySaved = true))
+        viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_1"))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.spots.first { it.id == "spot_1" }.isSaved).isFalse()
+    }
+
+    @Test
+    fun `a cover that fails to load fetches the place afresh only once`() = runTest {
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+        spotService.spotDetailsList = mutableListOf(
+            savedSpot(id = "spot_1", name = "The Lounge").copy(photoUrls = listOf("fresh_1"))
+        )
+
+        viewModel.onAction(SavedSpotsAction.OnCoverPhotoLoadFailed("spot_1"))
+        viewModel.onAction(SavedSpotsAction.OnCoverPhotoLoadFailed("spot_1"))
+        advanceUntilIdle()
+
+        assertThat(spotService.detailsRequestIds).containsExactly("spot_1")
+        assertThat(viewModel.state.value.spots.first { it.id == "spot_1" }.photoUrls).containsExactly("fresh_1")
+    }
+
     private fun savedSpot(id: String, name: String) = Spot(
         id = id, name = name, category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = true,

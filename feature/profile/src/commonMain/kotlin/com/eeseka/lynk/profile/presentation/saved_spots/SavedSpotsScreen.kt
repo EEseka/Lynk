@@ -211,6 +211,9 @@ fun SavedSpotsScreen(
                                         onAction(
                                             SavedSpotsAction.OnToggleSaveSpot(spot.id, spot.isSaved)
                                         )
+                                    },
+                                    onPhotoLoadFailed = {
+                                        onAction(SavedSpotsAction.OnCoverPhotoLoadFailed(spot.id))
                                     }
                                 )
                             }

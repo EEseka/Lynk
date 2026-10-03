@@ -28,8 +28,10 @@
 
     <!-- Where the hangout is in its life -->
     <string name="notification_hangout_started">%1$s is starting now</string>
-    <string name="notification_hangout_completed">%1$s is done</string>
+    <string name="notification_hangout_completed">%1$s is all done. Got photos from it? The album is open</string>
+    <string name="notification_hangout_completion_reminder">Did %1$s end? Mark it complete to open the album</string>
     <string name="notification_hangout_cancelled">%1$s called %2$s off</string>
+    <string name="notification_photos_added">%1$s added new photos to %2$s</string>
 
     <!-- Money the host has to act on -->
     <string name="notification_payment_deadline_resolved">The payment deadline for %1$s has been settled</string>
@@ -62,4 +64,7 @@
     <string name="invite_preview_attendees">Already going</string>
     <string name="invite_preview_withdrawn">That invite was withdrawn</string>
     <string name="invite_preview_cannot_join">You can't join this hangout right now</string>
+    <string name="invite_preview_already_declined">You already declined this invite</string>
+    <string name="invite_preview_ended">This hangout has ended</string>
+    <string name="invite_preview_cancelled">This hangout was cancelled</string>
 </resources>

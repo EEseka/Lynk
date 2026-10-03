@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +51,7 @@ import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.date
 import lynk.feature.create_hangout.generated.resources.decrease_max_people
 import lynk.feature.create_hangout.generated.resources.hangout_description
+import lynk.feature.create_hangout.generated.resources.hangout_description_counter
 import lynk.feature.create_hangout.generated.resources.hangout_description_placeholder
 import lynk.feature.create_hangout.generated.resources.hangout_name
 import lynk.feature.create_hangout.generated.resources.hangout_name_placeholder
@@ -62,12 +65,13 @@ import lynk.feature.create_hangout.generated.resources.unlimited
 import lynk.feature.create_hangout.generated.resources.vibe
 import org.jetbrains.compose.resources.stringResource
 
+private const val MAX_DESCRIPTION_LENGTH = 500
+
 @Composable
 fun CreateHangoutStepOne(
     nameState: TextFieldState,
     nameErrorMessage: String?,
     descriptionState: TextFieldState,
-    descriptionErrorMessage: String?,
     vibe: HangoutVibe,
     dateValue: String?,
     dateMillis: Long?,
@@ -115,7 +119,12 @@ fun CreateHangoutStepOne(
             label = stringResource(Res.string.hangout_description),
             placeholder = stringResource(Res.string.hangout_description_placeholder),
             singleLine = false,
-            errorMessage = descriptionErrorMessage,
+            helperText = stringResource(
+                Res.string.hangout_description_counter,
+                descriptionState.text.length,
+                MAX_DESCRIPTION_LENGTH
+            ),
+            inputTransformation = InputTransformation.maxLength(MAX_DESCRIPTION_LENGTH),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 imeAction = ImeAction.Done
@@ -262,7 +271,6 @@ private fun CreateHangoutStepOnePreview(
             nameState = TextFieldState("Suya Night 🔥"),
             nameErrorMessage = nameErrorMessage,
             descriptionState = TextFieldState("Friday night chills with the guys."),
-            descriptionErrorMessage = null,
             vibe = HangoutVibe.CHILL,
             dateValue = "Wed 20 May",
             dateMillis = null,

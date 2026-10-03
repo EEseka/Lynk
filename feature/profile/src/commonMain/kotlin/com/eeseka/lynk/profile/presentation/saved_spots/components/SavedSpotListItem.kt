@@ -62,6 +62,7 @@ fun SavedSpotListItem(
     isSaved: Boolean,
     onClick: () -> Unit,
     onToggleSave: () -> Unit,
+    onPhotoLoadFailed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val primaryPhotoUrl = remember(spotPhotos) {
@@ -92,6 +93,7 @@ fun SavedSpotListItem(
                         model = imageRequest,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        onLoadFailed = onPhotoLoadFailed,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -201,6 +203,7 @@ private fun SavedSpotListItemPreview() {
             isSaved = true,
             onClick = {},
             onToggleSave = {},
+            onPhotoLoadFailed = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)

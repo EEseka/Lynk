@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Locate
@@ -23,11 +24,13 @@ fun LynkTonalIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    containerColor: Color = Color.Unspecified,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     content: @Composable () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
+    val fillColor = containerColor.takeOrElse { scheme.surfaceContainerHigh }
+    val frostColor = containerColor.takeOrElse { scheme.surfaceContainerHigh.copy(alpha = 0.6f) }
 
     AdaptiveButton(
         onClick = onClick,
@@ -35,14 +38,14 @@ fun LynkTonalIconButton(
         enabled = enabled,
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
+            containerColor = fillColor,
             contentColor = contentColor,
             disabledContainerColor = scheme.onSurface.copy(alpha = 0.1f),
             disabledContentColor = scheme.onSurfaceVariant.copy(alpha = 0.38f)
         ),
         liquidGlassColors = LiquidGlassButtonColors(
             tintColor = containerColor,
-            surfaceColor = containerColor,
+            surfaceColor = frostColor,
             contentColor = contentColor,
             disabledContentColor = scheme.onSurfaceVariant.copy(alpha = 0.38f)
         ),

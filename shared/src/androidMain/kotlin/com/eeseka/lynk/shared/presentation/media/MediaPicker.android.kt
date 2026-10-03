@@ -11,7 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import com.eeseka.lynk.shared.domain.media.model.PickedImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 import kotlin.coroutines.Continuation
@@ -26,6 +30,10 @@ actual fun rememberMediaPicker(): MediaPicker {
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri -> mediaPicker.onPickImageResult(uri) }
 
+    val multipleGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(MAX_PICKABLE_IMAGES)
+    ) { uris -> mediaPicker.onPickImagesResult(uris) }
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success -> mediaPicker.onCaptureImageResult(success) }
@@ -35,7 +43,10 @@ actual fun rememberMediaPicker(): MediaPicker {
     ) { isGranted -> mediaPicker.onPermissionResult(isGranted) }
 
     mediaPicker.registerLaunchers(
-        galleryLauncher = { galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+        galleryLauncher = { galleryLauncher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+        multipleGalleryLauncher = { maxCount ->
+            multipleGalleryLauncher.launch(PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly, maxItems = maxCount))
+        },
         cameraLauncher = { uri -> cameraLauncher.launch(uri) },
         permissionLauncher = { permissionLauncher.launch(Manifest.permission.CAMERA) }
     )
@@ -43,39 +54,68 @@ actual fun rememberMediaPicker(): MediaPicker {
     return mediaPicker
 }
 
+// The most the multiple picker can ever allow; each launch can only lower it
+private const val MAX_PICKABLE_IMAGES = 10
+
 private class MediaPickerAndroid(private val context: Context) : MediaPicker {
     private var galleryLauncher: (() -> Unit)? = null
+    private var multipleGalleryLauncher: ((Int) -> Unit)? = null
     private var cameraLauncher: ((Uri) -> Unit)? = null
     private var permissionLauncher: (() -> Unit)? = null
 
-    private var activeContinuation: Continuation<PickedImage?>? = null
+    private var activeCameraContinuation: Continuation<PickedImage?>? = null
+    private var activeUriContinuation: Continuation<Uri?>? = null
+    private var activeUrisContinuation: Continuation<List<Uri>>? = null
     private var tempImageUri: Uri? = null
 
     fun registerLaunchers(
         galleryLauncher: () -> Unit,
+        multipleGalleryLauncher: (Int) -> Unit,
         cameraLauncher: (Uri) -> Unit,
         permissionLauncher: () -> Unit
     ) {
         this.galleryLauncher = galleryLauncher
+        this.multipleGalleryLauncher = multipleGalleryLauncher
         this.cameraLauncher = cameraLauncher
         this.permissionLauncher = permissionLauncher
     }
 
     override suspend fun pickImage(): PickedImage? {
-        return suspendCancellableCoroutine { cont ->
-            activeContinuation = cont
+        val uri = suspendCancellableCoroutine<Uri?> { cont ->
+            activeUriContinuation = cont
             galleryLauncher?.invoke()
+        } ?: return null
+
+        return withContext(Dispatchers.IO) {
+            uri.toPickedImage()
+        }
+    }
+
+    override suspend fun pickImages(maxCount: Int): List<PickedImage> {
+        if (maxCount < 1) return emptyList()
+        if (maxCount == 1) return listOfNotNull(pickImage())
+
+        val uris = suspendCancellableCoroutine { cont ->
+            activeUrisContinuation = cont
+            multipleGalleryLauncher?.invoke(maxCount)
+        }
+
+        // Copied off the main thread, since a handful of full photos is a lot of bytes
+        return withContext(Dispatchers.IO) {
+            // Old phones without the photo picker fall back to a file chooser that ignores the limit
+            uris.take(maxCount)
+                .map { uri -> async { uri.toPickedImage() } }
+                .awaitAll()
+                .filterNotNull()
         }
     }
 
     override suspend fun captureImage(): PickedImage? {
         return suspendCancellableCoroutine { cont ->
-            activeContinuation = cont
+            activeCameraContinuation = cont
             permissionLauncher?.invoke()
         }
     }
-
-    // --- Internal Logic ---
 
     fun onPermissionResult(isGranted: Boolean) {
         if (isGranted) {
@@ -84,40 +124,41 @@ private class MediaPickerAndroid(private val context: Context) : MediaPicker {
                 tempImageUri = uri
                 cameraLauncher?.invoke(uri)
             } else {
-                activeContinuation?.resume(null)
-                activeContinuation = null
+                activeCameraContinuation?.resume(null)
+                activeCameraContinuation = null
             }
         } else {
-            activeContinuation?.resume(null)
-            activeContinuation = null
+            activeCameraContinuation?.resume(null)
+            activeCameraContinuation = null
         }
     }
 
     fun onCaptureImageResult(success: Boolean) {
         if (success && tempImageUri != null) {
             val filePath = tempImageUri.toString()
-            activeContinuation?.resume(PickedImage(filePath, "image/jpeg"))
+            activeCameraContinuation?.resume(PickedImage(filePath, "image/jpeg"))
         } else {
-            activeContinuation?.resume(null)
+            activeCameraContinuation?.resume(null)
         }
-        activeContinuation = null
+        activeCameraContinuation = null
         tempImageUri = null
     }
 
     fun onPickImageResult(uri: Uri?) {
-        if (uri != null) {
-            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
-            val cachedFile = copyUriToCache(context, uri)
-            if (cachedFile != null) {
-                val fileUri = Uri.fromFile(cachedFile).toString()
-                activeContinuation?.resume(PickedImage(fileUri, mimeType))
-            } else {
-                activeContinuation?.resume(null)
-            }
-        } else {
-            activeContinuation?.resume(null)
+        activeUriContinuation?.resume(uri)
+        activeUriContinuation = null
+    }
+
+    fun onPickImagesResult(uris: List<Uri>) {
+        activeUrisContinuation?.resume(uris)
+        activeUrisContinuation = null
+    }
+
+    private fun Uri.toPickedImage(): PickedImage? {
+        val mimeType = context.contentResolver.getType(this) ?: "image/jpeg"
+        return copyUriToCache(context, this)?.let { file ->
+            PickedImage(Uri.fromFile(file).toString(), mimeType)
         }
-        activeContinuation = null
     }
 
     private fun createTempCacheUri(): Uri? {
@@ -141,8 +182,10 @@ private class MediaPickerAndroid(private val context: Context) : MediaPicker {
             val fileName = "picked_${UUID.randomUUID()}.jpg"
             val file = File(directory, fileName)
 
-            file.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+            inputStream.use { input ->
+                file.outputStream().use { outputStream ->
+                    input.copyTo(outputStream)
+                }
             }
             file
         } catch (_: Exception) {

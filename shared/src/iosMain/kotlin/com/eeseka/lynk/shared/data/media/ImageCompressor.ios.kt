@@ -60,14 +60,15 @@ actual class ImageCompressor(
 ) {
 
     private companion object {
-        const val MAX_WIDTH = 1080.0
         const val START_QUALITY = 90
         const val MIN_QUALITY = 10
         const val QUALITY_STEP = 10
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun compress(contentPath: String, thresholdBytes: Long): String? {
+    actual suspend fun compress(contentPath: String, maxWidth: Int, thresholdBytes: Long): String? {
+        val targetWidth = maxWidth.toDouble()
+
         return withContext(Dispatchers.Default) {
             try {
                 // Load Data
@@ -77,7 +78,7 @@ actual class ImageCompressor(
                 // Decode already scaled down where possible, so a large photo is never
                 // fully decoded into memory. Any failure falls back to a plain decode.
                 val scaled = try {
-                    decodeScaledToWidth(data)
+                    decodeScaledToWidth(data, targetWidth)
                 } catch (e: Exception) {
                     currentCoroutineContext().ensureActive()
                     logger.error("Scaled decode failed, falling back to full decode", e)
@@ -98,11 +99,11 @@ actual class ImageCompressor(
                 val (currentWidth, currentHeight) = image.size.useContents { width to height }
 
                 // Safety check: Avoid divide by zero
-                if (currentWidth > 0 && currentHeight > 0 && currentWidth > MAX_WIDTH) {
+                if (currentWidth > 0 && currentHeight > 0 && currentWidth > targetWidth) {
 
                     // Switch to Main Thread for drawing (Required for UIKit)
                     val newImage = withContext(Dispatchers.Main) {
-                        image.resize(MAX_WIDTH, currentWidth, currentHeight)
+                        image.resize(targetWidth, currentWidth, currentHeight)
                     }
 
                     if (newImage != null) {
@@ -178,7 +179,7 @@ actual class ImageCompressor(
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun decodeScaledToWidth(data: NSData): UIImage? {
+    private fun decodeScaledToWidth(data: NSData, targetWidth: Double): UIImage? {
         val cfData = CFBridgingRetain(data)?.reinterpret<__CFData>() ?: return null
 
         try {
@@ -198,11 +199,11 @@ actual class ImageCompressor(
                 val displayWidth = if (quarterTurned) pixelHeight else pixelWidth
 
                 // Nothing to gain when the image is already within the cap
-                if (displayWidth <= MAX_WIDTH) return null
+                if (displayWidth <= targetWidth) return null
 
                 // The thumbnail cap applies to the longest edge, but only the width
                 // is capped here, so scale the cap by the same ratio the width needs
-                val scale = MAX_WIDTH / displayWidth
+                val scale = targetWidth / displayWidth
                 val maxPixelSize = (max(pixelWidth, pixelHeight) * scale).roundToInt()
                 if (maxPixelSize <= 0) return null
 

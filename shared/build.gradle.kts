@@ -88,6 +88,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.compose.ui.tooling)
             implementation(libs.androidx.lifecycle.process)
+            implementation(libs.androidx.exifinterface)
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.messaging)

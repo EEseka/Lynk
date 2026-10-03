@@ -179,12 +179,18 @@ class HangoutDetailViewModel(
                 ) to LynkFlashType.Info
             )
 
+            // The "has started" push already told everyone who is going.
+            is LobbyEvent.HangoutStarted -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = null
+            )
+
             is LobbyEvent.HangoutCompleted -> refreshDetailAndShowSnackbar(
                 match = event.hangoutId == currentHangoutId,
                 snackbar = if (isHost) null else UiText.Resource(
                     Res.string.event_completed,
                     arrayOf(event.hostDisplayName)
-                ) to LynkFlashType.Success
+                ) to LynkFlashType.Info
             )
 
             is LobbyEvent.HangoutCancelled -> refreshDetailAndShowSnackbar(
@@ -231,7 +237,7 @@ class HangoutDetailViewModel(
                 eventChannel.send(HangoutDetailEvent.Error(event.toUiText()))
             }
 
-            // The ballot events belong to HangoutVotingViewModel.
+            // The ballot events belong to HangoutVotingViewModel, the photo ones to HangoutMemoriesViewModel.
             else -> Unit
         }
     }
@@ -327,8 +333,11 @@ class HangoutDetailViewModel(
             .onEach { hangout ->
                 _state.update { it.copy(hangout = hangout?.toHangoutUi()) }
 
-                val isUpcoming = hangout?.status == HangoutStatus.VOTING || hangout?.status == HangoutStatus.SCHEDULED
-                if (hangout != null && state.value.isInviteSheetOpen && !isUpcoming) {
+                // Invites stay open until the hangout ends, matching the server
+                val areInvitesOpen = hangout?.status == HangoutStatus.VOTING ||
+                        hangout?.status == HangoutStatus.SCHEDULED ||
+                        hangout?.status == HangoutStatus.ONGOING
+                if (hangout != null && state.value.isInviteSheetOpen && !areInvitesOpen) {
                     dismissInviteSheet()
                 }
             }
@@ -428,6 +437,13 @@ class HangoutDetailViewModel(
                     eventChannel.send(HangoutDetailEvent.InviteWithdrawn)
                 }
                 .onFailure { error ->
+                    // Already withdrawn from another device, which is what was asked for
+                    if (error == DataError.Remote.NOT_FOUND) {
+                        hangoutDetailRepository.refreshHangout(hangoutId)
+                        eventChannel.send(HangoutDetailEvent.InviteWithdrawn)
+                        return@onFailure
+                    }
+
                     eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
                 }
             _state.update {

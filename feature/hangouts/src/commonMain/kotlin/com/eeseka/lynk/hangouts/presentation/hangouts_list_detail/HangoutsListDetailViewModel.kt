@@ -67,6 +67,7 @@ class HangoutsListDetailViewModel(
                     is LobbyEvent.ParticipantLeft,
                     is LobbyEvent.RsvpUpdated,
                     is LobbyEvent.HangoutUpdated,
+                    is LobbyEvent.HangoutStarted,
                     is LobbyEvent.HangoutCompleted,
                     is LobbyEvent.HangoutCancelled -> true
                     else -> false

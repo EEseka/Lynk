@@ -36,6 +36,7 @@ fun HangoutsListDetailAdaptiveLayout(
     mainShellPadding: PaddingValues,
     unreadNotificationCount: Int,
     navigateToNotifications: () -> Unit,
+    navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
     hangoutsListDetailViewModel: HangoutsListDetailViewModel = koinViewModel()
 ) {
     val sharedState by hangoutsListDetailViewModel.state.collectAsStateWithLifecycle()
@@ -144,7 +145,8 @@ fun HangoutsListDetailAdaptiveLayout(
                     },
                     onEditHangoutClick = { hangout ->
                         hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnEditHangoutClick(hangout))
-                    }
+                    },
+                    navigateToAlbum = navigateToAlbum
                 )
             }
         }

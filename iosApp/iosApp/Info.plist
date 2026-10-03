@@ -31,5 +31,7 @@
         <string>Lynk needs camera access so you can take a profile picture.</string>
         <key>NSLocationWhenInUseUsageDescription</key>
         <string>Lynk needs your location to show spots near you and find a meetup point everyone can reach.</string>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>Lynk saves hangout photos you choose to keep to your photo library.</string>
     </dict>
 </plist>

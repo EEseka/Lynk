@@ -272,7 +272,6 @@ private fun CreateHangoutSheetContent(
                             nameState = state.hangoutNameTextState,
                             nameErrorMessage = state.hangoutNameError?.asString(),
                             descriptionState = state.hangoutDescriptionTextState,
-                            descriptionErrorMessage = state.hangoutDescriptionError?.asString(),
                             vibe = state.hangoutVibe,
                             dateValue = state.hangoutDate?.toDateLabel(),
                             dateMillis = state.hangoutDate?.toPickerMillis(),

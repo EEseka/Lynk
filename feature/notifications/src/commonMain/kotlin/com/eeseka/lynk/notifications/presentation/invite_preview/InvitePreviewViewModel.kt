@@ -91,6 +91,7 @@ class InvitePreviewViewModel(
 
                     when (error) {
                         DataError.Remote.FORBIDDEN -> eventChannel.send(InvitePreviewEvent.AlreadyAnswered(hangoutId))
+                        DataError.Remote.CONFLICT -> eventChannel.send(InvitePreviewEvent.AlreadyDeclined)
                         DataError.Remote.NOT_FOUND -> eventChannel.send(InvitePreviewEvent.InviteWithdrawn)
                         else -> eventChannel.send(InvitePreviewEvent.Error(error.toUiText()))
                     }

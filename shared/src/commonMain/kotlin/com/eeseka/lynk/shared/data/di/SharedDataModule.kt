@@ -3,8 +3,11 @@ package com.eeseka.lynk.shared.data.di
 import com.eeseka.lynk.shared.data.auth.DataStoreSessionStorage
 import com.eeseka.lynk.shared.data.auth.KtorAuthService
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
+import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutParticipantService
+import com.eeseka.lynk.shared.data.hangout.KtorHangoutPhotoService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutService
+import com.eeseka.lynk.shared.data.hangout.SignedUrlHangoutPhotoRepository
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyConnectionClient
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyService
 import com.eeseka.lynk.shared.data.lobby.network.ConnectionRetryHandler
@@ -25,6 +28,9 @@ import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
+import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoRepository
+import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
+import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
@@ -63,11 +69,14 @@ val sharedDataModule = module {
     singleOf(::KtorSpotService) bind SpotService::class
     singleOf(::KtorHangoutService) bind HangoutService::class
     singleOf(::KtorHangoutParticipantService) bind HangoutParticipantService::class
+    singleOf(::KtorHangoutPhotoService) bind HangoutPhotoService::class
+    singleOf(::SignedUrlHangoutPhotoRepository) bind HangoutPhotoRepository::class
     singleOf(::KtorPaymentService) bind PaymentService::class
     singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class
     singleOf(::KtorNotificationService) bind NotificationService::class
     singleOf(::InMemoryUnreadNotificationCounter) bind UnreadNotificationCounter::class
     singleOf(::InMemoryHangoutDetailRepository) bind HangoutDetailRepository::class
+    singleOf(::InMemoryHangoutPhotoStatsRepository) bind HangoutPhotoStatsRepository::class
     single {
         Json {
             ignoreUnknownKeys = true

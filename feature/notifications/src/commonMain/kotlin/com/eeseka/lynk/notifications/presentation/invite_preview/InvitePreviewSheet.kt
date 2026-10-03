@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,9 +53,12 @@ import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.invite_preview_accept
 import lynk.feature.notifications.generated.resources.invite_preview_accepting
+import lynk.feature.notifications.generated.resources.invite_preview_already_declined
 import lynk.feature.notifications.generated.resources.invite_preview_attendees
+import lynk.feature.notifications.generated.resources.invite_preview_cancelled
 import lynk.feature.notifications.generated.resources.invite_preview_decline
 import lynk.feature.notifications.generated.resources.invite_preview_declining
+import lynk.feature.notifications.generated.resources.invite_preview_ended
 import lynk.feature.notifications.generated.resources.invite_preview_going
 import lynk.feature.notifications.generated.resources.invite_preview_going_capped
 import lynk.feature.notifications.generated.resources.invite_preview_spot_pending
@@ -99,6 +103,14 @@ fun InvitePreviewRoot(
                 }
 
                 is InvitePreviewEvent.AlreadyAnswered -> onAlreadyAnswered(event.hangoutId)
+
+                InvitePreviewEvent.AlreadyDeclined -> {
+                    snackbarHostState.showFlashMessage(
+                        message = getString(Res.string.invite_preview_already_declined),
+                        type = LynkFlashType.Info
+                    )
+                    onDismiss()
+                }
 
                 InvitePreviewEvent.InviteWithdrawn -> {
                     snackbarHostState.showFlashMessage(
@@ -252,40 +264,59 @@ private fun InvitePreviewSheetContent(
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 20.dp, bottom = 24.dp)
-            ) {
-                val isResponding = state.respondingTo != null
+            val closedMessage = when (hangoutPreview.status) {
+                HangoutStatus.COMPLETED -> stringResource(Res.string.invite_preview_ended)
+                HangoutStatus.CANCELLED -> stringResource(Res.string.invite_preview_cancelled)
+                else -> null
+            }
 
-                LynkButton(
-                    text = stringResource(Res.string.invite_preview_decline),
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onAction(InvitePreviewAction.OnDeclineClick)
-                    },
-                    style = LynkButtonStyle.SECONDARY,
-                    enabled = !isResponding,
-                    isLoading = state.respondingTo == RsvpStatus.DECLINED,
-                    loadingText = stringResource(Res.string.invite_preview_declining),
-                    modifier = Modifier.weight(1f)
+            if (closedMessage != null) {
+                LynkText(
+                    text = closedMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 20.dp, bottom = 24.dp)
                 )
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 20.dp, bottom = 24.dp)
+                ) {
+                    val isResponding = state.respondingTo != null
 
-                LynkButton(
-                    text = stringResource(Res.string.invite_preview_accept),
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactMedium)
-                        onAction(InvitePreviewAction.OnAcceptClick)
-                    },
-                    style = LynkButtonStyle.PRIMARY,
-                    enabled = !isResponding,
-                    isLoading = state.respondingTo == RsvpStatus.ATTENDING,
-                    loadingText = stringResource(Res.string.invite_preview_accepting),
-                    modifier = Modifier.weight(1f)
-                )
+                    LynkButton(
+                        text = stringResource(Res.string.invite_preview_decline),
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(InvitePreviewAction.OnDeclineClick)
+                        },
+                        style = LynkButtonStyle.SECONDARY,
+                        enabled = !isResponding,
+                        isLoading = state.respondingTo == RsvpStatus.DECLINED,
+                        loadingText = stringResource(Res.string.invite_preview_declining),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    LynkButton(
+                        text = stringResource(Res.string.invite_preview_accept),
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactMedium)
+                            onAction(InvitePreviewAction.OnAcceptClick)
+                        },
+                        style = LynkButtonStyle.PRIMARY,
+                        enabled = !isResponding,
+                        isLoading = state.respondingTo == RsvpStatus.ATTENDING,
+                        loadingText = stringResource(Res.string.invite_preview_accepting),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
@@ -299,8 +330,8 @@ private fun InvitePreviewSheetScheduledPreview() = InvitePreviewSheetPreview(
 
 @PreviewLightDark
 @Composable
-private fun InvitePreviewSheetVotingPreview() = InvitePreviewSheetPreview(
-    InvitePreviewState(hangoutPreview = previewHangoutInvite(HangoutStatus.VOTING, withSpot = false))
+private fun InvitePreviewSheetEndedPreview() = InvitePreviewSheetPreview(
+    InvitePreviewState(hangoutPreview = previewHangoutInvite(HangoutStatus.COMPLETED))
 )
 
 @PreviewLightDark

@@ -220,9 +220,15 @@ class FakeHangoutService : HangoutService {
     ): EmptyResult<DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
+        // Like the server, an invite that is already gone is not found
+        val hangout = hangouts.find { it.id == hangoutId }
+            ?: return Result.Failure(DataError.Remote.NOT_FOUND)
+        hangout.participants.find { it.user.userId == userId }
+            ?: return Result.Failure(DataError.Remote.NOT_FOUND)
+
         changeHangout(hangoutId) { current ->
             current.withParticipants(current.participants.filterNot { it.user.userId == userId })
-        } ?: return Result.Failure(DataError.Remote.NOT_FOUND)
+        }
         return Result.Success(Unit)
     }
 

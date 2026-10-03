@@ -42,11 +42,7 @@ fun NotificationBell(
 
     Box(modifier = modifier) {
         if (isTonal) {
-            LynkTonalIconButton(
-                onClick = onClick,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ) {
+            LynkTonalIconButton(onClick = onClick) {
                 Icon(
                     imageVector = Lucide.Bell,
                     contentDescription = label

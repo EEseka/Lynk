@@ -55,6 +55,10 @@ sealed interface LobbyEvent {
         val hostDisplayName: String
     ) : LobbyEvent
 
+    data class HangoutStarted(
+        val hangoutId: String
+    ) : LobbyEvent
+
     data class HangoutCompleted(
         val hangoutId: String,
         val hostDisplayName: String
@@ -63,6 +67,16 @@ sealed interface LobbyEvent {
     data class HangoutCancelled(
         val hangoutId: String,
         val hostDisplayName: String
+    ) : LobbyEvent
+
+    data class PhotosAdded(
+        val hangoutId: String,
+        val uploaderIds: Set<String>
+    ) : LobbyEvent
+
+    data class PhotoDeleted(
+        val hangoutId: String,
+        val photoId: String
     ) : LobbyEvent
 
     data class PresenceUpdate(

@@ -7,5 +7,6 @@ sealed interface InvitePreviewEvent {
     data class Accepted(val hangoutId: String) : InvitePreviewEvent
     data object Dismissed : InvitePreviewEvent
     data class AlreadyAnswered(val hangoutId: String) : InvitePreviewEvent
+    data object AlreadyDeclined : InvitePreviewEvent
     data object InviteWithdrawn : InvitePreviewEvent
 }

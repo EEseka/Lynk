@@ -9,6 +9,8 @@ import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 class FakePaymentService : PaymentService {
@@ -23,6 +25,9 @@ class FakePaymentService : PaymentService {
         netAmountKobo = 500_000L
     )
     var paymentStatusToReturn = PaymentStatus.SUCCESS
+
+    // Holds the payment answers back, like a slow network, so a test can move on before they land
+    var paymentResponseDelay = Duration.ZERO
     var enabledPayments = mutableListOf<EnabledPayment>()
     var changedDeadlines = mutableListOf<Instant>()
     var deadlineDecisions = mutableListOf<Pair<DeadlineDecision, Instant?>>()
@@ -68,11 +73,13 @@ class FakePaymentService : PaymentService {
     }
 
     override suspend fun initializePayment(hangoutId: String): Result<PaymentInitialization, DataError.Remote> {
+        delay(paymentResponseDelay)
         if (shouldReturnError) return Result.Failure(errorToReturn)
         return Result.Success(paymentInitializationToReturn)
     }
 
     override suspend fun verifyPayment(hangoutId: String): Result<PaymentStatus, DataError.Remote> {
+        delay(paymentResponseDelay)
         if (shouldReturnError) return Result.Failure(errorToReturn)
         return Result.Success(paymentStatusToReturn)
     }

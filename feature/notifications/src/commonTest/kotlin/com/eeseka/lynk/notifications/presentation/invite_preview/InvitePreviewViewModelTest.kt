@@ -71,6 +71,20 @@ class InvitePreviewViewModelTest {
     }
 
     @Test
+    fun `an invite already declined says so instead of opening the hangout`() = runTest {
+        val hangoutId = createInvite()
+        hangoutService.shouldReturnError = true
+        hangoutService.errorToReturn = DataError.Remote.CONFLICT
+
+        viewModel.events.test {
+            viewModel.onAction(InvitePreviewAction.Init(hangoutId))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(InvitePreviewEvent.AlreadyDeclined)
+        }
+    }
+
+    @Test
     fun `an invite that no longer exists says it was withdrawn`() = runTest {
         viewModel.events.test {
             viewModel.onAction(InvitePreviewAction.Init("missing_hangout"))

@@ -30,7 +30,9 @@ import com.github.panpf.zoomimage.rememberCoilZoomState
 @Composable
 fun ZoomableImagePage(
     model: Any?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLoadFailed: () -> Unit = {},
+    onTap: () -> Unit = {}
 ) {
     val hapticFeedback = rememberAppHaptic()
     val zoomState = rememberCoilZoomState()
@@ -86,7 +88,9 @@ fun ZoomableImagePage(
                 onError = {
                     isLoading = false
                     hasFailed = true
+                    onLoadFailed()
                 },
+                onTap = { onTap() },
                 modifier = Modifier.fillMaxSize()
             )
 

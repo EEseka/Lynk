@@ -2,8 +2,11 @@ package com.eeseka.lynk.shared.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
@@ -13,11 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.X
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFullScreenDialog
+import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import kotlinx.collections.immutable.ImmutableList
@@ -43,40 +46,39 @@ fun FullScreenSpotPhotoViewer(
         pageCount = { rawPhotoNames.size }
     )
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = false
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                key = { page -> rawPhotoNames[page] }
-            ) { page ->
-                val fullUrl = remember(rawPhotoNames[page]) {
-                    SpotPhotoUrlBuilder.build(rawPhotoNames[page])
-                }
-                val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
-
-                ZoomableImagePage(model = imageRequest)
-            }
-
-            LynkTonalIconButton(
-                onClick = onDismiss,
-                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+    LynkFullScreenDialog(onDismissRequest = onDismiss) {
+        // Photos read best on black, so the viewer is dark whatever the app theme
+        LynkTheme(darkTheme = true) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
             ) {
-                Icon(
-                    imageVector = Lucide.X,
-                    contentDescription = stringResource(Res.string.close_image)
-                )
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    key = { page -> rawPhotoNames[page] }
+                ) { page ->
+                    val fullUrl = remember(rawPhotoNames[page]) {
+                        SpotPhotoUrlBuilder.build(rawPhotoNames[page])
+                    }
+                    val imageRequest = rememberGoogleImageRequest(url = fullUrl ?: "")
+
+                    ZoomableImagePage(model = imageRequest)
+                }
+
+                LynkTonalIconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Lucide.X,
+                        contentDescription = stringResource(Res.string.close_image)
+                    )
+                }
             }
         }
     }

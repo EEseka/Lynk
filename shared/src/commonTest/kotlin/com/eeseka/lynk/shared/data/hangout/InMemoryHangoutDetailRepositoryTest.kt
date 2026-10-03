@@ -64,6 +64,19 @@ class InMemoryHangoutDetailRepositoryTest {
     }
 
     @Test
+    fun `a refresh the user is no longer allowed drops the last copy`() = runTest {
+        val repository = createRepository()
+        val hangoutId = createHangout("Night Out")
+        repository.refreshHangout(hangoutId)
+
+        hangoutService.shouldReturnError = true
+        hangoutService.errorToReturn = DataError.Remote.NOT_FOUND
+        repository.refreshHangout(hangoutId)
+
+        assertThat(repository.observeHangout(hangoutId).first()).isNull()
+    }
+
+    @Test
     fun `hangouts are kept apart by id`() = runTest {
         val repository = createRepository()
         val refreshedId = createHangout("Night Out")

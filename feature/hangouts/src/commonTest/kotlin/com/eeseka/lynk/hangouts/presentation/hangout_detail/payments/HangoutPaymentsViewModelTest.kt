@@ -39,6 +39,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -456,6 +457,22 @@ class HangoutPaymentsViewModelTest {
         assertThat(state.selectedBank).isNull()
         assertThat(state.paymentCheckoutUrl).isNull()
         assertThat(state.isAwaitingPaymentReturn).isFalse()
+    }
+
+    @Test
+    fun `a quote that arrives after switching hangouts is not shown on the next one`() = runTest {
+        val otherId = createHangout()
+        val viewModel = createViewModel()
+        paymentService.paymentResponseDelay = 1.seconds
+
+        viewModel.onAction(HangoutPaymentsAction.OnPayClick)
+        runCurrent()
+        viewModel.onAction(HangoutPaymentsAction.OnSelectHangout(otherId))
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertThat(state.paymentQuote).isNull()
+        assertThat(state.isInitializingPayment).isFalse()
     }
 
     // The real in-memory store fed by the fake service, holding the hangout being paid for

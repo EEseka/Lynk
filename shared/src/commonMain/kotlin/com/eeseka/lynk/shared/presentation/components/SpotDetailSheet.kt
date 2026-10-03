@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
@@ -195,7 +196,7 @@ fun SpotDetailSheet(
                                 hapticFeedback(AppHaptic.ImpactLight)
                                 toggleSave(spot.id, isSaved)
                             },
-                            containerColor = if (isSaved) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            containerColor = if (isSaved) MaterialTheme.colorScheme.secondaryContainer else Color.Unspecified,
                             contentColor = if (isSaved) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
                         ) {
                             Icon(
