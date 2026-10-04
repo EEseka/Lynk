@@ -536,7 +536,7 @@ fun DiscoverScreen(
                 isSearchActive = isSearchActive,
                 isSearchLoading = state.isSearchLoading,
                 searchError = state.searchError?.asString(),
-                searchEndReached = state.searchEndReached,
+                searchEndReached = if (isSearchActive) state.searchEndReached else true,
                 searchResetEpoch = state.searchResetEpoch,
                 selectedCategory = state.selectedCategory,
                 selectedPriceLevel = state.selectedPriceLevel,
