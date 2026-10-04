@@ -29,6 +29,7 @@ data class ProfileState(
     val isStatsLoading: Boolean = false,
 
     val appTheme: AppTheme = AppTheme.SYSTEM,
+    val isPureBlackEnabled: Boolean = false,
     val arePushNotificationsEnabled: Boolean = true,
 
     val showSettingsSheet: Boolean = false,

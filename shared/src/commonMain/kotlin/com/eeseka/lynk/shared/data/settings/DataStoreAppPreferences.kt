@@ -15,6 +15,7 @@ class DataStoreAppPreferences(
 ) : AppPreferences {
 
     private val themePreferenceKey = stringPreferencesKey("KEY_THEME_PREFERENCE")
+    private val isPureBlackEnabledKey = booleanPreferencesKey("KEY_PURE_BLACK_ENABLED")
     private val arePushNotificationsEnabledKey = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
 
     override val theme: Flow<AppTheme> = dataStore.data.map { preferences ->
@@ -26,6 +27,10 @@ class DataStoreAppPreferences(
         }
     }
 
+    override val isPureBlackEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[isPureBlackEnabledKey] ?: false
+    }
+
     override val arePushNotificationsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[arePushNotificationsEnabledKey] ?: true
     }
@@ -33,6 +38,12 @@ class DataStoreAppPreferences(
     override suspend fun setTheme(theme: AppTheme) {
         dataStore.edit { preferences ->
             preferences[themePreferenceKey] = theme.name
+        }
+    }
+
+    override suspend fun setPureBlackEnabled(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[isPureBlackEnabledKey] = isEnabled
         }
     }
 

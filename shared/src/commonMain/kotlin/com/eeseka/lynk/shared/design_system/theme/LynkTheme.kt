@@ -8,9 +8,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 @Composable
 fun LynkTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    pureBlack: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkScheme else LightScheme
+    val colorScheme = when {
+        !darkTheme -> LightScheme
+        pureBlack -> PureBlackScheme
+        else -> DarkScheme
+    }
     val extendedColorScheme = if (darkTheme) DarkExtendedColors else LightExtendedColors
 
     CompositionLocalProvider(LocalExtendedColors provides extendedColorScheme) {

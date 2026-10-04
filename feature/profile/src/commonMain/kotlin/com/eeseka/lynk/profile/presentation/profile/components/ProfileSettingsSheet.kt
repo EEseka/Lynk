@@ -1,6 +1,12 @@
 package com.eeseka.lynk.profile.presentation.profile.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
+import com.composables.icons.lucide.Contrast
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.LifeBuoy
 import com.composables.icons.lucide.Lucide
@@ -26,6 +33,8 @@ import com.eeseka.lynk.profile.presentation.mappers.getIcon
 import com.eeseka.lynk.profile.presentation.mappers.getTitle
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
+import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
+import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
@@ -43,6 +52,8 @@ import lynk.feature.profile.generated.resources.appearance
 import lynk.feature.profile.generated.resources.contact_support
 import lynk.feature.profile.generated.resources.delete_account
 import lynk.feature.profile.generated.resources.deleting_account
+import lynk.feature.profile.generated.resources.lights_out
+import lynk.feature.profile.generated.resources.lights_out_message
 import lynk.feature.profile.generated.resources.made_with_love
 import lynk.feature.profile.generated.resources.preferences
 import lynk.feature.profile.generated.resources.privacy_policy
@@ -58,6 +69,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ProfileSettingsSheet(
     theme: AppTheme,
+    isPureBlackEnabled: Boolean,
     arePushNotificationsEnabled: Boolean,
     isGuest: Boolean,
     isSigningOut: Boolean,
@@ -65,6 +77,7 @@ fun ProfileSettingsSheet(
     appVersion: String,
     supportEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
+    onPureBlackToggled: (Boolean) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
     onContactSupportClick: () -> Unit,
     onTermsClick: () -> Unit,
@@ -80,6 +93,7 @@ fun ProfileSettingsSheet(
     ) {
         ProfileSettingsSheetContent(
             theme = theme,
+            isPureBlackEnabled = isPureBlackEnabled,
             arePushNotificationsEnabled = arePushNotificationsEnabled,
             isGuest = isGuest,
             isSigningOut = isSigningOut,
@@ -87,6 +101,7 @@ fun ProfileSettingsSheet(
             appVersion = appVersion,
             supportEmail = supportEmail,
             onThemeSelected = onThemeSelected,
+            onPureBlackToggled = onPureBlackToggled,
             onPushNotificationsToggled = onPushNotificationsToggled,
             onContactSupportClick = onContactSupportClick,
             onTermsClick = onTermsClick,
@@ -101,6 +116,7 @@ fun ProfileSettingsSheet(
 @Composable
 private fun ProfileSettingsSheetContent(
     theme: AppTheme,
+    isPureBlackEnabled: Boolean,
     arePushNotificationsEnabled: Boolean,
     isGuest: Boolean,
     isSigningOut: Boolean,
@@ -108,6 +124,7 @@ private fun ProfileSettingsSheetContent(
     appVersion: String,
     supportEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
+    onPureBlackToggled: (Boolean) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
     onContactSupportClick: () -> Unit,
     onTermsClick: () -> Unit,
@@ -121,6 +138,12 @@ private fun ProfileSettingsSheetContent(
     val themeItems = AppTheme.entries.map {
         LynkSegmentedItem(title = it.getTitle(), icon = it.getIcon())
     }.toImmutableList()
+
+    val isDarkTheme = when (theme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
 
     Column(
         modifier = modifier
@@ -147,6 +170,34 @@ private fun ProfileSettingsSheetContent(
                 style = LynkSegmentedStyle.FIXED_BAR,
                 contentPadding = PaddingValues(8.dp)
             )
+        }
+
+        AnimatedVisibility(
+            visible = isDarkTheme,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            LynkCard(
+                style = LynkCardStyle.FILLED,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                ProfileSectionRow(
+                    icon = Lucide.Contrast,
+                    title = stringResource(Res.string.lights_out),
+                    subtitle = stringResource(Res.string.lights_out_message),
+                    trailing = {
+                        LynkSwitch(
+                            checked = isPureBlackEnabled,
+                            onCheckedChange = { isEnabled ->
+                                hapticFeedback(AppHaptic.Selection)
+                                onPureBlackToggled(isEnabled)
+                            }
+                        )
+                    }
+                )
+            }
         }
 
         if (!isGuest) {
@@ -258,6 +309,7 @@ private fun ProfileSettingsSheetPreview() {
     LynkTheme {
         ProfileSettingsSheetContent(
             theme = AppTheme.SYSTEM,
+            isPureBlackEnabled = false,
             arePushNotificationsEnabled = true,
             isGuest = false,
             isSigningOut = false,
@@ -265,6 +317,7 @@ private fun ProfileSettingsSheetPreview() {
             appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
+            onPureBlackToggled = {},
             onPushNotificationsToggled = {},
             onContactSupportClick = {},
             onTermsClick = {},
@@ -282,6 +335,7 @@ private fun ProfileSettingsSheetGuestPreview() {
     LynkTheme {
         ProfileSettingsSheetContent(
             theme = AppTheme.SYSTEM,
+            isPureBlackEnabled = false,
             arePushNotificationsEnabled = false,
             isGuest = true,
             isSigningOut = false,
@@ -289,6 +343,7 @@ private fun ProfileSettingsSheetGuestPreview() {
             appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
             onThemeSelected = {},
+            onPureBlackToggled = {},
             onPushNotificationsToggled = {},
             onContactSupportClick = {},
             onTermsClick = {},

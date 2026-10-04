@@ -12,6 +12,7 @@ sealed interface ProfileAction {
     data object OnSettingsClick : ProfileAction
     data object OnDismissSettings : ProfileAction
     data class OnThemeSelected(val theme: AppTheme) : ProfileAction
+    data class OnPureBlackToggled(val isEnabled: Boolean) : ProfileAction
     data class OnPushNotificationsToggled(val isEnabled: Boolean) : ProfileAction
 
     data object OnCreateAccountClick : ProfileAction

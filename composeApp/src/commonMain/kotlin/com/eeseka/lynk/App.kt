@@ -52,7 +52,7 @@ fun App(
 
     ApplyNativeTheme(theme = state.theme)
 
-    LynkTheme(darkTheme = isDarkTheme) {
+    LynkTheme(darkTheme = isDarkTheme, pureBlack = state.isPureBlackEnabled) {
         if (!state.isCheckingAuth) {
             val startDestination = when {
                 !state.hasSeenOnboarding -> OnboardingGraphRoutes.Graph

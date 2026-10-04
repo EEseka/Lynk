@@ -87,6 +87,15 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `pure black comes from the saved settings`() = runTest {
+        appPreferences.setPureBlackEnabled(true)
+
+        val viewModel = createViewModel()
+
+        assertThat(viewModel.state.value.isPureBlackEnabled).isTrue()
+    }
+
+    @Test
     fun `a session that disappears signs the user out`() = runTest {
         signIn()
         val viewModel = createViewModel()

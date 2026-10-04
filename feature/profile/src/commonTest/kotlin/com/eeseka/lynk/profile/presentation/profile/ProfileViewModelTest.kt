@@ -249,6 +249,17 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun `turning pure black on saves it`() = runTest {
+        val viewModel = createViewModel(signedInAs = ada)
+
+        viewModel.onAction(ProfileAction.OnPureBlackToggled(isEnabled = true))
+        advanceUntilIdle()
+
+        assertThat(appPreferences.isPureBlackEnabled.first()).isTrue()
+        assertThat(viewModel.state.value.isPureBlackEnabled).isTrue()
+    }
+
+    @Test
     fun `turning push notifications off saves it`() = runTest {
         val viewModel = createViewModel(signedInAs = ada)
 

@@ -69,10 +69,12 @@ class ProfileViewModel(
     val state = combine(
         _state,
         appPreferences.theme,
+        appPreferences.isPureBlackEnabled,
         appPreferences.arePushNotificationsEnabled
-    ) { currentState, theme, arePushNotificationsEnabled ->
+    ) { currentState, theme, isPureBlackEnabled, arePushNotificationsEnabled ->
         currentState.copy(
             appTheme = theme,
+            isPureBlackEnabled = isPureBlackEnabled,
             arePushNotificationsEnabled = arePushNotificationsEnabled
         )
     }
@@ -153,6 +155,7 @@ class ProfileViewModel(
             ProfileAction.OnSettingsClick -> _state.update { it.copy(showSettingsSheet = true) }
             ProfileAction.OnDismissSettings -> _state.update { it.copy(showSettingsSheet = false) }
             is ProfileAction.OnThemeSelected -> selectTheme(action.theme)
+            is ProfileAction.OnPureBlackToggled -> togglePureBlack(action.isEnabled)
             is ProfileAction.OnPushNotificationsToggled -> togglePushNotifications(action.isEnabled)
             ProfileAction.OnCreateAccountClick -> deleteAccount() // Taking a Guest back to the auth screen
             ProfileAction.OnSignOutClick -> {
@@ -297,6 +300,12 @@ class ProfileViewModel(
     private fun selectTheme(theme: AppTheme) {
         viewModelScope.launch {
             appPreferences.setTheme(theme)
+        }
+    }
+
+    private fun togglePureBlack(isEnabled: Boolean) {
+        viewModelScope.launch {
+            appPreferences.setPureBlackEnabled(isEnabled)
         }
     }
 

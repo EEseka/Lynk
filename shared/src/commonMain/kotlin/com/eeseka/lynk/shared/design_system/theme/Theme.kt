@@ -134,3 +134,15 @@ val DarkScheme = darkColorScheme(
     surfaceContainerHigh = surfaceContainerHighDark,
     surfaceContainerHighest = surfaceContainerHighestDark
 )
+
+val PureBlackScheme = DarkScheme.copy(
+    background = backgroundPureBlack,
+    surface = surfacePureBlack,
+    surfaceDim = surfaceDimPureBlack,
+    surfaceBright = surfaceBrightPureBlack,
+    surfaceContainerLowest = surfaceContainerLowestPureBlack,
+    surfaceContainerLow = surfaceContainerLowPureBlack,
+    surfaceContainer = surfaceContainerPureBlack,
+    surfaceContainerHigh = surfaceContainerHighPureBlack,
+    surfaceContainerHighest = surfaceContainerHighestPureBlack
+)

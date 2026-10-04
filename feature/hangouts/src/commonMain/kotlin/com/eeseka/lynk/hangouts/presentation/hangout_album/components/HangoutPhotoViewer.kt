@@ -150,12 +150,12 @@ private fun HangoutPhotoViewerContent(
     val hapticFeedback = rememberAppHaptic()
     val photo = photos.getOrNull(pagerState.currentPage)
     var areBarsVisible by remember { mutableStateOf(true) }
-    val scrimColor = MaterialTheme.colorScheme.background.copy(alpha = 0.72f)
+    val scrimColor = Color.Black.copy(alpha = 0.72f)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.Black)
     ) {
         HorizontalPager(
             state = pagerState,

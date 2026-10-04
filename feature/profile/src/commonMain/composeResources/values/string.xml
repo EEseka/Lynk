@@ -41,6 +41,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
 
+    <string name="lights_out">Lights Out</string>
+    <string name="lights_out_message">True black backgrounds, easier on battery for OLED screens.</string>
     <string name="push_notifications">Push Notifications</string>
     <string name="push_notifications_message">Invites, hangout changes and payment updates.</string>
 

@@ -297,6 +297,7 @@ fun ProfileScreen(
     if (state.showSettingsSheet) {
         ProfileSettingsSheet(
             theme = state.appTheme,
+            isPureBlackEnabled = state.isPureBlackEnabled,
             arePushNotificationsEnabled = state.arePushNotificationsEnabled,
             isGuest = state.isGuest,
             isSigningOut = state.isSigningOut,
@@ -304,6 +305,7 @@ fun ProfileScreen(
             appVersion = stringResource(Res.string.app_version, AppConfig.APP_VERSION),
             supportEmail = SUPPORT_EMAIL,
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
+            onPureBlackToggled = { onAction(ProfileAction.OnPureBlackToggled(it)) },
             onPushNotificationsToggled = { isEnabled ->
                 if (isEnabled) {
                     scope.launch {
