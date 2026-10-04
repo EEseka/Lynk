@@ -93,7 +93,8 @@ private fun BankPickerSheetContent(
         LynkText(
             text = stringResource(Res.string.payment_bank_picker_title),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 16.dp)
         )
 
         LynkSearchField(

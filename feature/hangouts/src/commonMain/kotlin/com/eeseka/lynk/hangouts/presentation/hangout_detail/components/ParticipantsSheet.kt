@@ -95,7 +95,7 @@ private fun ParticipantsSheetContent(
             text = stringResource(Res.string.participants_sheet_title),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(vertical = 16.dp)
         )
 
         val goingTitle = stringResource(Res.string.detail_group_going)

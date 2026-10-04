@@ -96,7 +96,7 @@ fun LynkActionSheet(
                             style = MaterialTheme.typography.titleMedium,
                             color = scheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = if (message != null) 8.dp else 16.dp)
+                            modifier = Modifier.padding(top = 16.dp, bottom = if (message != null) 8.dp else 16.dp)
                         )
                     }
 

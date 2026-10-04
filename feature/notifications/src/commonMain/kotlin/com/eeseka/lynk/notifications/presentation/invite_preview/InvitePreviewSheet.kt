@@ -181,7 +181,10 @@ private fun InvitePreviewSheetContent(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
                     LynkText(
                         text = stringResource(Res.string.invite_preview_title),
                         style = MaterialTheme.typography.labelMedium,

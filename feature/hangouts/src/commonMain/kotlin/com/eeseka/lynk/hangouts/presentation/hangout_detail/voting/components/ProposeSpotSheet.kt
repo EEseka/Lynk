@@ -140,7 +140,8 @@ private fun ProposeSpotSheetContent(
             LynkText(
                 text = stringResource(Res.string.propose_sheet_title),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 16.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
