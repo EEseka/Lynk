@@ -255,6 +255,7 @@ class DiscoverViewModel(
                 }
                 searchPaginator?.loadNextItems()
             } else {
+                searchPaginator?.close()
                 _state.update {
                     it.copy(
                         searchResults = persistentListOf(),
@@ -275,6 +276,7 @@ class DiscoverViewModel(
         category: SpotCategory?,
         priceLevel: PriceLevel?
     ) {
+        searchPaginator?.close()
         currentNextPageToken = null
 
         searchPaginator = Paginator(

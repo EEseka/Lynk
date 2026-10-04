@@ -2,6 +2,7 @@ package com.eeseka.lynk.shared.domain.util
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import kotlinx.coroutines.CompletableDeferred
@@ -115,6 +116,34 @@ class PaginatorTest {
 
         assertThat(requestedKeys).containsExactly(1)
         assertThat(loadedItems).containsExactly("a")
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `a page that answers after close is dropped`() = runTest {
+        val response = CompletableDeferred<Result<List<String>, DataError>>()
+        val paginator = createPaginator(onRequest = { response.await() })
+
+        launch { paginator.loadNextItems() }
+        runCurrent()
+        paginator.close()
+
+        response.complete(Result.Success(listOf("a")))
+        runCurrent()
+
+        assertThat(loadedItems).isEmpty()
+        // The paginator that replaced it owns the loading flag now
+        assertThat(loadingUpdates).containsExactly(true)
+    }
+
+    @Test
+    fun `a closed paginator loads nothing`() = runTest {
+        val paginator = createPaginator()
+
+        paginator.close()
+        paginator.loadNextItems()
+
+        assertThat(requestedKeys).isEmpty()
     }
 
     private fun createPaginator(onRequest: suspend (Int) -> Result<List<String>, DataError> = { resultToReturn }) =

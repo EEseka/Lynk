@@ -161,6 +161,7 @@ class SavedSpotsViewModel(
     }
 
     private fun setupSavedSpotsPaginator(searchQuery: String? = null) {
+        savedSpotsPaginator?.close()
         savedSpotsPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->

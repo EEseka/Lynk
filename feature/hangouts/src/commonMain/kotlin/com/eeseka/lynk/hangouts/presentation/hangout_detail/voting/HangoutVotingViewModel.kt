@@ -421,6 +421,7 @@ class HangoutVotingViewModel(
                 SearchTab.ALL_SPOTS -> {
                     val origin = state.value.center ?: state.value.myLocation
                     if (query.isBlank() || origin == null) {
+                        spotSearchPaginator?.close()
                         _state.update {
                             it.copy(
                                 spotSearchResults = persistentListOf(),
@@ -448,6 +449,7 @@ class HangoutVotingViewModel(
     }
 
     private fun setupSpotSearchPaginator(lat: Double, lng: Double, query: String) {
+        spotSearchPaginator?.close()
         currentNextPageToken = null
 
         spotSearchPaginator = Paginator(
@@ -491,6 +493,7 @@ class HangoutVotingViewModel(
     }
 
     private fun setupFavoriteSpotSearchPaginator(searchQuery: String? = null) {
+        favoriteSpotSearchPaginator?.close()
         favoriteSpotSearchPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->

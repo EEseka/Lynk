@@ -143,6 +143,7 @@ class HangoutsListViewModel(
         statusFilter: HangoutStatusFilter,
         vibe: HangoutVibe?
     ) {
+        hangoutsPaginator?.close()
         hangoutsPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->

@@ -168,6 +168,7 @@ class HangoutAlbumViewModel(
     }
 
     private fun setupPhotosPaginator(hangoutId: String) {
+        photosPaginator?.close()
         photosPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->
