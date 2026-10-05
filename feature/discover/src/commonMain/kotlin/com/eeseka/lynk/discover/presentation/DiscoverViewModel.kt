@@ -63,7 +63,7 @@ class DiscoverViewModel(
 
     private val saveJobs = mutableMapOf<String, Job>()
 
-    private val trendingLocation = MutableStateFlow<LocationCoordinates?>(null)
+    private val searchOrigin = MutableStateFlow<LocationCoordinates?>(null)
 
     val state = combine(
         _state,
@@ -76,7 +76,7 @@ class DiscoverViewModel(
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
                 _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
-                observeTrendingLocation()
+                observeSearchOrigin()
                 hasLoadedInitialData = true
             }
         }
@@ -96,6 +96,7 @@ class DiscoverViewModel(
             is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
             DiscoverAction.RetryTrending -> retryTrending()
+            is DiscoverAction.OnSearchThisArea -> searchThisArea(action.latitude, action.longitude)
             DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
             is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
             DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
@@ -124,7 +125,7 @@ class DiscoverViewModel(
                 locationFetchEpoch = it.locationFetchEpoch + 1
             )
         }
-        trendingLocation.value = LocationCoordinates(latitude = latitude, longitude = longitude)
+        searchOrigin.value = LocationCoordinates(latitude = latitude, longitude = longitude)
 
         viewModelScope.launch {
             lastKnownLocationStorage.setLastKnownLocation(latitude, longitude)
@@ -133,13 +134,13 @@ class DiscoverViewModel(
 
     private fun loadTrendingAroundLastKnownLocation() {
         viewModelScope.launch {
-            trendingLocation.value = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+            searchOrigin.value = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeTrendingLocation() {
-        trendingLocation
+    private fun observeSearchOrigin() {
+        searchOrigin
             .filterNotNull()
             .distinctUntilChanged()
             .mapLatest { location -> fetchTrendingSpots(location) }
@@ -147,11 +148,15 @@ class DiscoverViewModel(
     }
 
     private fun retryTrending() {
-        val location = trendingLocation.value ?: return
+        val location = searchOrigin.value ?: return
 
         viewModelScope.launch {
             fetchTrendingSpots(location)
         }
+    }
+
+    private fun searchThisArea(latitude: Double, longitude: Double) {
+        searchOrigin.value = LocationCoordinates(latitude = latitude, longitude = longitude)
     }
 
     private suspend fun fetchTrendingSpots(location: LocationCoordinates) {
@@ -162,7 +167,9 @@ class DiscoverViewModel(
                 _state.update {
                     it.copy(
                         isTrendingLoading = false,
-                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList(),
+                        trendingLatitude = location.latitude,
+                        trendingLongitude = location.longitude
                     )
                 }
             }
@@ -219,7 +226,7 @@ class DiscoverViewModel(
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
-        val locationFlow = trendingLocation.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
+        val locationFlow = searchOrigin.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
 
         combine(
             searchQueryFlow,

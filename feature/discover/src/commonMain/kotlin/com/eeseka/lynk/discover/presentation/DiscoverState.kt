@@ -27,6 +27,9 @@ data class DiscoverState(
     val trendingSpots: ImmutableList<SpotUi> = persistentListOf(),
     val isTrendingLoading: Boolean = false,
     val trendingError: UiText? = null,
+    // Where the trending pins on the map were loaded around
+    val trendingLatitude: Double? = null,
+    val trendingLongitude: Double? = null,
 
     // Detail Sheet
     val selectedSpotId: String? = null,

@@ -47,6 +47,7 @@ import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
+import com.eeseka.lynk.discover.presentation.components.SearchThisAreaButton
 import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
@@ -337,6 +338,23 @@ fun DiscoverScreen(
                         ),
                         modifier = Modifier.align(Alignment.TopEnd)
                     )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .height(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SearchThisAreaButton(
+                            mapState = mapState,
+                            trendingLatitude = state.trendingLatitude,
+                            trendingLongitude = state.trendingLongitude,
+                            isLoading = state.isTrendingLoading,
+                            onClick = { latitude, longitude ->
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
+                            }
+                        )
+                    }
                 }
 
                 if (userLatitude != null && userLongitude != null) {

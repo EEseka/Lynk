@@ -61,6 +61,7 @@ import org.jetbrains.compose.resources.stringResource
 fun PaymentSection(
     payment: HangoutPaymentUi,
     isHost: Boolean,
+    modifier: Modifier = Modifier,
     hasUnpaidGuests: Boolean = false,
     hasCurrentUserPaid: Boolean = false,
     canPay: Boolean = false,
@@ -77,8 +78,7 @@ fun PaymentSection(
     onCheckPaymentClick: () -> Unit = {},
     onChangeDeadlineClick: () -> Unit = {},
     onDecideClick: () -> Unit = {},
-    onRetryPayoutClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onRetryPayoutClick: () -> Unit = {}
 ) {
     val hapticFeedback = rememberAppHaptic()
 

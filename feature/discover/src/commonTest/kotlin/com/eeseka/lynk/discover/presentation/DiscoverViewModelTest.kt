@@ -127,6 +127,23 @@ class DiscoverViewModelTest {
     }
 
     @Test
+    fun `searching this area loads trending spots around the map centre`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(6.43, 3.47))
+        advanceUntilIdle()
+
+        assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.43 to 3.47)
+        assertThat(viewModel.state.value.trendingLatitude).isEqualTo(6.43)
+        assertThat(viewModel.state.value.trendingLongitude).isEqualTo(3.47)
+        // The blue dot stays where the user is
+        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.5)
+    }
+
+    @Test
     fun `an unavailable location loads trending spots around the last known one`() = runTest {
         spotService.trendingSpotsList = mutableListOf(dummySpot)
         lastKnownLocationStorage.setLastKnownLocation(6.5, 3.3)

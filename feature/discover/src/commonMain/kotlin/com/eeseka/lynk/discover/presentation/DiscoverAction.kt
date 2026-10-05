@@ -25,4 +25,5 @@ sealed interface DiscoverAction {
     data object LoadNextSearchPage : DiscoverAction
 
     data object RetryTrending : DiscoverAction
+    data class OnSearchThisArea(val latitude: Double, val longitude: Double) : DiscoverAction
 }
