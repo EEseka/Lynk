@@ -92,6 +92,7 @@ import lynk.feature.discover.generated.resources.location_required
 import lynk.feature.discover.generated.resources.location_required_message
 import lynk.feature.discover.generated.resources.map_data_label
 import lynk.feature.discover.generated.resources.maptiler_attribution
+import lynk.feature.discover.generated.resources.no_spots_in_area
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.open_spot_search
@@ -100,6 +101,7 @@ import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_spots_hint
 import lynk.feature.discover.generated.resources.show_map_attribution
 import lynk.feature.discover.generated.resources.trending_load_error_title
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.CameraAnimation
@@ -139,6 +141,13 @@ fun DiscoverRoot(
                 snackbarHostState.showFlashMessage(
                     message = event.error.asStringAsync(),
                     type = LynkFlashType.Error
+                )
+            }
+
+            DiscoverEvent.NoSpotsInArea -> {
+                snackbarHostState.showFlashMessage(
+                    message = getString(Res.string.no_spots_in_area),
+                    type = LynkFlashType.Info
                 )
             }
         }

@@ -172,6 +172,8 @@ class DiscoverViewModel(
                         trendingLongitude = location.longitude
                     )
                 }
+                // The sea, a forest, anywhere Google has nothing to show
+                if (spots.isEmpty()) eventChannel.send(DiscoverEvent.NoSpotsInArea)
             }
             .onFailure { error ->
                 _state.update {

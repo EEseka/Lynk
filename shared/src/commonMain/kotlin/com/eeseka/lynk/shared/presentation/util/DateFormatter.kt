@@ -16,6 +16,7 @@ import lynk.shared.generated.resources.am
 import lynk.shared.generated.resources.pm
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 fun Instant.toDateLabel(): String =
@@ -58,6 +59,16 @@ fun LocalTime.toTimeLabel(): String {
 fun Instant.toDateTimeLabel(): String {
     val dateTime = toLocalDateTime(TimeZone.currentSystemDefault())
     return "${dateTime.date.toDateLabel()} · ${dateTime.time.toTimeLabel()}"
+}
+
+@Composable
+fun Instant.toUpcomingTimeLabel(): String {
+    val isWithinADay = this - Clock.System.now() < 1.days
+    return if (isWithinADay) {
+        toLocalDateTime(TimeZone.currentSystemDefault()).time.toTimeLabel()
+    } else {
+        toDateTimeLabel()
+    }
 }
 
 // The date picker hands back, and takes, midnight UTC. Converting in the phone's own time zone

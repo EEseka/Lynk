@@ -51,9 +51,12 @@ class DiscoverViewModelTest {
         id = "1", name = "Test Cafe", category = SpotCategory.CAFE,
         latitude = 0.0, longitude = 0.0, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 10,
-        isOpenNow = true, shortAddress = "123 Main St",
+        openingHours = null, shortAddress = "123 Main St",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList(), savedAt = null
+        description = null, savedAt = null,
+        typeLabel = null, generativeSummary = null, reviewSummary = null, priceRange = null,
+        businessStatus = null, amenities = null, parking = null, payment = null,
+        phoneNumber = null, directionsUrl = null
     )
 
     @BeforeTest
@@ -141,6 +144,23 @@ class DiscoverViewModelTest {
         assertThat(viewModel.state.value.trendingLongitude).isEqualTo(3.47)
         // The blue dot stays where the user is
         assertThat(viewModel.state.value.userLatitude).isEqualTo(6.5)
+    }
+
+    @Test
+    fun `searching an area with no spots says so`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            // The middle of the Atlantic
+            spotService.trendingSpotsList = mutableListOf()
+            viewModel.onAction(DiscoverAction.OnSearchThisArea(0.0, -30.0))
+
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSpotsInArea)
+            assertThat(viewModel.state.value.trendingSpots).isEmpty()
+        }
     }
 
     @Test

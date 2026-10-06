@@ -2,6 +2,7 @@ package com.eeseka.lynk.shared.presentation.spot.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.eeseka.lynk.shared.presentation.util.toGroupedString
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.km
 import lynk.shared.generated.resources.m
@@ -9,7 +10,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * How far a spot is from the viewer in a straight line. Under a kilometre it reads in metres
- * ("800 m"), otherwise in kilometres ("1.9 km", "2 km"). Null if the location is unknown.
+ * ("800 m"), otherwise in kilometres ("1.9 km", "2 km", "10,000 km"). Null if the location is unknown.
  */
 @Composable
 fun rememberSpotDistanceLabel(
@@ -37,10 +38,12 @@ fun rememberSpotDistanceLabel(
         val wholeKilometres = tenthsOfKilometre / 10
         val remainingTenth = tenthsOfKilometre % 10
 
+        val groupedKilometres = wholeKilometres.toLong().toGroupedString()
+
         if (remainingTenth == 0) {
-            "$wholeKilometres $kilometreSuffix"
+            "$groupedKilometres $kilometreSuffix"
         } else {
-            "$wholeKilometres.$remainingTenth $kilometreSuffix"
+            "$groupedKilometres.$remainingTenth $kilometreSuffix"
         }
     }
 }

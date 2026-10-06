@@ -14,6 +14,7 @@ import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
@@ -60,9 +61,15 @@ class CreateHangoutViewModelTest {
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
-        isOpenNow = true, shortAddress = "VI, Lagos",
+        openingHours = SpotOpeningHours(
+            isOpenNow = true, weekdayDescriptions = emptyList(), nextOpenTime = null, nextCloseTime = null
+        ),
+        shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList(), savedAt = null
+        description = null, savedAt = null,
+        typeLabel = null, generativeSummary = null, reviewSummary = null, priceRange = null,
+        businessStatus = null, amenities = null, parking = null, payment = null,
+        phoneNumber = null, directionsUrl = null
     )
 
     private val dummySpotUi = SpotUi(
@@ -71,7 +78,11 @@ class CreateHangoutViewModelTest {
         photoUrls = persistentListOf(), rating = 4.5, reviewCount = 100,
         isOpenNow = true, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = persistentListOf()
+        description = null,
+        typeLabel = null, aiSummary = null, priceRange = null, businessStatus = null,
+        nextOpenTime = null, nextCloseTime = null, weekHours = persistentListOf(),
+        highlights = persistentListOf(),
+        phoneNumber = null, directionsUrl = null
     )
 
     private val dummyHangoutUi = HangoutUi(

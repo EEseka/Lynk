@@ -18,6 +18,7 @@
     <string name="open_spot_search">Open spot search</string>
     <string name="trending_load_error_title">Couldn't load nearby spots</string>
     <string name="search_this_area">Search this area</string>
+    <string name="no_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
 
     <string name="map_data_label">Map Data</string>
     <string name="show_map_attribution">Show map attribution</string>

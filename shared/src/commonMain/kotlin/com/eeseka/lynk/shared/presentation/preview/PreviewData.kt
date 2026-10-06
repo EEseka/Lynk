@@ -5,8 +5,11 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.notification.model.NotificationType
+import com.eeseka.lynk.shared.domain.spot.model.BusinessStatus
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
+import com.eeseka.lynk.shared.domain.spot.model.SpotAiSummary
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.SpotPriceRange
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPreviewUi
@@ -14,6 +17,8 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.notification.model.NotificationUi
+import com.eeseka.lynk.shared.presentation.spot.model.SpotDayHoursUi
+import com.eeseka.lynk.shared.presentation.spot.model.SpotHighlight
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -37,25 +42,34 @@ fun previewSpot(
     priceLevel: PriceLevel? = PriceLevel.MODERATE,
     rating: Double? = 4.6,
     reviewCount: Int? = 214,
-    isOpenNow: Boolean = true,
+    isOpenNow: Boolean? = true,
     shortAddress: String? = "Victoria Island, Lagos",
     isSaved: Boolean = false
 ) = SpotUi(
     id = id,
     name = name,
+    typeLabel = null,
     description = null,
+    aiSummary = null,
     photoUrls = persistentListOf(),
     category = category,
-    tags = persistentListOf(),
     priceLevel = priceLevel,
+    priceRange = null,
     rating = rating,
     reviewCount = reviewCount,
+    businessStatus = null,
     isOpenNow = isOpenNow,
+    nextOpenTime = null,
+    nextCloseTime = null,
+    weekHours = persistentListOf(),
+    highlights = persistentListOf(),
     shortAddress = shortAddress,
     latitude = 6.4281,
     longitude = 3.4219,
+    phoneNumber = null,
     websiteUrl = null,
     googleMapsUrl = null,
+    directionsUrl = null,
     isSaved = isSaved
 )
 
@@ -81,6 +95,34 @@ val previewSpots: ImmutableList<SpotUi> = persistentListOf(
         reviewCount = 120,
         shortAddress = "12 Admiralty Way, Lekki"
     )
+)
+
+val previewWeekHours: ImmutableList<SpotDayHoursUi> = persistentListOf(
+    SpotDayHoursUi(day = "Monday", hours = "12:00 – 11:00 PM", isToday = false),
+    SpotDayHoursUi(day = "Tuesday", hours = "12:00 – 11:00 PM", isToday = true),
+    SpotDayHoursUi(day = "Wednesday", hours = "12:00 – 11:00 PM", isToday = false),
+    SpotDayHoursUi(day = "Thursday", hours = "12:00 PM – 1:00 AM", isToday = false),
+    SpotDayHoursUi(day = "Friday", hours = "12:00 PM – 2:00 AM", isToday = false),
+    SpotDayHoursUi(day = "Saturday", hours = "12:00 PM – 2:00 AM", isToday = false),
+    SpotDayHoursUi(day = "Sunday", hours = "Closed", isToday = false)
+)
+
+val previewFullSpot: SpotUi = previewSpot(isSaved = true).copy(
+    typeLabel = "Nigerian restaurant",
+    aiSummary = SpotAiSummary(
+        text = "Upscale spot serving modern takes on Nigerian classics, with a buzzing bar and a garden for groups.",
+        disclosure = "Summarized with Gemini"
+    ),
+    photoUrls = persistentListOf("places/preview/photos/1", "places/preview/photos/2"),
+    priceRange = SpotPriceRange(currencyCode = "NGN", startAmount = 20_000, endAmount = 40_000),
+    businessStatus = BusinessStatus.OPERATIONAL,
+    nextCloseTime = PREVIEW_SCHEDULED_AT,
+    weekHours = previewWeekHours,
+    highlights = SpotHighlight.entries.filterNot { it == SpotHighlight.PAID_PARKING || it == SpotHighlight.CASH_ONLY }.toImmutableList(),
+    phoneNumber = "+234 810 361 3662",
+    websiteUrl = "https://www.nokbyalara.com/",
+    googleMapsUrl = "https://maps.google.com/?cid=1",
+    directionsUrl = "https://www.google.com/maps/dir//6.4281,3.4219"
 )
 
 // Index 0 is the host and index 1 is the guest, so previews can tell the two roles apart.

@@ -520,9 +520,12 @@ class HangoutVotingViewModelTest {
         id = id, name = name, category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
-        isOpenNow = true, shortAddress = "VI, Lagos",
+        openingHours = null, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList(), savedAt = null
+        description = null, savedAt = null,
+        typeLabel = null, generativeSummary = null, reviewSummary = null, priceRange = null,
+        businessStatus = null, amenities = null, parking = null, payment = null,
+        phoneNumber = null, directionsUrl = null
     )
 
     private companion object {
