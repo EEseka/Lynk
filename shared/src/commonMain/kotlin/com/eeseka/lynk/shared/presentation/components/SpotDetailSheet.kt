@@ -76,6 +76,8 @@ import com.eeseka.lynk.shared.presentation.spot.util.toWebsiteLabel
 import com.eeseka.lynk.shared.presentation.util.placeTimeZone
 import com.eeseka.lynk.shared.presentation.util.toUpcomingTimeLabel
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.offsetAt
 import kotlin.time.Clock
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.about_this_spot
@@ -85,6 +87,8 @@ import lynk.shared.generated.resources.open_in_google_maps
 import lynk.shared.generated.resources.reviews_count
 import lynk.shared.generated.resources.save_spot
 import lynk.shared.generated.resources.spot_closes_at
+import lynk.shared.generated.resources.spot_hours_local
+import lynk.shared.generated.resources.spot_local_time
 import lynk.shared.generated.resources.spot_opens_at
 import lynk.shared.generated.resources.unsave_spot
 import org.jetbrains.compose.resources.stringResource
@@ -151,10 +155,18 @@ private fun SpotDetailSheetContent(
     }
     // On the place's clock, so "Opens 8:00 AM" matches the week's hours wherever the viewer is
     val spotTimeZone = placeTimeZone(spot.utcOffsetMinutes)
-    val opensOrClosesLabel = when (isOpenNow) {
-        true -> spot.nextCloseTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_closes_at, it.toUpcomingTimeLabel(spotTimeZone)) }
-        false -> spot.nextOpenTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_opens_at, it.toUpcomingTimeLabel(spotTimeZone)) }
+    // Said out loud when it differs from the phone's, or "Closes 8:30 PM" reads as the viewer's evening
+    val isOnAnotherClock = spotTimeZone.offsetAt(now) != TimeZone.currentSystemDefault().offsetAt(now)
+    val nextChangeTime = when (isOpenNow) {
+        true -> spot.nextCloseTime
+        false -> spot.nextOpenTime
         null -> null
+    }?.takeIf { it > now }
+    val nextChangeTimeLabel = nextChangeTime?.toUpcomingTimeLabel(spotTimeZone)?.let { label ->
+        if (isOnAnotherClock) stringResource(Res.string.spot_local_time, label) else label
+    }
+    val opensOrClosesLabel = nextChangeTimeLabel?.let { label ->
+        stringResource(if (isOpenNow == true) Res.string.spot_closes_at else Res.string.spot_opens_at, label)
     }
     val address = spot.shortAddress?.takeIf { it.isNotBlank() }
     val priceRangeLabel = spot.priceRange?.toPriceRangeLabel()
@@ -341,7 +353,8 @@ private fun SpotDetailSheetContent(
                             SpotOpenStatus(
                                 isOpenNow = isOpen,
                                 opensOrClosesLabel = opensOrClosesLabel,
-                                weekHours = spot.weekHours
+                                weekHours = spot.weekHours,
+                                weekHoursNote = if (isOnAnotherClock) stringResource(Res.string.spot_hours_local) else null
                             )
                         }
                     }

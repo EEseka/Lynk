@@ -78,6 +78,8 @@
     <string name="create_hangout_here">Create Hangout Here</string>
     <string name="spot_closes_at">Closes %1$s</string>
     <string name="spot_opens_at">Opens %1$s</string>
+    <string name="spot_local_time">%1$s local time</string>
+    <string name="spot_hours_local">Times are local to this spot</string>
     <string name="spot_show_week_hours">Show the week's hours</string>
     <string name="spot_status_closed_permanently">Permanently closed</string>
     <string name="spot_status_closed_temporarily">Temporarily closed</string>

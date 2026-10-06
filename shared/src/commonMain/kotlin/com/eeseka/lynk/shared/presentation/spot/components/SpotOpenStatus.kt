@@ -50,7 +50,8 @@ fun SpotOpenStatus(
     isOpenNow: Boolean,
     opensOrClosesLabel: String?,
     weekHours: ImmutableList<SpotDayHoursUi>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    weekHoursNote: String? = null,
 ) {
     var isWeekShown by remember { mutableStateOf(false) }
     val chevronRotation by animateFloatAsState(if (isWeekShown) 180f else 0f)
@@ -105,6 +106,13 @@ fun SpotOpenStatus(
                 modifier = Modifier.padding(start = 32.dp, end = 16.dp, top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                weekHoursNote?.let { note ->
+                    LynkText(
+                        text = note,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 weekHours.forEach { day ->
                     val weight = if (day.isToday) FontWeight.SemiBold else FontWeight.Normal
                     val color = if (day.isToday) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
@@ -135,8 +143,9 @@ private fun SpotOpenStatusOpenPreview() {
     LynkTheme {
         SpotOpenStatus(
             isOpenNow = true,
-            opensOrClosesLabel = "Closes 1:00 AM",
+            opensOrClosesLabel = "Closes 8:30 PM local time",
             weekHours = previewWeekHours,
+            weekHoursNote = "Times are local to this spot",
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
