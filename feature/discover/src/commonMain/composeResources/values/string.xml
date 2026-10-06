@@ -1,5 +1,10 @@
 <resources>
     <string name="search_spots_hint">Search for a spot...</string>
+    <string name="search_hint_lounge">Try ‘rooftop lounges in %1$s’</string>
+    <string name="search_hint_cafe">Try ‘brunch spots in %1$s’</string>
+    <string name="search_hint_club">Try ‘nightclubs in %1$s’</string>
+    <string name="search_hint_restaurant">Try ‘group dinner spots in %1$s’</string>
+    <string name="search_hint_activity">Try ‘arcades in %1$s’</string>
 
     <string name="all">All</string>
     <string name="any_price">Any Price</string>
@@ -19,6 +24,9 @@
     <string name="trending_load_error_title">Couldn't load nearby spots</string>
     <string name="search_this_area">Search this area</string>
     <string name="no_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
+    <string name="top_spots_in_area">Top 10 in %1$s</string>
+    <string name="leave_top_spots">Leave Top 10</string>
+    <string name="top_spot_rank">#%1$d in %2$s</string>
 
     <string name="map_data_label">Map Data</string>
     <string name="show_map_attribution">Show map attribution</string>

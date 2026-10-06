@@ -26,4 +26,7 @@ sealed interface DiscoverAction {
 
     data object RetryTrending : DiscoverAction
     data class OnSearchThisArea(val latitude: Double, val longitude: Double) : DiscoverAction
+
+    data object OnTopSpotsClick : DiscoverAction
+    data object OnExitTopSpotsClick : DiscoverAction
 }

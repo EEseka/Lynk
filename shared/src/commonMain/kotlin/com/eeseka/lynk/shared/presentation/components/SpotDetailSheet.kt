@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Globe
@@ -74,6 +75,7 @@ import com.eeseka.lynk.shared.presentation.spot.util.toPriceRangeLabel
 import com.eeseka.lynk.shared.presentation.spot.util.toWebsiteLabel
 import com.eeseka.lynk.shared.presentation.util.toUpcomingTimeLabel
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Clock
 import lynk.shared.generated.resources.Res
 import lynk.shared.generated.resources.about_this_spot
 import lynk.shared.generated.resources.create_hangout_here
@@ -92,6 +94,7 @@ fun SpotDetailSheet(
     userLat: Double?,
     userLng: Double?,
     onDismissRequest: () -> Unit,
+    rankLabel: String? = null,
     onCreateHangoutClick: ((String) -> Unit)? = null,
     onToggleSave: ((String, Boolean) -> Unit)? = null
 ) {
@@ -113,6 +116,7 @@ fun SpotDetailSheet(
             spot = spot,
             userLat = userLat,
             userLng = userLng,
+            rankLabel = rankLabel,
             onPhotoClick = { index -> initialImageIndex = index },
             onCreateHangoutClick = onCreateHangoutClick,
             onToggleSave = onToggleSave
@@ -125,6 +129,7 @@ private fun SpotDetailSheetContent(
     spot: SpotUi,
     userLat: Double?,
     userLng: Double?,
+    rankLabel: String?,
     onPhotoClick: (Int) -> Unit,
     onCreateHangoutClick: ((String) -> Unit)?,
     onToggleSave: ((String, Boolean) -> Unit)?,
@@ -134,9 +139,18 @@ private fun SpotDetailSheetContent(
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
 
-    val opensOrClosesLabel = when (spot.isOpenNow) {
-        true -> spot.nextCloseTime?.let { stringResource(Res.string.spot_closes_at, it.toUpcomingTimeLabel()) }
-        false -> spot.nextOpenTime?.let { stringResource(Res.string.spot_opens_at, it.toUpcomingTimeLabel()) }
+    // The server caches spots for up to an hour, so Google's open or closed can be out of date by the time it's shown
+    val now = Clock.System.now()
+    val hasClosedSince = spot.nextCloseTime?.let { it <= now } == true
+    val hasOpenedSince = spot.nextOpenTime?.let { it <= now } == true
+    val isOpenNow = when (spot.isOpenNow) {
+        true -> !hasClosedSince
+        false -> hasOpenedSince
+        null -> null
+    }
+    val opensOrClosesLabel = when (isOpenNow) {
+        true -> spot.nextCloseTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_closes_at, it.toUpcomingTimeLabel()) }
+        false -> spot.nextOpenTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_opens_at, it.toUpcomingTimeLabel()) }
         null -> null
     }
     val address = spot.shortAddress?.takeIf { it.isNotBlank() }
@@ -245,6 +259,15 @@ private fun SpotDetailSheetContent(
                             .padding(horizontal = 16.dp)
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
+                            rankLabel?.let { label ->
+                                LynkText(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
                             LynkText(
                                 text = spot.name,
                                 style = MaterialTheme.typography.headlineSmall,
@@ -311,9 +334,9 @@ private fun SpotDetailSheetContent(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     } else {
-                        spot.isOpenNow?.let { isOpenNow ->
+                        isOpenNow?.let { isOpen ->
                             SpotOpenStatus(
-                                isOpenNow = isOpenNow,
+                                isOpenNow = isOpen,
                                 opensOrClosesLabel = opensOrClosesLabel,
                                 weekHours = spot.weekHours
                             )
@@ -446,7 +469,10 @@ private fun SpotDetailSheetContent(
 
 @PreviewLightDark
 @Composable
-private fun SpotDetailSheetFullPreview() = SpotDetailSheetContentPreview(spot = previewFullSpot)
+private fun SpotDetailSheetFullPreview() = SpotDetailSheetContentPreview(
+    spot = previewFullSpot,
+    rankLabel = "#3 in Lagos"
+)
 
 @PreviewLightDark
 @Composable
@@ -482,13 +508,15 @@ private fun SpotDetailSheetMinimalPreview() = SpotDetailSheetContentPreview(
 private fun SpotDetailSheetContentPreview(
     spot: SpotUi,
     userLat: Double? = 6.4433,
-    userLng: Double? = 3.4555
+    userLng: Double? = 3.4555,
+    rankLabel: String? = null
 ) {
     LynkTheme {
         SpotDetailSheetContent(
             spot = spot,
             userLat = userLat,
             userLng = userLng,
+            rankLabel = rankLabel,
             onPhotoClick = {},
             onCreateHangoutClick = {},
             onToggleSave = { _, _ -> },

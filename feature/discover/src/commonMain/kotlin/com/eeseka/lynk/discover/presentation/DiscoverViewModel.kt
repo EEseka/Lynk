@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.AreaNameResolver
 import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -49,7 +51,8 @@ class DiscoverViewModel(
     private val sessionStorage: SessionStorage,
     private val authService: AuthService,
     private val appPreferences: AppPreferences,
-    private val lastKnownLocationStorage: LastKnownLocationStorage
+    private val lastKnownLocationStorage: LastKnownLocationStorage,
+    private val areaNameResolver: AreaNameResolver
 ) : ViewModel() {
 
     private val eventChannel = Channel<DiscoverEvent>()
@@ -65,6 +68,9 @@ class DiscoverViewModel(
 
     private val searchOrigin = MutableStateFlow<LocationCoordinates?>(null)
 
+    private val userLocation = MutableStateFlow<LocationCoordinates?>(null) // Where the Top 10 area name comes from: the user's fix or last known spot
+    private val topSpotsAreaName = MutableStateFlow<String?>(null)
+
     val state = combine(
         _state,
         appPreferences.theme
@@ -77,6 +83,8 @@ class DiscoverViewModel(
                 _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
                 observeSearchOrigin()
+                observeUserLocation()
+                observeTopSpotsAreaName()
                 hasLoadedInitialData = true
             }
         }
@@ -102,6 +110,8 @@ class DiscoverViewModel(
             DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
             DiscoverAction.SignOutGuest -> signOutGuest()
             is DiscoverAction.OnHangoutCreationSelected -> _state.update { it.copy(hangoutCreationSpotId = action.spotId) }
+            DiscoverAction.OnTopSpotsClick -> showTopSpots()
+            DiscoverAction.OnExitTopSpotsClick -> exitTopSpots()
         }
     }
 
@@ -126,6 +136,7 @@ class DiscoverViewModel(
             )
         }
         searchOrigin.value = LocationCoordinates(latitude = latitude, longitude = longitude)
+        userLocation.value = LocationCoordinates(latitude = latitude, longitude = longitude)
 
         viewModelScope.launch {
             lastKnownLocationStorage.setLastKnownLocation(latitude, longitude)
@@ -134,8 +145,18 @@ class DiscoverViewModel(
 
     private fun loadTrendingAroundLastKnownLocation() {
         viewModelScope.launch {
-            searchOrigin.value = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+            val lastKnownLocation = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+            searchOrigin.value = lastKnownLocation
+            userLocation.value = lastKnownLocation
         }
+    }
+
+    private fun showTopSpots() {
+        topSpotsAreaName.value = state.value.areaName ?: return
+    }
+
+    private fun exitTopSpots() {
+        topSpotsAreaName.value = null
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -145,6 +166,56 @@ class DiscoverViewModel(
             .distinctUntilChanged()
             .mapLatest { location -> fetchTrendingSpots(location) }
             .launchIn(viewModelScope)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeUserLocation() {
+        userLocation
+            .filterNotNull()
+            .distinctUntilChanged()
+            .mapLatest { location -> areaNameResolver.getAreaName(location.latitude, location.longitude) }
+            .filterNotNull()
+            .onEach { areaName -> _state.update { it.copy(areaName = areaName) } }
+            .launchIn(viewModelScope)
+    }
+
+    // A new area or leaving the mode cancels a Top 10 still loading
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeTopSpotsAreaName() {
+        topSpotsAreaName
+            .mapLatest { areaName ->
+                if (areaName == null) {
+                    _state.update {
+                        it.copy(
+                            isTopSpotsMode = false,
+                            isTopSpotsLoading = false,
+                            topSpots = persistentListOf()
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(isTopSpotsMode = true) }
+                    fetchTopSpots(areaName)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private suspend fun fetchTopSpots(areaName: String) {
+        _state.update { it.copy(isTopSpotsLoading = true) }
+
+        spotService.getTopSpots(areaName)
+            .onSuccess { spots ->
+                _state.update {
+                    it.copy(
+                        isTopSpotsLoading = false,
+                        topSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                    )
+                }
+            }
+            .onFailure { error ->
+                eventChannel.send(DiscoverEvent.Error(error.toUiText()))
+                topSpotsAreaName.value = null
+            }
     }
 
     private fun retryTrending() {
@@ -216,6 +287,9 @@ class DiscoverViewModel(
                 }.toImmutableList(),
                 searchResults = currentState.searchResults.map {
                     if (it.id == spotId) it.copy(isSaved = isSaved) else it
+                }.toImmutableList(),
+                topSpots = currentState.topSpots.map {
+                    if (it.id == spotId) it.copy(isSaved = isSaved) else it
                 }.toImmutableList()
             )
         }
@@ -248,11 +322,10 @@ class DiscoverViewModel(
             val lng = filters.longitude
             if (lat == null || lng == null) return@mapLatest
 
-            val isActivelySearching = filters.query.isNotBlank() ||
-                    filters.category != null ||
-                    filters.priceLevel != null
+            val isActivelySearching = filters.query.isNotBlank() || filters.category != null || filters.priceLevel != null
 
             if (isActivelySearching) {
+                exitTopSpots()
                 setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
                 _state.update {
                     it.copy(

@@ -6,6 +6,7 @@ import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
@@ -17,6 +18,7 @@ import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
+import com.eeseka.lynk.testing.data.FakeAreaNameResolver
 import com.eeseka.lynk.testing.data.FakeAuthService
 import com.eeseka.lynk.testing.data.FakeLastKnownLocationStorage
 import com.eeseka.lynk.testing.data.FakeSessionStorage
@@ -45,6 +47,7 @@ class DiscoverViewModelTest {
     private lateinit var authService: FakeAuthService
     private lateinit var appPreferences: FakeAppPreferences
     private lateinit var lastKnownLocationStorage: FakeLastKnownLocationStorage
+    private lateinit var areaNameResolver: FakeAreaNameResolver
     private lateinit var viewModel: DiscoverViewModel
 
     private val dummySpot = Spot(
@@ -67,12 +70,14 @@ class DiscoverViewModelTest {
         authService = FakeAuthService()
         appPreferences = FakeAppPreferences()
         lastKnownLocationStorage = FakeLastKnownLocationStorage()
+        areaNameResolver = FakeAreaNameResolver()
         viewModel = DiscoverViewModel(
             spotService,
             sessionStorage,
             authService,
             appPreferences,
-            lastKnownLocationStorage
+            lastKnownLocationStorage,
+            areaNameResolver
         )
     }
 
@@ -161,6 +166,114 @@ class DiscoverViewModelTest {
             assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSpotsInArea)
             assertThat(viewModel.state.value.trendingSpots).isEmpty()
         }
+    }
+
+    @Test
+    fun `a location fix names the area for the Top 10`() = runTest {
+        collectInBackground(viewModel.state)
+
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.areaName).isEqualTo("Lagos")
+    }
+
+    @Test
+    fun `a device that can't name the area has no Top 10`() = runTest {
+        areaNameResolver.areaName = null
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.areaName).isNull()
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(spotService.topRequestCities).isEmpty()
+    }
+
+    @Test
+    fun `tapping Top 10 loads the area's top spots`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        assertThat(spotService.topRequestCities).containsExactly("Lagos")
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+        assertThat(viewModel.state.value.isTopSpotsLoading).isFalse()
+        assertThat(viewModel.state.value.topSpots.map { it.id }).containsExactly("1")
+    }
+
+    @Test
+    fun `leaving Top 10 takes its pins off the map`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnExitTopSpotsClick)
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(viewModel.state.value.topSpots).isEmpty()
+    }
+
+    @Test
+    fun `searching leaves Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(viewModel.state.value.topSpots).isEmpty()
+    }
+
+    @Test
+    fun `a Top 10 that fails to load says so and leaves the mode`() = runTest {
+        // Trending finds something, so its "no spots" message isn't the event waiting first
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            spotService.shouldReturnError = true
+            viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+
+            assertThat(awaitItem()).isInstanceOf(DiscoverEvent.Error::class)
+            assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+            assertThat(viewModel.state.value.isTopSpotsLoading).isFalse()
+        }
+    }
+
+    @Test
+    fun `tapping Top 10 again after a failure retries`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        collectInBackground(viewModel.events)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        spotService.shouldReturnError = true
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        spotService.shouldReturnError = false
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        assertThat(spotService.topRequestCities).containsExactly("Lagos", "Lagos")
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+        assertThat(viewModel.state.value.topSpots.map { it.id }).containsExactly("1")
     }
 
     @Test

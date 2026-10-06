@@ -16,6 +16,8 @@ interface SpotService {
         limit: Int = 20
     ): Result<List<Spot>, DataError.Remote>
 
+    suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote>
+
     suspend fun searchSpots(
         latitude: Double,
         longitude: Double,

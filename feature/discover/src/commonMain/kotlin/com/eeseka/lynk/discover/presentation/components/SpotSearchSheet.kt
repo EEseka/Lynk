@@ -78,13 +78,13 @@ import lynk.feature.discover.generated.resources.any_price
 import lynk.feature.discover.generated.resources.empty_search_message
 import lynk.feature.discover.generated.resources.empty_search_title
 import lynk.feature.discover.generated.resources.filter_price
-import lynk.feature.discover.generated.resources.search_spots_hint
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SpotSearchSheet(
     searchTextState: TextFieldState,
+    searchHint: String,
     spots: ImmutableList<SpotUi>,
     isSearchActive: Boolean,
     isSearchLoading: Boolean,
@@ -104,6 +104,7 @@ fun SpotSearchSheet(
     LynkAdaptiveSheet(onDismissRequest = onDismissRequest) {
         SpotSearchSheetContent(
             searchTextState = searchTextState,
+            searchHint = searchHint,
             spots = spots,
             isSearchActive = isSearchActive,
             isSearchLoading = isSearchLoading,
@@ -126,6 +127,7 @@ fun SpotSearchSheet(
 @Composable
 private fun SpotSearchSheetContent(
     searchTextState: TextFieldState,
+    searchHint: String,
     spots: ImmutableList<SpotUi>,
     isSearchActive: Boolean,
     isSearchLoading: Boolean,
@@ -229,7 +231,7 @@ private fun SpotSearchSheetContent(
             ) {
                 LynkSearchField(
                     state = searchTextState,
-                    placeholder = stringResource(Res.string.search_spots_hint),
+                    placeholder = searchHint,
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(focusRequester)
@@ -398,6 +400,7 @@ private fun SpotSearchSheetContentPreview(
     LynkTheme {
         SpotSearchSheetContent(
             searchTextState = TextFieldState(),
+            searchHint = "Try ‘rooftop lounges in Lekki’",
             spots = previewSpots,
             isSearchActive = false,
             isSearchLoading = isSearchLoading,

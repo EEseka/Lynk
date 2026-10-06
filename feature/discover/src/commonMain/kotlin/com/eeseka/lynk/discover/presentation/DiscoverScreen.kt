@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -51,11 +52,13 @@ import com.eeseka.lynk.discover.presentation.components.SearchThisAreaButton
 import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
 import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
+import com.eeseka.lynk.discover.presentation.components.TopSpotsChip
 import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
 import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
+import com.eeseka.lynk.discover.presentation.util.toBoundingBox
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
@@ -70,6 +73,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.location.LocationError
 import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
@@ -98,8 +102,14 @@ import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.open_spot_search
 import lynk.feature.discover.generated.resources.osm_attribution
 import lynk.feature.discover.generated.resources.save_this_spot
+import lynk.feature.discover.generated.resources.search_hint_activity
+import lynk.feature.discover.generated.resources.search_hint_cafe
+import lynk.feature.discover.generated.resources.search_hint_club
+import lynk.feature.discover.generated.resources.search_hint_lounge
+import lynk.feature.discover.generated.resources.search_hint_restaurant
 import lynk.feature.discover.generated.resources.search_spots_hint
 import lynk.feature.discover.generated.resources.show_map_attribution
+import lynk.feature.discover.generated.resources.top_spot_rank
 import lynk.feature.discover.generated.resources.trending_load_error_title
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -109,6 +119,7 @@ import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
+import org.maplibre.compose.util.DpPadding
 import org.maplibre.compose.overlay.CompassButtonStyle
 import org.maplibre.compose.overlay.DisappearingCompassButton
 import org.maplibre.compose.overlay.DisappearingScaleBar
@@ -181,14 +192,16 @@ fun DiscoverScreen(
 
     val mapStyle = if (isDark) MAP_STYLE_URI_DARK else MAP_STYLE_URI_LIGHT
 
-    val spotsToShow = state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
+    val spotsToShow = if (state.isTopSpotsMode) state.topSpots
+    else state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
 
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(mapStyle),
         content = {
             SpotLocationMapMarker(
                 spots = spotsToShow,
-                selectedSpotId = state.selectedSpotId
+                selectedSpotId = state.selectedSpotId,
+                isRanked = state.isTopSpotsMode
             )
         }
     )
@@ -275,13 +288,41 @@ fun DiscoverScreen(
     }
 
     val selectedSpot = state.selectedSpotId?.let { selectedId ->
-        state.searchResults.find { it.id == selectedId }
+        state.topSpots.find { it.id == selectedId }
+            ?: state.searchResults.find { it.id == selectedId }
             ?: state.trendingSpots.find { it.id == selectedId }
     }
 
+    val selectedTopSpotIndex = state.topSpots.indexOfFirst { it.id == state.selectedSpotId }
+    val selectedSpotRank = (selectedTopSpotIndex + 1).takeIf { selectedTopSpotIndex >= 0 }
+
     val hangoutCreationSpot = state.hangoutCreationSpotId?.let { hangoutSpotId ->
-        state.searchResults.find { it.id == hangoutSpotId }
+        state.topSpots.find { it.id == hangoutSpotId }
+            ?: state.searchResults.find { it.id == hangoutSpotId }
             ?: state.trendingSpots.find { it.id == hangoutSpotId }
+    }
+
+    val areaName = state.areaName
+    val hintCategory = remember { SpotCategory.entries.filter { it != SpotCategory.OTHER }.random() }
+    val searchHint = areaName?.let { area ->
+        val hintResource = when (hintCategory) {
+            SpotCategory.LOUNGE -> Res.string.search_hint_lounge
+            SpotCategory.CAFE -> Res.string.search_hint_cafe
+            SpotCategory.CLUB -> Res.string.search_hint_club
+            SpotCategory.RESTAURANT -> Res.string.search_hint_restaurant
+            SpotCategory.ACTIVITY -> Res.string.search_hint_activity
+            SpotCategory.OTHER -> null
+        }
+        hintResource?.let { stringResource(it, area) }
+    } ?: stringResource(Res.string.search_spots_hint)
+
+    // Fits the camera to the Top 10 once they arrive
+    LaunchedEffect(state.topSpots) {
+        val topSpotsBounds = state.topSpots.toBoundingBox() ?: return@LaunchedEffect
+        mapState.animateCameraToBounds(
+            boundingBox = topSpotsBounds,
+            fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp)
+        )
     }
 
     val showTrendingError = state.trendingError != null &&
@@ -315,7 +356,7 @@ fun DiscoverScreen(
                     maxPitch = 60.0
                 ),
                 interactions = spotMapInteractions,
-                viewportInsets = WindowInsets(top = scaffoldPadding.calculateTopPadding() + 72.dp)
+                viewportInsets = WindowInsets(top = scaffoldPadding.calculateTopPadding() + 72.dp + if (areaName != null) 48.dp else 0.dp)
                     .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .asPaddingValues()
             ) {
@@ -353,16 +394,18 @@ fun DiscoverScreen(
                             .height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        SearchThisAreaButton(
-                            mapState = mapState,
-                            trendingLatitude = state.trendingLatitude,
-                            trendingLongitude = state.trendingLongitude,
-                            isLoading = state.isTrendingLoading,
-                            onClick = { latitude, longitude ->
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
-                            }
-                        )
+                        if (!state.isTopSpotsMode) {
+                            SearchThisAreaButton(
+                                mapState = mapState,
+                                trendingLatitude = state.trendingLatitude,
+                                trendingLongitude = state.trendingLongitude,
+                                isLoading = state.isTrendingLoading,
+                                onClick = { latitude, longitude ->
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -374,39 +417,54 @@ fun DiscoverScreen(
                     )
                 }
 
-                SelectedSpotPinOverlay(spot = selectedSpot)
+                SelectedSpotPinOverlay(spot = selectedSpot, rank = selectedSpotRank)
             }
 
-            // Search Bar
-            Box(
+            // Search Bar, with the Top 10 chip under it
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = scaffoldPadding.calculateTopPadding() + 16.dp)
                     .padding(horizontal = 16.dp)
-                    .widthIn(max = 480.dp)
+                    .widthIn(max = 480.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                LynkSearchField(
-                    state = state.searchTextState,
-                    placeholder = stringResource(Res.string.search_spots_hint),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clearAndSetSemantics { }
-                )
+                Box {
+                    LynkSearchField(
+                        state = state.searchTextState,
+                        placeholder = searchHint,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearAndSetSemantics { }
+                    )
 
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClickLabel = stringResource(Res.string.open_spot_search),
-                            role = Role.Button,
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(DiscoverAction.ToggleShowSearchSheet)
-                            }
-                        )
-                )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClickLabel = stringResource(Res.string.open_spot_search),
+                                role = Role.Button,
+                                onClick = {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onAction(DiscoverAction.ToggleShowSearchSheet)
+                                }
+                            )
+                    )
+                }
+
+                areaName?.let { name ->
+                    TopSpotsChip(
+                        areaName = name,
+                        isActive = state.isTopSpotsMode,
+                        isLoading = state.isTopSpotsLoading,
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(if (state.isTopSpotsMode) DiscoverAction.OnExitTopSpotsClick else DiscoverAction.OnTopSpotsClick)
+                        }
+                    )
+                }
             }
 
             // The larger of the two, not the sum: a corner hole punch in landscape counts as a bottom inset
@@ -559,6 +617,7 @@ fun DiscoverScreen(
         if (state.showSearchSheet) {
             SpotSearchSheet(
                 searchTextState = state.searchTextState,
+                searchHint = searchHint,
                 spots = if (isSearchActive) state.searchResults else state.trendingSpots,
                 isSearchActive = isSearchActive,
                 isSearchLoading = state.isSearchLoading,
@@ -585,6 +644,9 @@ fun DiscoverScreen(
                 spot = spot,
                 userLat = state.userLatitude,
                 userLng = state.userLongitude,
+                rankLabel = selectedSpotRank?.let { rank ->
+                    areaName?.let { stringResource(Res.string.top_spot_rank, rank, it) }
+                },
                 onCreateHangoutClick = { spotId ->
                     onAction(DiscoverAction.OnSpotSelected(null))
                     if (state.isGuest) {
