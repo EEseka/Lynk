@@ -26,6 +26,7 @@ data class SpotUi(
     val isOpenNow: Boolean?,
     val nextOpenTime: Instant?,
     val nextCloseTime: Instant?,
+    val utcOffsetMinutes: Int?,
     val weekHours: ImmutableList<SpotDayHoursUi>,
     val highlights: ImmutableList<SpotHighlight>,
     val shortAddress: String?,

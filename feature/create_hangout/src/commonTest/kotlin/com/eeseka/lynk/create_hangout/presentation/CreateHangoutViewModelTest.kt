@@ -62,7 +62,8 @@ class CreateHangoutViewModelTest {
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
         openingHours = SpotOpeningHours(
-            isOpenNow = true, weekdayDescriptions = emptyList(), nextOpenTime = null, nextCloseTime = null
+            isOpenNow = true, weekdayDescriptions = emptyList(),
+            nextOpenTime = null, nextCloseTime = null, utcOffsetMinutes = null
         ),
         shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
@@ -80,7 +81,7 @@ class CreateHangoutViewModelTest {
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
         description = null,
         typeLabel = null, aiSummary = null, priceRange = null, businessStatus = null,
-        nextOpenTime = null, nextCloseTime = null, weekHours = persistentListOf(),
+        nextOpenTime = null, nextCloseTime = null, utcOffsetMinutes = null, weekHours = persistentListOf(),
         highlights = persistentListOf(),
         phoneNumber = null, directionsUrl = null
     )

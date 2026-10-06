@@ -73,6 +73,7 @@ import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import com.eeseka.lynk.shared.presentation.spot.util.toPriceRangeLabel
 import com.eeseka.lynk.shared.presentation.spot.util.toWebsiteLabel
+import com.eeseka.lynk.shared.presentation.util.placeTimeZone
 import com.eeseka.lynk.shared.presentation.util.toUpcomingTimeLabel
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.time.Clock
@@ -148,9 +149,11 @@ private fun SpotDetailSheetContent(
         false -> hasOpenedSince
         null -> null
     }
+    // On the place's clock, so "Opens 8:00 AM" matches the week's hours wherever the viewer is
+    val spotTimeZone = placeTimeZone(spot.utcOffsetMinutes)
     val opensOrClosesLabel = when (isOpenNow) {
-        true -> spot.nextCloseTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_closes_at, it.toUpcomingTimeLabel()) }
-        false -> spot.nextOpenTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_opens_at, it.toUpcomingTimeLabel()) }
+        true -> spot.nextCloseTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_closes_at, it.toUpcomingTimeLabel(spotTimeZone)) }
+        false -> spot.nextOpenTime?.takeIf { it > now }?.let { stringResource(Res.string.spot_opens_at, it.toUpcomingTimeLabel(spotTimeZone)) }
         null -> null
     }
     val address = spot.shortAddress?.takeIf { it.isNotBlank() }

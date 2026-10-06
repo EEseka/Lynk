@@ -60,6 +60,7 @@ import lynk.shared.generated.resources.spot_highlight_valet_parking
 import lynk.shared.generated.resources.spot_status_closed_permanently
 import lynk.shared.generated.resources.spot_status_closed_temporarily
 import lynk.shared.generated.resources.spot_status_opening_soon
+import com.eeseka.lynk.shared.presentation.util.placeTimeZone
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -170,7 +171,8 @@ fun Spot.toSpotUi() = SpotUi(
     isOpenNow = openingHours?.isOpenNow,
     nextOpenTime = openingHours?.nextOpenTime,
     nextCloseTime = openingHours?.nextCloseTime,
-    weekHours = openingHours?.weekdayDescriptions.orEmpty().toWeekHours(),
+    utcOffsetMinutes = openingHours?.utcOffsetMinutes,
+    weekHours = openingHours?.weekdayDescriptions.orEmpty().toWeekHours(placeTimeZone(openingHours?.utcOffsetMinutes)),
     highlights = toHighlights().toImmutableList(),
     shortAddress = shortAddress,
     latitude = latitude,
@@ -182,9 +184,9 @@ fun Spot.toSpotUi() = SpotUi(
     isSaved = isSaved
 )
 
-// Splits Google's "Monday: 11:00 AM – 1:00 AM" lines into day and hours, Monday first, and marks today
-private fun List<String>.toWeekHours(): ImmutableList<SpotDayHoursUi> {
-    val todayIndex = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.isoDayNumber - 1
+// Splits Google's "Monday: 11:00 AM – 1:00 AM" lines into day and hours, Monday first, and marks the place's today
+private fun List<String>.toWeekHours(placeTimeZone: TimeZone): ImmutableList<SpotDayHoursUi> {
+    val todayIndex = Clock.System.now().toLocalDateTime(placeTimeZone).dayOfWeek.isoDayNumber - 1
 
     return mapIndexed { index, line ->
         SpotDayHoursUi(

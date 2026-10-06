@@ -61,6 +61,7 @@ fun previewSpot(
     isOpenNow = isOpenNow,
     nextOpenTime = null,
     nextCloseTime = null,
+    utcOffsetMinutes = null,
     weekHours = persistentListOf(),
     highlights = persistentListOf(),
     shortAddress = shortAddress,
