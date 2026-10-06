@@ -7,8 +7,8 @@ import com.composables.icons.lucide.Flame
 import com.composables.icons.lucide.Gamepad2
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.PartyPopper
+import com.composables.icons.lucide.Shapes
 import com.composables.icons.lucide.Sofa
-import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Utensils
 import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
@@ -64,7 +64,7 @@ fun HangoutVibe.getIcon(): ImageVector {
         HangoutVibe.GAMING -> Lucide.Gamepad2
         HangoutVibe.ACTIVE -> Lucide.Flame
         HangoutVibe.PARTY -> Lucide.PartyPopper
-        HangoutVibe.OTHER -> Lucide.Sparkles
+        HangoutVibe.OTHER -> Lucide.Shapes
     }
 }
 
