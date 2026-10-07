@@ -61,6 +61,7 @@
     <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
     <string name="detail_get_a_ride">Get a ride</string>
     <string name="detail_address_copied">Address copied. Paste it as your destination in any ride app.</string>
+    <string name="map_close">Close map</string>
 
     <!-- Host actions -->
     <string name="detail_complete">Complete hangout</string>
@@ -177,7 +178,7 @@
     <string name="payment_confirm_action">Continue to Paystack</string>
     <string name="payment_checkout_title">Pay with Paystack</string>
     <string name="payment_checkout_close">Close checkout</string>
-    <string name="payment_check_action">I have paid — check now</string>
+    <string name="payment_check_action">I have paid, check now</string>
     <string name="payment_checking">Checking…</string>
     <string name="payment_still_processing">Paystack is still processing this one. Give it a moment and check again.</string>
     <string name="payment_not_completed">That payment didn't go through. You can try again.</string>
@@ -205,6 +206,7 @@
     <!-- Voting -->
     <string name="voting_title">Vote for a spot</string>
     <string name="voting_propose">Propose</string>
+    <string name="voting_see_on_map">See on map</string>
     <string name="voting_empty_title">No spots yet</string>
     <string name="voting_empty_message">Propose a spot to kick off the vote.</string>
     <string name="voting_close">Close voting</string>

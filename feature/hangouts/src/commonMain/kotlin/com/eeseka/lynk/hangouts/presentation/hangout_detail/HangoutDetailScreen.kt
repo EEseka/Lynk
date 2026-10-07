@@ -29,6 +29,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailEmp
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDetailContent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDetailTopBar
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHeroActions
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutMapDialog
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
@@ -297,6 +298,7 @@ fun HangoutDetailScreen(
 
     var showParticipantsSheet by remember { mutableStateOf(false) }
     var showChosenSpotSheet by remember { mutableStateOf(false) }
+    var showMapDialog by remember { mutableStateOf(false) }
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showLeaveDialog by remember { mutableStateOf(false) }
@@ -551,6 +553,7 @@ fun HangoutDetailScreen(
                                 onProposeClick = { onVotingAction(HangoutVotingAction.OnProposeSpotClick) },
                                 onCloseVoting = { onVotingAction(HangoutVotingAction.OnCloseVotingClick) },
                                 onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
+                                onMapClick = { showMapDialog = true },
                                 contentPadding = scaffoldPadding
                             )
                         }
@@ -609,6 +612,16 @@ fun HangoutDetailScreen(
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(HangoutDetailAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
             }
+        )
+    }
+
+    if (showMapDialog && hangout != null && hangout.status == HangoutStatus.VOTING) {
+        HangoutMapDialog(
+            spots = votingState.candidates,
+            centerLatitude = votingState.center?.latitude,
+            centerLongitude = votingState.center?.longitude,
+            mapTheme = state.mapTheme,
+            onDismiss = { showMapDialog = false }
         )
     }
 

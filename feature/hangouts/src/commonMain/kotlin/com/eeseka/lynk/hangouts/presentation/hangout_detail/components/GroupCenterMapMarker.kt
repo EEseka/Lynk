@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.components
+package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -8,38 +8,43 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Crosshair
+import com.composables.icons.lucide.Lucide
 import org.maplibre.compose.overlay.MapOverlayScope
 import org.maplibre.spatialk.geojson.Position
 
-private val userPinColor = Color(0xFF007AFF)
-private val userPinHaloColor = Color.White
-
-private val CORE_DIAMETER = 24.dp
-private val HALO_WIDTH = 3.dp
-private val PULSE_DIAMETER = 72.dp
+private val CORE_DIAMETER = 36.dp
+private val HALO_WIDTH = 4.dp
+private val ICON_SIZE = 16.dp
+private val PULSE_DIAMETER = 108.dp
 private const val PULSE_CYCLES = 3
-private const val PULSE_DURATION_MILLIS = 1600
+private const val PULSE_DURATION_MILLIS = 2000
 
 private val CORE_SCALE = CORE_DIAMETER / PULSE_DIAMETER
 
 @Composable
-fun MapOverlayScope.UserLocationMapMarker(
-    userLatitude: Double,
-    userLongitude: Double,
-    pulseKey: Int
+fun MapOverlayScope.GroupCenterMapMarker(
+    centerLatitude: Double,
+    centerLongitude: Double
 ) {
+    val centerPinColor = MaterialTheme.colorScheme.secondaryContainer
+    val centerPinHaloColor = MaterialTheme.colorScheme.surface
+    val centerPinIconColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val centerPulseColor = MaterialTheme.colorScheme.secondary
+
     val pulseProgress = remember { Animatable(1f) }
 
-    LaunchedEffect(pulseKey) {
+    LaunchedEffect(centerLatitude, centerLongitude) {
         repeat(PULSE_CYCLES) {
             pulseProgress.snapTo(0f)
             pulseProgress.animateTo(
@@ -51,7 +56,7 @@ fun MapOverlayScope.UserLocationMapMarker(
 
     Box(
         modifier = Modifier.placedAt(
-            position = Position(longitude = userLongitude, latitude = userLatitude),
+            position = Position(longitude = centerLongitude, latitude = centerLatitude),
             alignment = Alignment.Center
         ),
         contentAlignment = Alignment.Center
@@ -67,15 +72,23 @@ fun MapOverlayScope.UserLocationMapMarker(
                     alpha = (1f - progress) * 0.5f
                 }
                 .clip(CircleShape)
-                .background(userPinColor)
+                .background(centerPulseColor)
         )
 
         Box(
             modifier = Modifier
                 .size(CORE_DIAMETER)
                 .clip(CircleShape)
-                .background(userPinColor)
-                .border(HALO_WIDTH, userPinHaloColor, CircleShape)
-        )
+                .background(centerPinColor)
+                .border(HALO_WIDTH, centerPinHaloColor, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Lucide.Crosshair,
+                contentDescription = null,
+                tint = centerPinIconColor,
+                modifier = Modifier.size(ICON_SIZE)
+            )
+        }
     }
 }

@@ -100,6 +100,7 @@ fun HangoutDetailContent(
     onProposeClick: () -> Unit,
     onCloseVoting: () -> Unit,
     onBreakTie: (String) -> Unit,
+    onMapClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     heroActions: @Composable RowScope.() -> Unit = {}
@@ -166,7 +167,8 @@ fun HangoutDetailContent(
                     onRemoveSpot = onRemoveSpot,
                     onProposeClick = onProposeClick,
                     onCloseVoting = onCloseVoting,
-                    onBreakTie = onBreakTie
+                    onBreakTie = onBreakTie,
+                    onMapClick = onMapClick
                 )
             } else {
                 ChosenSpotSection(
@@ -308,6 +310,7 @@ private fun HangoutDetailContentPreview(
             onProposeClick = {},
             onCloseVoting = {},
             onBreakTie = {},
+            onMapClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }

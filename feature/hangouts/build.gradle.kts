@@ -27,6 +27,10 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.maplibre.native.ffi.runtime.opengl)
+        }
+
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -43,6 +47,8 @@ kotlin {
             implementation(libs.jetbrains.compose.navigation)
 
             implementation(libs.icons.lucide.cmp)
+
+            implementation(libs.maplibre.compose)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)

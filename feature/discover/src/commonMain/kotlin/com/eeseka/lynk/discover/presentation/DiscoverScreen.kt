@@ -3,7 +3,6 @@ package com.eeseka.lynk.discover.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,32 +37,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
 import com.eeseka.lynk.discover.presentation.components.SearchThisAreaButton
-import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
-import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.TopSpotsChip
-import com.eeseka.lynk.discover.presentation.components.UserLocationMapMarker
-import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
 import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
-import com.eeseka.lynk.discover.presentation.util.toBoundingBox
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
@@ -72,7 +61,6 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.location.LocationError
-import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
@@ -80,12 +68,18 @@ import com.eeseka.lynk.shared.presentation.components.GuestPromptSheet
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
+import com.eeseka.lynk.shared.presentation.map.components.MapAttributionMenu
+import com.eeseka.lynk.shared.presentation.map.components.SelectedSpotPinOverlay
+import com.eeseka.lynk.shared.presentation.map.components.SpotLocationMapMarker
+import com.eeseka.lynk.shared.presentation.map.components.UserLocationMapMarker
+import com.eeseka.lynk.shared.presentation.map.components.rememberSpotMapInteractions
+import com.eeseka.lynk.shared.presentation.map.util.mapStyleUri
+import com.eeseka.lynk.shared.presentation.map.util.toBoundingBox
 import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
@@ -94,13 +88,10 @@ import lynk.feature.discover.generated.resources.finding_your_location
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_required
 import lynk.feature.discover.generated.resources.location_required_message
-import lynk.feature.discover.generated.resources.map_data_label
-import lynk.feature.discover.generated.resources.maptiler_attribution
 import lynk.feature.discover.generated.resources.no_spots_in_area
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.open_spot_search
-import lynk.feature.discover.generated.resources.osm_attribution
 import lynk.feature.discover.generated.resources.save_this_spot
 import lynk.feature.discover.generated.resources.search_hint_activity
 import lynk.feature.discover.generated.resources.search_hint_cafe
@@ -108,7 +99,6 @@ import lynk.feature.discover.generated.resources.search_hint_club
 import lynk.feature.discover.generated.resources.search_hint_lounge
 import lynk.feature.discover.generated.resources.search_hint_restaurant
 import lynk.feature.discover.generated.resources.search_spots_hint
-import lynk.feature.discover.generated.resources.show_map_attribution
 import lynk.feature.discover.generated.resources.top_spot_rank
 import lynk.feature.discover.generated.resources.trending_load_error_title
 import org.jetbrains.compose.resources.getString
@@ -127,15 +117,6 @@ import org.maplibre.compose.overlay.LocalViewportInsets
 import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
-
-private val MAP_TILER_API_KEY = AppConfig.MAP_TILER_API_KEY
-private val MAP_STYLE_URI_DARK =
-    "https://api.maptiler.com/maps/streets-v4-dark/style.json?key=$MAP_TILER_API_KEY"
-private val MAP_STYLE_URI_LIGHT =
-    "https://api.maptiler.com/maps/streets-v4/style.json?key=$MAP_TILER_API_KEY"
-
-private const val OSM_COPYRIGHT_LINK = "https://www.openstreetmap.org/copyright"
-private const val MAPTILER_COPYRIGHT_LINK = "https://www.maptiler.com/copyright"
 
 @Composable
 fun DiscoverRoot(
@@ -184,19 +165,11 @@ fun DiscoverScreen(
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
 
-    val isDark = when (state.mapTheme) {
-        AppTheme.SYSTEM -> isSystemInDarkTheme()
-        AppTheme.LIGHT -> false
-        AppTheme.DARK -> true
-    }
-
-    val mapStyle = if (isDark) MAP_STYLE_URI_DARK else MAP_STYLE_URI_LIGHT
-
     val spotsToShow = if (state.isTopSpotsMode) state.topSpots
     else state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
 
     val mapState = rememberMapState(
-        baseStyle = BaseStyle.Uri(mapStyle),
+        baseStyle = BaseStyle.Uri(mapStyleUri(state.mapTheme)),
         content = {
             SpotLocationMapMarker(
                 spots = spotsToShow,
@@ -208,12 +181,10 @@ fun DiscoverScreen(
 
     val scope = rememberCoroutineScope()
     val hapticFeedback = rememberAppHaptic()
-    val uriHandler = LocalUriHandler.current
 
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
-    var showAttributionMenu by remember { mutableStateOf(false) }
 
     var hasCenteredOnUser by rememberSaveable { mutableStateOf(false) }
 
@@ -474,67 +445,21 @@ fun DiscoverScreen(
             ) + 16.dp
 
             // Attribution
-            LynkDropDownMenu(
-                expanded = showAttributionMenu,
-                onDismissRequest = { showAttributionMenu = false },
+            MapAttributionMenu(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
                     .padding(
                         bottom = cornerControlsBottomPadding,
                         start = 16.dp
-                    ),
-                items = persistentListOf(
-                    LynkDropDownItem(
-                        title = stringResource(Res.string.osm_attribution),
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            uriHandler.openUri(OSM_COPYRIGHT_LINK)
-                        }
-                    ),
-                    LynkDropDownItem(
-                        title = stringResource(Res.string.maptiler_attribution),
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            uriHandler.openUri(MAPTILER_COPYRIGHT_LINK)
-                        }
                     )
-                ),
-                anchor = {
-                    Row(
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
-                            .clickable(
-                                onClickLabel = stringResource(Res.string.show_map_attribution),
-                                role = Role.Button
-                            ) {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                showAttributionMenu = true
-                            }
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Lucide.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                        )
-                        LynkText(
-                            text = stringResource(Res.string.map_data_label),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                        )
-                    }
-                }
             )
 
             // Action Button
             LynkTonalIconButton(
                 onClick = {
                     hapticFeedback(AppHaptic.ImpactLight)
+                    onAction(DiscoverAction.OnLocateMeClick)
                     if (permissionState == PermissionState.GRANTED) {
                         scope.launch { fetchCurrentLocationAndShowOnMap(true) }
                     } else {

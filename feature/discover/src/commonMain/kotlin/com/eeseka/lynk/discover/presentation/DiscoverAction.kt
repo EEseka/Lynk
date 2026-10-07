@@ -14,6 +14,7 @@ sealed interface DiscoverAction {
 
     data class OnLocationFetched(val latitude: Double, val longitude: Double) : DiscoverAction
     data object OnLocationUnavailable : DiscoverAction
+    data object OnLocateMeClick : DiscoverAction
 
     data class OnSpotSelected(val spotId: String?) : DiscoverAction
 

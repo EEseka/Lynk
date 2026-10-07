@@ -152,6 +152,59 @@ class DiscoverViewModelTest {
     }
 
     @Test
+    fun `a later fix keeps the searched area`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+        areaNameResolver.areaName = "Lagos Island"
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(6.45, 3.4))
+        advanceUntilIdle()
+
+        // Coming back to the tab fetches the user's location again
+        areaNameResolver.areaName = "Ifako-Ijaiye"
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.64, 3.33))
+        advanceUntilIdle()
+
+        assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.45 to 3.4)
+        assertThat(viewModel.state.value.areaName).isEqualTo("Lagos Island")
+        // The blue dot still moves
+        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.64)
+    }
+
+    @Test
+    fun `locate me brings the search back to the user`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(6.45, 3.4))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnLocateMeClick)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.64, 3.33))
+        advanceUntilIdle()
+
+        assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.64 to 3.33)
+    }
+
+    @Test
+    fun `locate me leaves the Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnLocateMeClick)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(viewModel.state.value.topSpots).isEmpty()
+    }
+
+    @Test
     fun `searching an area with no spots says so`() = runTest {
         spotService.trendingSpotsList = mutableListOf(dummySpot)
         collectInBackground(viewModel.state)
@@ -176,6 +229,32 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.areaName).isEqualTo("Lagos")
+    }
+
+    @Test
+    fun `searching another area names that area for the Top 10`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = "Abuja"
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(9.07, 7.49))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.areaName).isEqualTo("Abuja")
+    }
+
+    @Test
+    fun `searching an area with no name drops the old name`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = null
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(4.0, 2.0))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.areaName).isNull()
     }
 
     @Test

@@ -15,6 +15,7 @@ import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.shared.domain.settings.AppPreferences
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.onFailure
@@ -67,7 +68,8 @@ class HangoutDetailViewModel(
     private val spotService: SpotService,
     private val connectionClient: LobbyConnectionClient,
     private val lobbyService: LobbyService,
-    private val sessionStorage: SessionStorage
+    private val sessionStorage: SessionStorage,
+    private val appPreferences: AppPreferences
 ) : ViewModel() {
     private val eventChannel = Channel<HangoutDetailEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -80,7 +82,12 @@ class HangoutDetailViewModel(
 
     private var saveSpotJob: Job? = null
 
-    val state = _state
+    val state = combine(
+        _state,
+        appPreferences.theme
+    ) { currentState, theme ->
+        currentState.copy(mapTheme = theme)
+    }
         .onStart {
             if (!hasLoadedInitialData) {
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()

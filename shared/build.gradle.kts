@@ -138,6 +138,8 @@ kotlin {
             implementation(libs.coil.network.ktor)
             implementation(libs.zoomimage.compose.coil)
 
+            implementation(libs.maplibre.compose)
+
             implementation(libs.jetbrains.compose.navigation)
 
             implementation(libs.material3.adaptive)

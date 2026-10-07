@@ -3,6 +3,7 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.util.UiText
@@ -21,6 +22,7 @@ data class HangoutDetailState(
     val isCancelling: Boolean = false,
     val isLeaving: Boolean = false,
     val withdrawingUserIds: ImmutableSet<String> = persistentSetOf(),
+    val mapTheme: AppTheme = AppTheme.SYSTEM,
 
     // Invite search sheet
     val isInviteSheetOpen: Boolean = false,
