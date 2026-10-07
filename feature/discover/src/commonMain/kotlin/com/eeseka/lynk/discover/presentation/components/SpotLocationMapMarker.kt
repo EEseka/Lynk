@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.presentation.map.components
+package com.eeseka.lynk.discover.presentation.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode

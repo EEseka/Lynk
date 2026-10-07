@@ -207,6 +207,12 @@
     <string name="voting_title">Vote for a spot</string>
     <string name="voting_propose">Propose</string>
     <string name="voting_see_on_map">See on map</string>
+    <string name="voting_vote_here">Vote for this spot</string>
+    <string name="voting_your_vote">Your vote</string>
+    <string name="voting_pick_winner">Pick this one</string>
+    <string name="voting_tie_locked">The host is picking</string>
+    <string name="voting_no_votes">No votes yet</string>
+    <string name="voting_from_middle">%1$s from the middle</string>
     <string name="voting_empty_title">No spots yet</string>
     <string name="voting_empty_message">Propose a spot to kick off the vote.</string>
     <string name="voting_close">Close voting</string>
@@ -214,9 +220,9 @@
     <string name="voting_leading">Leading</string>
     <string name="voting_your_pick">Your pick</string>
     <string name="voting_remove_spot">Remove spot</string>
-    <string name="voting_tie_banner">It's a tie — tap a spot to decide the winner</string>
-    <string name="voting_tie_banner_guest">It's a tie — the host is picking the winner</string>
-    <string name="voting_tie_flash">It's a tie — pick the winner</string>
+    <string name="voting_tie_banner">It's a tie. Tap a spot to decide the winner</string>
+    <string name="voting_tie_banner_guest">It's a tie. The host is picking the winner</string>
+    <string name="voting_tie_flash">It's a tie. Pick the winner</string>
     <string name="spot_suggested_message">Spot suggested</string>
 
     <!-- Propose-spot sheet -->
@@ -229,7 +235,7 @@
     <string name="propose_empty_favorite_message">No favorite spots found.</string>
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
-    <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
+    <string name="propose_center_caption">Distances are from the group's center point, near everyone.</string>
 
     <!-- Memories -->
     <string name="memories_title">Memories</string>

@@ -162,7 +162,6 @@ fun HangoutAlbumScreen(
     )
 
     LynkScaffold(
-        // The open viewer hosts the flashes itself, and two hosts would play every haptic twice
         snackbarHostState = snackbarHostState.takeIf { state.viewerIndex == null },
         topBar = {
             val backLabel = stringResource(Res.string.album_back)

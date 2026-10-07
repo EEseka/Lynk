@@ -387,8 +387,11 @@ fun HangoutDetailScreen(
         }
     }
 
+    // Closes on its own once voting ends
+    val isMapShowing = showMapDialog && hangout?.status == HangoutStatus.VOTING
+
     LynkScaffold(
-        snackbarHostState = snackbarHostState,
+        snackbarHostState = snackbarHostState.takeIf { !isMapShowing },
         topBar = {
             if (isDetailPaneFullScreen) {
                 HangoutDetailTopBar(
@@ -615,12 +618,20 @@ fun HangoutDetailScreen(
         )
     }
 
-    if (showMapDialog && hangout != null && hangout.status == HangoutStatus.VOTING) {
+    if (isMapShowing) {
         HangoutMapDialog(
-            spots = votingState.candidates,
+            candidates = votingState.candidates,
+            votes = votingState.votes,
+            participants = hangout.participants,
+            currentUserId = state.currentUserId,
+            isHost = isHost,
+            tiedSpotIds = votingState.tiedSpotIds,
             centerLatitude = votingState.center?.latitude,
             centerLongitude = votingState.center?.longitude,
             mapTheme = state.mapTheme,
+            snackbarHostState = snackbarHostState,
+            onCastVote = { onVotingAction(HangoutVotingAction.OnCastVote(it)) },
+            onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
             onDismiss = { showMapDialog = false }
         )
     }

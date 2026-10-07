@@ -45,8 +45,11 @@ import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
 import com.eeseka.lynk.discover.presentation.components.SearchThisAreaButton
+import com.eeseka.lynk.discover.presentation.components.SelectedSpotPinOverlay
+import com.eeseka.lynk.discover.presentation.components.SpotLocationMapMarker
 import com.eeseka.lynk.discover.presentation.components.SpotSearchSheet
 import com.eeseka.lynk.discover.presentation.components.TopSpotsChip
+import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
 import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
@@ -69,10 +72,7 @@ import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.map.components.MapAttributionMenu
-import com.eeseka.lynk.shared.presentation.map.components.SelectedSpotPinOverlay
-import com.eeseka.lynk.shared.presentation.map.components.SpotLocationMapMarker
 import com.eeseka.lynk.shared.presentation.map.components.UserLocationMapMarker
-import com.eeseka.lynk.shared.presentation.map.components.rememberSpotMapInteractions
 import com.eeseka.lynk.shared.presentation.map.util.mapStyleUri
 import com.eeseka.lynk.shared.presentation.map.util.toBoundingBox
 import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
