@@ -83,7 +83,7 @@ class CreateHangoutViewModel(
                 observeGatingStates()
                 observeStepOneValidation()
                 observeSearchFilters()
-                observeTrendingLocation()
+                observeTrendingSpots()
                 hasLoadedInitialData = true
             }
         }
@@ -271,7 +271,7 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun observeTrendingLocation() {
+    private fun observeTrendingSpots() {
         trendingLocation
             .filterNotNull()
             .distinctUntilChanged()

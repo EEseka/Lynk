@@ -89,7 +89,7 @@ class HangoutVotingViewModel(
             if (!hasLoadedInitialData) {
                 currentUserId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
                 observeVotingRound()
-                observeConnectionState()
+                observePendingVotingActions()
                 observeLobbyEvents()
                 observeTrendingSpots()
                 observeProposeSpotSheetSearchFilters()
@@ -165,7 +165,7 @@ class HangoutVotingViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun observeConnectionState() {
+    private fun observePendingVotingActions() {
         connectionClient
             .connectionState
             .onEach { connectionState ->
