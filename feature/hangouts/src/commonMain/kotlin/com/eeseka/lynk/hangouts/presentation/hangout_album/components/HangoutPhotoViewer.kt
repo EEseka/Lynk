@@ -190,6 +190,12 @@ private fun HangoutPhotoViewerContent(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                LynkTonalIconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Lucide.X,
+                        contentDescription = stringResource(Res.string.album_close_viewer)
+                    )
+                }
                 if (photo != null) {
                     ParticipantAvatar(
                         displayName = photo.uploader.displayName,
@@ -212,14 +218,6 @@ private fun HangoutPhotoViewerContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                LynkTonalIconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Lucide.X,
-                        contentDescription = stringResource(Res.string.album_close_viewer)
-                    )
                 }
             }
         }

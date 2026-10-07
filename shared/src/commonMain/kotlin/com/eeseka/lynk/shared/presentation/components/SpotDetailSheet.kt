@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.CalendarPlus
 import com.composables.icons.lucide.Globe
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
@@ -477,6 +478,13 @@ private fun SpotDetailSheetContent(
                 onClick = {
                     hapticFeedback(AppHaptic.ImpactMedium)
                     createHangout(spot.id)
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Lucide.CalendarPlus,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             )
         }

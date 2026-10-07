@@ -70,7 +70,7 @@ fun FullScreenSpotPhotoViewer(
                 LynkTonalIconButton(
                     onClick = onDismiss,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.TopStart)
                         .windowInsetsPadding(WindowInsets.safeDrawing)
                         .padding(16.dp)
                 ) {

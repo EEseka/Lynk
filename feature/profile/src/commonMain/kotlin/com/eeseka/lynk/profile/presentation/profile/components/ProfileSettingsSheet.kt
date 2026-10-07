@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,8 +28,10 @@ import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Contrast
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.LifeBuoy
+import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldCheck
+import com.composables.icons.lucide.Trash2
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.profile.presentation.mappers.getIcon
 import com.eeseka.lynk.profile.presentation.mappers.getTitle
@@ -262,6 +266,13 @@ private fun ProfileSettingsSheetContent(
             style = LynkButtonStyle.DESTRUCTIVE_SECONDARY,
             enabled = !isDeletingAccount,
             isLoading = if (isGuest) isDeletingAccount else isSigningOut,
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.LogOut,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -278,6 +289,13 @@ private fun ProfileSettingsSheetContent(
                 style = LynkButtonStyle.DESTRUCTIVE_PRIMARY,
                 enabled = !isSigningOut,
                 isLoading = isDeletingAccount,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Lucide.Trash2,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }

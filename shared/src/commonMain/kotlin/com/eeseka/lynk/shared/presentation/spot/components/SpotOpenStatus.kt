@@ -51,7 +51,7 @@ fun SpotOpenStatus(
     opensOrClosesLabel: String?,
     weekHours: ImmutableList<SpotDayHoursUi>,
     modifier: Modifier = Modifier,
-    weekHoursNote: String? = null,
+    weekHoursNote: String? = null
 ) {
     var isWeekShown by remember { mutableStateOf(false) }
     val chevronRotation by animateFloatAsState(if (isWeekShown) 180f else 0f)
