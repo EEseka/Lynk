@@ -7,6 +7,7 @@ import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_EXPANDED_
 import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import com.eeseka.lynk.shared.domain.util.PlatformUtils
 
 @Composable
 fun currentDeviceConfiguration(): DeviceConfiguration {
@@ -26,6 +27,9 @@ enum class DeviceConfiguration {
 
     val isWideScreen: Boolean
         get() = this == TABLET_LANDSCAPE || this == DESKTOP
+
+    val usesNavigationRail: Boolean
+        get() = isWideScreen && !PlatformUtils.isIOS()
 
     companion object {
         fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceConfiguration {

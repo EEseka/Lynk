@@ -142,7 +142,7 @@ fun ProfileScreen(
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
 
-    val showRail = config.isWideScreen
+    val showRail = config.usesNavigationRail
 
     val supportSubject = stringResource(Res.string.support_email_subject)
     val supportBody = stringResource(Res.string.support_email_body, state.userId)

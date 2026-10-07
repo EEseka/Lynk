@@ -155,7 +155,7 @@ fun HangoutsListScreen(
     val hapticFeedback = rememberAppHaptic()
 
     val configuration = currentDeviceConfiguration()
-    val showRail = configuration.isWideScreen
+    val showRail = configuration.usesNavigationRail
 
     val listState = rememberLazyListState()
     var showVibeMenu by remember { mutableStateOf(false) }
