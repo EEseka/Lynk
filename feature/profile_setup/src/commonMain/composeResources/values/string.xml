@@ -32,7 +32,7 @@
     <string name="choose_from_gallery">Choose from Gallery</string>
 
     <string name="setup_profile_title">One Last Step</string>
-    <string name="setup_profile_subtitle">Choose your username carefully — it's permanent. Your photo and display name can be changed anytime.</string>
+    <string name="setup_profile_subtitle">Choose your username carefully. It's permanent. Your photo and display name can be changed anytime.</string>
 
     <string name="error_image_read_failure">Failed to read image file</string>
 </resources>
