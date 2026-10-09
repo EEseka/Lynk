@@ -8,5 +8,6 @@ data class MainState(
     val hasSeenOnboarding: Boolean = false,
     val theme: AppTheme = AppTheme.SYSTEM,
     val isPureBlackEnabled: Boolean = false,
+    val areHapticsEnabled: Boolean = true,
     val user: User? = null
 )

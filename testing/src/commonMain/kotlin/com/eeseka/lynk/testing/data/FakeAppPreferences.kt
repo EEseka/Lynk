@@ -15,6 +15,9 @@ class FakeAppPreferences : AppPreferences {
     private val arePushNotificationsEnabledFlow = MutableStateFlow(true)
     override val arePushNotificationsEnabled: Flow<Boolean> = arePushNotificationsEnabledFlow
 
+    private val areHapticsEnabledFlow = MutableStateFlow(true)
+    override val areHapticsEnabled: Flow<Boolean> = areHapticsEnabledFlow
+
     override suspend fun setTheme(theme: AppTheme) {
         themeFlow.value = theme
     }
@@ -25,5 +28,9 @@ class FakeAppPreferences : AppPreferences {
 
     override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {
         arePushNotificationsEnabledFlow.value = isEnabled
+    }
+
+    override suspend fun setHapticsEnabled(isEnabled: Boolean) {
+        areHapticsEnabledFlow.value = isEnabled
     }
 }

@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateBounds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -113,7 +114,7 @@ fun VotingSection(
         modifier = modifier
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (tie) {
+            AnimatedVisibility(visible = tie) {
                 PlaceholderCard(
                     icon = Lucide.Scale,
                     title = stringResource(
@@ -192,7 +193,7 @@ fun VotingSection(
                         }
                     )
 
-                    if (isHost && !tie) {
+                    AnimatedVisibility(visible = isHost && !tie) {
                         LynkButton(
                             text = stringResource(Res.string.voting_close),
                             onClick = {

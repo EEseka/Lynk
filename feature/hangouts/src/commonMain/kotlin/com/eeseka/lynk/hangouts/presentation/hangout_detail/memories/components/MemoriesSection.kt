@@ -112,7 +112,7 @@ fun MemoriesSection(
                             photoCaption = photo.caption,
                             onClick = { onPhotoClick(photo.id) },
                             onLoadFailed = onPhotoLoadFailed,
-                            modifier = Modifier.size(96.dp)
+                            modifier = Modifier.size(96.dp).animateItem()
                         )
                     }
                 }

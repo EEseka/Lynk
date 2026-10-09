@@ -70,12 +70,14 @@ class ProfileViewModel(
         _state,
         appPreferences.theme,
         appPreferences.isPureBlackEnabled,
-        appPreferences.arePushNotificationsEnabled
-    ) { currentState, theme, isPureBlackEnabled, arePushNotificationsEnabled ->
+        appPreferences.arePushNotificationsEnabled,
+        appPreferences.areHapticsEnabled
+    ) { currentState, theme, isPureBlackEnabled, arePushNotificationsEnabled, areHapticsEnabled ->
         currentState.copy(
             appTheme = theme,
             isPureBlackEnabled = isPureBlackEnabled,
-            arePushNotificationsEnabled = arePushNotificationsEnabled
+            arePushNotificationsEnabled = arePushNotificationsEnabled,
+            areHapticsEnabled = areHapticsEnabled
         )
     }
         .onStart {
@@ -157,6 +159,7 @@ class ProfileViewModel(
             is ProfileAction.OnThemeSelected -> selectTheme(action.theme)
             is ProfileAction.OnPureBlackToggled -> togglePureBlack(action.isEnabled)
             is ProfileAction.OnPushNotificationsToggled -> togglePushNotifications(action.isEnabled)
+            is ProfileAction.OnHapticsToggled -> toggleHaptics(action.isEnabled)
             ProfileAction.OnCreateAccountClick -> deleteAccount() // Taking a Guest back to the auth screen
             ProfileAction.OnSignOutClick -> {
                 if (state.value.isGuest) deleteAccount()
@@ -312,6 +315,12 @@ class ProfileViewModel(
     private fun togglePushNotifications(isEnabled: Boolean) {
         viewModelScope.launch {
             appPreferences.setPushNotificationsEnabled(isEnabled)
+        }
+    }
+
+    private fun toggleHaptics(isEnabled: Boolean) {
+        viewModelScope.launch {
+            appPreferences.setHapticsEnabled(isEnabled)
         }
     }
 

@@ -19,22 +19,35 @@ actual fun rememberPhotoSharer(): PhotoSharer {
 
 private class PhotoSharerAndroid(private val context: Context) : PhotoSharer {
 
-    override suspend fun share(imageBytes: ByteArray, caption: String?): Boolean {
-        val file = withContext(Dispatchers.IO) {
+    override suspend fun share(photos: List<CaptionedPhoto>): Boolean {
+        val files = withContext(Dispatchers.IO) {
             try {
                 val directory = File(context.cacheDir, "shared_images")
                 if (!directory.exists()) directory.mkdirs()
-                File(directory, "share_${UUID.randomUUID()}.jpg").apply { writeBytes(imageBytes) }
+                photos.map { photo ->
+                    val photoBytes = photo.caption?.let { withCaption(context, photo.imageBytes, it) } ?: photo.imageBytes
+                    File(directory, "share_${UUID.randomUUID()}.jpg").apply { writeBytes(photoBytes) }
+                }
             } catch (_: Exception) {
                 null
             }
         } ?: return false
+        if (files.isEmpty()) return false
 
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        val uris = files.map { file ->
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        }
+        val sendIntent = if (uris.size == 1) {
+            Intent(Intent.ACTION_SEND).apply {
+                putExtra(Intent.EXTRA_STREAM, uris.single())
+                photos.single().caption?.let { putExtra(Intent.EXTRA_TEXT, it) }
+            }
+        } else {
+            Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            }
+        }.apply {
             type = "image/jpeg"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            caption?.let { putExtra(Intent.EXTRA_TEXT, it) }
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         val chooser = Intent.createChooser(sendIntent, null).apply {

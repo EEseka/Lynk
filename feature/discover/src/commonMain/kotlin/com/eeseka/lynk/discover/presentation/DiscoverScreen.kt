@@ -1,5 +1,10 @@
 package com.eeseka.lynk.discover.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -425,16 +430,22 @@ fun DiscoverScreen(
                     )
                 }
 
-                areaName?.let { name ->
-                    TopSpotsChip(
-                        areaName = name,
-                        isActive = state.isTopSpotsMode,
-                        isLoading = state.isTopSpotsLoading,
-                        onClick = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onAction(if (state.isTopSpotsMode) DiscoverAction.OnExitTopSpotsClick else DiscoverAction.OnTopSpotsClick)
-                        }
-                    )
+                AnimatedContent(
+                    targetState = areaName,
+                    contentKey = { name -> name != null },
+                    transitionSpec = { fadeIn() togetherWith fadeOut() }
+                ) { name ->
+                    if (name != null) {
+                        TopSpotsChip(
+                            areaName = name,
+                            isActive = state.isTopSpotsMode,
+                            isLoading = state.isTopSpotsLoading,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(if (state.isTopSpotsMode) DiscoverAction.OnExitTopSpotsClick else DiscoverAction.OnTopSpotsClick)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -483,11 +494,16 @@ fun DiscoverScreen(
                 )
             }
 
-            if (isFindingLocation) {
+            AnimatedVisibility(
+                visible = isFindingLocation,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = mainShellPadding.calculateBottomPadding() + 16.dp)
+            ) {
                 Row(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = mainShellPadding.calculateBottomPadding() + 16.dp)
                         .clip(MaterialTheme.shapes.large)
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -505,22 +521,29 @@ fun DiscoverScreen(
                 }
             }
 
-            if (showTrendingError) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(horizontal = 16.dp)
-                        .clip(MaterialTheme.shapes.large)
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    LynkErrorState(
-                        title = stringResource(Res.string.trending_load_error_title),
-                        message = state.trendingError.asString(),
-                        onRetry = {
-                            hapticFeedback(AppHaptic.ImpactLight)
-                            onAction(DiscoverAction.RetryTrending)
-                        }
-                    )
+            AnimatedContent(
+                targetState = state.trendingError.takeIf { showTrendingError },
+                contentKey = { trendingError -> trendingError != null },
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 16.dp)
+            ) { trendingError ->
+                if (trendingError != null) {
+                    Box(
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.large)
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        LynkErrorState(
+                            title = stringResource(Res.string.trending_load_error_title),
+                            message = trendingError.asString(),
+                            onRetry = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(DiscoverAction.RetryTrending)
+                            }
+                        )
+                    }
                 }
             }
         }

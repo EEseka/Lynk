@@ -3,11 +3,9 @@ package com.eeseka.lynk.profile.presentation.profile
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +41,7 @@ import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.util.PlatformUtils
 import com.eeseka.lynk.shared.presentation.components.FullScreenAvatarViewer
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.permissions.Permission
@@ -65,6 +64,9 @@ import lynk.feature.profile.generated.resources.choose_source_message
 import lynk.feature.profile.generated.resources.delete
 import lynk.feature.profile.generated.resources.delete_account_confirm_message
 import lynk.feature.profile.generated.resources.delete_account_confirm_title
+import lynk.feature.profile.generated.resources.email_device_info
+import lynk.feature.profile.generated.resources.feedback_email_body
+import lynk.feature.profile.generated.resources.feedback_email_subject
 import lynk.feature.profile.generated.resources.not_now
 import lynk.feature.profile.generated.resources.notifications_required
 import lynk.feature.profile.generated.resources.notifications_required_message
@@ -83,6 +85,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val SUPPORT_EMAIL = "support@lynk.com.ng"
+private const val FEEDBACK_EMAIL = "hello@lynk.com.ng"
 
 @Composable
 fun ProfileRoot(
@@ -141,8 +144,17 @@ fun ProfileScreen(
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
 
+    val deviceInfo = stringResource(
+        Res.string.email_device_info,
+        state.userId,
+        "${AppConfig.APP_VERSION} (${AppConfig.APP_VERSION_CODE})",
+        PlatformUtils.osVersion(),
+        PlatformUtils.deviceModel()
+    )
     val supportSubject = stringResource(Res.string.support_email_subject)
-    val supportBody = stringResource(Res.string.support_email_body, state.userId)
+    val supportBody = "${stringResource(Res.string.support_email_body)}\n\n$deviceInfo"
+    val feedbackSubject = stringResource(Res.string.feedback_email_subject)
+    val feedbackBody = "${stringResource(Res.string.feedback_email_body)}\n\n$deviceInfo"
 
     // The stored preference is only half the story — the system permission can be revoked in
     // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
@@ -274,11 +286,13 @@ fun ProfileScreen(
             theme = state.appTheme,
             isPureBlackEnabled = state.isPureBlackEnabled,
             arePushNotificationsEnabled = state.arePushNotificationsEnabled,
+            areHapticsEnabled = state.areHapticsEnabled,
             isGuest = state.isGuest,
             isSigningOut = state.isSigningOut,
             isDeletingAccount = state.isDeletingAccount,
             appVersion = stringResource(Res.string.app_version, AppConfig.APP_VERSION),
             supportEmail = SUPPORT_EMAIL,
+            feedbackEmail = FEEDBACK_EMAIL,
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
             onPureBlackToggled = { onAction(ProfileAction.OnPureBlackToggled(it)) },
             onPushNotificationsToggled = { isEnabled ->
@@ -303,12 +317,22 @@ fun ProfileScreen(
                     onAction(ProfileAction.OnPushNotificationsToggled(false))
                 }
             },
+            onHapticsToggled = { onAction(ProfileAction.OnHapticsToggled(it)) },
             onContactSupportClick = {
                 uriHandler.openUri(
                     buildMailtoUri(
                         email = SUPPORT_EMAIL,
                         subject = supportSubject,
                         body = supportBody
+                    )
+                )
+            },
+            onShareFeedbackClick = {
+                uriHandler.openUri(
+                    buildMailtoUri(
+                        email = FEEDBACK_EMAIL,
+                        subject = feedbackSubject,
+                        body = feedbackBody
                     )
                 )
             },

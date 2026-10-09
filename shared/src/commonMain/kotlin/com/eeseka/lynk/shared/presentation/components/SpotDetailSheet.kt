@@ -1,5 +1,13 @@
 package com.eeseka.lynk.shared.presentation.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -311,10 +319,17 @@ private fun SpotDetailSheetContent(
                                 containerColor = if (isSaved) MaterialTheme.colorScheme.secondaryContainer else Color.Unspecified,
                                 contentColor = if (isSaved) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
                             ) {
-                                Icon(
-                                    imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                                    contentDescription = stringResource(if (isSaved) Res.string.unsave_spot else Res.string.save_spot)
-                                )
+                                AnimatedContent(
+                                    targetState = isSaved,
+                                    transitionSpec = {
+                                        (scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy), initialScale = 0.6f) + fadeIn()) togetherWith (scaleOut(targetScale = 0.6f) + fadeOut())
+                                    }
+                                ) { isSavedIcon ->
+                                    Icon(
+                                        imageVector = if (isSavedIcon) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                        contentDescription = stringResource(if (isSavedIcon) Res.string.unsave_spot else Res.string.save_spot)
+                                    )
+                                }
                             }
                         }
                     }

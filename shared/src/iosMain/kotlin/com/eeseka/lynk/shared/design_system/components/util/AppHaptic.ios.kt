@@ -21,42 +21,46 @@ actual fun rememberAppHaptic(): (AppHaptic) -> Unit {
     val heavyImpactGenerator =
         remember { UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy) }
 
-    return remember {
+    val areHapticsEnabled = LocalHapticsEnabled.current
+
+    return remember(areHapticsEnabled) {
         { hapticType ->
-            when (hapticType) {
-                AppHaptic.Success -> {
-                    notificationGenerator.prepare()
-                    notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeSuccess)
-                }
+            if (areHapticsEnabled) {
+                when (hapticType) {
+                    AppHaptic.Success -> {
+                        notificationGenerator.prepare()
+                        notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeSuccess)
+                    }
 
-                AppHaptic.Warning -> {
-                    notificationGenerator.prepare()
-                    notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeWarning)
-                }
+                    AppHaptic.Warning -> {
+                        notificationGenerator.prepare()
+                        notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeWarning)
+                    }
 
-                AppHaptic.Error -> {
-                    notificationGenerator.prepare()
-                    notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeError)
-                }
+                    AppHaptic.Error -> {
+                        notificationGenerator.prepare()
+                        notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeError)
+                    }
 
-                AppHaptic.Selection -> {
-                    selectionGenerator.prepare()
-                    selectionGenerator.selectionChanged()
-                }
+                    AppHaptic.Selection -> {
+                        selectionGenerator.prepare()
+                        selectionGenerator.selectionChanged()
+                    }
 
-                AppHaptic.ImpactLight -> {
-                    lightImpactGenerator.prepare()
-                    lightImpactGenerator.impactOccurred()
-                }
+                    AppHaptic.ImpactLight -> {
+                        lightImpactGenerator.prepare()
+                        lightImpactGenerator.impactOccurred()
+                    }
 
-                AppHaptic.ImpactMedium -> {
-                    mediumImpactGenerator.prepare()
-                    mediumImpactGenerator.impactOccurred()
-                }
+                    AppHaptic.ImpactMedium -> {
+                        mediumImpactGenerator.prepare()
+                        mediumImpactGenerator.impactOccurred()
+                    }
 
-                AppHaptic.ImpactHeavy -> {
-                    heavyImpactGenerator.prepare()
-                    heavyImpactGenerator.impactOccurred()
+                    AppHaptic.ImpactHeavy -> {
+                        heavyImpactGenerator.prepare()
+                        heavyImpactGenerator.impactOccurred()
+                    }
                 }
             }
         }

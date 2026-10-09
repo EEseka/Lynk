@@ -30,8 +30,10 @@ import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.LifeBuoy
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.MessageCircleHeart
 import com.composables.icons.lucide.ShieldCheck
 import com.composables.icons.lucide.Trash2
+import com.composables.icons.lucide.Vibrate
 import com.eeseka.lynk.AppConfig
 import com.eeseka.lynk.profile.presentation.mappers.getIcon
 import com.eeseka.lynk.profile.presentation.mappers.getTitle
@@ -58,15 +60,18 @@ import lynk.feature.profile.generated.resources.delete_account
 import lynk.feature.profile.generated.resources.deleting_account
 import lynk.feature.profile.generated.resources.lights_out
 import lynk.feature.profile.generated.resources.lights_out_message
+import lynk.feature.profile.generated.resources.general
+import lynk.feature.profile.generated.resources.haptics
+import lynk.feature.profile.generated.resources.haptics_message
+import lynk.feature.profile.generated.resources.help_and_feedback
 import lynk.feature.profile.generated.resources.made_with_love
-import lynk.feature.profile.generated.resources.preferences
 import lynk.feature.profile.generated.resources.privacy_policy
 import lynk.feature.profile.generated.resources.push_notifications
 import lynk.feature.profile.generated.resources.push_notifications_message
 import lynk.feature.profile.generated.resources.settings
+import lynk.feature.profile.generated.resources.share_feedback
 import lynk.feature.profile.generated.resources.sign_out
 import lynk.feature.profile.generated.resources.signing_out
-import lynk.feature.profile.generated.resources.support
 import lynk.feature.profile.generated.resources.terms_of_service
 import org.jetbrains.compose.resources.stringResource
 
@@ -75,15 +80,19 @@ fun ProfileSettingsSheet(
     theme: AppTheme,
     isPureBlackEnabled: Boolean,
     arePushNotificationsEnabled: Boolean,
+    areHapticsEnabled: Boolean,
     isGuest: Boolean,
     isSigningOut: Boolean,
     isDeletingAccount: Boolean,
     appVersion: String,
     supportEmail: String,
+    feedbackEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
     onPureBlackToggled: (Boolean) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
+    onHapticsToggled: (Boolean) -> Unit,
     onContactSupportClick: () -> Unit,
+    onShareFeedbackClick: () -> Unit,
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit,
     onSignOutClick: () -> Unit,
@@ -99,15 +108,19 @@ fun ProfileSettingsSheet(
             theme = theme,
             isPureBlackEnabled = isPureBlackEnabled,
             arePushNotificationsEnabled = arePushNotificationsEnabled,
+            areHapticsEnabled = areHapticsEnabled,
             isGuest = isGuest,
             isSigningOut = isSigningOut,
             isDeletingAccount = isDeletingAccount,
             appVersion = appVersion,
             supportEmail = supportEmail,
+            feedbackEmail = feedbackEmail,
             onThemeSelected = onThemeSelected,
             onPureBlackToggled = onPureBlackToggled,
             onPushNotificationsToggled = onPushNotificationsToggled,
+            onHapticsToggled = onHapticsToggled,
             onContactSupportClick = onContactSupportClick,
+            onShareFeedbackClick = onShareFeedbackClick,
             onTermsClick = onTermsClick,
             onPrivacyClick = onPrivacyClick,
             onSignOutClick = onSignOutClick,
@@ -121,15 +134,19 @@ private fun ProfileSettingsSheetContent(
     theme: AppTheme,
     isPureBlackEnabled: Boolean,
     arePushNotificationsEnabled: Boolean,
+    areHapticsEnabled: Boolean,
     isGuest: Boolean,
     isSigningOut: Boolean,
     isDeletingAccount: Boolean,
     appVersion: String,
     supportEmail: String,
+    feedbackEmail: String,
     onThemeSelected: (AppTheme) -> Unit,
     onPureBlackToggled: (Boolean) -> Unit,
     onPushNotificationsToggled: (Boolean) -> Unit,
+    onHapticsToggled: (Boolean) -> Unit,
     onContactSupportClick: () -> Unit,
+    onShareFeedbackClick: () -> Unit,
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit,
     onSignOutClick: () -> Unit,
@@ -203,10 +220,27 @@ private fun ProfileSettingsSheetContent(
             }
         }
 
-        if (!isGuest) {
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-            ProfileSection(title = stringResource(Res.string.preferences)) {
+        ProfileSection(title = stringResource(Res.string.general)) {
+            ProfileSectionRow(
+                icon = Lucide.Vibrate,
+                title = stringResource(Res.string.haptics),
+                subtitle = stringResource(Res.string.haptics_message),
+                trailing = {
+                    LynkSwitch(
+                        checked = areHapticsEnabled,
+                        onCheckedChange = { isEnabled ->
+                            hapticFeedback(AppHaptic.Selection)
+                            onHapticsToggled(isEnabled)
+                        }
+                    )
+                }
+            )
+
+            if (!isGuest) {
+                ProfileSectionDivider()
+
                 ProfileSectionRow(
                     icon = Lucide.Bell,
                     title = stringResource(Res.string.push_notifications),
@@ -226,12 +260,21 @@ private fun ProfileSettingsSheetContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        ProfileSection(title = stringResource(Res.string.support)) {
+        ProfileSection(title = stringResource(Res.string.help_and_feedback)) {
             ProfileSectionRow(
                 icon = Lucide.LifeBuoy,
                 title = stringResource(Res.string.contact_support),
                 subtitle = supportEmail,
                 onClick = onContactSupportClick
+            )
+
+            ProfileSectionDivider()
+
+            ProfileSectionRow(
+                icon = Lucide.MessageCircleHeart,
+                title = stringResource(Res.string.share_feedback),
+                subtitle = feedbackEmail,
+                onClick = onShareFeedbackClick
             )
         }
 
@@ -328,15 +371,19 @@ private fun ProfileSettingsSheetPreview() {
             theme = AppTheme.SYSTEM,
             isPureBlackEnabled = false,
             arePushNotificationsEnabled = true,
+            areHapticsEnabled = true,
             isGuest = false,
             isSigningOut = false,
             isDeletingAccount = false,
             appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
+            feedbackEmail = "hello@lynk.com.ng",
             onThemeSelected = {},
             onPureBlackToggled = {},
             onPushNotificationsToggled = {},
+            onHapticsToggled = {},
             onContactSupportClick = {},
+            onShareFeedbackClick = {},
             onTermsClick = {},
             onPrivacyClick = {},
             onSignOutClick = {},
@@ -354,15 +401,19 @@ private fun ProfileSettingsSheetGuestPreview() {
             theme = AppTheme.SYSTEM,
             isPureBlackEnabled = false,
             arePushNotificationsEnabled = false,
+            areHapticsEnabled = true,
             isGuest = true,
             isSigningOut = false,
             isDeletingAccount = false,
             appVersion = "Version ${AppConfig.APP_VERSION}",
             supportEmail = "support@lynk.com.ng",
+            feedbackEmail = "hello@lynk.com.ng",
             onThemeSelected = {},
             onPureBlackToggled = {},
             onPushNotificationsToggled = {},
+            onHapticsToggled = {},
             onContactSupportClick = {},
+            onShareFeedbackClick = {},
             onTermsClick = {},
             onPrivacyClick = {},
             onSignOutClick = {},

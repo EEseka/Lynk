@@ -17,6 +17,7 @@ class DataStoreAppPreferences(
     private val themePreferenceKey = stringPreferencesKey("KEY_THEME_PREFERENCE")
     private val isPureBlackEnabledKey = booleanPreferencesKey("KEY_PURE_BLACK_ENABLED")
     private val arePushNotificationsEnabledKey = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
+    private val areHapticsEnabledKey = booleanPreferencesKey("KEY_HAPTICS_ENABLED")
 
     override val theme: Flow<AppTheme> = dataStore.data.map { preferences ->
         val currentPreference = preferences[themePreferenceKey] ?: AppTheme.SYSTEM.name
@@ -35,6 +36,10 @@ class DataStoreAppPreferences(
         preferences[arePushNotificationsEnabledKey] ?: true
     }
 
+    override val areHapticsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[areHapticsEnabledKey] ?: true
+    }
+
     override suspend fun setTheme(theme: AppTheme) {
         dataStore.edit { preferences ->
             preferences[themePreferenceKey] = theme.name
@@ -50,6 +55,12 @@ class DataStoreAppPreferences(
     override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[arePushNotificationsEnabledKey] = isEnabled
+        }
+    }
+
+    override suspend fun setHapticsEnabled(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[areHapticsEnabledKey] = isEnabled
         }
     }
 }

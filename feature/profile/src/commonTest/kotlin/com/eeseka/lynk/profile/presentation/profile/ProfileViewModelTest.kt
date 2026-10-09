@@ -270,6 +270,17 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun `turning haptics off saves it`() = runTest {
+        val viewModel = createViewModel(signedInAs = ada)
+
+        viewModel.onAction(ProfileAction.OnHapticsToggled(isEnabled = false))
+        advanceUntilIdle()
+
+        assertThat(appPreferences.areHapticsEnabled.first()).isFalse()
+        assertThat(viewModel.state.value.areHapticsEnabled).isFalse()
+    }
+
+    @Test
     fun `the photo and the settings sheet open and close`() = runTest {
         val viewModel = createViewModel(signedInAs = ada)
 

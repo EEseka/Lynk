@@ -4,7 +4,9 @@ import androidx.compose.foundation.text.input.TextFieldState
 import com.eeseka.lynk.hangouts.presentation.model.HangoutPhotoUi
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 
 data class HangoutAlbumState(
     val hangoutId: String? = null,
@@ -19,6 +21,9 @@ data class HangoutAlbumState(
 
     // The photo open in the full-screen viewer
     val viewerIndex: Int? = null,
+
+    val isSelecting: Boolean = false,
+    val selectedPhotoIds: ImmutableSet<String> = persistentSetOf(),
 
     val captionEditPhotoId: String? = null,
     val captionState: TextFieldState = TextFieldState(),

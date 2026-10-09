@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -52,7 +51,7 @@ private class PhotoSaverAndroid(private val context: Context) : PhotoSaver {
         this.permissionLauncher = permissionLauncher
     }
 
-    override suspend fun saveToGallery(imageBytes: ByteArray, caption: String?): Boolean {
+    override suspend fun saveToGallery(photo: CaptionedPhoto): Boolean {
         // Android 10 and later write to the shared Pictures folder without asking
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
             val isGranted = suspendCancellableCoroutine { cont ->
@@ -65,7 +64,7 @@ private class PhotoSaverAndroid(private val context: Context) : PhotoSaver {
         return withContext(Dispatchers.IO) {
             try {
                 // Without a caption, or when tagging fails, the photo saves as it came
-                val photoBytes = caption?.let { withCaption(imageBytes, it) } ?: imageBytes
+                val photoBytes = photo.caption?.let { withCaption(context, photo.imageBytes, it) } ?: photo.imageBytes
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     insertIntoMediaStore(photoBytes)
@@ -88,37 +87,6 @@ private class PhotoSaverAndroid(private val context: Context) : PhotoSaver {
             context,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    // Gallery apps read a photo's caption from its XMP description, which ExifInterface only writes to a file
-    private fun withCaption(imageBytes: ByteArray, caption: String): ByteArray? {
-        val file = File(context.cacheDir, newFileName())
-        return try {
-            file.writeBytes(imageBytes)
-            ExifInterface(file).apply {
-                setAttribute(ExifInterface.TAG_XMP, captionXmp(caption))
-                saveAttributes()
-            }
-            file.readBytes()
-        } catch (_: Exception) {
-            null
-        } finally {
-            file.delete()
-        }
-    }
-
-    private fun captionXmp(caption: String): String {
-        val escapedCaption = caption
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-
-        return """<x:xmpmeta xmlns:x="adobe:ns:meta/">""" +
-                """<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">""" +
-                """<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">""" +
-                """<dc:description><rdf:Alt><rdf:li xml:lang="x-default">$escapedCaption</rdf:li></rdf:Alt></dc:description>""" +
-                """</rdf:Description></rdf:RDF></x:xmpmeta>"""
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

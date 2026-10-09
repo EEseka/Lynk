@@ -58,6 +58,7 @@ buildkonfig {
         buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
         buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
         buildConfigField(STRING, "APP_VERSION", libs.versions.app.versionName.get())
+        buildConfigField(STRING, "APP_VERSION_CODE", libs.versions.app.versionCode.get())
         buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
     }
 }

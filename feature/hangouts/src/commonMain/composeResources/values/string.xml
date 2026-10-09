@@ -270,4 +270,13 @@
     <string name="album_photo_deleted">Photo removed</string>
     <string name="album_new_photos">New photos were added</string>
     <string name="album_show_new_photos">Show</string>
+    <string name="album_select">Select</string>
+    <string name="album_select_photos">Select photos</string>
+    <string name="album_selected_count">%1$d selected</string>
+    <string name="album_cancel_selection">Cancel</string>
+    <string name="album_share_selected">Share photos</string>
+    <string name="album_selection_limit">%1$d photos is the most you can pick at a time</string>
+    <string name="album_save_selected_failed">Couldn't save these photos. Check that Lynk may add to your photos, then try again.</string>
+    <string name="album_save_selected_partly">Saved %1$d of %2$d photos. Check that Lynk may add to your photos, then save the rest again.</string>
+    <string name="album_share_selected_failed">Couldn't share these photos. Try again.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.eeseka.lynk.notifications.presentation.notifications.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,66 +42,71 @@ fun NotificationListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LynkCard(
-        style = if (isRead) LynkCardStyle.OUTLINED else LynkCardStyle.FILLED,
-        onClick = onClick,
+    Crossfade(
+        targetState = isRead,
         modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+    ) { isReadLook ->
+        LynkCard(
+            style = if (isReadLook) LynkCardStyle.OUTLINED else LynkCardStyle.FILLED,
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = type.getIcon(),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                LynkText(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (isRead) FontWeight.Normal else FontWeight.Medium,
-                    color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant
-                    else MaterialTheme.colorScheme.onSurface
-                )
-
-                LynkText(
-                    text = timeLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
-
-            if (!isRead) {
-                Spacer(modifier = Modifier.width(8.dp))
-
-                val unreadLabel = stringResource(Res.string.unread)
-
                 Box(
                     modifier = Modifier
-                        .size(8.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clearAndSetSemantics { contentDescription = unreadLabel }
-                )
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = type.getIcon(),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    LynkText(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = if (isReadLook) FontWeight.Normal else FontWeight.Medium,
+                        color = if (isReadLook) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurface
+                    )
+
+                    LynkText(
+                        text = timeLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+
+                if (!isReadLook) {
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    val unreadLabel = stringResource(Res.string.unread)
+
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clearAndSetSemantics { contentDescription = unreadLabel }
+                    )
+                }
             }
         }
     }

@@ -3,7 +3,7 @@ package com.eeseka.lynk.shared.presentation.media
 import androidx.compose.runtime.Composable
 
 interface PhotoSharer {
-    suspend fun share(imageBytes: ByteArray, caption: String?): Boolean
+    suspend fun share(photos: List<CaptionedPhoto>): Boolean
 }
 
 @Composable

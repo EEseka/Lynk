@@ -31,6 +31,7 @@ data class ProfileState(
     val appTheme: AppTheme = AppTheme.SYSTEM,
     val isPureBlackEnabled: Boolean = false,
     val arePushNotificationsEnabled: Boolean = true,
+    val areHapticsEnabled: Boolean = true,
 
     val showSettingsSheet: Boolean = false,
     val showFullScreenImage: Boolean = false,

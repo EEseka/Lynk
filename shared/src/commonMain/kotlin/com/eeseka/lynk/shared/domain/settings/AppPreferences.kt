@@ -6,8 +6,10 @@ interface AppPreferences {
     val theme: Flow<AppTheme>
     val isPureBlackEnabled: Flow<Boolean>
     val arePushNotificationsEnabled: Flow<Boolean>
+    val areHapticsEnabled: Flow<Boolean>
 
     suspend fun setTheme(theme: AppTheme)
     suspend fun setPureBlackEnabled(isEnabled: Boolean)
     suspend fun setPushNotificationsEnabled(isEnabled: Boolean)
+    suspend fun setHapticsEnabled(isEnabled: Boolean)
 }

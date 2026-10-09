@@ -1,5 +1,10 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -154,60 +159,71 @@ fun HangoutDetailContent(
                 onSeeAllClick = onSeeAllParticipantsClick
             )
 
-            if (hangout.status == HangoutStatus.VOTING) {
-                VotingSection(
-                    candidates = candidates,
-                    votes = votes,
-                    removingSpotIds = removingSpotIds,
-                    currentUserId = currentUserId,
-                    isHost = isHost,
-                    tiedSpotIds = tiedSpotIds,
-                    isClosingVoting = isClosingVoting,
-                    onCastVote = onCastVote,
-                    onRemoveSpot = onRemoveSpot,
-                    onProposeClick = onProposeClick,
-                    onCloseVoting = onCloseVoting,
-                    onBreakTie = onBreakTie,
-                    onMapClick = onMapClick
-                )
-            } else {
-                ChosenSpotSection(
-                    chosenSpot = hangout.chosenSpot,
-                    onSpotClick = onChosenSpotClick,
-                    canCopyAddress = canCopyAddress,
-                    onCopyAddressClick = onCopyAddressClick
-                )
+            AnimatedContent(
+                targetState = hangout.status == HangoutStatus.VOTING,
+                transitionSpec = { fadeIn() togetherWith fadeOut() }
+            ) { isVoting ->
+                if (isVoting) {
+                    VotingSection(
+                        candidates = candidates,
+                        votes = votes,
+                        removingSpotIds = removingSpotIds,
+                        currentUserId = currentUserId,
+                        isHost = isHost,
+                        tiedSpotIds = tiedSpotIds,
+                        isClosingVoting = isClosingVoting,
+                        onCastVote = onCastVote,
+                        onRemoveSpot = onRemoveSpot,
+                        onProposeClick = onProposeClick,
+                        onCloseVoting = onCloseVoting,
+                        onBreakTie = onBreakTie,
+                        onMapClick = onMapClick
+                    )
+                } else {
+                    ChosenSpotSection(
+                        chosenSpot = hangout.chosenSpot,
+                        onSpotClick = onChosenSpotClick,
+                        canCopyAddress = canCopyAddress,
+                        onCopyAddressClick = onCopyAddressClick
+                    )
+                }
             }
 
             paymentSetup()
 
-            hangout.payment?.let { payment ->
-                PaymentSection(
-                    payment = payment,
-                    isHost = isHost,
-                    hasUnpaidGuests = hasUnpaidGuests,
-                    hasCurrentUserPaid = hasCurrentUserPaid,
-                    canPay = canPay,
-                    isInitializingPayment = isInitializingPayment,
-                    isAwaitingPaymentReturn = isAwaitingPaymentReturn,
-                    isVerifyingPayment = isVerifyingPayment,
-                    canChangeDeadline = canChangeDeadline,
-                    isChangingDeadline = isChangingDeadline,
-                    needsDeadlineDecision = needsDeadlineDecision,
-                    isDecidingAtDeadline = isDecidingAtDeadline,
-                    canRetryPayout = canRetryPayout,
-                    isRetryingPayout = isRetryingPayout,
-                    onPayClick = onPayClick,
-                    onCheckPaymentClick = onCheckPaymentClick,
-                    onChangeDeadlineClick = onChangeDeadlineClick,
-                    onDecideClick = onDecideClick,
-                    onRetryPayoutClick = onRetryPayoutClick
-                )
+            AnimatedContent(
+                targetState = hangout.payment,
+                contentKey = { payment -> payment != null },
+                transitionSpec = { fadeIn() togetherWith fadeOut() }
+            ) { payment ->
+                if (payment != null) {
+                    PaymentSection(
+                        payment = payment,
+                        isHost = isHost,
+                        hasUnpaidGuests = hasUnpaidGuests,
+                        hasCurrentUserPaid = hasCurrentUserPaid,
+                        canPay = canPay,
+                        isInitializingPayment = isInitializingPayment,
+                        isAwaitingPaymentReturn = isAwaitingPaymentReturn,
+                        isVerifyingPayment = isVerifyingPayment,
+                        canChangeDeadline = canChangeDeadline,
+                        isChangingDeadline = isChangingDeadline,
+                        needsDeadlineDecision = needsDeadlineDecision,
+                        isDecidingAtDeadline = isDecidingAtDeadline,
+                        canRetryPayout = canRetryPayout,
+                        isRetryingPayout = isRetryingPayout,
+                        onPayClick = onPayClick,
+                        onCheckPaymentClick = onCheckPaymentClick,
+                        onChangeDeadlineClick = onChangeDeadlineClick,
+                        onDecideClick = onDecideClick,
+                        onRetryPayoutClick = onRetryPayoutClick
+                    )
+                }
             }
 
             memories()
 
-            if (showCompletionReminder) {
+            AnimatedVisibility(visible = showCompletionReminder) {
                 PlaceholderCard(
                     icon = Lucide.Hourglass,
                     title = stringResource(Res.string.detail_completion_reminder_title),
@@ -216,7 +232,7 @@ fun HangoutDetailContent(
                 )
             }
 
-            if (isHost && hangout.status == HangoutStatus.ONGOING) {
+            AnimatedVisibility(visible = isHost && hangout.status == HangoutStatus.ONGOING) {
                 LynkButton(
                     text = stringResource(Res.string.detail_complete),
                     onClick = {

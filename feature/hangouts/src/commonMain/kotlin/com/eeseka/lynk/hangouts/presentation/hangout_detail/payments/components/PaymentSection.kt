@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -158,7 +159,7 @@ fun PaymentSection(
                     )
                 }
 
-                if (hasCurrentUserPaid && !isHost) {
+                AnimatedVisibility(visible = hasCurrentUserPaid && !isHost) {
                     YouHavePaidRow()
                 }
 
@@ -174,7 +175,7 @@ fun PaymentSection(
                     }
                 )
 
-                if (needsDeadlineDecision) {
+                AnimatedVisibility(visible = needsDeadlineDecision) {
                     LynkButton(
                         text = stringResource(Res.string.payment_decide_action),
                         onClick = {
@@ -188,7 +189,7 @@ fun PaymentSection(
                     )
                 }
 
-                if (canRetryPayout) {
+                AnimatedVisibility(visible = canRetryPayout) {
                     LynkButton(
                         text = stringResource(Res.string.payment_retry_payout),
                         onClick = {
@@ -202,7 +203,7 @@ fun PaymentSection(
                     )
                 }
 
-                if (isAwaitingPaymentReturn) {
+                AnimatedVisibility(visible = isAwaitingPaymentReturn) {
                     LynkButton(
                         text = stringResource(Res.string.payment_check_action),
                         onClick = {
@@ -216,7 +217,7 @@ fun PaymentSection(
                     )
                 }
 
-                if (canPay) {
+                AnimatedVisibility(visible = canPay) {
                     LynkButton(
                         text = stringResource(Res.string.payment_pay_action),
                         onClick = {

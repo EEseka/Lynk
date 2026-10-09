@@ -42,11 +42,13 @@ class MainViewModel(
         _state,
         appPreferences.theme,
         appPreferences.isPureBlackEnabled,
+        appPreferences.areHapticsEnabled,
         onboardingStorage.hasSeenOnboarding
-    ) { authState, theme, isPureBlackEnabled, hasSeenOnboarding ->
+    ) { authState, theme, isPureBlackEnabled, areHapticsEnabled, hasSeenOnboarding ->
         authState.copy(
             theme = theme,
             isPureBlackEnabled = isPureBlackEnabled,
+            areHapticsEnabled = areHapticsEnabled,
             hasSeenOnboarding = hasSeenOnboarding
         )
     }

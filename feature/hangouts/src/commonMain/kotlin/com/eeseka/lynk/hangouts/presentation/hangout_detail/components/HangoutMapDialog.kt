@@ -346,10 +346,10 @@ private fun HangoutMapContent(
                         end = safeEnd + sidePadding
                     ),
                     pageSpacing = 12.dp,
-                    key = { page -> candidates[page].id },
+                    key = { page -> candidates.getOrNull(page)?.id ?: page },
                     modifier = Modifier.fillMaxWidth()
                 ) { page ->
-                    val spot = candidates[page]
+                    val spot = candidates.getOrNull(page) ?: return@HorizontalPager
                     val voters = remember(votes, participants, spot.id) {
                         participants
                             .filter { votes[it.user.userId] == spot.id }
