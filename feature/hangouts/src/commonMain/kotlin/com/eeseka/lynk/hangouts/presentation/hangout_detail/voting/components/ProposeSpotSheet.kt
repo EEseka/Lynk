@@ -76,15 +76,15 @@ fun ProposeSpotSheet(
     modifier: Modifier = Modifier
 ) {
     LynkAdaptiveSheet(
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
+        modifier = modifier
     ) {
         ProposeSpotSheetContent(
             state = state,
             onTabSelected = onTabSelected,
             onPropose = onPropose,
             onLoadNextSpotPage = onLoadNextSpotPage,
-            onLoadNextFavoritePage = onLoadNextFavoritePage,
-            modifier = modifier
+            onLoadNextFavoritePage = onLoadNextFavoritePage
         )
     }
 }

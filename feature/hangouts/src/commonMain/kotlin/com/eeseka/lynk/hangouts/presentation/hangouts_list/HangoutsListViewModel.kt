@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list
 
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -89,8 +90,15 @@ class HangoutsListViewModel(
             HangoutsListAction.LoadNextPage -> loadNextPage()
             HangoutsListAction.OnRetryClick -> retryLoad()
             HangoutsListAction.Refresh -> refresh()
+            is HangoutsListAction.ShowHangoutInList -> showHangoutInList(action.statusFilter)
             HangoutsListAction.SignOutGuest -> signOutGuest()
         }
+    }
+
+    // A search or a vibe could still hide the hangout on its own tab, so both are cleared
+    private fun showHangoutInList(statusFilter: HangoutStatusFilter) {
+        _state.value.searchTextState.clearText()
+        _state.update { it.copy(selectedStatusFilter = statusFilter, selectedVibe = null) }
     }
 
     private fun signOutGuest() {

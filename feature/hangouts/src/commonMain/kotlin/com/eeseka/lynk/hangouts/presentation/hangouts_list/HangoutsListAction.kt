@@ -10,5 +10,6 @@ sealed interface HangoutsListAction {
     data object LoadNextPage : HangoutsListAction
     data object OnRetryClick : HangoutsListAction
     data object Refresh : HangoutsListAction
+    data class ShowHangoutInList(val statusFilter: HangoutStatusFilter) : HangoutsListAction
     data object SignOutGuest : HangoutsListAction
 }

@@ -8,7 +8,8 @@ internal actual fun hangoutMapDialogProperties(): DialogProperties {
         dismissOnBackPress = true,
         dismissOnClickOutside = false,
         usePlatformDefaultWidth = false,
-        usePlatformInsets = false
+        usePlatformInsets = false,
+        useSoftwareKeyboardInset = false
     )
 }
 

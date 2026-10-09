@@ -32,7 +32,6 @@ import com.eeseka.lynk.profile.presentation.profile.components.ProfileSettingsSh
 import com.eeseka.lynk.profile.presentation.profile.components.SinglePaneProfile
 import com.eeseka.lynk.profile.presentation.profile.components.TwoPaneProfile
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
@@ -142,8 +141,6 @@ fun ProfileScreen(
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
 
-    val showRail = config.usesNavigationRail
-
     val supportSubject = stringResource(Res.string.support_email_subject)
     val supportBody = stringResource(Res.string.support_email_body, state.userId)
 
@@ -163,39 +160,36 @@ fun ProfileScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            if (!showRail) {
-                val settingsLabel = stringResource(Res.string.settings)
+            val settingsLabel = stringResource(Res.string.settings)
 
-                LynkTopAppBar(
-                    title = stringResource(Res.string.profile),
-                    actions = {
-                        LynkIconButton(
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(ProfileAction.OnSettingsClick)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.Settings,
-                                contentDescription = settingsLabel
-                            )
+            LynkTopAppBar(
+                title = stringResource(Res.string.profile),
+                actions = {
+                    LynkIconButton(
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(ProfileAction.OnSettingsClick)
                         }
-                    },
-                    iosTrailingItems = persistentListOf(
-                        LynkIosBarButtonItem(
-                            sfSymbol = "gearshape",
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(ProfileAction.OnSettingsClick)
-                            }
+                    ) {
+                        Icon(
+                            imageVector = Lucide.Settings,
+                            contentDescription = settingsLabel
                         )
+                    }
+                },
+                iosTrailingItems = persistentListOf(
+                    LynkIosBarButtonItem(
+                        sfSymbol = "gearshape",
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(ProfileAction.OnSettingsClick)
+                        }
                     )
                 )
-            }
+            )
         }
     ) { scaffoldPadding ->
-        val settingsButtonInset = if (showRail) 48.dp else 0.dp
-        val topInset = scaffoldPadding.calculateTopPadding() + settingsButtonInset + 24.dp
+        val topInset = scaffoldPadding.calculateTopPadding() + 24.dp
         val contentBottomInset = mainShellPadding.calculateBottomPadding() + 24.dp
 
         Box(
@@ -235,25 +229,6 @@ fun ProfileScreen(
                         onAction = onAction,
                         onPickImageClick = { showImagePickerSheet = true },
                         navigateToSavedSpots = navigateToSavedSpots
-                    )
-                }
-            }
-
-            if (showRail) {
-                val settingsLabel = stringResource(Res.string.settings)
-
-                LynkTonalIconButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onAction(ProfileAction.OnSettingsClick)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = scaffoldPadding.calculateTopPadding(), end = 24.dp)
-                ) {
-                    Icon(
-                        imageVector = Lucide.Settings,
-                        contentDescription = settingsLabel
                     )
                 }
             }

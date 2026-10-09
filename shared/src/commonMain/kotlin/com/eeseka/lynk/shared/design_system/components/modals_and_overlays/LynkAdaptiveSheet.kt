@@ -44,9 +44,14 @@ fun LynkAdaptiveSheet(
             onDismissRequest = onDismissRequest,
             sheetState = sheetState,
             modifier = modifier,
-            isDismissibleByGesture = isDismissibleByGesture,
-            content = content
-        )
+            isDismissibleByGesture = isDismissibleByGesture
+        ) {
+            // The sheet can hand its content an unbounded height, which crashes any scroller inside; the weight bounds it
+            Column(
+                modifier = Modifier.weight(1f, fill = false),
+                content = content
+            )
+        }
     } else {
         Dialog(
             onDismissRequest = onDismissRequest,

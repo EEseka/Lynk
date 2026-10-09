@@ -62,6 +62,7 @@ fun BankPickerSheet(
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismiss,
+        modifier = modifier,
         skipBottomSheetPartiallyExpanded = false
     ) {
         BankPickerSheetContent(
@@ -69,8 +70,7 @@ fun BankPickerSheet(
             searchState = searchState,
             isLoading = isLoading,
             errorMessage = errorMessage,
-            onBankSelected = onBankSelected,
-            modifier = modifier.weight(1f, fill = false)
+            onBankSelected = onBankSelected
         )
     }
 }

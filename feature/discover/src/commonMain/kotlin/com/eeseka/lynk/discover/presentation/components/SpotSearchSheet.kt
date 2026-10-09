@@ -99,9 +99,13 @@ fun SpotSearchSheet(
     onSelectPriceLevel: (PriceLevel?) -> Unit,
     onSelectCategory: (SpotCategory?) -> Unit,
     onSpotClick: (String?) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LynkAdaptiveSheet(onDismissRequest = onDismissRequest) {
+    LynkAdaptiveSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
         SpotSearchSheetContent(
             searchTextState = searchTextState,
             searchHint = searchHint,
@@ -118,8 +122,7 @@ fun SpotSearchSheet(
             onLoadNextSearchPage = onLoadNextSearchPage,
             onSelectPriceLevel = onSelectPriceLevel,
             onSelectCategory = onSelectCategory,
-            onSpotClick = onSpotClick,
-            modifier = Modifier.weight(1f, fill = false)
+            onSpotClick = onSpotClick
         )
     }
 }

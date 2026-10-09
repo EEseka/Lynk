@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,12 +42,14 @@ fun PayConfirmSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LynkAdaptiveSheet(onDismissRequest = onDismiss) {
+    LynkAdaptiveSheet(
+        onDismissRequest = onDismiss,
+        modifier = modifier
+    ) {
         PayConfirmSheetContent(
             shareLabel = shareLabel,
             chargeLabel = chargeLabel,
-            onConfirm = onConfirm,
-            modifier = modifier
+            onConfirm = onConfirm
         )
     }
 }
@@ -62,6 +66,7 @@ private fun PayConfirmSheetContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
             .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)

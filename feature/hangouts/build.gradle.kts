@@ -29,6 +29,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.maplibre.native.ffi.runtime.opengl)
+            implementation(libs.androidx.browser)
         }
 
         commonMain.dependencies {
@@ -62,8 +63,6 @@ kotlin {
             implementation(libs.kotlinx.collections.immutable)
 
             implementation(libs.compose.lottie.animations)
-
-            implementation(libs.adaptive.webview)
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)

@@ -176,8 +176,6 @@
     <string name="payment_confirm_charge">You'll be charged</string>
     <string name="payment_confirm_note">You'll finish on Paystack's secure page, then come back here.</string>
     <string name="payment_confirm_action">Continue to Paystack</string>
-    <string name="payment_checkout_title">Pay with Paystack</string>
-    <string name="payment_checkout_close">Close checkout</string>
     <string name="payment_check_action">I have paid, check now</string>
     <string name="payment_checking">Checking…</string>
     <string name="payment_still_processing">Paystack is still processing this one. Give it a moment and check again.</string>

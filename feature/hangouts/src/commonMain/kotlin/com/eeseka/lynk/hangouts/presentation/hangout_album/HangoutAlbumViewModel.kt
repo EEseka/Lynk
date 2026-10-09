@@ -111,8 +111,7 @@ class HangoutAlbumViewModel(
 
         when (event) {
             is LobbyEvent.PhotosAdded -> {
-                val hasOthersPhotos = event.uploaderIds.any { it != state.value.currentUserId }
-                if (event.hangoutId == currentHangoutId && hasOthersPhotos) {
+                if (event.hangoutId == currentHangoutId) {
                     eventChannel.send(HangoutAlbumEvent.NewPhotosAdded)
                 }
             }

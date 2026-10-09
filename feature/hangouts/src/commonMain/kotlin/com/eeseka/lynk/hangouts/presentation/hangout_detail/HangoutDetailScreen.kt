@@ -46,14 +46,15 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.CollectPaymentsSetup
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.DeadlineDecisionSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PayConfirmSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentCheckoutSheet
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentDeadlinePickerSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentCheckout
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.DeadlineChangeIntent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingEvent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingState
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.LocationShareEffect
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.ProposeSpotSheet
+import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePickerDialog
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
@@ -76,6 +77,8 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.shared.presentation.util.toPickerDate
+import com.eeseka.lynk.shared.presentation.util.toPickerMillis
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_address_copied
@@ -669,9 +672,9 @@ fun HangoutDetailScreen(
     }
 
     if (paymentsState.isPaymentDeadlinePickerOpen) {
-        PaymentDeadlinePickerSheet(
-            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnPaymentDeadlineSelected(it)) },
-            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPaymentDeadlinePicker) }
+        LynkDatePickerDialog(
+            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnPaymentDeadlineSelected(it.toPickerDate())) },
+            onDismissRequest = { onPaymentsAction(HangoutPaymentsAction.OnDismissPaymentDeadlinePicker) }
         )
     }
 
@@ -706,15 +709,19 @@ fun HangoutDetailScreen(
     }
 
     if (paymentsState.pendingDeadlineChange != null) {
-        PaymentDeadlinePickerSheet(
-            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnNewDeadlineSelected(it)) },
-            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissDeadlinePicker) }
+        LynkDatePickerDialog(
+            onDateSelected = { onPaymentsAction(HangoutPaymentsAction.OnNewDeadlineSelected(it.toPickerDate())) },
+            onDismissRequest = { onPaymentsAction(HangoutPaymentsAction.OnDismissDeadlinePicker) },
+            // An extension's old deadline has already passed, so only a change opens on it
+            initialSelectedDateMillis = hangout?.payment?.deadline
+                ?.takeIf { paymentsState.pendingDeadlineChange == DeadlineChangeIntent.CHANGE }
+                ?.toPickerMillis()
         )
     }
 
     val paymentCheckoutUrl = paymentsState.paymentCheckoutUrl
     if (paymentCheckoutUrl != null) {
-        PaymentCheckoutSheet(
+        PaymentCheckout(
             url = paymentCheckoutUrl,
             onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPaymentCheckout) }
         )

@@ -27,3 +27,10 @@ fun HangoutStatusFilter.toHangoutStatus(): HangoutStatus? = when (this) {
     HangoutStatusFilter.COMPLETED -> HangoutStatus.COMPLETED
     HangoutStatusFilter.CANCELLED -> HangoutStatus.CANCELLED
 }
+
+fun HangoutStatus.toHangoutStatusFilter(): HangoutStatusFilter = when (this) {
+    HangoutStatus.VOTING, HangoutStatus.SCHEDULED -> HangoutStatusFilter.UPCOMING
+    HangoutStatus.ONGOING -> HangoutStatusFilter.ONGOING
+    HangoutStatus.COMPLETED -> HangoutStatusFilter.COMPLETED
+    HangoutStatus.CANCELLED -> HangoutStatusFilter.CANCELLED
+}

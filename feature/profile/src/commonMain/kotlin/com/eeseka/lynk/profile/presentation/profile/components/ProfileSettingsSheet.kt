@@ -111,8 +111,7 @@ fun ProfileSettingsSheet(
             onTermsClick = onTermsClick,
             onPrivacyClick = onPrivacyClick,
             onSignOutClick = onSignOutClick,
-            onDeleteAccountClick = onDeleteAccountClick,
-            modifier = Modifier.weight(1f, fill = false)
+            onDeleteAccountClick = onDeleteAccountClick
         )
     }
 }

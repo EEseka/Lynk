@@ -100,6 +100,7 @@ fun SpotDetailSheet(
     userLat: Double?,
     userLng: Double?,
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
     rankLabel: String? = null,
     onCreateHangoutClick: ((String) -> Unit)? = null,
     onToggleSave: ((String, Boolean) -> Unit)? = null
@@ -116,6 +117,7 @@ fun SpotDetailSheet(
 
     LynkAdaptiveSheet(
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
         skipBottomSheetPartiallyExpanded = false
     ) {
         SpotDetailSheetContent(

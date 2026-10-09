@@ -7,7 +7,6 @@ import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_EXPANDED_
 import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
-import com.eeseka.lynk.shared.domain.util.PlatformUtils
 
 @Composable
 fun currentDeviceConfiguration(): DeviceConfiguration {
@@ -28,25 +27,14 @@ enum class DeviceConfiguration {
     val isWideScreen: Boolean
         get() = this == TABLET_LANDSCAPE || this == DESKTOP
 
-    val usesNavigationRail: Boolean
-        get() = isWideScreen && !PlatformUtils.isIOS()
-
     companion object {
         fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceConfiguration {
             return with(windowSizeClass) {
                 when {
-                    minWidthDp < WIDTH_DP_MEDIUM_LOWER_BOUND &&
-                            minHeightDp >= HEIGHT_DP_MEDIUM_LOWER_BOUND -> MOBILE_PORTRAIT
-
-                    minWidthDp >= WIDTH_DP_EXPANDED_LOWER_BOUND &&
-                            minHeightDp < HEIGHT_DP_MEDIUM_LOWER_BOUND -> MOBILE_LANDSCAPE
-
-                    minWidthDp in WIDTH_DP_MEDIUM_LOWER_BOUND..WIDTH_DP_EXPANDED_LOWER_BOUND &&
-                            minHeightDp >= HEIGHT_DP_EXPANDED_LOWER_BOUND -> TABLET_PORTRAIT
-
-                    minWidthDp >= WIDTH_DP_EXPANDED_LOWER_BOUND &&
-                            minHeightDp in HEIGHT_DP_MEDIUM_LOWER_BOUND..HEIGHT_DP_EXPANDED_LOWER_BOUND -> TABLET_LANDSCAPE
-
+                    !isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) -> MOBILE_PORTRAIT
+                    !isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND) -> MOBILE_LANDSCAPE
+                    !isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> TABLET_PORTRAIT
+                    !isHeightAtLeastBreakpoint(HEIGHT_DP_EXPANDED_LOWER_BOUND) -> TABLET_LANDSCAPE
                     else -> DESKTOP
                 }
             }

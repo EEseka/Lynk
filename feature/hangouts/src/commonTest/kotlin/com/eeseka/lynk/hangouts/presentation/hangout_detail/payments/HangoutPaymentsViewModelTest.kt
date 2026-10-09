@@ -15,7 +15,9 @@ import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutPayment
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.payment.model.Bank
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
@@ -35,6 +37,10 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -252,6 +258,30 @@ class HangoutPaymentsViewModelTest {
             assertThat(paymentService.changedDeadlines.size).isEqualTo(1)
             assertThat(viewModel.state.value.pendingDeadlineChange).isNull()
             assertThat(viewModel.state.value.isChangingDeadline).isFalse()
+        }
+    }
+
+    @Test
+    fun `picking the deadline it already has closes the picker without asking the server`() = runTest {
+        val currentDeadline = LocalDateTime(validDeadline, LocalTime(23, 59)).toInstant(TimeZone.currentSystemDefault())
+        val viewModel = createViewModel(
+            payment = HangoutPayment(
+                totalCostKobo = 500_000,
+                costPerPersonKobo = 250_000,
+                splitHeadcount = 2,
+                deadline = currentDeadline,
+                state = PaymentState.COLLECTING
+            )
+        )
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutPaymentsAction.OnChangeDeadlineClick)
+            viewModel.onAction(HangoutPaymentsAction.OnNewDeadlineSelected(validDeadline))
+            advanceUntilIdle()
+
+            expectNoEvents()
+            assertThat(paymentService.changedDeadlines).isEmpty()
+            assertThat(viewModel.state.value.pendingDeadlineChange).isNull()
         }
     }
 
@@ -476,8 +506,10 @@ class HangoutPaymentsViewModelTest {
     }
 
     // The real in-memory store fed by the fake service, holding the hangout being paid for
-    private suspend fun TestScope.createViewModel(): HangoutPaymentsViewModel {
+    private suspend fun TestScope.createViewModel(payment: HangoutPayment? = null): HangoutPaymentsViewModel {
         val hangoutId = createHangout()
+        val hangoutIndex = hangoutService.hangouts.indexOfFirst { it.id == hangoutId }
+        hangoutService.hangouts[hangoutIndex] = hangoutService.hangouts[hangoutIndex].copy(payment = payment)
         val repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
         runCurrent()
         val viewModel = HangoutPaymentsViewModel(repository, paymentService)

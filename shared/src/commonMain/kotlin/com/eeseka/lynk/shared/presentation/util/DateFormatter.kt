@@ -86,3 +86,6 @@ fun Long.toPickerDate(): LocalDate =
 
 fun LocalDate.toPickerMillis(): Long =
     atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+
+fun Instant.toPickerMillis(): Long =
+    toLocalDateTime(TimeZone.currentSystemDefault()).date.toPickerMillis()

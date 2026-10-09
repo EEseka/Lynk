@@ -58,6 +58,4 @@
 
     <string name="go_back">Go Back</string>
     <string name="close_sheet">Close</string>
-    <string name="picker_expanded">Expanded</string>
-    <string name="picker_collapsed">Collapsed</string>
 </resources>

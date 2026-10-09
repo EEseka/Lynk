@@ -221,14 +221,14 @@ class HangoutAlbumViewModelTest {
     }
 
     @Test
-    fun `says nothing about photos I added myself`() = runTest {
+    fun `offers photos I added myself from another phone`() = runTest {
         val viewModel = createViewModel()
 
         viewModel.events.test {
             connectionClient.sendEvent(
                 LobbyEvent.PhotosAdded(viewModel.state.value.hangoutId!!, uploaderIds = setOf(HOST_ID))
             )
-            expectNoEvents()
+            assertThat(awaitItem()).isEqualTo(HangoutAlbumEvent.NewPhotosAdded)
         }
     }
 

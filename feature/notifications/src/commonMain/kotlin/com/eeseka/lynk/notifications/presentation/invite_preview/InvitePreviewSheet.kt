@@ -141,12 +141,12 @@ fun InvitePreviewSheet(
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
         skipBottomSheetPartiallyExpanded = false
     ) {
         InvitePreviewSheetContent(
             state = state,
-            onAction = onAction,
-            modifier = modifier.weight(1f, fill = false)
+            onAction = onAction
         )
     }
 }

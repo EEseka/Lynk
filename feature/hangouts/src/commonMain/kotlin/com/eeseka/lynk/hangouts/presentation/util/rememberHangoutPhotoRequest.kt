@@ -10,7 +10,7 @@ import coil3.request.crossfade
 @Composable
 fun rememberHangoutPhotoRequest(url: String, cacheKey: String): ImageRequest {
     val context = LocalPlatformContext.current
-    return remember(url, cacheKey, context) {
+    return remember(url, cacheKey) {
         ImageRequest.Builder(context)
             .data(url)
             .memoryCacheKey(cacheKey)

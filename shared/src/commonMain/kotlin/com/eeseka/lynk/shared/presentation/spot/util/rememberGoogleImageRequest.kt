@@ -11,7 +11,7 @@ import coil3.request.crossfade
 @Composable
 fun rememberGoogleImageRequest(url: String): ImageRequest? {
     val context = LocalPlatformContext.current
-    return remember(url, context) {
+    return remember(url) {
         if (url.isBlank()) null
         else {
             val headers = NetworkHeaders.Builder().apply {

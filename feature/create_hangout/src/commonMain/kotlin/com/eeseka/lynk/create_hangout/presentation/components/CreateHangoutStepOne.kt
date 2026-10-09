@@ -32,8 +32,8 @@ import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
 import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
-import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePicker
-import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkTimePicker
+import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePickerDialog
+import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkTimePickerDialog
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
@@ -163,19 +163,20 @@ fun CreateHangoutStepOne(
             placeholder = stringResource(Res.string.pick_date),
             icon = Lucide.Calendar,
             errorMessage = dateErrorMessage,
-            isExpanded = expandedPicker == PickerType.DATE,
             onClick = {
                 hapticFeedback(AppHaptic.ImpactLight)
                 onPickerToggled(PickerType.DATE)
             },
-            pickerContent = {
-                LynkDatePicker(
-                    onDateSelected = onDateSelected,
-                    initialSelectedDateMillis = dateMillis
-                )
-            },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (expandedPicker == PickerType.DATE) {
+            LynkDatePickerDialog(
+                onDateSelected = onDateSelected,
+                onDismissRequest = { onPickerToggled(PickerType.DATE) },
+                initialSelectedDateMillis = dateMillis
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -185,20 +186,21 @@ fun CreateHangoutStepOne(
             placeholder = stringResource(Res.string.pick_time),
             icon = Lucide.Clock,
             errorMessage = timeErrorMessage,
-            isExpanded = expandedPicker == PickerType.TIME,
             onClick = {
                 hapticFeedback(AppHaptic.ImpactLight)
                 onPickerToggled(PickerType.TIME)
             },
-            pickerContent = {
-                LynkTimePicker(
-                    onTimeSelected = onTimeSelected,
-                    initialHour = timeHour,
-                    initialMinute = timeMinute
-                )
-            },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (expandedPicker == PickerType.TIME) {
+            LynkTimePickerDialog(
+                onTimeSelected = onTimeSelected,
+                onDismissRequest = { onPickerToggled(PickerType.TIME) },
+                initialHour = timeHour,
+                initialMinute = timeMinute
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 

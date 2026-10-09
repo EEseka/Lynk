@@ -3,16 +3,21 @@ package com.eeseka.lynk.hangouts.presentation.hangouts_list_detail
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
+import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.testing.collectInBackground
+import com.eeseka.lynk.testing.data.FakeHangoutService
 import com.eeseka.lynk.testing.data.FakeLobbyConnectionClient
+import com.eeseka.lynk.testing.data.FakeSessionStorage
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -28,6 +33,9 @@ class HangoutsListDetailViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var connectionClient: FakeLobbyConnectionClient
+    private lateinit var hangoutService: FakeHangoutService
+    private lateinit var sessionStorage: FakeSessionStorage
+    private lateinit var repository: InMemoryHangoutDetailRepository
     private lateinit var viewModel: HangoutsListDetailViewModel
 
     private val hangout = HangoutUi(
@@ -46,7 +54,8 @@ class HangoutsListDetailViewModelTest {
         Dispatchers.setMain(testDispatcher)
 
         connectionClient = FakeLobbyConnectionClient()
-        viewModel = HangoutsListDetailViewModel(connectionClient)
+        hangoutService = FakeHangoutService()
+        sessionStorage = FakeSessionStorage()
     }
 
     @AfterTest
@@ -56,6 +65,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `selecting a hangout stores its id`() = runTest {
+        createViewModel()
         collectInBackground(viewModel.state)
 
         viewModel.onAction(HangoutsListDetailAction.OnSelectHangout("hangout_1"))
@@ -65,6 +75,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `create opens the create sheet and dismiss hides it`() = runTest {
+        createViewModel()
         collectInBackground(viewModel.state)
 
         viewModel.onAction(HangoutsListDetailAction.OnCreateHangoutClick)
@@ -76,6 +87,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `editing a hangout opens the edit sheet with it`() = runTest {
+        createViewModel()
         collectInBackground(viewModel.state)
 
         viewModel.onAction(HangoutsListDetailAction.OnEditHangoutClick(hangout))
@@ -85,6 +97,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `refreshing the list sends a refresh event`() = runTest {
+        createViewModel()
         viewModel.events.test {
             viewModel.onAction(HangoutsListDetailAction.RefreshList)
 
@@ -94,6 +107,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `lobby events that change a hangout card refresh the list`() = runTest {
+        createViewModel()
         collectInBackground(viewModel.state)
         val listChangingEvents = listOf(
             LobbyEvent.NonPayerRemoved(hangoutId = "hangout_1", userId = "user_2", displayName = "Bola"),
@@ -120,6 +134,7 @@ class HangoutsListDetailViewModelTest {
 
     @Test
     fun `lobby events that only matter inside a lobby do not refresh the list`() = runTest {
+        createViewModel()
         collectInBackground(viewModel.state)
 
         viewModel.events.test {
@@ -130,5 +145,87 @@ class HangoutsListDetailViewModelTest {
 
             expectNoEvents()
         }
+    }
+
+    @Test
+    fun `opening a hangout from outside the list moves the list to its tab once it loads`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+        val hangoutId = createHangout()
+        hangoutService.completeHangout(hangoutId)
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutsListDetailAction.OnSelectHangoutAndShowInList(hangoutId))
+            // What the detail pane does as it opens
+            repository.refreshHangout(hangoutId)
+
+            assertThat(awaitItem()).isEqualTo(HangoutsListDetailEvent.ShowHangoutInList(HangoutStatusFilter.COMPLETED))
+        }
+        assertThat(viewModel.state.value.selectedHangoutId).isEqualTo(hangoutId)
+    }
+
+    @Test
+    fun `a phone shows the hangout in the list once it goes back to it`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+        val hangoutId = createHangout()
+        hangoutService.completeHangout(hangoutId)
+
+        // The list pane is hidden behind the detail, so nothing listens until back
+        viewModel.onAction(HangoutsListDetailAction.OnSelectHangoutAndShowInList(hangoutId))
+        repository.refreshHangout(hangoutId)
+        viewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
+
+        viewModel.events.test {
+            assertThat(awaitItem()).isEqualTo(HangoutsListDetailEvent.ShowHangoutInList(HangoutStatusFilter.COMPLETED))
+        }
+    }
+
+    @Test
+    fun `tapping a row leaves the list on its tab`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+        val hangoutId = createHangout()
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutsListDetailAction.OnSelectHangout(hangoutId))
+            repository.refreshHangout(hangoutId)
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `picking another hangout before the first loads never moves the list for the first`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+        val firstId = createHangout()
+        hangoutService.completeHangout(firstId)
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutsListDetailAction.OnSelectHangoutAndShowInList(firstId))
+            viewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
+            repository.refreshHangout(firstId)
+
+            expectNoEvents()
+        }
+    }
+
+    // The real in-memory store fed by the fake service, the one the detail pane loads into
+    private fun TestScope.createViewModel() {
+        repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
+        viewModel = HangoutsListDetailViewModel(connectionClient, repository)
+    }
+
+    private suspend fun createHangout(): String {
+        hangoutService.createHangout(
+            name = "Night Out",
+            description = null,
+            vibe = HangoutVibe.CHILL,
+            scheduledAt = Instant.fromEpochMilliseconds(4102444800000L),
+            maxAttendees = null,
+            spotId = null
+        )
+        return hangoutService.hangouts.last().id
     }
 }

@@ -186,6 +186,7 @@ class HangoutPaymentsViewModel(
 
         val deadline = date.toDeadlineInstant(scheduledAt)
         _state.update { it.copy(pendingDeadlineChange = null) }
+        if (intent == DeadlineChangeIntent.CHANGE && deadline == hangout.value?.payment?.deadline) return
 
         viewModelScope.launch {
             // A change spins on Change date. An extension is an answer to the deadline decision,

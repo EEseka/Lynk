@@ -156,13 +156,13 @@ fun CreateHangoutSheet(
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
         isDismissibleByGesture = false
     ) {
         CreateHangoutSheetContent(
             state = state,
             onAction = onAction,
-            onDismissRequest = onDismissRequest,
-            modifier = modifier
+            onDismissRequest = onDismissRequest
         )
     }
 }

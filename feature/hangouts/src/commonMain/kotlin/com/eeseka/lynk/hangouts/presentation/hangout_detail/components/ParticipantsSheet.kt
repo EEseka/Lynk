@@ -58,7 +58,8 @@ fun ParticipantsSheet(
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismiss,
-        skipBottomSheetPartiallyExpanded = false,
+        modifier = modifier,
+        skipBottomSheetPartiallyExpanded = false
     ) {
         ParticipantsSheetContent(
             participants = participants,
@@ -68,8 +69,7 @@ fun ParticipantsSheet(
             withdrawingUserIds = withdrawingUserIds,
             presentUserIds = presentUserIds,
             arePaymentsOn = arePaymentsOn,
-            hostId = hostId,
-            modifier = modifier.weight(1f, fill = false)
+            hostId = hostId
         )
     }
 }
