@@ -41,10 +41,14 @@ class MainViewModel(
     val state = combine(
         _state,
         appPreferences.theme,
+        appPreferences.isPureBlackEnabled,
+        appPreferences.areHapticsEnabled,
         onboardingStorage.hasSeenOnboarding
-    ) { authState, theme, hasSeenOnboarding ->
+    ) { authState, theme, isPureBlackEnabled, areHapticsEnabled, hasSeenOnboarding ->
         authState.copy(
             theme = theme,
+            isPureBlackEnabled = isPureBlackEnabled,
+            areHapticsEnabled = areHapticsEnabled,
             hasSeenOnboarding = hasSeenOnboarding
         )
     }

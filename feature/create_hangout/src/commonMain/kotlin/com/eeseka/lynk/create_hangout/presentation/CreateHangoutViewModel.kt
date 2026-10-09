@@ -83,7 +83,7 @@ class CreateHangoutViewModel(
                 observeGatingStates()
                 observeStepOneValidation()
                 observeSearchFilters()
-                observeTrendingLocation()
+                observeTrendingSpots()
                 hasLoadedInitialData = true
             }
         }
@@ -271,7 +271,7 @@ class CreateHangoutViewModel(
         }
     }
 
-    private fun observeTrendingLocation() {
+    private fun observeTrendingSpots() {
         trendingLocation
             .filterNotNull()
             .distinctUntilChanged()
@@ -323,6 +323,7 @@ class CreateHangoutViewModel(
                 SearchTab.ALL_SPOTS -> {
                     val (latitude, longitude) = location
                     if (query.isBlank() || latitude == null || longitude == null) {
+                        spotSearchPaginator?.close()
                         _state.update {
                             it.copy(
                                 spotSearchResults = persistentListOf(),
@@ -350,6 +351,7 @@ class CreateHangoutViewModel(
     }
 
     private fun setupSpotSearchPaginator(lat: Double, lng: Double, query: String) {
+        spotSearchPaginator?.close()
         currentNextPageToken = null
 
         spotSearchPaginator = Paginator(
@@ -393,6 +395,7 @@ class CreateHangoutViewModel(
     }
 
     private fun setupFavoriteSpotSearchPaginator(searchQuery: String? = null) {
+        favoriteSpotSearchPaginator?.close()
         favoriteSpotSearchPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->

@@ -67,7 +67,8 @@ fun MainShellScreen(
     val navBackStackEntry by innerNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val showRail = currentDeviceConfiguration().isWideScreen
+    // iOS keeps its native tab bar at every size
+    val showRail = currentDeviceConfiguration().isWideScreen && !isIOS()
 
     // Routes that take over the whole screen and so hide the nav bar. The hangout detail is
     // the only screen whose bar visibility depends on the layout rather than on which route is

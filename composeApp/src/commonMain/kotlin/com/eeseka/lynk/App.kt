@@ -2,6 +2,7 @@ package com.eeseka.lynk
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -11,6 +12,7 @@ import com.eeseka.lynk.main_shell.presentation.navigation.MainShellGraphRoutes
 import com.eeseka.lynk.navigation.NavigationRoot
 import com.eeseka.lynk.onboarding.presentation.navigation.OnboardingGraphRoutes
 import com.eeseka.lynk.profile_setup.presentation.navigation.ProfileSetupGraphRoutes
+import com.eeseka.lynk.shared.design_system.components.util.LocalHapticsEnabled
 import com.eeseka.lynk.shared.design_system.theme.ApplyNativeTheme
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.auth.model.User
@@ -52,19 +54,21 @@ fun App(
 
     ApplyNativeTheme(theme = state.theme)
 
-    LynkTheme(darkTheme = isDarkTheme) {
-        if (!state.isCheckingAuth) {
-            val startDestination = when {
-                !state.hasSeenOnboarding -> OnboardingGraphRoutes.Graph
-                state.user is User.ProfileIncomplete -> ProfileSetupGraphRoutes.Graph
-                state.user != null -> MainShellGraphRoutes.Graph
-                else -> AuthGraphRoutes.Graph
-            }
+    LynkTheme(darkTheme = isDarkTheme, pureBlack = state.isPureBlackEnabled) {
+        CompositionLocalProvider(LocalHapticsEnabled provides state.areHapticsEnabled) {
+            if (!state.isCheckingAuth) {
+                val startDestination = when {
+                    !state.hasSeenOnboarding -> OnboardingGraphRoutes.Graph
+                    state.user is User.ProfileIncomplete -> ProfileSetupGraphRoutes.Graph
+                    state.user != null -> MainShellGraphRoutes.Graph
+                    else -> AuthGraphRoutes.Graph
+                }
 
-            NavigationRoot(
-                navController = navController,
-                startDestination = startDestination
-            )
+                NavigationRoot(
+                    navController = navController,
+                    startDestination = startDestination
+                )
+            }
         }
     }
 }

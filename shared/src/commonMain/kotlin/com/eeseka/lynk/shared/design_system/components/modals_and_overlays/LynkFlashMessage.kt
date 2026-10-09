@@ -308,7 +308,7 @@ private fun LynkFlashPill(
 
 @PreviewLightDark
 @Composable
-private fun LynkSnackbarPreview() {
+private fun LynkFlashMessagePreview() {
     LynkTheme {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),

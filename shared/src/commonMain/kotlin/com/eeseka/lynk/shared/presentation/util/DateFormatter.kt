@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.asTimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DayOfWeekNames
@@ -16,6 +18,7 @@ import lynk.shared.generated.resources.am
 import lynk.shared.generated.resources.pm
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 fun Instant.toDateLabel(): String =
@@ -53,11 +56,27 @@ fun LocalTime.toTimeLabel(): String {
     )
 }
 
-// "Sat 5 Sep · 8:00 PM"
+// "Sat 5 Sep · 8:00 PM", on the phone's clock unless a place's clock is given
 @Composable
-fun Instant.toDateTimeLabel(): String {
-    val dateTime = toLocalDateTime(TimeZone.currentSystemDefault())
+fun Instant.toDateTimeLabel(timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
+    val dateTime = toLocalDateTime(timeZone)
     return "${dateTime.date.toDateLabel()} · ${dateTime.time.toTimeLabel()}"
+}
+
+// "8:00 PM" within a day, "Sat 5 Sep · 8:00 PM" further out; a place's hours pass its own clock, as Google Maps shows them
+@Composable
+fun Instant.toUpcomingTimeLabel(timeZone: TimeZone): String {
+    val isWithinADay = this - Clock.System.now() < 1.days
+    return if (isWithinADay) {
+        toLocalDateTime(timeZone).time.toTimeLabel()
+    } else {
+        toDateTimeLabel(timeZone)
+    }
+}
+
+// A place's own clock from Google's UTC offset in minutes; the phone's clock when Google didn't send one
+fun placeTimeZone(utcOffsetMinutes: Int?): TimeZone {
+    return utcOffsetMinutes?.let { UtcOffset(seconds = it * 60).asTimeZone() } ?: TimeZone.currentSystemDefault()
 }
 
 // The date picker hands back, and takes, midnight UTC. Converting in the phone's own time zone
@@ -67,3 +86,6 @@ fun Long.toPickerDate(): LocalDate =
 
 fun LocalDate.toPickerMillis(): Long =
     atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+
+fun Instant.toPickerMillis(): Long =
+    toLocalDateTime(TimeZone.currentSystemDefault()).date.toPickerMillis()

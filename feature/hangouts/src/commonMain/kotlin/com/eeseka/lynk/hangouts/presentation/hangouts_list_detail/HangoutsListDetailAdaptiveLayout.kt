@@ -52,7 +52,7 @@ fun HangoutsListDetailAdaptiveLayout(
         if (initialHangoutId == null || hasOpenedInitialHangout) return@LaunchedEffect
 
         hasOpenedInitialHangout = true
-        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(initialHangoutId))
+        hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangoutAndShowInList(initialHangoutId))
         scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
     }
 
@@ -100,6 +100,10 @@ fun HangoutsListDetailAdaptiveLayout(
                     when (event) {
                         HangoutsListDetailEvent.RefreshList -> {
                             listViewModel.onAction(HangoutsListAction.Refresh)
+                        }
+
+                        is HangoutsListDetailEvent.ShowHangoutInList -> {
+                            listViewModel.onAction(HangoutsListAction.ShowHangoutInList(event.statusFilter))
                         }
                     }
                 }
@@ -163,7 +167,14 @@ fun HangoutsListDetailAdaptiveLayout(
             if (!wasEdit) {
                 hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.RefreshList)
             }
-            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(hangoutId))
+            // A new hangout is always upcoming, so the list leaves whichever tab it was on
+            hangoutsListDetailViewModel.onAction(
+                if (wasEdit) {
+                    HangoutsListDetailAction.OnSelectHangout(hangoutId)
+                } else {
+                    HangoutsListDetailAction.OnSelectHangoutAndShowInList(hangoutId)
+                }
+            )
             scope.launch {
                 scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
             }

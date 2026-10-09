@@ -1,8 +1,12 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_album.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +34,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -150,19 +153,19 @@ private fun HangoutPhotoViewerContent(
     val hapticFeedback = rememberAppHaptic()
     val photo = photos.getOrNull(pagerState.currentPage)
     var areBarsVisible by remember { mutableStateOf(true) }
-    val scrimColor = MaterialTheme.colorScheme.background.copy(alpha = 0.72f)
+    val scrimColor = Color.Black.copy(alpha = 0.72f)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.Black)
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            key = { page -> photos[page].id }
+            key = { page -> photos.getOrNull(page)?.id ?: page }
         ) { page ->
-            val pagePhoto = photos[page]
+            val pagePhoto = photos.getOrNull(page) ?: return@HorizontalPager
             val imageRequest = rememberHangoutPhotoRequest(
                 url = pagePhoto.fullUrl,
                 cacheKey = "photo:${pagePhoto.id}:full"
@@ -190,6 +193,12 @@ private fun HangoutPhotoViewerContent(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                LynkTonalIconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Lucide.X,
+                        contentDescription = stringResource(Res.string.album_close_viewer)
+                    )
+                }
                 if (photo != null) {
                     ParticipantAvatar(
                         displayName = photo.uploader.displayName,
@@ -212,14 +221,6 @@ private fun HangoutPhotoViewerContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                LynkTonalIconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Lucide.X,
-                        contentDescription = stringResource(Res.string.album_close_viewer)
-                    )
                 }
             }
         }
@@ -239,16 +240,19 @@ private fun HangoutPhotoViewerContent(
                         .fillMaxWidth()
                         .background(Brush.verticalGradient(0f to Color.Transparent, 0.4f to scrimColor))
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
-                        .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp)
                 ) {
-                    photo.caption?.let { caption ->
-                        key(photo.id) {
+                    AnimatedContent(
+                        targetState = photo.id to photo.caption,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() }
+                    ) { (_, caption) ->
+                        if (caption != null) {
                             LynkText(
                                 text = caption,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier
+                                    .padding(bottom = 12.dp)
                                     .heightIn(max = 96.dp)
                                     .verticalScroll(rememberScrollState())
                             )
@@ -283,7 +287,11 @@ private fun HangoutPhotoViewerContent(
                                 contentDescription = stringResource(Res.string.album_share_photo)
                             )
                         }
-                        if (isUploader) {
+                        AnimatedVisibility(
+                            visible = isUploader,
+                            enter = fadeIn() + expandHorizontally(),
+                            exit = fadeOut() + shrinkHorizontally()
+                        ) {
                             LynkTonalIconButton(
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
@@ -296,7 +304,11 @@ private fun HangoutPhotoViewerContent(
                                 )
                             }
                         }
-                        if (canDelete) {
+                        AnimatedVisibility(
+                            visible = canDelete,
+                            enter = fadeIn() + expandHorizontally(),
+                            exit = fadeOut() + shrinkHorizontally()
+                        ) {
                             LynkTonalIconButton(
                                 enabled = deletingPhotoId == null,
                                 onClick = {

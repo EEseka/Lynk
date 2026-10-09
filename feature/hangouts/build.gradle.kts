@@ -27,6 +27,11 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.maplibre.native.ffi.runtime.opengl)
+            implementation(libs.androidx.browser)
+        }
+
         commonMain.dependencies {
             implementation(libs.runtime)
             implementation(libs.foundation)
@@ -44,6 +49,8 @@ kotlin {
 
             implementation(libs.icons.lucide.cmp)
 
+            implementation(libs.maplibre.compose)
+
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
@@ -56,8 +63,6 @@ kotlin {
             implementation(libs.kotlinx.collections.immutable)
 
             implementation(libs.compose.lottie.animations)
-
-            implementation(libs.adaptive.webview)
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)

@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.presentation.components
+package com.eeseka.lynk.shared.presentation.spot.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +23,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 
 @Composable
-fun ExternalActionRow(
+fun SpotLinkRow(
     text: String,
     leadingIcon: ImageVector,
     onClick: () -> Unit,
@@ -61,10 +61,10 @@ fun ExternalActionRow(
 
 @PreviewLightDark
 @Composable
-private fun ExternalActionRowPreview() {
+private fun SpotLinkRowPreview() {
     LynkTheme {
-        ExternalActionRow(
-            text = "Visit Website",
+        SpotLinkRow(
+            text = "nokbyalara.com",
             leadingIcon = Lucide.Globe,
             onClick = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.background)

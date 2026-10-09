@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -92,7 +94,10 @@ fun InviteParticipantSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LynkAdaptiveSheet(onDismissRequest = onDismiss) {
+    LynkAdaptiveSheet(
+        onDismissRequest = onDismiss,
+        modifier = modifier
+    ) {
         InviteParticipantSheetContent(
             queryState = queryState,
             result = result,
@@ -101,8 +106,7 @@ fun InviteParticipantSheet(
             isInviting = isInviting,
             alreadyInvited = alreadyInvited,
             isResultHost = isResultHost,
-            onInvite = onInvite,
-            modifier = modifier
+            onInvite = onInvite
         )
     }
 }
@@ -128,6 +132,7 @@ private fun InviteParticipantSheetContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .clearFocusOnTap()
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -135,7 +140,8 @@ private fun InviteParticipantSheetContent(
         LynkText(
             text = stringResource(Res.string.invite_sheet_title),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 16.dp)
         )
 
         LynkSearchField(

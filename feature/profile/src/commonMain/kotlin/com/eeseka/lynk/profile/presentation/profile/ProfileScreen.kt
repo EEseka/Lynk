@@ -3,11 +3,9 @@ package com.eeseka.lynk.profile.presentation.profile
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +30,6 @@ import com.eeseka.lynk.profile.presentation.profile.components.ProfileSettingsSh
 import com.eeseka.lynk.profile.presentation.profile.components.SinglePaneProfile
 import com.eeseka.lynk.profile.presentation.profile.components.TwoPaneProfile
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
@@ -44,6 +41,7 @@ import com.eeseka.lynk.shared.design_system.components.navigation.LynkTopAppBar
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.util.PlatformUtils
 import com.eeseka.lynk.shared.presentation.components.FullScreenAvatarViewer
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
 import com.eeseka.lynk.shared.presentation.permissions.Permission
@@ -66,6 +64,9 @@ import lynk.feature.profile.generated.resources.choose_source_message
 import lynk.feature.profile.generated.resources.delete
 import lynk.feature.profile.generated.resources.delete_account_confirm_message
 import lynk.feature.profile.generated.resources.delete_account_confirm_title
+import lynk.feature.profile.generated.resources.email_device_info
+import lynk.feature.profile.generated.resources.feedback_email_body
+import lynk.feature.profile.generated.resources.feedback_email_subject
 import lynk.feature.profile.generated.resources.not_now
 import lynk.feature.profile.generated.resources.notifications_required
 import lynk.feature.profile.generated.resources.notifications_required_message
@@ -84,6 +85,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val SUPPORT_EMAIL = "support@lynk.com.ng"
+private const val FEEDBACK_EMAIL = "hello@lynk.com.ng"
 
 @Composable
 fun ProfileRoot(
@@ -142,10 +144,17 @@ fun ProfileScreen(
 
     var showImagePickerSheet by remember { mutableStateOf(false) }
 
-    val showRail = config.isWideScreen
-
+    val deviceInfo = stringResource(
+        Res.string.email_device_info,
+        state.userId,
+        "${AppConfig.APP_VERSION} (${AppConfig.APP_VERSION_CODE})",
+        PlatformUtils.osVersion(),
+        PlatformUtils.deviceModel()
+    )
     val supportSubject = stringResource(Res.string.support_email_subject)
-    val supportBody = stringResource(Res.string.support_email_body, state.userId)
+    val supportBody = "${stringResource(Res.string.support_email_body)}\n\n$deviceInfo"
+    val feedbackSubject = stringResource(Res.string.feedback_email_subject)
+    val feedbackBody = "${stringResource(Res.string.feedback_email_body)}\n\n$deviceInfo"
 
     // The stored preference is only half the story — the system permission can be revoked in
     // the OS settings at any time, which we never hear about. Re-read it whenever the sheet
@@ -163,39 +172,36 @@ fun ProfileScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            if (!showRail) {
-                val settingsLabel = stringResource(Res.string.settings)
+            val settingsLabel = stringResource(Res.string.settings)
 
-                LynkTopAppBar(
-                    title = stringResource(Res.string.profile),
-                    actions = {
-                        LynkIconButton(
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(ProfileAction.OnSettingsClick)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Lucide.Settings,
-                                contentDescription = settingsLabel
-                            )
+            LynkTopAppBar(
+                title = stringResource(Res.string.profile),
+                actions = {
+                    LynkIconButton(
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(ProfileAction.OnSettingsClick)
                         }
-                    },
-                    iosTrailingItems = persistentListOf(
-                        LynkIosBarButtonItem(
-                            sfSymbol = "gearshape",
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onAction(ProfileAction.OnSettingsClick)
-                            }
+                    ) {
+                        Icon(
+                            imageVector = Lucide.Settings,
+                            contentDescription = settingsLabel
                         )
+                    }
+                },
+                iosTrailingItems = persistentListOf(
+                    LynkIosBarButtonItem(
+                        sfSymbol = "gearshape",
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onAction(ProfileAction.OnSettingsClick)
+                        }
                     )
                 )
-            }
+            )
         }
     ) { scaffoldPadding ->
-        val settingsButtonInset = if (showRail) 48.dp else 0.dp
-        val topInset = scaffoldPadding.calculateTopPadding() + settingsButtonInset + 24.dp
+        val topInset = scaffoldPadding.calculateTopPadding() + 24.dp
         val contentBottomInset = mainShellPadding.calculateBottomPadding() + 24.dp
 
         Box(
@@ -235,25 +241,6 @@ fun ProfileScreen(
                         onAction = onAction,
                         onPickImageClick = { showImagePickerSheet = true },
                         navigateToSavedSpots = navigateToSavedSpots
-                    )
-                }
-            }
-
-            if (showRail) {
-                val settingsLabel = stringResource(Res.string.settings)
-
-                LynkTonalIconButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onAction(ProfileAction.OnSettingsClick)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = scaffoldPadding.calculateTopPadding(), end = 24.dp)
-                ) {
-                    Icon(
-                        imageVector = Lucide.Settings,
-                        contentDescription = settingsLabel
                     )
                 }
             }
@@ -297,13 +284,17 @@ fun ProfileScreen(
     if (state.showSettingsSheet) {
         ProfileSettingsSheet(
             theme = state.appTheme,
+            isPureBlackEnabled = state.isPureBlackEnabled,
             arePushNotificationsEnabled = state.arePushNotificationsEnabled,
+            areHapticsEnabled = state.areHapticsEnabled,
             isGuest = state.isGuest,
             isSigningOut = state.isSigningOut,
             isDeletingAccount = state.isDeletingAccount,
             appVersion = stringResource(Res.string.app_version, AppConfig.APP_VERSION),
             supportEmail = SUPPORT_EMAIL,
+            feedbackEmail = FEEDBACK_EMAIL,
             onThemeSelected = { onAction(ProfileAction.OnThemeSelected(it)) },
+            onPureBlackToggled = { onAction(ProfileAction.OnPureBlackToggled(it)) },
             onPushNotificationsToggled = { isEnabled ->
                 if (isEnabled) {
                     scope.launch {
@@ -326,12 +317,22 @@ fun ProfileScreen(
                     onAction(ProfileAction.OnPushNotificationsToggled(false))
                 }
             },
+            onHapticsToggled = { onAction(ProfileAction.OnHapticsToggled(it)) },
             onContactSupportClick = {
                 uriHandler.openUri(
                     buildMailtoUri(
                         email = SUPPORT_EMAIL,
                         subject = supportSubject,
                         body = supportBody
+                    )
+                )
+            },
+            onShareFeedbackClick = {
+                uriHandler.openUri(
+                    buildMailtoUri(
+                        email = FEEDBACK_EMAIL,
+                        subject = feedbackSubject,
+                        body = feedbackBody
                     )
                 )
             },

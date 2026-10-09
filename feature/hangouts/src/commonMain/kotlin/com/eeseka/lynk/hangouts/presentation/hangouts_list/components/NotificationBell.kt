@@ -1,5 +1,13 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
@@ -33,48 +40,53 @@ private const val MAX_SHOWN_UNREAD_COUNT = 9
 fun NotificationBell(
     unreadCount: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isTonal: Boolean = false
+    modifier: Modifier = Modifier
 ) {
     val hasUnread = unreadCount > 0
     val label = if (hasUnread) stringResource(Res.string.notifications_with_unread, unreadCount)
     else stringResource(Res.string.notifications)
 
     Box(modifier = modifier) {
-        if (isTonal) {
-            LynkTonalIconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Lucide.Bell,
-                    contentDescription = label
-                )
-            }
-        } else {
-            LynkIconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Lucide.Bell,
-                    contentDescription = label
-                )
-            }
+        LynkIconButton(onClick = onClick) {
+            Icon(
+                imageVector = Lucide.Bell,
+                contentDescription = label
+            )
         }
 
-        if (hasUnread) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp, end = 4.dp)
-                    .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.error)
-                    .padding(horizontal = 4.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                LynkText(
-                    text = if (unreadCount > MAX_SHOWN_UNREAD_COUNT) stringResource(Res.string.unread_count_overflow)
-                    else unreadCount.toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onError
-                )
+        AnimatedContent(
+            targetState = unreadCount,
+            contentKey = { count -> count > 0 },
+            transitionSpec = { (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut()) },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 8.dp, end = 4.dp)
+        ) { badgeCount ->
+            if (badgeCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 16.dp, minHeight = 16.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error)
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AnimatedContent(
+                        targetState = badgeCount,
+                        transitionSpec = {
+                            val direction = if (targetState > initialState) 1 else -1
+                            (slideInVertically { height -> height * direction } + fadeIn()) togetherWith (slideOutVertically { height -> -height * direction } + fadeOut())
+                        }
+                    ) { count ->
+                        LynkText(
+                            text = if (count > MAX_SHOWN_UNREAD_COUNT) stringResource(Res.string.unread_count_overflow)
+                            else count.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onError
+                        )
+                    }
+                }
             }
         }
     }
@@ -87,7 +99,6 @@ private fun NotificationBellPreview() {
         Row(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
             NotificationBell(unreadCount = 3, onClick = {})
             NotificationBell(unreadCount = 42, onClick = {})
-            NotificationBell(unreadCount = 3, onClick = {}, isTonal = true)
         }
     }
 }

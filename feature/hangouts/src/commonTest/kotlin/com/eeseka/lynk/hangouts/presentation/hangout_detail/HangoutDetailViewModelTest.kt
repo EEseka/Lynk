@@ -21,10 +21,12 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.testing.collectInBackground
+import com.eeseka.lynk.testing.data.FakeAppPreferences
 import com.eeseka.lynk.testing.data.FakeHangoutParticipantService
 import com.eeseka.lynk.testing.data.FakeHangoutService
 import com.eeseka.lynk.testing.data.FakeLobbyConnectionClient
@@ -59,14 +61,18 @@ class HangoutDetailViewModelTest {
     private lateinit var spotService: FakeSpotService
     private lateinit var connectionClient: FakeLobbyConnectionClient
     private lateinit var lobbyService: FakeLobbyService
+    private lateinit var appPreferences: FakeAppPreferences
 
     private val chosenSpot = Spot(
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
-        isOpenNow = true, shortAddress = "VI, Lagos",
+        openingHours = null, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList(), savedAt = null
+        description = null, savedAt = null,
+        typeLabel = null, generativeSummary = null, reviewSummary = null, priceRange = null,
+        businessStatus = null, amenities = null, parking = null, payment = null,
+        phoneNumber = null, directionsUrl = null
     )
 
     @BeforeTest
@@ -79,6 +85,7 @@ class HangoutDetailViewModelTest {
         spotService = FakeSpotService()
         connectionClient = FakeLobbyConnectionClient()
         lobbyService = FakeLobbyService()
+        appPreferences = FakeAppPreferences()
     }
 
     @AfterTest
@@ -99,6 +106,16 @@ class HangoutDetailViewModelTest {
         assertThat(state.currentUserId).isEqualTo(HOST_ID)
         assertThat(state.isLoading).isFalse()
         assertThat(state.error).isNull()
+    }
+
+    @Test
+    fun `the map follows the app theme`() = runTest {
+        val viewModel = createViewModel()
+
+        appPreferences.setTheme(AppTheme.DARK)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.mapTheme).isEqualTo(AppTheme.DARK)
     }
 
     @Test
@@ -559,7 +576,8 @@ class HangoutDetailViewModelTest {
             spotService = spotService,
             connectionClient = connectionClient,
             lobbyService = lobbyService,
-            sessionStorage = sessionStorage
+            sessionStorage = sessionStorage,
+            appPreferences = appPreferences
         )
         collectInBackground(viewModel.state)
         return viewModel

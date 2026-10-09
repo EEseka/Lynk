@@ -35,22 +35,30 @@
     <string name="unsave_spot">Remove saved spot</string>
 
     <string name="appearance">Appearance</string>
-    <string name="preferences">Preferences</string>
+    <string name="general">General</string>
     <string name="about">About</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
 
+    <string name="lights_out">Lights Out</string>
+    <string name="lights_out_message">True black backgrounds, easier on battery for OLED screens.</string>
     <string name="push_notifications">Push Notifications</string>
     <string name="push_notifications_message">Invites, hangout changes and payment updates.</string>
+    <string name="haptics">Haptics</string>
+    <string name="haptics_message">Little vibrations when you tap, pick or finish something.</string>
 
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
 
-    <string name="support">Support</string>
+    <string name="help_and_feedback">Help &amp; feedback</string>
     <string name="contact_support">Contact support</string>
     <string name="support_email_subject">Lynk Support Request</string>
-    <string name="support_email_body">Hello, I need help with…\n\nAccount ID: %1$s</string>
+    <string name="support_email_body">Hello, I need help with…</string>
+    <string name="share_feedback">Share feedback</string>
+    <string name="feedback_email_subject">Lynk Feedback</string>
+    <string name="feedback_email_body">Hello, here is what I think about Lynk…</string>
+    <string name="email_device_info">Account ID: %1$s\nApp version: %2$s\nOS version: %3$s\nDevice model: %4$s</string>
 
     <string name="sign_out">Sign Out</string>
     <string name="signing_out">Signing out…</string>
@@ -63,7 +71,7 @@
     <string name="delete_account_confirm_message">This erases your profile, your saved spots and the photos you added to hangout albums. Past hangouts stay, with your name removed. It cannot be undone.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
-    <string name="error_delete_account_blocked">Your account still has something open — a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again. Still stuck? Reach us from Contact support in Settings.</string>
+    <string name="error_delete_account_blocked">Your account still has something open: a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again. Still stuck? Reach us from Contact support in Settings.</string>
 
     <string name="guest_title">You're browsing as a guest</string>
     <string name="guest_message">Create an account to host hangouts, split bills and save the spots you like.</string>

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.AreaNameResolver
 import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -49,7 +51,8 @@ class DiscoverViewModel(
     private val sessionStorage: SessionStorage,
     private val authService: AuthService,
     private val appPreferences: AppPreferences,
-    private val lastKnownLocationStorage: LastKnownLocationStorage
+    private val lastKnownLocationStorage: LastKnownLocationStorage,
+    private val areaNameResolver: AreaNameResolver
 ) : ViewModel() {
 
     private val eventChannel = Channel<DiscoverEvent>()
@@ -63,7 +66,12 @@ class DiscoverViewModel(
 
     private val saveJobs = mutableMapOf<String, Job>()
 
-    private val trendingLocation = MutableStateFlow<LocationCoordinates?>(null)
+    private val searchOrigin = MutableStateFlow<LocationCoordinates?>(null)
+
+    // True once the user searches another area, so a GPS fix (one comes on every return to this tab) can't drag the origin back
+    private var isSearchOriginPicked = false
+
+    private val topSpotsAreaName = MutableStateFlow<String?>(null)
 
     val state = combine(
         _state,
@@ -76,7 +84,9 @@ class DiscoverViewModel(
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
                 _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
                 observeSearchFilters()
-                observeTrendingLocation()
+                observeTrendingSpots()
+                observeAreaName()
+                observeTopSpots()
                 hasLoadedInitialData = true
             }
         }
@@ -89,18 +99,22 @@ class DiscoverViewModel(
     fun onAction(action: DiscoverAction) {
         when (action) {
             is DiscoverAction.OnLocationFetched -> handleLocationFetched(action.latitude, action.longitude)
-            DiscoverAction.OnLocationUnavailable -> loadTrendingAroundLastKnownLocation()
+            DiscoverAction.OnLocationUnavailable -> useLastKnownLocation()
+            DiscoverAction.OnLocateMeClick -> locateMe()
             is DiscoverAction.OnSpotSelected -> _state.update { it.copy(selectedSpotId = action.spotId) }
             is DiscoverAction.OnToggleSaveSpot -> toggleSaveSpot(action.spotId, action.isCurrentlySaved)
             is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
             is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
             DiscoverAction.RetryTrending -> retryTrending()
+            is DiscoverAction.OnSearchThisArea -> searchThisArea(action.latitude, action.longitude)
             DiscoverAction.ToggleShowSearchSheet -> _state.update { it.copy(showSearchSheet = !it.showSearchSheet) }
             is DiscoverAction.ShowGuestPrompt -> _state.update { it.copy(guestPromptContext = action.context) }
             DiscoverAction.HideGuestPrompt -> _state.update { it.copy(guestPromptContext = null) }
             DiscoverAction.SignOutGuest -> signOutGuest()
             is DiscoverAction.OnHangoutCreationSelected -> _state.update { it.copy(hangoutCreationSpotId = action.spotId) }
+            DiscoverAction.OnTopSpotsClick -> showTopSpots()
+            DiscoverAction.OnExitTopSpotsClick -> exitTopSpots()
         }
     }
 
@@ -124,34 +138,106 @@ class DiscoverViewModel(
                 locationFetchEpoch = it.locationFetchEpoch + 1
             )
         }
-        trendingLocation.value = LocationCoordinates(latitude = latitude, longitude = longitude)
+        if (!isSearchOriginPicked) {
+            searchOrigin.value = LocationCoordinates(latitude = latitude, longitude = longitude)
+        }
 
         viewModelScope.launch {
             lastKnownLocationStorage.setLastKnownLocation(latitude, longitude)
         }
     }
 
-    private fun loadTrendingAroundLastKnownLocation() {
+    private fun useLastKnownLocation() {
+        if (isSearchOriginPicked) return
+
         viewModelScope.launch {
-            trendingLocation.value = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+            val lastKnownLocation = lastKnownLocationStorage.lastKnownLocation.firstOrNull() ?: return@launch
+            searchOrigin.value = lastKnownLocation
         }
     }
 
+    private fun locateMe() {
+        isSearchOriginPicked = false
+        exitTopSpots()
+    }
+
+    private fun showTopSpots() {
+        topSpotsAreaName.value = state.value.areaName ?: return
+    }
+
+    private fun exitTopSpots() {
+        topSpotsAreaName.value = null
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeTrendingLocation() {
-        trendingLocation
+    private fun observeTrendingSpots() {
+        searchOrigin
             .filterNotNull()
             .distinctUntilChanged()
             .mapLatest { location -> fetchTrendingSpots(location) }
             .launchIn(viewModelScope)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeAreaName() {
+        searchOrigin
+            .filterNotNull()
+            .distinctUntilChanged()
+            .mapLatest { location -> areaNameResolver.getAreaName(location.latitude, location.longitude) }
+            .onEach { areaName -> _state.update { it.copy(areaName = areaName) } }
+            .launchIn(viewModelScope)
+    }
+
+    // A new area or leaving the mode cancels a Top 10 still loading
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeTopSpots() {
+        topSpotsAreaName
+            .mapLatest { areaName ->
+                if (areaName == null) {
+                    _state.update {
+                        it.copy(
+                            isTopSpotsMode = false,
+                            isTopSpotsLoading = false,
+                            topSpots = persistentListOf()
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(isTopSpotsMode = true) }
+                    fetchTopSpots(areaName)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private suspend fun fetchTopSpots(areaName: String) {
+        _state.update { it.copy(isTopSpotsLoading = true) }
+
+        spotService.getTopSpots(areaName)
+            .onSuccess { spots ->
+                _state.update {
+                    it.copy(
+                        isTopSpotsLoading = false,
+                        topSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                    )
+                }
+            }
+            .onFailure { error ->
+                eventChannel.send(DiscoverEvent.Error(error.toUiText()))
+                topSpotsAreaName.value = null
+            }
+    }
+
     private fun retryTrending() {
-        val location = trendingLocation.value ?: return
+        val location = searchOrigin.value ?: return
 
         viewModelScope.launch {
             fetchTrendingSpots(location)
         }
+    }
+
+    private fun searchThisArea(latitude: Double, longitude: Double) {
+        isSearchOriginPicked = true
+        searchOrigin.value = LocationCoordinates(latitude = latitude, longitude = longitude)
     }
 
     private suspend fun fetchTrendingSpots(location: LocationCoordinates) {
@@ -162,9 +248,13 @@ class DiscoverViewModel(
                 _state.update {
                     it.copy(
                         isTrendingLoading = false,
-                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList(),
+                        trendingLatitude = location.latitude,
+                        trendingLongitude = location.longitude
                     )
                 }
+                // The sea, a forest, anywhere Google has nothing to show
+                if (spots.isEmpty()) eventChannel.send(DiscoverEvent.NoSpotsInArea)
             }
             .onFailure { error ->
                 _state.update {
@@ -207,6 +297,9 @@ class DiscoverViewModel(
                 }.toImmutableList(),
                 searchResults = currentState.searchResults.map {
                     if (it.id == spotId) it.copy(isSaved = isSaved) else it
+                }.toImmutableList(),
+                topSpots = currentState.topSpots.map {
+                    if (it.id == spotId) it.copy(isSaved = isSaved) else it
                 }.toImmutableList()
             )
         }
@@ -219,13 +312,13 @@ class DiscoverViewModel(
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
-        val locationFlow = trendingLocation.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
+        val searchOriginFlow = searchOrigin.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
 
         combine(
             searchQueryFlow,
             categoryFlow,
             priceLevelFlow,
-            locationFlow
+            searchOriginFlow
         ) { query, category, priceLevel, location ->
             SpotSearchFilters(
                 query = query,
@@ -239,11 +332,10 @@ class DiscoverViewModel(
             val lng = filters.longitude
             if (lat == null || lng == null) return@mapLatest
 
-            val isActivelySearching = filters.query.isNotBlank() ||
-                    filters.category != null ||
-                    filters.priceLevel != null
+            val isActivelySearching = filters.query.isNotBlank() || filters.category != null || filters.priceLevel != null
 
             if (isActivelySearching) {
+                exitTopSpots()
                 setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
                 _state.update {
                     it.copy(
@@ -255,6 +347,7 @@ class DiscoverViewModel(
                 }
                 searchPaginator?.loadNextItems()
             } else {
+                searchPaginator?.close()
                 _state.update {
                     it.copy(
                         searchResults = persistentListOf(),
@@ -275,6 +368,7 @@ class DiscoverViewModel(
         category: SpotCategory?,
         priceLevel: PriceLevel?
     ) {
+        searchPaginator?.close()
         currentNextPageToken = null
 
         searchPaginator = Paginator(

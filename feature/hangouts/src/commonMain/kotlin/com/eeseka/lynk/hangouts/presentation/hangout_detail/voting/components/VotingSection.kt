@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateBounds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Scale
@@ -47,6 +49,7 @@ import lynk.feature.hangouts.generated.resources.voting_closing
 import lynk.feature.hangouts.generated.resources.voting_empty_message
 import lynk.feature.hangouts.generated.resources.voting_empty_title
 import lynk.feature.hangouts.generated.resources.voting_propose
+import lynk.feature.hangouts.generated.resources.voting_see_on_map
 import lynk.feature.hangouts.generated.resources.voting_tie_banner
 import lynk.feature.hangouts.generated.resources.voting_tie_banner_guest
 import lynk.feature.hangouts.generated.resources.voting_title
@@ -66,6 +69,7 @@ fun VotingSection(
     onProposeClick: () -> Unit,
     onCloseVoting: () -> Unit,
     onBreakTie: (String) -> Unit,
+    onMapClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val counts = remember(votes) { votes.values.groupingBy { it }.eachCount() }
@@ -110,7 +114,7 @@ fun VotingSection(
         modifier = modifier
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (tie) {
+            AnimatedVisibility(visible = tie) {
                 PlaceholderCard(
                     icon = Lucide.Scale,
                     title = stringResource(
@@ -169,19 +173,39 @@ fun VotingSection(
                     }
                 }
 
-                if (isHost && !tie) {
+                Column(
+                    modifier = Modifier.padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     LynkButton(
-                        text = stringResource(Res.string.voting_close),
+                        text = stringResource(Res.string.voting_see_on_map),
                         onClick = {
-                            hapticFeedback(AppHaptic.ImpactMedium)
-                            onCloseVoting()
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onMapClick()
                         },
-                        style = LynkButtonStyle.SECONDARY,
-                        enabled = totalVotes > 0,
-                        isLoading = isClosingVoting,
-                        loadingText = stringResource(Res.string.voting_closing),
-                        modifier = Modifier.padding(top = 8.dp)
+                        style = LynkButtonStyle.TEXT,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Lucide.Map,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     )
+
+                    AnimatedVisibility(visible = isHost && !tie) {
+                        LynkButton(
+                            text = stringResource(Res.string.voting_close),
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactMedium)
+                                onCloseVoting()
+                            },
+                            style = LynkButtonStyle.SECONDARY,
+                            enabled = totalVotes > 0,
+                            isLoading = isClosingVoting,
+                            loadingText = stringResource(Res.string.voting_closing)
+                        )
+                    }
                 }
             }
         }
@@ -226,6 +250,7 @@ private fun VotingSectionPreview(
             onProposeClick = {},
             onCloseVoting = {},
             onBreakTie = {},
+            onMapClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp)

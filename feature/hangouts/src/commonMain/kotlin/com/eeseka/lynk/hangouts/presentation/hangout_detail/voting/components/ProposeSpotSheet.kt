@@ -76,15 +76,15 @@ fun ProposeSpotSheet(
     modifier: Modifier = Modifier
 ) {
     LynkAdaptiveSheet(
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
+        modifier = modifier
     ) {
         ProposeSpotSheetContent(
             state = state,
             onTabSelected = onTabSelected,
             onPropose = onPropose,
             onLoadNextSpotPage = onLoadNextSpotPage,
-            onLoadNextFavoritePage = onLoadNextFavoritePage,
-            modifier = modifier
+            onLoadNextFavoritePage = onLoadNextFavoritePage
         )
     }
 }
@@ -140,7 +140,8 @@ private fun ProposeSpotSheetContent(
             LynkText(
                 text = stringResource(Res.string.propose_sheet_title),
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 16.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

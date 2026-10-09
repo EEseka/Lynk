@@ -15,14 +15,13 @@ actual class FirebasePushNotificationService(
 ) : PushNotificationService {
 
     actual override fun observeDeviceToken(): Flow<String?> = flow {
-        try {
-            val fcmToken = Firebase.messaging.token.await()
-            logger.info("Initial FCM token received")
-            emit(fcmToken)
+        val fcmToken = try {
+            Firebase.messaging.token.await().also { logger.info("Initial FCM token received") }
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             logger.error("Failed to get FCM token", e)
-            emit(null)
+            null
         }
+        emit(fcmToken)
     }
 }

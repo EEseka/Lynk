@@ -18,6 +18,8 @@ class FakeSpotService : SpotService {
     var savedSpotsList = mutableListOf<Spot>()
     var savedSpots = mutableSetOf<String>()
     var trendingRequestLocations = mutableListOf<Pair<Double, Double>>()
+    var topSpotsList = mutableListOf<Spot>()
+    val topRequestCities = mutableListOf<String>()
 
     // What Google would say about a place right now, when it differs from a saved snapshot
     var spotDetailsList = mutableListOf<Spot>()
@@ -31,6 +33,12 @@ class FakeSpotService : SpotService {
         if (shouldReturnError) return Result.Failure(errorToReturn)
         trendingRequestLocations.add(latitude to longitude)
         return Result.Success(trendingSpotsList.take(limit))
+    }
+
+    override suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote> {
+        topRequestCities.add(city)
+        if (shouldReturnError) return Result.Failure(errorToReturn)
+        return Result.Success(topSpotsList)
     }
 
     // Returns everything in one page, so there is never a next page token
@@ -58,7 +66,7 @@ class FakeSpotService : SpotService {
         detailsRequestIds.add(spotId)
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
-        val spot = (spotDetailsList + trendingSpotsList + searchSpotsList + savedSpotsList).find { it.id == spotId }
+        val spot = (spotDetailsList + trendingSpotsList + topSpotsList + searchSpotsList + savedSpotsList).find { it.id == spotId }
             ?: return Result.Failure(DataError.Remote.NOT_FOUND)
         return Result.Success(spot)
     }

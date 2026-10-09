@@ -1,6 +1,7 @@
 package com.eeseka.lynk.shared.design_system.components.util
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
  * The Haptic Dictionary
@@ -15,6 +16,9 @@ enum class AppHaptic {
     ImpactMedium,
     ImpactHeavy
 }
+
+// The Settings haptics switch, provided once in App.kt
+val LocalHapticsEnabled = staticCompositionLocalOf { true }
 
 /**
  * Unified haptic hook — returns a platform-aware trigger function.

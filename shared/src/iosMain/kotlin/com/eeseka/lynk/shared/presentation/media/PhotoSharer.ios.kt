@@ -5,9 +5,12 @@ import androidx.compose.runtime.remember
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
+import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSURL
+import platform.Foundation.NSUUID
+import platform.Foundation.writeToURL
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
-import platform.UIKit.UIImage
 import platform.UIKit.popoverPresentationController
 
 @Composable
@@ -18,12 +21,15 @@ actual fun rememberPhotoSharer(): PhotoSharer {
 private class PhotoSharerIos : PhotoSharer {
 
     @OptIn(ExperimentalForeignApi::class)
-    override suspend fun share(imageBytes: ByteArray, caption: String?): Boolean {
-        val image = UIImage.imageWithData(imageBytes.toNSData()) ?: return false
+    override suspend fun share(photos: List<CaptionedPhoto>): Boolean {
+        // A UIImage drops the caption tag, so each photo is shared as its own file
+        val photoFiles = photos.mapNotNull { photo -> photo.toTaggedFile() }
+        if (photoFiles.isEmpty()) return false
         val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController ?: return false
 
+        val captionText = photos.singleOrNull()?.caption
         val controller = UIActivityViewController(
-            activityItems = listOfNotNull(image, caption),
+            activityItems = photoFiles + listOfNotNull(captionText),
             applicationActivities = null
         )
         controller.popoverPresentationController?.apply {
@@ -36,5 +42,12 @@ private class PhotoSharerIos : PhotoSharer {
 
         rootViewController.presentViewController(controller, animated = true, completion = null)
         return true
+    }
+
+    private fun CaptionedPhoto.toTaggedFile(): NSURL? {
+        val photoData = imageBytes.toNSData()
+        val taggedData = caption?.let { withCaption(photoData, it) } ?: photoData
+        val fileUrl = NSURL.fileURLWithPath("${NSTemporaryDirectory()}share_${NSUUID().UUIDString}.jpg")
+        return fileUrl.takeIf { taggedData.writeToURL(it, atomically = true) }
     }
 }

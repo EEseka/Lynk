@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list
 
+import androidx.compose.runtime.snapshots.Snapshot
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -106,6 +107,27 @@ class HangoutsListViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly("Brunch")
+    }
+
+    @Test
+    fun `showing a hangout moves to its tab and clears the search and vibe hiding it`() = runTest {
+        createHangout("Night Out", vibe = HangoutVibe.CHILL)
+        val finishedId = createHangout("Brunch", vibe = HangoutVibe.FOOD)
+        hangoutService.completeHangout(finishedId)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(HangoutsListAction.OnVibeSelected(HangoutVibe.CHILL))
+        viewModel.state.value.searchTextState.typeText("night")
+        advanceUntilIdle()
+
+        viewModel.onAction(HangoutsListAction.ShowHangoutInList(HangoutStatusFilter.COMPLETED))
+        Snapshot.sendApplyNotifications()
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertThat(state.selectedStatusFilter).isEqualTo(HangoutStatusFilter.COMPLETED)
+        assertThat(state.selectedVibe).isNull()
+        assertThat(state.searchTextState.text.toString()).isEmpty()
+        assertThat(state.hangouts.map { it.name }).containsExactly("Brunch")
     }
 
     @Test

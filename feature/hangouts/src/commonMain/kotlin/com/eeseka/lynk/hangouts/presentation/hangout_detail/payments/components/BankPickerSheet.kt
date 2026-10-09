@@ -62,6 +62,7 @@ fun BankPickerSheet(
 ) {
     LynkAdaptiveSheet(
         onDismissRequest = onDismiss,
+        modifier = modifier,
         skipBottomSheetPartiallyExpanded = false
     ) {
         BankPickerSheetContent(
@@ -69,8 +70,7 @@ fun BankPickerSheet(
             searchState = searchState,
             isLoading = isLoading,
             errorMessage = errorMessage,
-            onBankSelected = onBankSelected,
-            modifier = modifier.weight(1f, fill = false)
+            onBankSelected = onBankSelected
         )
     }
 }
@@ -93,7 +93,8 @@ private fun BankPickerSheetContent(
         LynkText(
             text = stringResource(Res.string.payment_bank_picker_title),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 16.dp)
         )
 
         LynkSearchField(

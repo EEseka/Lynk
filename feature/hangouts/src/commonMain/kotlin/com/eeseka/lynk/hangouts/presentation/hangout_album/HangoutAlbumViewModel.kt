@@ -21,7 +21,9 @@ import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,7 +40,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.album_save_failed
+import lynk.feature.hangouts.generated.resources.album_save_selected_failed
+import lynk.feature.hangouts.generated.resources.album_save_selected_partly
 import lynk.feature.hangouts.generated.resources.album_share_failed
+import lynk.feature.hangouts.generated.resources.album_share_selected_failed
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
@@ -59,6 +64,11 @@ class HangoutAlbumViewModel(
 
     // Once the page holding it lands, the viewer opens on this photo
     private var photoIdToOpen: String? = null
+
+    // One drag-select gesture: where it began, what was picked before it, and whether it picks or unpicks
+    private var dragStartPhotoId: String? = null
+    private var selectionBeforeDrag: Set<String> = persistentSetOf()
+    private var isDragUnpicking = false
 
     val state = _state
         .onStart {
@@ -111,8 +121,7 @@ class HangoutAlbumViewModel(
 
         when (event) {
             is LobbyEvent.PhotosAdded -> {
-                val hasOthersPhotos = event.uploaderIds.any { it != state.value.currentUserId }
-                if (event.hangoutId == currentHangoutId && hasOthersPhotos) {
+                if (event.hangoutId == currentHangoutId) {
                     eventChannel.send(HangoutAlbumEvent.NewPhotosAdded)
                 }
             }
@@ -131,7 +140,15 @@ class HangoutAlbumViewModel(
             HangoutAlbumAction.LoadNextPage -> loadNextPage()
             HangoutAlbumAction.OnRetryClick -> retryLoad()
             HangoutAlbumAction.OnNewPhotosClick -> showNewPhotos()
-            is HangoutAlbumAction.OnPhotoClick -> openViewer(action.photoId)
+            HangoutAlbumAction.OnSelectClick -> _state.update { it.copy(isSelecting = true) }
+            is HangoutAlbumAction.OnPhotoLongClick -> startSelectingWith(action.photoId)
+            is HangoutAlbumAction.OnDragSelectStart -> startDragSelect(action.photoId)
+            is HangoutAlbumAction.OnDragSelectOver -> dragSelectOver(action.photoId)
+            HangoutAlbumAction.OnDragSelectEnd -> endDragSelect()
+            HangoutAlbumAction.OnCancelSelectionClick -> endSelection()
+            is HangoutAlbumAction.OnSelectedPhotosSaved -> reportSelectedPhotosSaved(action.savedCount, action.photoCount)
+            is HangoutAlbumAction.OnSelectedPhotosShared -> reportSelectedPhotosShared(action.isShared)
+            is HangoutAlbumAction.OnPhotoClick -> clickPhoto(action.photoId)
             is HangoutAlbumAction.OnViewerPageChanged -> _state.update { it.copy(viewerIndex = action.index) }
             HangoutAlbumAction.OnDismissViewer -> _state.update { it.copy(viewerIndex = null) }
             HangoutAlbumAction.OnPhotoLoadFailed -> reloadIfLinksExpiring()
@@ -168,6 +185,7 @@ class HangoutAlbumViewModel(
     }
 
     private fun setupPhotosPaginator(hangoutId: String) {
+        photosPaginator?.close()
         photosPaginator = Paginator(
             initialKey = null,
             onLoadUpdated = { isLoading ->
@@ -229,6 +247,97 @@ class HangoutAlbumViewModel(
     private fun showNewPhotos() {
         val hangoutId = state.value.hangoutId ?: return
         restartAlbum(hangoutId)
+    }
+
+    private fun startSelectingWith(photoId: String) {
+        _state.update { it.copy(isSelecting = true) }
+        togglePhotoSelection(photoId)
+    }
+
+    // A drag that starts on a picked photo unpicks, otherwise it picks
+    private fun startDragSelect(photoId: String) {
+        selectionBeforeDrag = state.value.selectedPhotoIds
+        dragStartPhotoId = photoId
+        isDragUnpicking = photoId in selectionBeforeDrag
+        _state.update { it.copy(isSelecting = true) }
+        dragSelectOver(photoId)
+    }
+
+    // Everything between where the drag started and the finger, on top of what was picked before it,
+    // so dragging back over photos gives them back their old state
+    private fun dragSelectOver(photoId: String) {
+        val startPhotoId = dragStartPhotoId ?: return
+        val photoIds = state.value.photos.map { it.id }
+        val startIndex = photoIds.indexOf(startPhotoId)
+        val overIndex = photoIds.indexOf(photoId)
+        if (startIndex == -1 || overIndex == -1) return
+
+        // Nearest the start first, so the limit keeps the photos closest to where the drag began
+        val draggedIds = if (overIndex >= startIndex) {
+            photoIds.subList(startIndex, overIndex + 1)
+        } else {
+            photoIds.subList(overIndex, startIndex + 1).reversed()
+        }
+        val selectedPhotoIds = if (isDragUnpicking) {
+            selectionBeforeDrag - draggedIds.toSet()
+        } else {
+            val roomLeft = MAX_SELECTED_PHOTOS - selectionBeforeDrag.size
+            selectionBeforeDrag + draggedIds.filterNot { it in selectionBeforeDrag }.take(roomLeft.coerceAtLeast(0))
+        }
+        _state.update { it.copy(selectedPhotoIds = selectedPhotoIds.toImmutableSet()) }
+    }
+
+    private fun endDragSelect() {
+        dragStartPhotoId = null
+        selectionBeforeDrag = persistentSetOf()
+    }
+
+    // Some saved means a retry would save those twice, so select mode only stays when nothing saved
+    private fun reportSelectedPhotosSaved(savedCount: Int, photoCount: Int) {
+        if (savedCount > 0) endSelection()
+        viewModelScope.launch {
+            val event = when (savedCount) {
+                photoCount -> HangoutAlbumEvent.PhotoSaved
+                0 -> HangoutAlbumEvent.Error(UiText.Resource(Res.string.album_save_selected_failed))
+                else -> HangoutAlbumEvent.Error(
+                    UiText.Resource(Res.string.album_save_selected_partly, arrayOf(savedCount, photoCount))
+                )
+            }
+            eventChannel.send(event)
+        }
+    }
+
+    private fun reportSelectedPhotosShared(isShared: Boolean) {
+        if (isShared) {
+            endSelection()
+            return
+        }
+        viewModelScope.launch {
+            eventChannel.send(HangoutAlbumEvent.Error(UiText.Resource(Res.string.album_share_selected_failed)))
+        }
+    }
+
+    private fun endSelection() {
+        _state.update { it.copy(isSelecting = false, selectedPhotoIds = persistentSetOf()) }
+    }
+
+    // While selecting, a tap picks the photo instead of opening it
+    private fun clickPhoto(photoId: String) {
+        if (state.value.isSelecting) togglePhotoSelection(photoId) else openViewer(photoId)
+    }
+
+    private fun togglePhotoSelection(photoId: String) {
+        val selectedPhotoIds = state.value.selectedPhotoIds
+        when {
+            photoId in selectedPhotoIds -> {
+                _state.update { it.copy(selectedPhotoIds = (selectedPhotoIds - photoId).toImmutableSet()) }
+            }
+
+            // The grid dims the rest at the limit, so a tap only lands here past it by accident
+            selectedPhotoIds.size >= MAX_SELECTED_PHOTOS -> Unit
+
+            else -> _state.update { it.copy(selectedPhotoIds = (selectedPhotoIds + photoId).toImmutableSet()) }
+        }
     }
 
     private fun openViewer(photoId: String) {
@@ -355,8 +464,13 @@ class HangoutAlbumViewModel(
                 // Stays on the photo that slid into place, or closes when the album is empty
                 viewerIndex = currentState.viewerIndex
                     ?.takeIf { remaining.isNotEmpty() }
-                    ?.coerceAtMost(remaining.lastIndex)
+                    ?.coerceAtMost(remaining.lastIndex),
+                selectedPhotoIds = (currentState.selectedPhotoIds - photoId).toImmutableSet()
             )
         }
+    }
+
+    companion object {
+        const val MAX_SELECTED_PHOTOS = 20
     }
 }

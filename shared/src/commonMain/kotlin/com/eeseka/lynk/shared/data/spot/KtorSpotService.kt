@@ -38,6 +38,15 @@ class KtorSpotService(
         }
     }
 
+    override suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote> {
+        return httpClient.get<List<SpotDto>>(
+            route = "/spots/top",
+            queryParams = mapOf("city" to city)
+        ).map { topSpots ->
+            topSpots.map { it.toDomain() }
+        }
+    }
+
     override suspend fun searchSpots(
         latitude: Double,
         longitude: Double,

@@ -61,6 +61,7 @@
     <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
     <string name="detail_get_a_ride">Get a ride</string>
     <string name="detail_address_copied">Address copied. Paste it as your destination in any ride app.</string>
+    <string name="map_close">Close map</string>
 
     <!-- Host actions -->
     <string name="detail_complete">Complete hangout</string>
@@ -175,9 +176,7 @@
     <string name="payment_confirm_charge">You'll be charged</string>
     <string name="payment_confirm_note">You'll finish on Paystack's secure page, then come back here.</string>
     <string name="payment_confirm_action">Continue to Paystack</string>
-    <string name="payment_checkout_title">Pay with Paystack</string>
-    <string name="payment_checkout_close">Close checkout</string>
-    <string name="payment_check_action">I have paid — check now</string>
+    <string name="payment_check_action">I have paid, check now</string>
     <string name="payment_checking">Checking…</string>
     <string name="payment_still_processing">Paystack is still processing this one. Give it a moment and check again.</string>
     <string name="payment_not_completed">That payment didn't go through. You can try again.</string>
@@ -205,6 +204,13 @@
     <!-- Voting -->
     <string name="voting_title">Vote for a spot</string>
     <string name="voting_propose">Propose</string>
+    <string name="voting_see_on_map">See on map</string>
+    <string name="voting_vote_here">Vote for this spot</string>
+    <string name="voting_your_vote">Your vote</string>
+    <string name="voting_pick_winner">Pick this one</string>
+    <string name="voting_tie_locked">The host is picking</string>
+    <string name="voting_no_votes">No votes yet</string>
+    <string name="voting_from_middle">%1$s from the middle</string>
     <string name="voting_empty_title">No spots yet</string>
     <string name="voting_empty_message">Propose a spot to kick off the vote.</string>
     <string name="voting_close">Close voting</string>
@@ -212,9 +218,9 @@
     <string name="voting_leading">Leading</string>
     <string name="voting_your_pick">Your pick</string>
     <string name="voting_remove_spot">Remove spot</string>
-    <string name="voting_tie_banner">It's a tie — tap a spot to decide the winner</string>
-    <string name="voting_tie_banner_guest">It's a tie — the host is picking the winner</string>
-    <string name="voting_tie_flash">It's a tie — pick the winner</string>
+    <string name="voting_tie_banner">It's a tie. Tap a spot to decide the winner</string>
+    <string name="voting_tie_banner_guest">It's a tie. The host is picking the winner</string>
+    <string name="voting_tie_flash">It's a tie. Pick the winner</string>
     <string name="spot_suggested_message">Spot suggested</string>
 
     <!-- Propose-spot sheet -->
@@ -227,7 +233,7 @@
     <string name="propose_empty_favorite_message">No favorite spots found.</string>
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
-    <string name="propose_center_caption">Distances are from the group's center point — near everyone.</string>
+    <string name="propose_center_caption">Distances are from the group's center point, near everyone.</string>
 
     <!-- Memories -->
     <string name="memories_title">Memories</string>
@@ -264,4 +270,13 @@
     <string name="album_photo_deleted">Photo removed</string>
     <string name="album_new_photos">New photos were added</string>
     <string name="album_show_new_photos">Show</string>
+    <string name="album_select">Select</string>
+    <string name="album_select_photos">Select photos</string>
+    <string name="album_selected_count">%1$d selected</string>
+    <string name="album_cancel_selection">Cancel</string>
+    <string name="album_share_selected">Share photos</string>
+    <string name="album_selection_limit">%1$d photos is the most you can pick at a time</string>
+    <string name="album_save_selected_failed">Couldn't save these photos. Check that Lynk may add to your photos, then try again.</string>
+    <string name="album_save_selected_partly">Saved %1$d of %2$d photos. Check that Lynk may add to your photos, then save the rest again.</string>
+    <string name="album_share_selected_failed">Couldn't share these photos. Try again.</string>
 </resources>

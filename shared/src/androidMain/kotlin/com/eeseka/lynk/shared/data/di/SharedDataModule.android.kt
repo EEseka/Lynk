@@ -3,6 +3,8 @@ package com.eeseka.lynk.shared.data.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.eeseka.lynk.shared.data.lobby.lifecycle.NativeAppLifecycleObserver
+import com.eeseka.lynk.shared.data.location.GeocoderAreaNameResolver
+import com.eeseka.lynk.shared.domain.location.AreaNameResolver
 import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import com.eeseka.lynk.shared.data.lobby.network.ConnectionErrorHandler
 import com.eeseka.lynk.shared.data.lobby.network.ConnectivityObserver
@@ -27,4 +29,5 @@ actual val platformSharedDataModule = module {
     singleOf(::ConnectivityObserver)
     singleOf(::ConnectionErrorHandler)
     singleOf(::FirebasePushNotificationService) bind PushNotificationService::class
+    singleOf(::GeocoderAreaNameResolver) bind AreaNameResolver::class
 }

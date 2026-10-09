@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.TriangleAlert
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
@@ -66,7 +67,14 @@ fun LynkErrorState(
         LynkButton(
             text = stringResource(Res.string.retry),
             onClick = onRetry,
-            style = LynkButtonStyle.SECONDARY
+            style = LynkButtonStyle.SECONDARY,
+            leadingIcon = {
+                Icon(
+                    imageVector = Lucide.RefreshCw,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         )
     }
 }

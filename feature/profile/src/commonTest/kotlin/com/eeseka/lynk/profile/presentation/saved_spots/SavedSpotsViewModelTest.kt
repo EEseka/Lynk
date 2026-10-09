@@ -227,9 +227,12 @@ class SavedSpotsViewModelTest {
         id = id, name = name, category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = true,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
-        isOpenNow = true, shortAddress = "VI, Lagos",
+        openingHours = null, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
-        description = null, tags = emptyList(),
-        savedAt = Instant.fromEpochMilliseconds(4102444800000L)
+        description = null,
+        savedAt = Instant.fromEpochMilliseconds(4102444800000L),
+        typeLabel = null, generativeSummary = null, reviewSummary = null, priceRange = null,
+        businessStatus = null, amenities = null, parking = null, payment = null,
+        phoneNumber = null, directionsUrl = null
     )
 }

@@ -69,11 +69,15 @@ class ProfileViewModel(
     val state = combine(
         _state,
         appPreferences.theme,
-        appPreferences.arePushNotificationsEnabled
-    ) { currentState, theme, arePushNotificationsEnabled ->
+        appPreferences.isPureBlackEnabled,
+        appPreferences.arePushNotificationsEnabled,
+        appPreferences.areHapticsEnabled
+    ) { currentState, theme, isPureBlackEnabled, arePushNotificationsEnabled, areHapticsEnabled ->
         currentState.copy(
             appTheme = theme,
-            arePushNotificationsEnabled = arePushNotificationsEnabled
+            isPureBlackEnabled = isPureBlackEnabled,
+            arePushNotificationsEnabled = arePushNotificationsEnabled,
+            areHapticsEnabled = areHapticsEnabled
         )
     }
         .onStart {
@@ -153,7 +157,9 @@ class ProfileViewModel(
             ProfileAction.OnSettingsClick -> _state.update { it.copy(showSettingsSheet = true) }
             ProfileAction.OnDismissSettings -> _state.update { it.copy(showSettingsSheet = false) }
             is ProfileAction.OnThemeSelected -> selectTheme(action.theme)
+            is ProfileAction.OnPureBlackToggled -> togglePureBlack(action.isEnabled)
             is ProfileAction.OnPushNotificationsToggled -> togglePushNotifications(action.isEnabled)
+            is ProfileAction.OnHapticsToggled -> toggleHaptics(action.isEnabled)
             ProfileAction.OnCreateAccountClick -> deleteAccount() // Taking a Guest back to the auth screen
             ProfileAction.OnSignOutClick -> {
                 if (state.value.isGuest) deleteAccount()
@@ -300,9 +306,21 @@ class ProfileViewModel(
         }
     }
 
+    private fun togglePureBlack(isEnabled: Boolean) {
+        viewModelScope.launch {
+            appPreferences.setPureBlackEnabled(isEnabled)
+        }
+    }
+
     private fun togglePushNotifications(isEnabled: Boolean) {
         viewModelScope.launch {
             appPreferences.setPushNotificationsEnabled(isEnabled)
+        }
+    }
+
+    private fun toggleHaptics(isEnabled: Boolean) {
+        viewModelScope.launch {
+            appPreferences.setHapticsEnabled(isEnabled)
         }
     }
 

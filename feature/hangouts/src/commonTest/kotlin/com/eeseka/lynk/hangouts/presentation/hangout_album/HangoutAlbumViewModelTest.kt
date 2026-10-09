@@ -3,6 +3,8 @@ package com.eeseka.lynk.hangouts.presentation.hangout_album
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import assertk.assertions.containsOnly
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
@@ -221,14 +223,14 @@ class HangoutAlbumViewModelTest {
     }
 
     @Test
-    fun `says nothing about photos I added myself`() = runTest {
+    fun `offers photos I added myself from another phone`() = runTest {
         val viewModel = createViewModel()
 
         viewModel.events.test {
             connectionClient.sendEvent(
                 LobbyEvent.PhotosAdded(viewModel.state.value.hangoutId!!, uploaderIds = setOf(HOST_ID))
             )
-            expectNoEvents()
+            assertThat(awaitItem()).isEqualTo(HangoutAlbumEvent.NewPhotosAdded)
         }
     }
 
@@ -281,6 +283,161 @@ class HangoutAlbumViewModelTest {
             viewModel.onAction(HangoutAlbumAction.OnPhotoSaved(isSaved = false))
             assertThat(awaitItem()).isInstanceOf(HangoutAlbumEvent.Error::class)
         }
+    }
+
+    @Test
+    fun `a tap while selecting picks and unpicks a photo instead of opening it`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutAlbumAction.OnSelectClick)
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p2"))
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p3"))
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p2"))
+
+        val state = viewModel.state.value
+        assertThat(state.isSelecting).isTrue()
+        assertThat(state.selectedPhotoIds).containsOnly("p3")
+        assertThat(state.viewerIndex).isNull()
+    }
+
+    @Test
+    fun `a long press starts selecting with that photo picked`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+
+        assertThat(viewModel.state.value.isSelecting).isTrue()
+        assertThat(viewModel.state.value.selectedPhotoIds).containsOnly("p1")
+    }
+
+    @Test
+    fun `cancelling leaves select mode with nothing picked`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+
+        viewModel.onAction(HangoutAlbumAction.OnCancelSelectionClick)
+
+        assertThat(viewModel.state.value.isSelecting).isFalse()
+        assertThat(viewModel.state.value.selectedPhotoIds).isEmpty()
+    }
+
+    @Test
+    fun `refuses a pick past the limit`() = runTest {
+        hangoutPhotoService.photos = (1..HangoutAlbumViewModel.MAX_SELECTED_PHOTOS + 1)
+            .map { index -> photo("p$index", createdAtMillis = index * 1_000L) }
+            .reversed()
+            .toMutableList()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnSelectClick)
+        (1..HangoutAlbumViewModel.MAX_SELECTED_PHOTOS).forEach { index ->
+            viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p$index"))
+        }
+
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p${HangoutAlbumViewModel.MAX_SELECTED_PHOTOS + 1}"))
+
+        assertThat(viewModel.state.value.selectedPhotoIds.size).isEqualTo(HangoutAlbumViewModel.MAX_SELECTED_PHOTOS)
+    }
+
+    @Test
+    fun `dragging across photos picks every photo between`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectStart("p3"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p1"))
+
+        assertThat(viewModel.state.value.isSelecting).isTrue()
+        assertThat(viewModel.state.value.selectedPhotoIds).containsOnly("p3", "p2", "p1")
+    }
+
+    @Test
+    fun `dragging back gives photos back what they were before the drag`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectStart("p3"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p2"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p3"))
+
+        assertThat(viewModel.state.value.selectedPhotoIds).containsOnly("p3", "p1")
+    }
+
+    @Test
+    fun `a drag that starts on a picked photo unpicks the photos it crosses`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectStart("p3"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p1"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectEnd)
+
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectStart("p2"))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p1"))
+
+        assertThat(viewModel.state.value.selectedPhotoIds).containsOnly("p3")
+    }
+
+    @Test
+    fun `a drag stops picking at the limit and keeps the photos nearest where it began`() = runTest {
+        hangoutPhotoService.photos = (1..HangoutAlbumViewModel.MAX_SELECTED_PHOTOS + 1)
+            .map { index -> photo("p$index", createdAtMillis = index * 1_000L) }
+            .reversed()
+            .toMutableList()
+        val viewModel = createViewModel()
+        val newestId = "p${HangoutAlbumViewModel.MAX_SELECTED_PHOTOS + 1}"
+
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectStart(newestId))
+        viewModel.onAction(HangoutAlbumAction.OnDragSelectOver("p1"))
+
+        val selectedPhotoIds = viewModel.state.value.selectedPhotoIds
+        assertThat(selectedPhotoIds.size).isEqualTo(HangoutAlbumViewModel.MAX_SELECTED_PHOTOS)
+        assertThat(newestId in selectedPhotoIds).isTrue()
+        assertThat("p1" in selectedPhotoIds).isFalse()
+    }
+
+    @Test
+    fun `saving every picked photo confirms it and leaves select mode`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p2"))
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutAlbumAction.OnSelectedPhotosSaved(savedCount = 2, photoCount = 2))
+            assertThat(awaitItem()).isEqualTo(HangoutAlbumEvent.PhotoSaved)
+        }
+        assertThat(viewModel.state.value.isSelecting).isFalse()
+    }
+
+    @Test
+    fun `saving only some still leaves select mode so a retry cannot save those twice`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+        viewModel.onAction(HangoutAlbumAction.OnPhotoClick("p2"))
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutAlbumAction.OnSelectedPhotosSaved(savedCount = 1, photoCount = 2))
+            assertThat(awaitItem()).isInstanceOf(HangoutAlbumEvent.Error::class)
+        }
+        assertThat(viewModel.state.value.isSelecting).isFalse()
+    }
+
+    @Test
+    fun `saving none keeps the photos picked to try again`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p1"))
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutAlbumAction.OnSelectedPhotosSaved(savedCount = 0, photoCount = 1))
+            assertThat(awaitItem()).isInstanceOf(HangoutAlbumEvent.Error::class)
+        }
+        assertThat(viewModel.state.value.selectedPhotoIds).containsOnly("p1")
+    }
+
+    @Test
+    fun `a photo removed while picked is unpicked`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnPhotoLongClick("p2"))
+
+        connectionClient.sendEvent(LobbyEvent.PhotoDeleted(viewModel.state.value.hangoutId!!, "p2"))
+
+        assertThat(viewModel.state.value.selectedPhotoIds).isEmpty()
     }
 
     // The real in-memory stores fed by the fake services, holding the hangout the album belongs to and its counts

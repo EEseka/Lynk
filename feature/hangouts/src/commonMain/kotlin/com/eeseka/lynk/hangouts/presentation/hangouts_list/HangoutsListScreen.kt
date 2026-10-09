@@ -30,13 +30,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
@@ -155,14 +160,14 @@ fun HangoutsListScreen(
     val hapticFeedback = rememberAppHaptic()
 
     val configuration = currentDeviceConfiguration()
-    val showRail = configuration.isWideScreen
 
     val listState = rememberLazyListState()
     var showVibeMenu by remember { mutableStateOf(false) }
     var showGuestPrompt by remember { mutableStateOf(false) }
 
-    val focusManager = LocalFocusManager.current
     val inputModeManager = LocalInputModeManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val searchFocusRequester = remember { FocusRequester() }
     var hasTappedSearch by remember { mutableStateOf(false) }
 
     PaginationScrollListener(
@@ -177,35 +182,33 @@ fun HangoutsListScreen(
     LynkScaffold(
         snackbarHostState = snackbarHostState,
         topBar = {
-            if (!showRail) {
-                LynkTopAppBar(
-                    title = stringResource(Res.string.hangouts),
-                    actions = {
-                        if (!state.isGuest) {
-                            NotificationBell(
-                                unreadCount = unreadNotificationCount,
-                                onClick = {
-                                    hapticFeedback(AppHaptic.ImpactLight)
-                                    navigateToNotifications()
-                                }
-                            )
-                        }
-                    },
-                    iosTrailingItems = if (state.isGuest) {
-                        persistentListOf()
-                    } else {
-                        persistentListOf(
-                            LynkIosBarButtonItem(
-                                sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
-                                onClick = {
-                                    hapticFeedback(AppHaptic.ImpactLight)
-                                    navigateToNotifications()
-                                }
-                            )
+            LynkTopAppBar(
+                title = stringResource(Res.string.hangouts),
+                actions = {
+                    if (!state.isGuest) {
+                        NotificationBell(
+                            unreadCount = unreadNotificationCount,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                navigateToNotifications()
+                            }
                         )
                     }
-                )
-            }
+                },
+                iosTrailingItems = if (state.isGuest) {
+                    persistentListOf()
+                } else {
+                    persistentListOf(
+                        LynkIosBarButtonItem(
+                            sfSymbol = if (unreadNotificationCount > 0) "bell.badge" else "bell",
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                navigateToNotifications()
+                            }
+                        )
+                    )
+                }
+            )
         }
     ) { scaffoldPadding ->
         val listMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
@@ -312,7 +315,7 @@ fun HangoutsListScreen(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            // The pane hands this field focus on entry; take it back unless tapped.
+                            // The pane pushes focus in on entry; refuse it unless the field was tapped, so the keyboard never opens.
                             // Touch only: with a keyboard, focus arriving is navigation
                             .pointerInput(Unit) {
                                 awaitEachGesture {
@@ -323,11 +326,22 @@ fun HangoutsListScreen(
                                     hasTappedSearch = true
                                 }
                             }
+                            .focusProperties {
+                                canFocus = hasTappedSearch || inputModeManager.inputMode != InputMode.Touch
+                            }
                             .onFocusChanged {
-                                if (it.isFocused && !hasTappedSearch && inputModeManager.inputMode == InputMode.Touch) {
-                                    focusManager.clearFocus(force = true)
+                                if (!it.isFocused) hasTappedSearch = false
+                            }
+                            // A VoiceOver or TalkBack double tap is not a finger on the field, so it counts as a tap here
+                            .semantics {
+                                onClick {
+                                    hasTappedSearch = true
+                                    searchFocusRequester.requestFocus()
+                                    keyboardController?.show()
+                                    true
                                 }
                             }
+                            .focusRequester(searchFocusRequester)
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -378,19 +392,6 @@ fun HangoutsListScreen(
                             }
                         }
                     )
-
-                    if (showRail && !state.isGuest) {
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        NotificationBell(
-                            unreadCount = unreadNotificationCount,
-                            onClick = {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                navigateToNotifications()
-                            },
-                            isTonal = true
-                        )
-                    }
                 }
 
                 // Status filter chips

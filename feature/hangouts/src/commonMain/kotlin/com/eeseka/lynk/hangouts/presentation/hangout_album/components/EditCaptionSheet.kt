@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,13 +42,15 @@ fun EditCaptionSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LynkAdaptiveSheet(onDismissRequest = onDismiss) {
+    LynkAdaptiveSheet(
+        onDismissRequest = onDismiss,
+        modifier = modifier
+    ) {
         EditCaptionSheetContent(
             captionState = captionState,
             canSave = canSave,
             isSaving = isSaving,
-            onSave = onSave,
-            modifier = modifier
+            onSave = onSave
         )
     }
 }
@@ -64,6 +68,7 @@ private fun EditCaptionSheetContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
             .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -71,7 +76,8 @@ private fun EditCaptionSheetContent(
         LynkText(
             text = stringResource(Res.string.album_caption_title),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 16.dp)
         )
 
         LynkTextField(

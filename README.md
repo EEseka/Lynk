@@ -116,9 +116,9 @@ only while the user is signed in, online and has the app open, disconnects as so
 retries with a backoff from 2 to 30 seconds. Nineteen event types arrive over it, from presence and votes to payments and
 host actions.
 
-**Payments the app cannot fake.** Paystack's checkout opens inside the app, in a sheet that cannot be swiped away
-mid-payment. When the user returns, the app does not mark anything as paid: it asks Lynk API, which checks with Paystack
-itself.
+**Payments the app cannot fake.** Paystack's checkout opens in the phone's own in-app browser, Safari View Controller on
+iOS and a Chrome Custom Tab on Android, so card details go into the browser and never pass through Lynk. When the user
+returns, the app does not mark anything as paid: it asks Lynk API, which checks with Paystack itself.
 
 **One screen, three ViewModels.** Hangout detail is split by domain: `HangoutDetailViewModel` for the hangout itself,
 `HangoutVotingViewModel` for the lobby, and `HangoutPaymentsViewModel` for money. They share one in-memory
@@ -128,15 +128,16 @@ the UI, and opening a different hangout starts all three from a clean slate.
 **Map markers are Compose, not map layers.** MapLibre draws the map; every marker is an ordinary composable placed on top
 of it, so markers animate and theme like the rest of the app.
 
-**Native where it matters.** On iOS the top bar, tab bar, buttons, switches, sliders, segmented controls, menus, date
-and time pickers, dialogs, action sheets and the Paystack web view are real UIKit controls, through Calf. Haptics follow
-one token per kind of interaction, and layouts avoid fixed heights so they grow with the system font size.
+**Native where it matters.** On iOS the top bar, tab bar, buttons, switches, sliders, spinners, menus, dialogs and
+action sheets are real UIKit controls, through Calf. Dates and times are picked in UIKit's own calendar and wheels,
+in a popover UIKit presents above the app; Android uses Material's date and time dialogs. Haptics follow one token per
+kind of interaction, and layouts avoid fixed heights so they grow with the system font size.
 
 ## Tech
 
 **Kotlin 2.4** · **Compose Multiplatform 1.12** · Material 3 with adaptive layouts · Koin · Ktor (OkHttp and Darwin) ·
 kotlinx.serialization · kotlinx.coroutines · DataStore · Coil 3 · MapLibre Compose with MapTiler tiles · Google Places ·
-KMPAuth (Google Sign-In) · Calf · moko-permissions · moko-geo · Firebase Cloud Messaging · Kermit · Compottie · Lucide
+KMPAuth (Google Sign-In) · Calf · Chrome Custom Tabs · moko-permissions · moko-geo · Firebase Cloud Messaging · Kermit · Compottie · Lucide
 icons · BuildKonfig · Turbine · AssertK · GitHub Actions
 
 ## Testing

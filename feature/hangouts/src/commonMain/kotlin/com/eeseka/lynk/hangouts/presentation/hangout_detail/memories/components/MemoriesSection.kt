@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ChevronRight
+import com.composables.icons.lucide.ImagePlus
 import com.composables.icons.lucide.Images
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.hangout_album.components.HangoutPhotoThumbnail
@@ -111,7 +112,7 @@ fun MemoriesSection(
                             photoCaption = photo.caption,
                             onClick = { onPhotoClick(photo.id) },
                             onLoadFailed = onPhotoLoadFailed,
-                            modifier = Modifier.size(96.dp)
+                            modifier = Modifier.size(96.dp).animateItem()
                         )
                     }
                 }
@@ -152,6 +153,13 @@ fun MemoriesSection(
                 enabled = remainingPhotoSlots > 0,
                 isLoading = isUploadingPhotos,
                 loadingText = stringResource(Res.string.memories_adding_photos),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Lucide.ImagePlus,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
                 modifier = Modifier.padding(top = 8.dp)
             )
 

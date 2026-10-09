@@ -14,9 +14,10 @@ class Paginator<Key, Item>(
     private var currentKey = initialKey
     private var isMakingRequest = false
     private var lastRequestKey: Key? = null
+    private var isClosed = false
 
     suspend fun loadNextItems() {
-        if (isMakingRequest) {
+        if (isMakingRequest || isClosed) {
             return
         }
 
@@ -28,7 +29,11 @@ class Paginator<Key, Item>(
         onLoadUpdated(true)
 
         try {
-            onRequest(currentKey)
+            val result = onRequest(currentKey)
+            // A replaced paginator's late answer would land in the list that replaced it
+            if (isClosed) return
+
+            result
                 .onSuccess { items ->
                     val newKey = getNextKey(items)
                     onSuccess(items, newKey)
@@ -41,9 +46,9 @@ class Paginator<Key, Item>(
                 }
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
-            onError(e)
+            if (!isClosed) onError(e)
         } finally {
-            onLoadUpdated(false)
+            if (!isClosed) onLoadUpdated(false)
             isMakingRequest = false
         }
     }
@@ -51,5 +56,9 @@ class Paginator<Key, Item>(
     fun reset() {
         currentKey = initialKey
         lastRequestKey = null
+    }
+
+    fun close() {
+        isClosed = true
     }
 }

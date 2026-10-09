@@ -4,8 +4,7 @@
     <string name="search_placeholder">Search...</string>
     <string name="clear_search">Clear Search</string>
     <string name="confirm_date">Confirm Date</string>
-    <string name="confirm_time">Confirm Time</string>
-    <string name="cancel">Cancel</string>
+    <string name="confirm_time">Confirm Time</string>    <string name="cancel">Cancel</string>
     <string name="retry">Retry</string>
 
     <string name="error_disk_full">Oops, it looks like your device storage is full.</string>
@@ -73,12 +72,38 @@
     <string name="closed">Closed</string>
     <string name="reviews_count">(%1$d reviews)</string>
     <string name="about_this_spot">About this spot</string>
-    <string name="no_description_available">No description available for this spot.</string>
     <string name="save_spot">Save spot</string>
     <string name="unsave_spot">Remove saved spot</string>
-    <string name="visit_website">Visit Website</string>
-    <string name="open_in_google_maps">Open in Google Maps</string>
     <string name="create_hangout_here">Create Hangout Here</string>
+    <string name="spot_closes_at">Closes %1$s</string>
+    <string name="spot_opens_at">Opens %1$s</string>
+    <string name="spot_local_time">%1$s local time</string>
+    <string name="spot_hours_local">Times are local to this spot</string>
+    <string name="spot_show_week_hours">Show the week's hours</string>
+    <string name="spot_status_closed_permanently">Permanently closed</string>
+    <string name="spot_status_closed_temporarily">Temporarily closed</string>
+    <string name="spot_status_opening_soon">Opening soon</string>
+    <string name="get_directions">Get directions</string>
+    <string name="open_in_google_maps">Open in Google Maps</string>
+    <string name="spot_highlight_groups">Good for groups</string>
+    <string name="spot_highlight_reservable">Takes reservations</string>
+    <string name="spot_highlight_live_music">Live music</string>
+    <string name="spot_highlight_outdoor">Outdoor seating</string>
+    <string name="spot_highlight_cocktails">Cocktails</string>
+    <string name="spot_highlight_sports">Sports on TV</string>
+    <string name="spot_highlight_free_parking">Free parking</string>
+    <string name="spot_highlight_paid_parking">Paid parking</string>
+    <string name="spot_highlight_valet_parking">Valet parking</string>
+    <string name="spot_highlight_cash_only">Cash only</string>
+    <string name="spot_highlight_takes_cards">Takes cards</string>
+    <string name="spot_price_range">%1$s to %2$s</string>
+    <string name="spot_price_from">%1$s and up</string>
+    <string name="spot_price_up_to">Up to %1$s</string>
+
+    <string name="map_data_label">Map Data</string>
+    <string name="show_map_attribution">Show map attribution</string>
+    <string name="osm_attribution">© OpenStreetMap Contributors</string>
+    <string name="maptiler_attribution">© MapTiler</string>
 
     <string name="profile_picture">Profile Picture</string>
     <string name="choose">Choose</string>
