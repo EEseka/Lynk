@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -416,6 +417,16 @@ fun HangoutDetailScreen(
             }
         }
     ) { scaffoldPadding ->
+        // Beside the list this pane has no bar (two native iOS bars overlap), so it leaves room for the list top app bar title (56.dp)
+        val contentPadding = if (isDetailPaneFullScreen) {
+            scaffoldPadding
+        } else {
+            PaddingValues(
+                top = scaffoldPadding.calculateTopPadding() + 56.dp,
+                bottom = scaffoldPadding.calculateBottomPadding()
+            )
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
             val bodyState = when {
                 state.isLoading -> DetailBodyState.Loading
@@ -560,7 +571,7 @@ fun HangoutDetailScreen(
                                 onCloseVoting = { onVotingAction(HangoutVotingAction.OnCloseVotingClick) },
                                 onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
                                 onMapClick = { showMapDialog = true },
-                                contentPadding = scaffoldPadding
+                                contentPadding = contentPadding
                             )
                         }
 
@@ -588,7 +599,7 @@ fun HangoutDetailScreen(
                     connectionState = state.connectionState,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = scaffoldPadding.calculateTopPadding())
+                        .padding(top = contentPadding.calculateTopPadding())
                 )
             }
         }

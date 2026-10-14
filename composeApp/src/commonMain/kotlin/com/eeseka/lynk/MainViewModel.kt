@@ -88,7 +88,6 @@ class MainViewModel(
                 val isSessionExpired = previousRefreshToken != null && currentRefreshToken == null
                 if (isSessionExpired) {
                     sessionStorage.set(null)
-                    _state.update { it.copy(user = null) }
                     eventChannel.send(MainEvent.OnSessionExpired)
                 }
 

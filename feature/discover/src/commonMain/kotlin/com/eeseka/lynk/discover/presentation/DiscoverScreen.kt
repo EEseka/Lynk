@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
@@ -60,6 +58,7 @@ import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
@@ -93,7 +92,9 @@ import lynk.feature.discover.generated.resources.finding_your_location
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_required
 import lynk.feature.discover.generated.resources.location_required_message
-import lynk.feature.discover.generated.resources.no_spots_in_area
+import lynk.feature.discover.generated.resources.no_search_results
+import lynk.feature.discover.generated.resources.no_top_spots_in_area
+import lynk.feature.discover.generated.resources.no_trending_spots_in_area
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.open_spot_search
@@ -141,9 +142,26 @@ fun DiscoverRoot(
                 )
             }
 
-            DiscoverEvent.NoSpotsInArea -> {
+            DiscoverEvent.NoTrendingSpotsInArea -> {
                 snackbarHostState.showFlashMessage(
-                    message = getString(Res.string.no_spots_in_area),
+                    message = getString(Res.string.no_trending_spots_in_area),
+                    type = LynkFlashType.Info
+                )
+            }
+
+            DiscoverEvent.NoSearchResults -> {
+                // The open sheet shows its own empty state
+                if (!state.showSearchSheet) {
+                    snackbarHostState.showFlashMessage(
+                        message = getString(Res.string.no_search_results),
+                        type = LynkFlashType.Info
+                    )
+                }
+            }
+
+            DiscoverEvent.NoTopSpotsInArea -> {
+                snackbarHostState.showFlashMessage(
+                    message = getString(Res.string.no_top_spots_in_area),
                     type = LynkFlashType.Info
                 )
             }
@@ -170,8 +188,15 @@ fun DiscoverScreen(
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
 
-    val spotsToShow = if (state.isTopSpotsMode) state.topSpots
-    else state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
+    val isSearchActive = state.searchTextState.text.isNotBlank() ||
+            state.selectedCategory != null ||
+            state.selectedPriceLevel != null
+
+    val spotsToShow = when {
+        state.isTopSpotsMode -> state.topSpots
+        isSearchActive -> state.searchResults
+        else -> state.trendingSpots
+    }
 
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(mapStyleUri(state.mapTheme)),
@@ -308,10 +333,6 @@ fun DiscoverScreen(
     val userLatitude = state.userLatitude
     val userLongitude = state.userLongitude
 
-    val isSearchActive = state.searchTextState.text.isNotBlank() ||
-            state.selectedCategory != null ||
-            state.selectedPriceLevel != null
-
     val spotMapInteractions = rememberSpotMapInteractions(mapState) { spotId ->
         hapticFeedback(AppHaptic.ImpactLight)
         onAction(DiscoverAction.OnSpotSelected(spotId))
@@ -333,7 +354,7 @@ fun DiscoverScreen(
                 ),
                 interactions = spotMapInteractions,
                 viewportInsets = WindowInsets(top = scaffoldPadding.calculateTopPadding() + 72.dp + if (areaName != null) 48.dp else 0.dp)
-                    .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .union(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal))
                     .asPaddingValues()
             ) {
                 Box(
@@ -370,18 +391,16 @@ fun DiscoverScreen(
                             .height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!state.isTopSpotsMode) {
-                            SearchThisAreaButton(
-                                mapState = mapState,
-                                trendingLatitude = state.trendingLatitude,
-                                trendingLongitude = state.trendingLongitude,
-                                isLoading = state.isTrendingLoading,
-                                onClick = { latitude, longitude ->
-                                    hapticFeedback(AppHaptic.ImpactLight)
-                                    onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
-                                }
-                            )
-                        }
+                        SearchThisAreaButton(
+                            mapState = mapState,
+                            trendingLatitude = state.trendingLatitude,
+                            trendingLongitude = state.trendingLongitude,
+                            isLoading = state.isTrendingLoading,
+                            onClick = { latitude, longitude ->
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
+                            }
+                        )
                     }
                 }
 
@@ -411,7 +430,8 @@ fun DiscoverScreen(
                         placeholder = searchHint,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clearAndSetSemantics { }
+                            .clearAndSetSemantics { },
+                        showClearButton = false
                     )
 
                     Box(
@@ -452,14 +472,14 @@ fun DiscoverScreen(
             // The larger of the two, not the sum: a corner hole punch in landscape counts as a bottom inset
             val cornerControlsBottomPadding = maxOf(
                 mainShellPadding.calculateBottomPadding(),
-                WindowInsets.displayCutout.asPaddingValues().calculateBottomPadding()
+                WindowInsets.safeArea.asPaddingValues().calculateBottomPadding()
             ) + 16.dp
 
             // Attribution
             MapAttributionMenu(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Start))
                     .padding(
                         bottom = cornerControlsBottomPadding,
                         start = 16.dp
@@ -482,7 +502,7 @@ fun DiscoverScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.End))
                     .padding(
                         bottom = cornerControlsBottomPadding,
                         end = 16.dp
@@ -566,9 +586,10 @@ fun DiscoverScreen(
             SpotSearchSheet(
                 searchTextState = state.searchTextState,
                 searchHint = searchHint,
-                spots = if (isSearchActive) state.searchResults else state.trendingSpots,
+                spots = spotsToShow,
+                isRanked = state.isTopSpotsMode,
                 isSearchActive = isSearchActive,
-                isSearchLoading = state.isSearchLoading,
+                isSearchLoading = if (state.isTopSpotsMode) state.isTopSpotsLoading else state.isSearchLoading,
                 searchError = state.searchError?.asString(),
                 searchEndReached = if (isSearchActive) state.searchEndReached else true,
                 searchResetEpoch = state.searchResetEpoch,

@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -56,6 +55,7 @@ import com.eeseka.lynk.hangouts.presentation.preview.previewHangoutPhotos
 import com.eeseka.lynk.hangouts.presentation.util.rememberHangoutPhotoRequest
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFullScreenDialog
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -188,7 +188,7 @@ private fun HangoutPhotoViewerContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(0.6f to scrimColor, 1f to Color.Transparent))
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
                     .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -239,7 +239,7 @@ private fun HangoutPhotoViewerContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Brush.verticalGradient(0f to Color.Transparent, 0.4f to scrimColor))
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                        .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
                         .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp)
                 ) {
                     AnimatedContent(

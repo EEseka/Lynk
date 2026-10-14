@@ -315,6 +315,7 @@ private fun CreateHangoutSheetContent(
 
                         CreateHangoutStepTwo(
                             isVotingMode = state.isVotingMode,
+                            isSpotLocked = state.originalHangout?.payment != null,
                             activeSearchTab = state.activeSearchTab,
                             searchState = state.spotSearchTextState,
                             selectedSpot = state.selectedSpot,

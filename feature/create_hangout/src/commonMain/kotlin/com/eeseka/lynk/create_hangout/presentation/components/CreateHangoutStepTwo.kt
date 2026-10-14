@@ -74,11 +74,13 @@ import lynk.feature.create_hangout.generated.resources.pick_a_spot
 import lynk.feature.create_hangout.generated.resources.search_favorite_spots_hint
 import lynk.feature.create_hangout.generated.resources.search_spots_hint
 import lynk.feature.create_hangout.generated.resources.selected
+import lynk.feature.create_hangout.generated.resources.spot_locked_payments_on
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CreateHangoutStepTwo(
     isVotingMode: Boolean,
+    isSpotLocked: Boolean,
     activeSearchTab: SearchTab,
     searchState: TextFieldState,
     selectedSpot: SpotUi?,
@@ -100,21 +102,23 @@ fun CreateHangoutStepTwo(
     val hapticFeedback = rememberAppHaptic()
 
     Column(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            Spacer(modifier = Modifier.height(8.dp))
-            LynkSegmentedControl(
-                items = persistentListOf(
-                    LynkSegmentedItem(stringResource(Res.string.pick_a_spot), Lucide.MapPin),
-                    LynkSegmentedItem(stringResource(Res.string.group_vote), Lucide.Users)
-                ),
-                selectedIndex = if (isVotingMode) 1 else 0,
-                onItemSelected = { index ->
-                    hapticFeedback(AppHaptic.Selection)
-                    onVotingModeChanged(index == 1)
-                },
-                style = LynkSegmentedStyle.FIXED_BAR,
-                contentPadding = PaddingValues(0.dp)
-            )
+        if (!isSpotLocked) {
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(8.dp))
+                LynkSegmentedControl(
+                    items = persistentListOf(
+                        LynkSegmentedItem(stringResource(Res.string.pick_a_spot), Lucide.MapPin),
+                        LynkSegmentedItem(stringResource(Res.string.group_vote), Lucide.Users)
+                    ),
+                    selectedIndex = if (isVotingMode) 1 else 0,
+                    onItemSelected = { index ->
+                        hapticFeedback(AppHaptic.Selection)
+                        onVotingModeChanged(index == 1)
+                    },
+                    style = LynkSegmentedStyle.FIXED_BAR,
+                    contentPadding = PaddingValues(0.dp)
+                )
+            }
         }
 
         AnimatedContent(
@@ -129,6 +133,7 @@ fun CreateHangoutStepTwo(
                 VotingModeUI()
             } else {
                 SpotPickerUI(
+                    isSpotLocked = isSpotLocked,
                     activeSearchTab = activeSearchTab,
                     searchState = searchState,
                     selectedSpot = selectedSpot,
@@ -195,6 +200,7 @@ private fun VotingModeUI() {
 
 @Composable
 private fun SpotPickerUI(
+    isSpotLocked: Boolean,
     activeSearchTab: SearchTab,
     searchState: TextFieldState,
     selectedSpot: SpotUi?,
@@ -263,28 +269,38 @@ private fun SpotPickerUI(
                         userLng = userLongitude,
                         onClick = {}
                     )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .minimumInteractiveComponentSize()
-                            .clip(CircleShape)
-                            .clickable(role = Role.Button) {
-                                hapticFeedback(AppHaptic.ImpactLight)
-                                onSpotSelected(null)
-                            }
-                            .padding(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Lucide.X,
-                            contentDescription = stringResource(Res.string.change_location),
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    if (!isSpotLocked) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .minimumInteractiveComponentSize()
+                                .clip(CircleShape)
+                                .clickable(role = Role.Button) {
+                                    hapticFeedback(AppHaptic.ImpactLight)
+                                    onSpotSelected(null)
+                                }
+                                .padding(8.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Lucide.X,
+                                contentDescription = stringResource(Res.string.change_location),
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
+                }
+
+                if (isSpotLocked) {
+                    LynkText(
+                        text = stringResource(Res.string.spot_locked_payments_on),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         } else {
@@ -463,14 +479,23 @@ private fun CreateHangoutStepTwoSelectedPreview() = CreateHangoutStepTwoPreview(
     selectedSpot = previewSpots.first()
 )
 
+@PreviewLightDark
+@Composable
+private fun CreateHangoutStepTwoLockedPreview() = CreateHangoutStepTwoPreview(
+    isSpotLocked = true,
+    selectedSpot = previewSpots.first()
+)
+
 @Composable
 private fun CreateHangoutStepTwoPreview(
     isVotingMode: Boolean = false,
+    isSpotLocked: Boolean = false,
     selectedSpot: SpotUi? = null
 ) {
     LynkTheme {
         CreateHangoutStepTwo(
             isVotingMode = isVotingMode,
+            isSpotLocked = isSpotLocked,
             activeSearchTab = SearchTab.ALL_SPOTS,
             searchState = TextFieldState(),
             selectedSpot = selectedSpot,

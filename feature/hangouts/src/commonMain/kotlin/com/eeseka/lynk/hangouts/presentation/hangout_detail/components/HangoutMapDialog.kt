@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -45,6 +44,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.Ca
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.CandidateMapPin
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
@@ -225,9 +225,9 @@ private fun HangoutMapContent(
                 maxPitch = 60.0
             ),
             viewportInsets = WindowInsets(
-                top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() + 64.dp,
-                bottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding() + 216.dp
-            ).union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)).asPaddingValues()
+                top = WindowInsets.safeArea.asPaddingValues().calculateTopPadding() + 64.dp,
+                bottom = WindowInsets.safeArea.asPaddingValues().calculateBottomPadding() + 216.dp
+            ).union(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal)).asPaddingValues()
         ) {
             Box(
                 modifier = Modifier
@@ -305,7 +305,7 @@ private fun HangoutMapContent(
             },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .windowInsetsPadding(WindowInsets.safeArea)
                 .padding(16.dp)
         ) {
             Icon(
@@ -318,7 +318,7 @@ private fun HangoutMapContent(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Bottom))
                 .padding(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -326,12 +326,12 @@ private fun HangoutMapContent(
             MapAttributionMenu(
                 modifier = Modifier
                     .align(Alignment.Start)
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Start))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Start))
                     .padding(start = 16.dp)
             )
 
             BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val horizontalSafePadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
+                val horizontalSafePadding = WindowInsets.safeArea.only(WindowInsetsSides.Horizontal).asPaddingValues()
                 val layoutDirection = LocalLayoutDirection.current
                 val safeStart = horizontalSafePadding.calculateStartPadding(layoutDirection)
                 val safeEnd = horizontalSafePadding.calculateEndPadding(layoutDirection)

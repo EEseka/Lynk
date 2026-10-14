@@ -23,10 +23,13 @@
     <string name="open_spot_search">Open spot search</string>
     <string name="trending_load_error_title">Couldn't load nearby spots</string>
     <string name="search_this_area">Search this area</string>
-    <string name="no_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
+    <string name="no_trending_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
+    <string name="no_search_results">No matching spots around here. Try another search or move the map.</string>
+    <string name="no_top_spots_in_area">No top spots around here yet. Try moving the map somewhere livelier.</string>
     <string name="top_spots_in_area">Top 10 in %1$s</string>
     <string name="leave_top_spots">Leave Top 10</string>
     <string name="top_spot_rank">#%1$d in %2$s</string>
+    <string name="top_spot_number">#%1$d</string>
 
     <string name="empty_search_title">No spots found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>

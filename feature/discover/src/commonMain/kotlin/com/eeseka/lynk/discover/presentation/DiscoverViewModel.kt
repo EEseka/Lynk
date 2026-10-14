@@ -1,5 +1,6 @@
 package com.eeseka.lynk.discover.presentation
 
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -71,7 +72,7 @@ class DiscoverViewModel(
     // True once the user searches another area, so a GPS fix (one comes on every return to this tab) can't drag the origin back
     private var isSearchOriginPicked = false
 
-    private val topSpotsAreaName = MutableStateFlow<String?>(null)
+    private val topSpotsArea = MutableStateFlow<String?>(null)
 
     val state = combine(
         _state,
@@ -103,8 +104,8 @@ class DiscoverViewModel(
             DiscoverAction.OnLocateMeClick -> locateMe()
             is DiscoverAction.OnSpotSelected -> _state.update { it.copy(selectedSpotId = action.spotId) }
             is DiscoverAction.OnToggleSaveSpot -> toggleSaveSpot(action.spotId, action.isCurrentlySaved)
-            is DiscoverAction.OnCategorySelected -> _state.update { it.copy(selectedCategory = action.category) }
-            is DiscoverAction.OnPriceLevelSelected -> _state.update { it.copy(selectedPriceLevel = action.priceLevel) }
+            is DiscoverAction.OnCategorySelected -> selectCategory(action.category)
+            is DiscoverAction.OnPriceLevelSelected -> selectPriceLevel(action.priceLevel)
             DiscoverAction.LoadNextSearchPage -> loadNextSearchPage()
             DiscoverAction.RetryTrending -> retryTrending()
             is DiscoverAction.OnSearchThisArea -> searchThisArea(action.latitude, action.longitude)
@@ -162,11 +163,25 @@ class DiscoverViewModel(
     }
 
     private fun showTopSpots() {
-        topSpotsAreaName.value = state.value.areaName ?: return
+        val areaName = state.value.areaName ?: return
+
+        _state.value.searchTextState.clearText()
+        _state.update { it.copy(selectedCategory = null, selectedPriceLevel = null) }
+        topSpotsArea.value = areaName
+    }
+
+    private fun selectCategory(category: SpotCategory?) {
+        if (category != null) exitTopSpots()
+        _state.update { it.copy(selectedCategory = category) }
+    }
+
+    private fun selectPriceLevel(priceLevel: PriceLevel?) {
+        if (priceLevel != null) exitTopSpots()
+        _state.update { it.copy(selectedPriceLevel = priceLevel) }
     }
 
     private fun exitTopSpots() {
-        topSpotsAreaName.value = null
+        topSpotsArea.value = null
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -184,14 +199,17 @@ class DiscoverViewModel(
             .filterNotNull()
             .distinctUntilChanged()
             .mapLatest { location -> areaNameResolver.getAreaName(location.latitude, location.longitude) }
-            .onEach { areaName -> _state.update { it.copy(areaName = areaName) } }
+            .onEach { areaName ->
+                _state.update { it.copy(areaName = areaName) }
+                if (topSpotsArea.value != null) topSpotsArea.value = areaName
+            }
             .launchIn(viewModelScope)
     }
 
     // A new area or leaving the mode cancels a Top 10 still loading
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeTopSpots() {
-        topSpotsAreaName
+        topSpotsArea
             .mapLatest { areaName ->
                 if (areaName == null) {
                     _state.update {
@@ -214,6 +232,11 @@ class DiscoverViewModel(
 
         spotService.getTopSpots(areaName)
             .onSuccess { spots ->
+                if (spots.isEmpty()) {
+                    eventChannel.send(DiscoverEvent.NoTopSpotsInArea)
+                    topSpotsArea.value = null
+                    return@onSuccess
+                }
                 _state.update {
                     it.copy(
                         isTopSpotsLoading = false,
@@ -223,7 +246,7 @@ class DiscoverViewModel(
             }
             .onFailure { error ->
                 eventChannel.send(DiscoverEvent.Error(error.toUiText()))
-                topSpotsAreaName.value = null
+                topSpotsArea.value = null
             }
     }
 
@@ -254,7 +277,7 @@ class DiscoverViewModel(
                     )
                 }
                 // The sea, a forest, anywhere Google has nothing to show
-                if (spots.isEmpty()) eventChannel.send(DiscoverEvent.NoSpotsInArea)
+                if (spots.isEmpty()) eventChannel.send(DiscoverEvent.NoTrendingSpotsInArea)
             }
             .onFailure { error ->
                 _state.update {
@@ -309,6 +332,7 @@ class DiscoverViewModel(
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString().trim() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
+            .onEach { query -> if (query.isNotBlank()) exitTopSpots() }
 
         val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
         val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
@@ -335,7 +359,6 @@ class DiscoverViewModel(
             val isActivelySearching = filters.query.isNotBlank() || filters.category != null || filters.priceLevel != null
 
             if (isActivelySearching) {
-                exitTopSpots()
                 setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
                 _state.update {
                     it.copy(
@@ -404,6 +427,10 @@ class DiscoverViewModel(
                         searchEndReached = newKey == null,
                         searchError = null
                     )
+                }
+                // An empty first page, not the end of a list that had results
+                if (newSpots.isEmpty() && state.value.searchResults.isEmpty()) {
+                    eventChannel.send(DiscoverEvent.NoSearchResults)
                 }
             }
         )

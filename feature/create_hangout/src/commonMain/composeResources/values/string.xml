@@ -37,6 +37,7 @@
     <string name="no_favorite_spots_message">No favorite spots yet. Try All Spots to find one.</string>
     <string name="selected">Selected</string>
     <string name="change_location">Change Location</string>
+    <string name="spot_locked_payments_on">The spot can't change once payments are on.</string>
     <string name="group_vote">Group Vote</string>
     <string name="pick_a_spot">Pick a Spot</string>
     <string name="next_review_and_confirm">Next: Review &amp; Confirm →</string>

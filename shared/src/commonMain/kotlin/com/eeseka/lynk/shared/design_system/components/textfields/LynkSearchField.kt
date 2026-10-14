@@ -48,6 +48,7 @@ fun LynkSearchField(
     modifier: Modifier = Modifier,
     placeholder: String = stringResource(Res.string.search_placeholder),
     enabled: Boolean = true,
+    showClearButton: Boolean = true,
     onSearch: (() -> Unit)? = null
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -110,7 +111,7 @@ fun LynkSearchField(
                     innerBox()
                 }
 
-                if (state.text.isNotEmpty()) {
+                if (showClearButton && state.text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(12.dp))
                     IconButton(
                         onClick = { state.clearText() },

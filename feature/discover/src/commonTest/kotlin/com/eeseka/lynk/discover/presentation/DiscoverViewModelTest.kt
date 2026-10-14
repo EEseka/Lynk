@@ -216,7 +216,7 @@ class DiscoverViewModelTest {
             spotService.trendingSpotsList = mutableListOf()
             viewModel.onAction(DiscoverAction.OnSearchThisArea(0.0, -30.0))
 
-            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSpotsInArea)
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoTrendingSpotsInArea)
             assertThat(viewModel.state.value.trendingSpots).isEmpty()
         }
     }
@@ -311,6 +311,103 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(viewModel.state.value.topSpots).isEmpty()
+    }
+
+    @Test
+    fun `a search that finds nothing says so`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.LOUNGE))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSearchResults)
+        }
+    }
+
+    @Test
+    fun `an area with no top spots says so and leaves the mode`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoTopSpotsInArea)
+            assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+            assertThat(viewModel.state.value.isTopSpotsLoading).isFalse()
+        }
+    }
+
+    @Test
+    fun `typing a search leaves Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        viewModel.state.value.searchTextState.typeText("suya")
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+    }
+
+    @Test
+    fun `tapping Top 10 puts the search away`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.state.value.searchTextState.typeText("suya")
+        viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
+        viewModel.onAction(DiscoverAction.OnPriceLevelSelected(PriceLevel.MODERATE))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.searchTextState.text.toString()).isEmpty()
+        assertThat(viewModel.state.value.selectedCategory).isNull()
+        assertThat(viewModel.state.value.selectedPriceLevel).isNull()
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+    }
+
+    @Test
+    fun `searching another area in Top 10 loads that area's Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = "Accra"
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(5.6, -0.19))
+        advanceUntilIdle()
+
+        assertThat(spotService.topRequestCities).containsExactly("Lagos", "Accra")
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+    }
+
+    @Test
+    fun `searching an area with no name in Top 10 leaves the mode`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = null
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(4.0, 2.0))
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.isTopSpotsMode).isFalse()

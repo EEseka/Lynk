@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.X
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
+import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFullScreenDialog
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
@@ -71,7 +71,7 @@ fun FullScreenSpotPhotoViewer(
                     onClick = onDismiss,
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .windowInsetsPadding(WindowInsets.safeArea)
                         .padding(16.dp)
                 ) {
                     Icon(

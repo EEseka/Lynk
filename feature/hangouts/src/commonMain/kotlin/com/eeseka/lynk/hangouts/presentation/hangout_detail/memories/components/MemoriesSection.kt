@@ -50,7 +50,7 @@ import lynk.feature.hangouts.generated.resources.memories_title
 import lynk.feature.hangouts.generated.resources.memories_title_with_count
 import org.jetbrains.compose.resources.stringResource
 
-private const val PLACEHOLDER_THUMBNAIL_COUNT = 5
+private const val PLACEHOLDER_THUMBNAIL_COUNT = 8
 
 @Composable
 fun MemoriesSection(

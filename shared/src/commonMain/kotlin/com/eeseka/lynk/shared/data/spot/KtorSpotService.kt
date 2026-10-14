@@ -53,7 +53,6 @@ class KtorSpotService(
         query: String?,
         category: SpotCategory?,
         priceLevel: PriceLevel?,
-        radiusInMeters: Int,
         nextPageToken: String?
     ): Result<PaginatedSpots, DataError.Remote> {
         return httpClient.get<PaginatedSpotsDto>(
@@ -61,7 +60,6 @@ class KtorSpotService(
             queryParams = buildMap {
                 put("latitude", latitude)
                 put("longitude", longitude)
-                put("radiusInMeters", radiusInMeters)
                 query?.let { put("query", it) }
                 category?.let { put("category", it) }
                 priceLevel?.let { put("priceLevel", it) }

@@ -48,7 +48,6 @@ class FakeSpotService : SpotService {
         query: String?,
         category: SpotCategory?,
         priceLevel: PriceLevel?,
-        radiusInMeters: Int,
         nextPageToken: String?
     ): Result<PaginatedSpots, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
