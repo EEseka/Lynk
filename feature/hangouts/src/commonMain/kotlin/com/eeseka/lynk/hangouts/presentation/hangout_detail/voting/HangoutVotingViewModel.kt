@@ -8,6 +8,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchT
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.shared.domain.lobby.BallotRepository
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
@@ -53,6 +54,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HangoutVotingViewModel(
     private val hangoutDetailRepository: HangoutDetailRepository,
+    private val ballotRepository: BallotRepository,
     private val spotService: SpotService,
     private val connectionClient: LobbyConnectionClient,
     private val lobbyService: LobbyService,
@@ -89,6 +91,7 @@ class HangoutVotingViewModel(
             if (!hasLoadedInitialData) {
                 currentUserId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
                 observeVotingRound()
+                observeCandidates()
                 observePendingVotingActions()
                 observeLobbyEvents()
                 observeTrendingSpots()
@@ -109,7 +112,7 @@ class HangoutVotingViewModel(
             HangoutVotingAction.OnCloseVotingClick -> closeVoting(null)
             is HangoutVotingAction.OnBreakTie -> closeVoting(action.spotId)
             is HangoutVotingAction.OnShareLocation -> shareLocation(action.latitude, action.longitude)
-            HangoutVotingAction.OnProposeSpotClick -> _state.update { it.copy(isProposeSpotSheetOpen = true) }
+            HangoutVotingAction.OnProposeSpotClick -> _state.update { it.copy(showProposeSpotSheet = true) }
             HangoutVotingAction.OnDismissProposeSpotSheet -> dismissProposeSpotSheet()
             is HangoutVotingAction.OnTabSelected -> _state.update { it.copy(activeProposeSpotSheetSearchTab = action.tab) }
             HangoutVotingAction.LoadNextSpotPage -> loadNextSpotSearchPage()
@@ -124,9 +127,9 @@ class HangoutVotingViewModel(
 
         previousStatus = null
         dismissProposeSpotSheet()
+        hangoutId?.let { ballotRepository.replaceCandidates(it, emptyList()) }
         _state.update {
             it.copy(
-                candidates = persistentListOf(),
                 votes = persistentMapOf(),
                 center = null,
                 tiedSpotIds = persistentListOf(),
@@ -147,9 +150,9 @@ class HangoutVotingViewModel(
 
                 val sameVotingRound = previousStatus == HangoutStatus.VOTING && currentHangout.status == HangoutStatus.VOTING
                 if (previousStatus != null && !sameVotingRound) {
+                    ballotRepository.replaceCandidates(currentHangout.id, emptyList())
                     _state.update {
                         it.copy(
-                            candidates = persistentListOf(),
                             votes = persistentMapOf(),
                             tiedSpotIds = persistentListOf(),
                             center = null
@@ -158,8 +161,21 @@ class HangoutVotingViewModel(
                 }
                 previousStatus = currentHangout.status
 
-                if (state.value.isProposeSpotSheetOpen && currentHangout.status != HangoutStatus.VOTING) {
+                if (_state.value.showProposeSpotSheet && currentHangout.status != HangoutStatus.VOTING) {
                     dismissProposeSpotSheet()
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeCandidates() {
+        _hangoutId
+            .flatMapLatest { hangoutId ->
+                hangoutId?.let(ballotRepository::observeCandidates) ?: flowOf(emptyList())
+            }
+            .onEach { candidates ->
+                _state.update {
+                    it.copy(candidates = candidates.map { spot -> spot.toSpotUi() }.toImmutableList())
                 }
             }
             .launchIn(viewModelScope)
@@ -194,9 +210,9 @@ class HangoutVotingViewModel(
                     val latitude = event.latitude
                     val longitude = event.longitude
 
+                    ballotRepository.replaceCandidates(currentHangoutId, event.candidates)
                     _state.update {
                         it.copy(
-                            candidates = event.candidates.map { spot -> spot.toSpotUi() }.toImmutableList(),
                             votes = event.votes.toImmutableMap(),
                             tiedSpotIds = persistentListOf(),
                             center = if (latitude != null && longitude != null) {
@@ -209,16 +225,10 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CandidateAdded -> {
                 if (event.hangoutId == currentHangoutId) {
-                    val wasOurs = state.value.proposingSpotIds.contains(event.spot.id)
-                    _state.update { state ->
-                        val withCandidate =
-                            if (state.candidates.any { it.id == event.spot.id }) state
-                            else state.copy(
-                                candidates = (state.candidates + event.spot.toSpotUi()).toImmutableList()
-                            )
-                        withCandidate.copy(
-                            proposingSpotIds = (withCandidate.proposingSpotIds - event.spot.id).toImmutableSet()
-                        )
+                    val wasOurs = _state.value.proposingSpotIds.contains(event.spot.id)
+                    ballotRepository.addCandidate(currentHangoutId, event.spot)
+                    _state.update {
+                        it.copy(proposingSpotIds = (it.proposingSpotIds - event.spot.id).toImmutableSet())
                     }
                     if (wasOurs) {
                         eventChannel.send(HangoutVotingEvent.SpotSuggested)
@@ -228,9 +238,9 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CandidateRemoved -> {
                 if (event.hangoutId == currentHangoutId) {
+                    ballotRepository.removeCandidate(currentHangoutId, event.spotId)
                     _state.update { state ->
                         state.copy(
-                            candidates = state.candidates.filterNot { it.id == event.spotId }.toImmutableList(),
                             votes = state.votes.filterValues { it != event.spotId }.toImmutableMap(),
                             removingSpotIds = (state.removingSpotIds - event.spotId).toImmutableSet()
                         )
@@ -279,9 +289,7 @@ class HangoutVotingViewModel(
         viewModelScope.launch {
             lobbyService.castVote(hangoutId, spotId)
                 .onFailure { error ->
-                    eventChannel.send(
-                        HangoutVotingEvent.Error(error.toUiText())
-                    )
+                    eventChannel.send(HangoutVotingEvent.Error(error.toUiText()))
                 }
         }
     }
@@ -293,9 +301,7 @@ class HangoutVotingViewModel(
             lobbyService.closeVoting(hangoutId, chosenSpotId)
                 .onFailure { error ->
                     _state.update { it.copy(isClosingVoting = false) }
-                    eventChannel.send(
-                        HangoutVotingEvent.Error(error.toUiText())
-                    )
+                    eventChannel.send(HangoutVotingEvent.Error(error.toUiText()))
                 }
         }
     }
@@ -311,9 +317,7 @@ class HangoutVotingViewModel(
                     _state.update {
                         it.copy(proposingSpotIds = (it.proposingSpotIds - spotId).toImmutableSet())
                     }
-                    eventChannel.send(
-                        HangoutVotingEvent.Error(error.toUiText())
-                    )
+                    eventChannel.send(HangoutVotingEvent.Error(error.toUiText()))
                 }
         }
     }
@@ -329,9 +333,7 @@ class HangoutVotingViewModel(
                     _state.update {
                         it.copy(removingSpotIds = (it.removingSpotIds - spotId).toImmutableSet())
                     }
-                    eventChannel.send(
-                        HangoutVotingEvent.Error(error.toUiText())
-                    )
+                    eventChannel.send(HangoutVotingEvent.Error(error.toUiText()))
                 }
         }
     }
@@ -352,7 +354,7 @@ class HangoutVotingViewModel(
         _state.value.proposeSpotSheetSearchTextState.clearText()
         _state.update {
             it.copy(
-                isProposeSpotSheetOpen = false,
+                showProposeSpotSheet = false,
                 activeProposeSpotSheetSearchTab = SearchTab.ALL_SPOTS,
                 spotSearchResults = persistentListOf(),
                 isSpotSearchLoading = false,
@@ -367,7 +369,7 @@ class HangoutVotingViewModel(
     }
 
     private fun observeTrendingSpots() {
-        combine(_hangoutId, state.map { it.center ?: it.myLocation }) { hangoutId, origin ->
+        combine(_hangoutId, _state.map { it.center ?: it.myLocation }) { hangoutId, origin ->
             hangoutId to origin
         }
             .distinctUntilChanged()
@@ -398,8 +400,8 @@ class HangoutVotingViewModel(
         val searchQueryFlow =
             snapshotFlow { _state.value.proposeSpotSheetSearchTextState.text.toString().trim() }
                 .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
-        val tabFlow = state.map { it.activeProposeSpotSheetSearchTab }.distinctUntilChanged()
-        val hasOriginFlow = state.map { it.center != null || it.myLocation != null }.distinctUntilChanged()
+        val tabFlow = _state.map { it.activeProposeSpotSheetSearchTab }.distinctUntilChanged()
+        val hasOriginFlow = _state.map { it.center != null || it.myLocation != null }.distinctUntilChanged()
 
         combine(searchQueryFlow, tabFlow, hasOriginFlow) { query, activeTab, _ ->
             query to activeTab
@@ -419,7 +421,8 @@ class HangoutVotingViewModel(
                 }
 
                 SearchTab.ALL_SPOTS -> {
-                    val origin = state.value.center ?: state.value.myLocation
+                    val currentState = _state.value
+                    val origin = currentState.center ?: currentState.myLocation
                     if (query.isBlank() || origin == null) {
                         spotSearchPaginator?.close()
                         _state.update {

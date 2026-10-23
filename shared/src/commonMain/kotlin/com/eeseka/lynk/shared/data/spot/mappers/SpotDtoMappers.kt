@@ -5,6 +5,7 @@ import com.eeseka.lynk.shared.data.spot.dto.SpotAiSummaryDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotAmenitiesDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotOpeningHoursDto
+import com.eeseka.lynk.shared.data.spot.dto.SpotOpeningPeriodDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotParkingDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotPaymentDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotPriceRangeDto
@@ -13,6 +14,7 @@ import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotAiSummary
 import com.eeseka.lynk.shared.domain.spot.model.SpotAmenities
 import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningPeriod
 import com.eeseka.lynk.shared.domain.spot.model.SpotParking
 import com.eeseka.lynk.shared.domain.spot.model.SpotPayment
 import com.eeseka.lynk.shared.domain.spot.model.SpotPriceRange
@@ -67,11 +69,17 @@ private fun SpotPriceRangeDto.toDomain() = SpotPriceRange(
 )
 
 private fun SpotOpeningHoursDto.toDomain() = SpotOpeningHours(
-    isOpenNow = isOpenNow,
     weekdayDescriptions = weekdayDescriptions,
-    nextOpenTime = nextOpenTime,
-    nextCloseTime = nextCloseTime,
-    utcOffsetMinutes = utcOffsetMinutes
+    utcOffsetMinutes = utcOffsetMinutes,
+    timeZoneId = timeZoneId,
+    periods = periods.map { it.toDomain() }
+)
+
+private fun SpotOpeningPeriodDto.toDomain() = SpotOpeningPeriod(
+    openDay = openDay,
+    openMinuteOfDay = openMinuteOfDay,
+    closeDay = closeDay,
+    closeMinuteOfDay = closeMinuteOfDay
 )
 
 private fun SpotAmenitiesDto.toDomain() = SpotAmenities(

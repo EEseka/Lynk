@@ -13,6 +13,7 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
 import com.eeseka.lynk.create_hangout.presentation.mappers.toUiText
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
@@ -93,11 +94,11 @@ class CreateHangoutViewModel(
             initialValue = CreateHangoutState()
         )
 
-    private val isStepTwoValidFlow = state.map {
+    private val isStepTwoValidFlow = _state.map {
         it.isVotingMode || it.selectedSpot != null
     }.distinctUntilChanged()
 
-    private val isBusyFlow = state.map { it.isSubmitting }.distinctUntilChanged()
+    private val isBusyFlow = _state.map { it.isSubmitting }.distinctUntilChanged()
 
     // Errors stay quiet until the first Next press, then track every keystroke.
     private var hasAttemptedStepOne = false
@@ -125,7 +126,7 @@ class CreateHangoutViewModel(
             .launchIn(viewModelScope)
 
         // The time validator reads the date, so a change to either re-runs both.
-        state.map { it.hangoutDate to it.hangoutTime }
+        _state.map { it.hangoutDate to it.hangoutTime }
             .distinctUntilChanged()
             .onEach { (date, time) ->
                 val (currentDate, currentTime) = getCurrentDateAndTime()
@@ -147,16 +148,9 @@ class CreateHangoutViewModel(
             is CreateHangoutAction.InitCreateMode -> initCreateMode(action.spot)
             is CreateHangoutAction.InitEditMode -> initEditMode(action.hangout)
             is CreateHangoutAction.OnLocationFetched -> {
-                _state.update {
-                    it.copy(
-                        userLatitude = action.latitude,
-                        userLongitude = action.longitude
-                    )
-                }
-                trendingLocation.value = LocationCoordinates(
-                    latitude = action.latitude,
-                    longitude = action.longitude
-                )
+                val location = LocationCoordinates(latitude = action.latitude, longitude = action.longitude)
+                _state.update { it.copy(userLocation = location) }
+                trendingLocation.value = location
             }
 
             is CreateHangoutAction.OnSearchTabSelected -> {
@@ -198,13 +192,13 @@ class CreateHangoutViewModel(
             }
 
             CreateHangoutAction.OnNextStep -> {
-                when (state.value.currentStep) {
+                when (_state.value.currentStep) {
                     1 -> {
                         hasAttemptedStepOne = true
                         if (validateFormInputs()) _state.update { it.copy(currentStep = 2) }
                     }
 
-                    2 -> if (state.value.canProceedToStepThree) {
+                    2 -> if (_state.value.canProceedToStepThree) {
                         _state.update { it.copy(currentStep = 3) }
                     }
                 }
@@ -215,13 +209,13 @@ class CreateHangoutViewModel(
             }
 
             CreateHangoutAction.IncrementAttendees -> {
-                val current = state.value.maxAttendees
-                val nextValue = if (current == null) state.value.minAttendees else current + 1
+                val current = _state.value.maxAttendees
+                val nextValue = if (current == null) _state.value.minAttendees else current + 1
                 if (nextValue <= MAX_ATTENDEES) _state.update { it.copy(maxAttendees = nextValue) }
             }
 
             CreateHangoutAction.DecrementAttendees -> {
-                val current = state.value.maxAttendees
+                val current = _state.value.maxAttendees
                 if (current != null) {
                     val nextValue = current - 1
                     _state.update {
@@ -237,7 +231,7 @@ class CreateHangoutViewModel(
     }
 
     private fun initCreateMode(spot: SpotUi?) {
-        if (state.value.selectedSpot != null) return // Already initialized
+        if (_state.value.selectedSpot != null) return // Already initialized
 
         _state.update {
             it.copy(
@@ -248,7 +242,7 @@ class CreateHangoutViewModel(
     }
 
     private fun initEditMode(hangout: HangoutUi) {
-        if (state.value.originalHangout != null) return // Already initialized
+        if (_state.value.originalHangout != null) return // Already initialized
 
         _state.value.hangoutNameTextState.setTextAndPlaceCursorAtEnd(hangout.name)
         _state.value.hangoutDescriptionTextState.setTextAndPlaceCursorAtEnd(hangout.description ?: "")
@@ -264,7 +258,7 @@ class CreateHangoutViewModel(
                 hangoutDate = localDateTime.date,
                 hangoutTime = localDateTime.time,
                 maxAttendees = hangout.maxAttendees,
-                minAttendees = maxOf(2, activeCount),
+                minAttendees = maxOf(MIN_ATTENDEES, activeCount),
                 isVotingMode = hangout.chosenSpot == null,
                 selectedSpot = hangout.chosenSpot
             )
@@ -300,8 +294,8 @@ class CreateHangoutViewModel(
     private fun observeSearchFilters() {
         val searchQueryFlow = snapshotFlow { _state.value.spotSearchTextState.text.toString().trim() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
-        val tabFlow = state.map { it.activeSearchTab }.distinctUntilChanged()
-        val locationFlow = state.map { it.userLatitude to it.userLongitude }.distinctUntilChanged()
+        val tabFlow = _state.map { it.activeSearchTab }.distinctUntilChanged()
+        val locationFlow = _state.map { it.userLocation }.distinctUntilChanged()
 
         combine(searchQueryFlow, tabFlow, locationFlow) { query, activeTab, location ->
             Triple(query, activeTab, location)
@@ -321,8 +315,7 @@ class CreateHangoutViewModel(
                 }
 
                 SearchTab.ALL_SPOTS -> {
-                    val (latitude, longitude) = location
-                    if (query.isBlank() || latitude == null || longitude == null) {
+                    if (query.isBlank() || location == null) {
                         spotSearchPaginator?.close()
                         _state.update {
                             it.copy(
@@ -334,7 +327,7 @@ class CreateHangoutViewModel(
                             )
                         }
                     } else {
-                        setupSpotSearchPaginator(latitude, longitude, query)
+                        setupSpotSearchPaginator(location.latitude, location.longitude, query)
                         _state.update {
                             it.copy(
                                 spotSearchResults = persistentListOf(),
@@ -429,7 +422,7 @@ class CreateHangoutViewModel(
     }
 
     private fun submit() {
-        if (state.value.isSubmitting) return
+        if (_state.value.isSubmitting) return
 
         hasAttemptedStepOne = true
 
@@ -443,7 +436,7 @@ class CreateHangoutViewModel(
         _state.update { it.copy(isSubmitting = true, submitError = null) }
 
         viewModelScope.launch {
-            val currentState = state.value
+            val currentState = _state.value
 
             val date = currentState.hangoutDate ?: run {
                 _state.update { it.copy(isSubmitting = false) }
@@ -495,7 +488,7 @@ class CreateHangoutViewModel(
     }
 
     private fun validateFormInputs(): Boolean {
-        val currentState = state.value
+        val currentState = _state.value
         val (currentDate, currentTime) = getCurrentDateAndTime()
 
         val hangoutNameState =

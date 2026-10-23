@@ -17,8 +17,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,8 +45,14 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchFiel
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
+import com.eeseka.lynk.shared.presentation.location.rememberLocationController
+import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
@@ -96,6 +105,19 @@ fun SavedSpotsScreen(
 ) {
     val hapticFeedback = rememberAppHaptic()
     val listState = rememberLazyListState()
+    val permissionController = rememberPermissionController()
+    val locationController = rememberLocationController()
+    var userLocation by remember { mutableStateOf<LocationCoordinates?>(null) }
+
+    val isSpotSheetShowing = state.selectedSpotId != null
+    LaunchedEffect(isSpotSheetShowing) {
+        if (!isSpotSheetShowing) return@LaunchedEffect
+        if (permissionController.getPermissionState(Permission.LOCATION) != PermissionState.GRANTED) return@LaunchedEffect
+
+        locationController.observeCurrentLocation().collect { locationResult ->
+            locationResult.onSuccess { coordinate -> userLocation = coordinate }
+        }
+    }
 
     PaginationScrollListener(
         lazyListState = listState,
@@ -202,6 +224,7 @@ fun SavedSpotsScreen(
                                     spotPriceLevel = spot.priceLevel,
                                     spotRating = spot.rating,
                                     isSaved = spot.isSaved,
+                                    isLoading = spot.id == state.loadingSpotId,
                                     onClick = {
                                         hapticFeedback(AppHaptic.ImpactLight)
                                         onAction(SavedSpotsAction.OnSpotSelected(spot.id))
@@ -254,8 +277,8 @@ fun SavedSpotsScreen(
     state.spots.find { it.id == state.selectedSpotId }?.let { selectedSpot ->
         SpotDetailSheet(
             spot = selectedSpot,
-            userLat = null,
-            userLng = null,
+            userLat = userLocation?.latitude,
+            userLng = userLocation?.longitude,
             onDismissRequest = { onAction(SavedSpotsAction.OnDismissSpotDetail) },
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(SavedSpotsAction.OnToggleSaveSpot(spotId, isCurrentlySaved))

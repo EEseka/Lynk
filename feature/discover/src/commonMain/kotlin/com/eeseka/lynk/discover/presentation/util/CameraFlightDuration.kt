@@ -9,10 +9,10 @@ import kotlin.time.Duration.Companion.milliseconds
 
 fun CameraPosition.flightDurationTo(destination: CameraPosition): Duration {
     val distanceMeters = DistanceCalculator.calculateDistanceInMeters(
-        userLat = target.latitude,
-        userLng = target.longitude,
-        spotLat = destination.target.latitude,
-        spotLng = destination.target.longitude
+        userLat = center.latitude,
+        userLng = center.longitude,
+        spotLat = destination.center.latitude,
+        spotLng = destination.center.longitude
     )
     val kilometres = distanceMeters / 1000.0
     val zoomChange = abs(destination.zoom - zoom)

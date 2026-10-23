@@ -66,22 +66,10 @@ class ProfileViewModel(
 
     private val _state = MutableStateFlow(ProfileState())
 
-    val state = combine(
-        _state,
-        appPreferences.theme,
-        appPreferences.isPureBlackEnabled,
-        appPreferences.arePushNotificationsEnabled,
-        appPreferences.areHapticsEnabled
-    ) { currentState, theme, isPureBlackEnabled, arePushNotificationsEnabled, areHapticsEnabled ->
-        currentState.copy(
-            appTheme = theme,
-            isPureBlackEnabled = isPureBlackEnabled,
-            arePushNotificationsEnabled = arePushNotificationsEnabled,
-            areHapticsEnabled = areHapticsEnabled
-        )
-    }
+    val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
+                observeAppPreferences()
                 loadProfile()
                 observeCanSave()
                 observeDisplayNameValidation()
@@ -98,7 +86,7 @@ class ProfileViewModel(
         .map { it.trim() }
         .distinctUntilChanged()
 
-    private val currentPhotoFlow = state.map {
+    private val currentPhotoFlow = _state.map {
         it.localPhotoUri ?: it.profilePictureUrl
     }.distinctUntilChanged()
 
@@ -110,9 +98,27 @@ class ProfileViewModel(
         displayName != saved.displayName || currentPhoto != saved.photoUrl
     }.distinctUntilChanged()
 
-    private val isBusyFlow = state.map {
+    private val isBusyFlow = _state.map {
         it.isSaving || it.isUploadingImage || it.isCompressingImage
     }.distinctUntilChanged()
+
+    private fun observeAppPreferences() {
+        combine(
+            appPreferences.theme,
+            appPreferences.isPureBlackEnabled,
+            appPreferences.arePushNotificationsEnabled,
+            appPreferences.areHapticsEnabled
+        ) { theme, isPureBlackEnabled, arePushNotificationsEnabled, areHapticsEnabled ->
+            _state.update {
+                it.copy(
+                    appTheme = theme,
+                    isPureBlackEnabled = isPureBlackEnabled,
+                    arePushNotificationsEnabled = arePushNotificationsEnabled,
+                    areHapticsEnabled = areHapticsEnabled
+                )
+            }
+        }.launchIn(viewModelScope)
+    }
 
     private fun observeCanSave() {
         combine(isFormDirtyFlow, isBusyFlow) { isFormDirty, isBusy ->
@@ -162,24 +168,24 @@ class ProfileViewModel(
             is ProfileAction.OnHapticsToggled -> toggleHaptics(action.isEnabled)
             ProfileAction.OnCreateAccountClick -> deleteAccount() // Taking a Guest back to the auth screen
             ProfileAction.OnSignOutClick -> {
-                if (state.value.isGuest) deleteAccount()
+                if (_state.value.isGuest) deleteAccount()
                 else _state.update {
-                    it.copy(showSettingsSheet = false, showSignOutConfirmation = true)
+                    it.copy(showSettingsSheet = false, showSignOutDialog = true)
                 }
             }
 
-            ProfileAction.OnConfirmSignOut -> signOut()
-            ProfileAction.OnDismissSignOutConfirmation -> _state.update {
-                it.copy(showSignOutConfirmation = false)
+            ProfileAction.OnSignOutConfirmed -> signOut()
+            ProfileAction.OnDismissSignOutDialog -> _state.update {
+                it.copy(showSignOutDialog = false)
             }
 
             ProfileAction.OnDeleteAccountClick -> _state.update {
-                it.copy(showSettingsSheet = false, showDeleteAccountConfirmation = true)
+                it.copy(showSettingsSheet = false, showDeleteAccountDialog = true)
             }
 
-            ProfileAction.OnConfirmDeleteAccount -> deleteAccount()
-            ProfileAction.OnDismissDeleteAccountConfirmation -> _state.update {
-                it.copy(showDeleteAccountConfirmation = false)
+            ProfileAction.OnDeleteAccountConfirmed -> deleteAccount()
+            ProfileAction.OnDismissDeleteAccountDialog -> _state.update {
+                it.copy(showDeleteAccountDialog = false)
             }
         }
     }
@@ -201,7 +207,7 @@ class ProfileViewModel(
     }
 
     private fun saveProfile() {
-        val currentState = state.value
+        val currentState = _state.value
 
         hasAttemptedSave = true
 
@@ -223,7 +229,7 @@ class ProfileViewModel(
                 return@launch
             }
 
-            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: state.value.profilePictureUrl
+            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: _state.value.profilePictureUrl
 
             userService.updateProfile(displayName = displayName, profilePhotoUrl = finalPhotoUrl)
                 .onSuccess { updatedUser ->
@@ -254,8 +260,8 @@ class ProfileViewModel(
     }
 
     private suspend fun uploadLocalImageIfPresent(): ImageUpload {
-        val compressedUri = compressedImageUrl ?: state.value.localPhotoUri
-        val mimeType = state.value.localPhotoMimeType
+        val compressedUri = compressedImageUrl ?: _state.value.localPhotoUri
+        val mimeType = _state.value.localPhotoMimeType
 
         if (compressedUri == null || mimeType == null) return ImageUpload.None
 
@@ -325,7 +331,7 @@ class ProfileViewModel(
     }
 
     private fun signOut() {
-        _state.update { it.copy(isSigningOut = true, showSignOutConfirmation = false) }
+        _state.update { it.copy(isSigningOut = true, showSignOutDialog = false) }
 
         viewModelScope.launch {
             val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
@@ -359,7 +365,7 @@ class ProfileViewModel(
             it.copy(
                 isDeletingAccount = true,
                 showSettingsSheet = false, // Needed coz of guest path shows no dialog.
-                showDeleteAccountConfirmation = false
+                showDeleteAccountDialog = false
             )
         }
 
@@ -401,7 +407,7 @@ class ProfileViewModel(
                 }
 
                 val typedName = _state.value.displayNameTextState.text.toString()
-                val hasUnsavedEdits = state.value.localPhotoUri != null || typedName != savedProfile.value.displayName
+                val hasUnsavedEdits = _state.value.localPhotoUri != null || typedName != savedProfile.value.displayName
 
                 if (!hasUnsavedEdits) {
                     applyUser(freshUser)

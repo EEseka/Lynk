@@ -19,14 +19,14 @@
     <string name="username_placeholder">e.g. john_doe</string>
 
     <string name="complete_profile">Complete Profile</string>
-    <string name="complete_profile_loading">Completing Profile...</string>
+    <string name="complete_profile_loading">Completing Profile…</string>
     <string name="available">Available</string>
     <string name="unavailable">Unavailable</string>
 
     <string name="error_username_needs_letter">Username must contain at least one letter.</string>
     <string name="error_username_edge_underscore">Cannot start or end with an underscore.</string>
     <string name="error_username_consecutive_underscores">Cannot contain consecutive underscores.</string>
-    <string name="error_username_invalid_chars">Only letters, numbers, and underscores allowed.</string>
+    <string name="error_username_invalid_chars">Use a to z, numbers and underscores. Your display name can have any letters.</string>
 
     <string name="take_photo">Take Photo</string>
     <string name="choose_from_gallery">Choose from Gallery</string>

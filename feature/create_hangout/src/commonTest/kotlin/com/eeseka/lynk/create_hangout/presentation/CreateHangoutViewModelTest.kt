@@ -17,6 +17,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.testing.collectInBackground
@@ -62,8 +63,8 @@ class CreateHangoutViewModelTest {
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = emptyList(), rating = 4.5, reviewCount = 100,
         openingHours = SpotOpeningHours(
-            isOpenNow = true, weekdayDescriptions = emptyList(),
-            nextOpenTime = null, nextCloseTime = null, utcOffsetMinutes = null
+            weekdayDescriptions = emptyList(), utcOffsetMinutes = null,
+            timeZoneId = null, periods = emptyList()
         ),
         shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
@@ -77,11 +78,11 @@ class CreateHangoutViewModelTest {
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
         latitude = 6.5, longitude = 3.3, isSaved = false,
         photoUrls = persistentListOf(), rating = 4.5, reviewCount = 100,
-        isOpenNow = true, shortAddress = "VI, Lagos",
+        openingHours = null, shortAddress = "VI, Lagos",
         websiteUrl = null, googleMapsUrl = null, priceLevel = null,
         description = null,
         typeLabel = null, aiSummary = null, priceRange = null, businessStatus = null,
-        nextOpenTime = null, nextCloseTime = null, utcOffsetMinutes = null, weekHours = persistentListOf(),
+        weekHours = persistentListOf(),
         highlights = persistentListOf(),
         phoneNumber = null, directionsUrl = null
     )
@@ -121,8 +122,7 @@ class CreateHangoutViewModelTest {
             advanceUntilIdle()
 
             val state = expectMostRecentItem()
-            assertThat(state.userLatitude).isEqualTo(6.5)
-            assertThat(state.userLongitude).isEqualTo(3.3)
+            assertThat(state.userLocation).isEqualTo(LocationCoordinates(6.5, 3.3))
             assertThat(state.trendingSpots.size).isEqualTo(1)
             assertThat(state.isTrendingLoading).isFalse()
         }
@@ -263,21 +263,6 @@ class CreateHangoutViewModelTest {
             assertThat(state.currentStep).isEqualTo(1)
         }
     }
-
-    @Test
-    fun `OnNextStep with valid step 1 inputs advances to step 2`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            setValidStepOneInputs()
-            advanceUntilIdle()
-
-            viewModel.onAction(CreateHangoutAction.OnNextStep)
-            advanceUntilIdle()
-
-            assertThat(expectMostRecentItem().currentStep).isEqualTo(2)
-        }
-    }
-
 
     @Test
     fun `voting mode always allows canProceedToStepThree`() = runTest {

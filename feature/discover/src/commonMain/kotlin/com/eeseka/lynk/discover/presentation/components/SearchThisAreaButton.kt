@@ -39,24 +39,24 @@ private const val MIN_ZOOM = 11.0
 @Composable
 fun SearchThisAreaButton(
     mapState: MapState,
-    trendingLatitude: Double?,
-    trendingLongitude: Double?,
+    loadedAreaLatitude: Double?,
+    loadedAreaLongitude: Double?,
     isLoading: Boolean,
     onClick: (latitude: Double, longitude: Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Reads the position only once the camera rests, so a pan doesn't recompose the screen every frame
     val isCameraMoving = mapState.isCameraMoving
-    val isVisible = if (isCameraMoving || trendingLatitude == null || trendingLongitude == null) {
+    val isVisible = if (isCameraMoving || loadedAreaLatitude == null || loadedAreaLongitude == null) {
         false
     } else {
         val camera = mapState.cameraPosition
-        val wasMovedByUser = mapState.cameraMoveReason == CameraMoveReason.GESTURE
+        val wasMovedByUser = mapState.cameraMoveReason == CameraMoveReason.Gesture
         val distanceMeters = DistanceCalculator.calculateDistanceInMeters(
-            userLat = trendingLatitude,
-            userLng = trendingLongitude,
-            spotLat = camera.target.latitude,
-            spotLng = camera.target.longitude
+            userLat = loadedAreaLatitude,
+            userLng = loadedAreaLongitude,
+            spotLat = camera.center.latitude,
+            spotLng = camera.center.longitude
         )
         wasMovedByUser && camera.zoom >= MIN_ZOOM && distanceMeters > MIN_DISTANCE_METERS
     }
@@ -70,8 +70,8 @@ fun SearchThisAreaButton(
         SearchThisAreaPill(
             isLoading = isLoading,
             onClick = {
-                val target = mapState.cameraPosition.target
-                onClick(target.latitude, target.longitude)
+                val center = mapState.cameraPosition.center
+                onClick(center.latitude, center.longitude)
             }
         )
     }

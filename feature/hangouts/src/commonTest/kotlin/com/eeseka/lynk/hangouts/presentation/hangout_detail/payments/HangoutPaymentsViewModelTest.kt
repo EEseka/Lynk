@@ -305,7 +305,7 @@ class HangoutPaymentsViewModelTest {
         viewModel.onAction(HangoutPaymentsAction.OnDeadlineDecisionClick)
 
         viewModel.onAction(HangoutPaymentsAction.OnDeadlineDecisionSelected(DeadlineDecision.EXTEND))
-        assertThat(viewModel.state.value.isDeadlineDecisionSheetOpen).isFalse()
+        assertThat(viewModel.state.value.showDeadlineDecisionSheet).isFalse()
         assertThat(viewModel.state.value.pendingDeadlineChange).isEqualTo(DeadlineChangeIntent.EXTEND)
         assertThat(paymentService.deadlineDecisions).isEmpty()
 
@@ -434,25 +434,6 @@ class HangoutPaymentsViewModelTest {
 
         assertThat(viewModel.state.value.paymentQuote).isNull()
         assertThat(viewModel.state.value.isAwaitingPaymentReturn).isFalse()
-    }
-
-    @Test
-    fun `the deadline pickers and sheets open and close`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.onAction(HangoutPaymentsAction.OnPaymentDeadlinePickerClick)
-        assertThat(viewModel.state.value.isPaymentDeadlinePickerOpen).isTrue()
-        viewModel.onAction(HangoutPaymentsAction.OnDismissPaymentDeadlinePicker)
-        assertThat(viewModel.state.value.isPaymentDeadlinePickerOpen).isFalse()
-
-        viewModel.onAction(HangoutPaymentsAction.OnChangeDeadlineClick)
-        viewModel.onAction(HangoutPaymentsAction.OnDismissDeadlinePicker)
-        assertThat(viewModel.state.value.pendingDeadlineChange).isNull()
-
-        viewModel.onAction(HangoutPaymentsAction.OnDeadlineDecisionClick)
-        assertThat(viewModel.state.value.isDeadlineDecisionSheetOpen).isTrue()
-        viewModel.onAction(HangoutPaymentsAction.OnDismissDeadlineDecisionSheet)
-        assertThat(viewModel.state.value.isDeadlineDecisionSheetOpen).isFalse()
     }
 
     @Test

@@ -5,9 +5,9 @@ import com.eeseka.lynk.shared.domain.spot.model.BusinessStatus
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotAiSummary
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
 import com.eeseka.lynk.shared.domain.spot.model.SpotPriceRange
 import kotlinx.collections.immutable.ImmutableList
-import kotlin.time.Instant
 
 @Immutable
 data class SpotUi(
@@ -23,10 +23,7 @@ data class SpotUi(
     val rating: Double?,
     val reviewCount: Int?,
     val businessStatus: BusinessStatus?,
-    val isOpenNow: Boolean?,
-    val nextOpenTime: Instant?,
-    val nextCloseTime: Instant?,
-    val utcOffsetMinutes: Int?,
+    val openingHours: SpotOpeningHours?,
     val weekHours: ImmutableList<SpotDayHoursUi>,
     val highlights: ImmutableList<SpotHighlight>,
     val shortAddress: String?,

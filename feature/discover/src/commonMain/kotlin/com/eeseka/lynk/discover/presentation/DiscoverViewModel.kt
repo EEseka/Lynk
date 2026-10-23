@@ -74,16 +74,12 @@ class DiscoverViewModel(
 
     private val topSpotsArea = MutableStateFlow<String?>(null)
 
-    val state = combine(
-        _state,
-        appPreferences.theme
-    ) { currentState, theme ->
-        currentState.copy(mapTheme = theme)
-    }
+    val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
                 _state.update { it.copy(isGuest = authInfo?.user is User.Guest) }
+                observeMapTheme()
                 observeSearchFilters()
                 observeTrendingSpots()
                 observeAreaName()
@@ -134,8 +130,7 @@ class DiscoverViewModel(
     private fun handleLocationFetched(latitude: Double, longitude: Double) {
         _state.update {
             it.copy(
-                userLatitude = latitude,
-                userLongitude = longitude,
+                userLocation = LocationCoordinates(latitude = latitude, longitude = longitude),
                 locationFetchEpoch = it.locationFetchEpoch + 1
             )
         }
@@ -163,7 +158,7 @@ class DiscoverViewModel(
     }
 
     private fun showTopSpots() {
-        val areaName = state.value.areaName ?: return
+        val areaName = _state.value.areaName ?: return
 
         _state.value.searchTextState.clearText()
         _state.update { it.copy(selectedCategory = null, selectedPriceLevel = null) }
@@ -184,6 +179,12 @@ class DiscoverViewModel(
         topSpotsArea.value = null
     }
 
+    private fun observeMapTheme() {
+        appPreferences.theme
+            .onEach { theme -> _state.update { it.copy(mapTheme = theme) } }
+            .launchIn(viewModelScope)
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeTrendingSpots() {
         searchOrigin
@@ -198,9 +199,14 @@ class DiscoverViewModel(
         searchOrigin
             .filterNotNull()
             .distinctUntilChanged()
-            .mapLatest { location -> areaNameResolver.getAreaName(location.latitude, location.longitude) }
-            .onEach { areaName ->
-                _state.update { it.copy(areaName = areaName) }
+            .mapLatest { location -> location to areaNameResolver.getAreaName(location.latitude, location.longitude) }
+            .onEach { (location, areaName) ->
+                _state.update {
+                    it.copy(
+                        areaName = areaName,
+                        areaCenter = location
+                    )
+                }
                 if (topSpotsArea.value != null) topSpotsArea.value = areaName
             }
             .launchIn(viewModelScope)
@@ -272,8 +278,7 @@ class DiscoverViewModel(
                     it.copy(
                         isTrendingLoading = false,
                         trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList(),
-                        trendingLatitude = location.latitude,
-                        trendingLongitude = location.longitude
+                        loadedAreaCenter = location
                     )
                 }
                 // The sea, a forest, anywhere Google has nothing to show
@@ -334,32 +339,27 @@ class DiscoverViewModel(
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
             .onEach { query -> if (query.isNotBlank()) exitTopSpots() }
 
-        val categoryFlow = state.map { it.selectedCategory }.distinctUntilChanged()
-        val priceLevelFlow = state.map { it.selectedPriceLevel }.distinctUntilChanged()
-        val searchOriginFlow = searchOrigin.map { Pair(it?.latitude, it?.longitude) }.distinctUntilChanged()
-
+        val categoryFlow = _state.map { it.selectedCategory }.distinctUntilChanged()
+        val priceLevelFlow = _state.map { it.selectedPriceLevel }.distinctUntilChanged()
         combine(
             searchQueryFlow,
             categoryFlow,
             priceLevelFlow,
-            searchOriginFlow
+            searchOrigin
         ) { query, category, priceLevel, location ->
             SpotSearchFilters(
                 query = query,
                 category = category,
                 priceLevel = priceLevel,
-                latitude = location.first,
-                longitude = location.second
+                center = location
             )
         }.mapLatest { filters ->
-            val lat = filters.latitude
-            val lng = filters.longitude
-            if (lat == null || lng == null) return@mapLatest
+            val center = filters.center ?: return@mapLatest
 
             val isActivelySearching = filters.query.isNotBlank() || filters.category != null || filters.priceLevel != null
 
             if (isActivelySearching) {
-                setupSearchPaginator(lat, lng, filters.query, filters.category, filters.priceLevel)
+                setupSearchPaginator(center.latitude, center.longitude, filters.query, filters.category, filters.priceLevel)
                 _state.update {
                     it.copy(
                         searchResults = persistentListOf(),
@@ -429,7 +429,7 @@ class DiscoverViewModel(
                     )
                 }
                 // An empty first page, not the end of a list that had results
-                if (newSpots.isEmpty() && state.value.searchResults.isEmpty()) {
+                if (newSpots.isEmpty() && _state.value.searchResults.isEmpty()) {
                     eventChannel.send(DiscoverEvent.NoSearchResults)
                 }
             }
@@ -447,6 +447,5 @@ private data class SpotSearchFilters(
     val query: String,
     val category: SpotCategory?,
     val priceLevel: PriceLevel?,
-    val latitude: Double?,
-    val longitude: Double?
+    val center: LocationCoordinates?
 )

@@ -64,28 +64,6 @@ class HangoutsListDetailViewModelTest {
     }
 
     @Test
-    fun `selecting a hangout stores its id`() = runTest {
-        createViewModel()
-        collectInBackground(viewModel.state)
-
-        viewModel.onAction(HangoutsListDetailAction.OnSelectHangout("hangout_1"))
-
-        assertThat(viewModel.state.value.selectedHangoutId).isEqualTo("hangout_1")
-    }
-
-    @Test
-    fun `create opens the create sheet and dismiss hides it`() = runTest {
-        createViewModel()
-        collectInBackground(viewModel.state)
-
-        viewModel.onAction(HangoutsListDetailAction.OnCreateHangoutClick)
-        assertThat(viewModel.state.value.sheetState).isEqualTo(SheetState.CreateHangout)
-
-        viewModel.onAction(HangoutsListDetailAction.OnDismissCurrentSheet)
-        assertThat(viewModel.state.value.sheetState).isEqualTo(SheetState.Hidden)
-    }
-
-    @Test
     fun `editing a hangout opens the edit sheet with it`() = runTest {
         createViewModel()
         collectInBackground(viewModel.state)

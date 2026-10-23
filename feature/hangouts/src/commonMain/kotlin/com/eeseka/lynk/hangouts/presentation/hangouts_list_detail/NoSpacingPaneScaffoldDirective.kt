@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list_detail
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
@@ -11,7 +11,7 @@ import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 @Composable
 fun createNoSpacingPaneScaffoldDirective(): PaneScaffoldDirective {
     val configuration = currentDeviceConfiguration()
-    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
 
     val maxHorizontalPartitions = when (configuration) {
         DeviceConfiguration.MOBILE_PORTRAIT,

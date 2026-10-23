@@ -214,10 +214,10 @@ class HangoutMemoriesViewModel(
     // Links last an hour; a thumbnail that fails to load with an old link gets the row again
     private fun reloadIfLinksExpiring() {
         val hangoutId = _hangoutId.value ?: return
-        if (state.value.isLoadingPhotos) return
+        if (_state.value.isLoadingPhotos) return
 
         val refreshBefore = Clock.System.now() + 5.minutes
-        val hasExpiringLinks = state.value.photos.any { it.urlsExpireAt < refreshBefore }
+        val hasExpiringLinks = _state.value.photos.any { it.urlsExpireAt < refreshBefore }
         if (!hasExpiringLinks) return
 
         loadPhotos(hangoutId)

@@ -170,11 +170,14 @@ class SavedSpotsViewModelTest {
     }
 
     @Test
-    fun `selecting a spot opens its detail and dismissing closes it`() = runTest {
+    fun `selecting a spot opens its detail once loaded and dismissing closes it`() = runTest {
         collectInBackground(viewModel.state)
+        advanceUntilIdle()
 
         viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_1"))
+        advanceUntilIdle()
         assertThat(viewModel.state.value.selectedSpotId).isEqualTo("spot_1")
+        assertThat(viewModel.state.value.loadingSpotId).isNull()
 
         viewModel.onAction(SavedSpotsAction.OnDismissSpotDetail)
         assertThat(viewModel.state.value.selectedSpotId).isNull()

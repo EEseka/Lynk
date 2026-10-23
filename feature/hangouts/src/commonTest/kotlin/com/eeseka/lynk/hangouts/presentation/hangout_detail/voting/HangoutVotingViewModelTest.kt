@@ -11,6 +11,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
+import com.eeseka.lynk.shared.data.lobby.InMemoryBallotRepository
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User
@@ -336,7 +337,7 @@ class HangoutVotingViewModelTest {
         val state = viewModel.state.value
         assertThat(state.candidates).isEmpty()
         assertThat(state.votes).isEmpty()
-        assertThat(state.isProposeSpotSheetOpen).isFalse()
+        assertThat(state.showProposeSpotSheet).isFalse()
     }
 
     @Test
@@ -447,16 +448,18 @@ class HangoutVotingViewModelTest {
 
         viewModel.onAction(HangoutVotingAction.OnDismissProposeSpotSheet)
 
-        assertThat(viewModel.state.value.isProposeSpotSheetOpen).isFalse()
+        assertThat(viewModel.state.value.showProposeSpotSheet).isFalse()
         assertThat(viewModel.state.value.activeProposeSpotSheetSearchTab).isEqualTo(SearchTab.ALL_SPOTS)
     }
 
-    // The real in-memory store fed by the fake service, holding the hangout the ballot belongs to
+    // The real in-memory stores: one fed by the fake service with the hangout, one holding its ballot
     private suspend fun TestScope.createViewModel(hangoutId: String): HangoutVotingViewModel {
         repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
+        val ballotRepository = InMemoryBallotRepository(sessionStorage, backgroundScope)
         runCurrent()
         val viewModel = HangoutVotingViewModel(
             hangoutDetailRepository = repository,
+            ballotRepository = ballotRepository,
             spotService = spotService,
             connectionClient = connectionClient,
             lobbyService = lobbyService,

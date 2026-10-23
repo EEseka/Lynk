@@ -71,6 +71,7 @@ import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.map_close
 import org.jetbrains.compose.resources.stringResource
+import org.maplibre.compose.camera.CameraFit
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.map.CameraConstraints
@@ -166,13 +167,13 @@ private fun HangoutMapContent(
         Position(longitude = centerLongitude, latitude = centerLatitude)
     } else null
     // Opens on the group center, else the first spot; 0,0 never shows since the map only opens with a spot
-    val openingTarget = centerPosition
+    val openingCenter = centerPosition
         ?: candidates.firstOrNull()?.let { Position(longitude = it.longitude, latitude = it.latitude) }
         ?: Position(longitude = 0.0, latitude = 0.0)
 
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(mapStyleUri(mapTheme)),
-        initialCameraPosition = CameraPosition(target = openingTarget, zoom = 15.0)
+        initialCameraPosition = CameraPosition(center = openingCenter, zoom = 15.0)
     )
 
     // Your own dot only when location is already allowed; this map never asks for it
@@ -193,7 +194,7 @@ private fun HangoutMapContent(
         val pointsBounds = candidates.toBoundingBox(including = centerPosition) ?: return@LaunchedEffect
         mapState.animateCameraToBounds(
             boundingBox = pointsBounds,
-            fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp)
+            fit = CameraFit(fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp))
         )
     }
 
@@ -205,7 +206,7 @@ private fun HangoutMapContent(
                 val spot = currentCandidates.getOrNull(page) ?: return@collect
                 mapState.animateCamera(
                     CameraUpdate(
-                        target = Position(
+                        center = Position(
                             longitude = spot.longitude,
                             latitude = spot.latitude
                         )
@@ -218,47 +219,17 @@ private fun HangoutMapContent(
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
             state = mapState,
-            cameraConstraints = CameraConstraints(
-                minZoom = 2.0,
-                maxZoom = 20.0,
-                minPitch = 0.0,
+            cameraConstraints = CameraConstraints {
+                minZoom = 2.0
+                maxZoom = 20.0
+                minPitch = 0.0
                 maxPitch = 60.0
-            ),
+            },
             viewportInsets = WindowInsets(
                 top = WindowInsets.safeArea.asPaddingValues().calculateTopPadding() + 64.dp,
                 bottom = WindowInsets.safeArea.asPaddingValues().calculateBottomPadding() + 216.dp
             ).union(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal)).asPaddingValues()
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(LocalViewportInsets.current)
-                    .padding(horizontal = MapOverlay.Spacing)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .height(48.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    DisappearingScaleBar(
-                        metersPerDp = { mapState.viewport?.metersPerDpAtTarget ?: 0.0 },
-                        zoom = { mapState.cameraPosition.zoom },
-                        color = MaterialTheme.colorScheme.onSurface,
-                        haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                        textStyle = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                }
-                DisappearingCompassButton(
-                    style = CompassButtonStyle(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                    ),
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
-            }
-
             centerPosition?.let { groupCenter ->
                 GroupCenterMapMarker(
                     centerLatitude = groupCenter.latitude,
@@ -295,6 +266,36 @@ private fun HangoutMapContent(
                         }
                     )
                 }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(LocalViewportInsets.current)
+                    .padding(horizontal = MapOverlay.Spacing)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .height(48.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    DisappearingScaleBar(
+                        metersPerDp = { mapState.viewport?.metersPerDpAtCenter ?: 0.0 },
+                        zoom = { mapState.cameraPosition.zoom },
+                        color = MaterialTheme.colorScheme.onSurface,
+                        haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                        textStyle = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+                DisappearingCompassButton(
+                    style = CompassButtonStyle(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    ),
+                    modifier = Modifier.align(Alignment.TopEnd)
+                )
             }
         }
 

@@ -44,6 +44,7 @@ class UsernameValidatorTest {
         assertThat(UsernameValidator.validate("user!name")).isEqualTo(UsernameValidationState.INVALID_CHARACTERS)
         assertThat(UsernameValidator.validate("user name")).isEqualTo(UsernameValidationState.INVALID_CHARACTERS)
         assertThat(UsernameValidator.validate("user@home")).isEqualTo(UsernameValidationState.INVALID_CHARACTERS)
+        assertThat(UsernameValidator.validate("josé_12")).isEqualTo(UsernameValidationState.INVALID_CHARACTERS)
     }
 
     @Test

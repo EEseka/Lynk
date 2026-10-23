@@ -358,26 +358,26 @@ fun ProfileScreen(
         )
     }
 
-    if (state.showSignOutConfirmation) {
+    if (state.showSignOutDialog) {
         LynkDialog(
-            onDismissRequest = { onAction(ProfileAction.OnDismissSignOutConfirmation) },
+            onDismissRequest = { onAction(ProfileAction.OnDismissSignOutDialog) },
             title = stringResource(Res.string.sign_out_confirm_title),
             message = stringResource(Res.string.sign_out_confirm_message),
             confirmText = stringResource(Res.string.sign_out),
             dismissText = stringResource(Res.string.cancel),
-            onConfirm = { onAction(ProfileAction.OnConfirmSignOut) },
+            onConfirm = { onAction(ProfileAction.OnSignOutConfirmed) },
             isDestructive = true
         )
     }
 
-    if (state.showDeleteAccountConfirmation) {
+    if (state.showDeleteAccountDialog) {
         LynkDialog(
-            onDismissRequest = { onAction(ProfileAction.OnDismissDeleteAccountConfirmation) },
+            onDismissRequest = { onAction(ProfileAction.OnDismissDeleteAccountDialog) },
             title = stringResource(Res.string.delete_account_confirm_title),
             message = stringResource(Res.string.delete_account_confirm_message),
             confirmText = stringResource(Res.string.delete),
             dismissText = stringResource(Res.string.cancel),
-            onConfirm = { onAction(ProfileAction.OnConfirmDeleteAccount) },
+            onConfirm = { onAction(ProfileAction.OnDeleteAccountConfirmed) },
             isDestructive = true
         )
     }

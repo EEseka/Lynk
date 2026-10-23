@@ -25,21 +25,21 @@
     <string name="participants_attended_format">%1$d attended</string>
     <string name="participants_attended_max_format">%1$d / %2$d attended</string>
 
-    <string name="empty_hangouts_upcoming_title">No upcoming hangouts</string>
+    <string name="empty_hangouts_upcoming_title">No Upcoming Hangouts</string>
     <string name="empty_hangouts_upcoming_message">Tap + to plan something with your crew.</string>
 
-    <string name="empty_hangouts_ongoing_title">Nothing happening now</string>
+    <string name="empty_hangouts_ongoing_title">Nothing Happening Now</string>
     <string name="empty_hangouts_ongoing_message">You have no active hangouts at the moment.</string>
 
-    <string name="empty_hangouts_completed_title">No past hangouts</string>
+    <string name="empty_hangouts_completed_title">No Past Hangouts</string>
     <string name="empty_hangouts_completed_message">Hangouts you've finished will appear here.</string>
 
-    <string name="empty_hangouts_cancelled_title">No cancelled hangouts</string>
+    <string name="empty_hangouts_cancelled_title">No Cancelled Hangouts</string>
     <string name="empty_hangouts_cancelled_message">Nothing to see here right now.</string>
 
-    <string name="empty_search_title">No hangouts found</string>
+    <string name="empty_search_title">No Hangouts Found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
-    <string name="hangouts_load_error_title">Couldn't load your hangouts</string>
+    <string name="hangouts_load_error_title">Couldn't Load Your Hangouts</string>
 
     <string name="connection_online">Connected</string>
     <string name="connection_offline">Offline</string>
@@ -47,29 +47,29 @@
     <string name="connection_network_error">No connection</string>
     <string name="connection_unknown_error">Connection error</string>
 
-    <string name="detail_select_title">No hangout selected</string>
+    <string name="detail_select_title">No Hangout Selected</string>
     <string name="detail_select_message">Pick a hangout to see the crew and the full plan.</string>
-    <string name="detail_load_error_title">Couldn't load this hangout</string>
+    <string name="detail_load_error_title">Couldn't Load This Hangout</string>
     <string name="detail_about">About</string>
     <string name="detail_going">Going</string>
     <string name="detail_going_count">%1$d going</string>
     <string name="detail_going_count_max">%1$d / %2$d going</string>
-    <string name="detail_see_all">See all</string>
-    <string name="participants_sheet_title">Who's going</string>
-    <string name="detail_chosen_spot">Chosen spot</string>
-    <string name="detail_no_spot_title">No spot yet</string>
+    <string name="detail_see_all">See All</string>
+    <string name="participants_sheet_title">Who's Going</string>
+    <string name="detail_chosen_spot">Chosen Spot</string>
+    <string name="detail_no_spot_title">No Spot Yet</string>
     <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
-    <string name="detail_get_a_ride">Get a ride</string>
+    <string name="detail_get_a_ride">Get a Ride</string>
     <string name="detail_address_copied">Address copied. Paste it as your destination in any ride app.</string>
     <string name="map_close">Close map</string>
 
     <!-- Host actions -->
-    <string name="detail_complete">Complete hangout</string>
+    <string name="detail_complete">Complete Hangout</string>
     <string name="detail_completing">Completing…</string>
     <string name="detail_completion_reminder_title">Did it end?</string>
     <string name="detail_completion_reminder_message">Mark it complete to open the album for everyone who went.</string>
-    <string name="detail_cancel">Cancel hangout</string>
-    <string name="detail_update">Edit hangout</string>
+    <string name="detail_cancel">Cancel Hangout</string>
+    <string name="detail_update">Edit Hangout</string>
     <string name="detail_completed_message">Hangout completed</string>
     <string name="detail_cancelled_message">Hangout cancelled</string>
     <string name="detail_complete_confirm_title">Complete this hangout?</string>
@@ -77,14 +77,14 @@
     <string name="detail_complete_confirm_action">Complete</string>
     <string name="detail_cancel_confirm_title">Cancel this hangout?</string>
     <string name="detail_cancel_confirm_message">This cancels the hangout for everyone and can't be undone.</string>
-    <string name="detail_cancel_confirm_action">Cancel hangout</string>
-    <string name="detail_leave">Leave hangout</string>
+    <string name="detail_cancel_confirm_action">Cancel Hangout</string>
+    <string name="detail_leave">Leave Hangout</string>
     <string name="detail_left_message">You left the hangout</string>
     <string name="detail_leave_confirm_title">Leave this hangout?</string>
     <string name="detail_leave_confirm_message">You'll be removed from this hangout and will need a new invite to rejoin.</string>
     <string name="detail_leave_confirm_action">Leave</string>
     <string name="detail_more_actions">More actions</string>
-    <string name="detail_dialog_dismiss">Never mind</string>
+    <string name="detail_dialog_dismiss">Never Mind</string>
 
     <!-- Participants sheet groups -->
     <string name="detail_group_going">Going</string>
@@ -96,14 +96,14 @@
     <!-- Invite flow -->
     <string name="detail_invite">Invite participants</string>
     <string name="detail_invited_message">Invitation sent</string>
-    <string name="invite_sheet_title">Invite participants</string>
+    <string name="invite_sheet_title">Invite Participants</string>
     <string name="invite_search_hint">Search by username</string>
     <string name="invite_action">Invite</string>
     <string name="invite_invited">Invited</string>
     <string name="invite_host">Host</string>
-    <string name="invite_idle_title">Find your crew</string>
+    <string name="invite_idle_title">Find Your Crew</string>
     <string name="invite_idle_message">Search for a friend by their exact username.</string>
-    <string name="invite_not_found_title">No user found</string>
+    <string name="invite_not_found_title">No User Found</string>
     <string name="invite_not_found_message">Check the username and try again.</string>
 
     <!-- Live lobby event snackbars -->
@@ -123,9 +123,9 @@
     <!-- Payments -->
     <string name="payment_section_title">Payments</string>
     <string name="payment_total">Total</string>
-    <string name="payment_your_share">Your share</string>
-    <string name="payment_pay_by">Pay by</string>
-    <string name="payment_payout_on">Payout on</string>
+    <string name="payment_your_share">Your Share</string>
+    <string name="payment_pay_by">Pay By</string>
+    <string name="payment_payout_on">Payout On</string>
     <string name="payment_state_collecting_host">Collecting from your guests</string>
     <string name="payment_state_collecting_guest">Waiting for everyone to pay</string>
     <string name="payment_state_awaiting_decision_host">The deadline passed with people still unpaid</string>
@@ -144,76 +144,76 @@
     <string name="payment_deadline_after_hangout">The deadline has to be on or before the hangout.</string>
 
     <!-- Enable payments form -->
-    <string name="payment_collect_title">Collect payments</string>
+    <string name="payment_collect_title">Collect Payments</string>
     <string name="payment_collect_hint">Ask your guests to pay their share before the hangout. The bill is split between whoever is in when you turn this on, so invite everyone first.</string>
-    <string name="payment_total_cost_label">Total cost</string>
+    <string name="payment_total_cost_label">Total Cost</string>
     <string name="payment_total_cost_placeholder">0</string>
     <string name="payment_total_cost_helper">The full bill for everyone, you included. We split it for you.</string>
     <string name="payment_share_too_low">That splits to under ₦1 each. Put in the full bill.</string>
     <string name="payment_total_cost_required">Put in the total cost.</string>
-    <string name="payment_deadline_label">Pay by</string>
+    <string name="payment_deadline_label">Pay By</string>
     <string name="payment_deadline_placeholder">Pick a day</string>
     <string name="payment_deadline_required">Pick the day everyone has to pay by.</string>
     <string name="payment_bank_label">Bank</string>
     <string name="payment_bank_placeholder">Choose your bank</string>
     <string name="payment_bank_required">Choose the bank your payout goes to.</string>
-    <string name="payment_account_number_label">Account number</string>
+    <string name="payment_account_number_label">Account Number</string>
     <string name="payment_account_number_placeholder">10 digits</string>
     <string name="payment_account_not_found">No account with that number at this bank. Check both.</string>
     <string name="payment_account_check_limit">Checking too fast! Please wait a moment.</string>
     <string name="payment_account_required">Put in your 10-digit account number and wait for the name to show.</string>
-    <string name="payment_enable_confirm">Turn on payments</string>
-    <string name="payment_enabling">Turning on…</string>
+    <string name="payment_enable_confirm">Turn On Payments</string>
+    <string name="payment_enabling">Turning On…</string>
     <string name="payment_enable_warning">Once payments are on, none of this can change. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out. Check the details.</string>
-    <string name="payment_bank_picker_title">Choose your bank</string>
+    <string name="payment_bank_picker_title">Choose Your Bank</string>
     <string name="payment_bank_search_hint">Search banks</string>
     <string name="payment_bank_empty">No bank matches that name.</string>
 
     <!-- Paying -->
-    <string name="payment_pay_action">Pay my share</string>
-    <string name="payment_preparing">Getting ready…</string>
-    <string name="payment_confirm_title">Pay your share</string>
-    <string name="payment_confirm_charge">You'll be charged</string>
+    <string name="payment_pay_action">Pay My Share</string>
+    <string name="payment_preparing">Getting Ready…</string>
+    <string name="payment_confirm_title">Pay Your Share</string>
+    <string name="payment_confirm_charge">You'll Be Charged</string>
     <string name="payment_confirm_note">You'll finish on Paystack's secure page, then come back here.</string>
     <string name="payment_confirm_action">Continue to Paystack</string>
-    <string name="payment_check_action">I have paid, check now</string>
+    <string name="payment_check_action">I Have Paid, Check Now</string>
     <string name="payment_checking">Checking…</string>
     <string name="payment_still_processing">Paystack is still processing this one. Give it a moment and check again.</string>
     <string name="payment_not_completed">That payment didn't go through. You can try again.</string>
 
     <!-- Deadline actions (host) -->
-    <string name="payment_change_deadline">Change date</string>
+    <string name="payment_change_deadline">Change Date</string>
     <string name="payment_deadline_changed">Deadline updated</string>
     <string name="payment_decision_saved">Sorted. Everyone has been told.</string>
-    <string name="payment_decide_action">Decide what happens</string>
+    <string name="payment_decide_action">Decide What Happens</string>
     <string name="payment_deciding">Saving…</string>
-    <string name="payment_decision_title">Not everyone has paid</string>
+    <string name="payment_decision_title">Not Everyone Has Paid</string>
     <string name="payment_decision_message">%1$d still to pay. Pick how you want to handle it.</string>
-    <string name="payment_decision_extend">Give them more time</string>
-    <string name="payment_decision_remove">Remove who hasn't paid</string>
-    <string name="payment_decision_proceed">Go ahead anyway</string>
-    <string name="payment_decision_cancel">Cancel the hangout</string>
+    <string name="payment_decision_extend">Give Them More Time</string>
+    <string name="payment_decision_remove">Remove Who Hasn't Paid</string>
+    <string name="payment_decision_proceed">Go Ahead Anyway</string>
+    <string name="payment_decision_cancel">Cancel the Hangout</string>
     <string name="payment_decision_cancel_confirm_title">Cancel this hangout?</string>
     <string name="payment_decision_cancel_confirm_message">Everyone who paid gets refunded and the hangout is called off.</string>
 
     <!-- Payout retry (host) -->
-    <string name="payment_retry_payout">Try the payout again</string>
+    <string name="payment_retry_payout">Try the Payout Again</string>
     <string name="payment_retrying_payout">Queueing…</string>
     <string name="payment_payout_queued">Queued. We'll send it to your bank shortly.</string>
 
     <!-- Voting -->
-    <string name="voting_title">Vote for a spot</string>
+    <string name="voting_title">Vote for a Spot</string>
     <string name="voting_propose">Propose</string>
-    <string name="voting_see_on_map">See on map</string>
-    <string name="voting_vote_here">Vote for this spot</string>
+    <string name="voting_see_on_map">See on Map</string>
+    <string name="voting_vote_here">Vote for This Spot</string>
     <string name="voting_your_vote">Your vote</string>
-    <string name="voting_pick_winner">Pick this one</string>
+    <string name="voting_pick_winner">Pick This One</string>
     <string name="voting_tie_locked">The host is picking</string>
     <string name="voting_no_votes">No votes yet</string>
     <string name="voting_from_middle">%1$s from the middle</string>
-    <string name="voting_empty_title">No spots yet</string>
+    <string name="voting_empty_title">No Spots Yet</string>
     <string name="voting_empty_message">Propose a spot to kick off the vote.</string>
-    <string name="voting_close">Close voting</string>
+    <string name="voting_close">Close Voting</string>
     <string name="voting_closing">Closing…</string>
     <string name="voting_leading">Leading</string>
     <string name="voting_your_pick">Your pick</string>
@@ -224,7 +224,7 @@
     <string name="spot_suggested_message">Spot suggested</string>
 
     <!-- Propose-spot sheet -->
-    <string name="propose_sheet_title">Propose a spot</string>
+    <string name="propose_sheet_title">Propose a Spot</string>
     <string name="propose_search_hint">Search for a spot…</string>
     <string name="propose_favorite_search_hint">Search favorite spots…</string>
     <string name="propose_suggest_action">Suggest Spot</string>
@@ -239,16 +239,16 @@
     <string name="memories_title">Memories</string>
     <string name="memories_title_with_count">Memories · %1$d</string>
     <string name="memories_limit_reached">You have added the most you can, %1$d photos. Remove one to add another.</string>
-    <string name="memories_empty_title">No photos yet</string>
+    <string name="memories_empty_title">No Photos Yet</string>
     <string name="memories_empty_message">Add your shots from this hangout so everyone who went can see them.</string>
-    <string name="memories_add_photos">Add photos</string>
-    <string name="memories_adding_photos">Adding photos…</string>
+    <string name="memories_add_photos">Add Photos</string>
+    <string name="memories_adding_photos">Adding Photos…</string>
     <string name="memories_photos_added">Photos added</string>
     <string name="memories_photo">Hangout photo</string>
 
     <!-- Album and photo viewer -->
     <string name="album_back">Back</string>
-    <string name="album_load_error_title">Couldn't load the album</string>
+    <string name="album_load_error_title">Couldn't Load the Album</string>
     <string name="album_photo_position">%1$d / %2$d</string>
     <string name="album_close_viewer">Close photo</string>
     <string name="album_save_photo">Save to device</string>
@@ -261,7 +261,7 @@
     <string name="album_caption_title">Caption</string>
     <string name="album_caption_hint">Say something about this photo</string>
     <string name="album_caption_counter">%1$d / %2$d</string>
-    <string name="album_caption_save">Save caption</string>
+    <string name="album_caption_save">Save Caption</string>
     <string name="album_caption_saving">Saving…</string>
     <string name="album_caption_updated">Caption updated</string>
     <string name="album_delete_confirm_title">Remove this photo?</string>
@@ -271,7 +271,7 @@
     <string name="album_new_photos">New photos were added</string>
     <string name="album_show_new_photos">Show</string>
     <string name="album_select">Select</string>
-    <string name="album_select_photos">Select photos</string>
+    <string name="album_select_photos">Select Photos</string>
     <string name="album_selected_count">%1$d selected</string>
     <string name="album_cancel_selection">Cancel</string>
     <string name="album_share_selected">Share photos</string>

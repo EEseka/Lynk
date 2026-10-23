@@ -23,6 +23,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_CAPTION_LENGTH
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.album_caption_counter
 import lynk.feature.hangouts.generated.resources.album_caption_hint
@@ -30,8 +31,6 @@ import lynk.feature.hangouts.generated.resources.album_caption_save
 import lynk.feature.hangouts.generated.resources.album_caption_saving
 import lynk.feature.hangouts.generated.resources.album_caption_title
 import org.jetbrains.compose.resources.stringResource
-
-private const val MAX_CAPTION_LENGTH = 200
 
 @Composable
 fun EditCaptionSheet(

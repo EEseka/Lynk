@@ -10,7 +10,10 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import com.eeseka.lynk.shared.data.assistant.InMemoryAssistantMessageCountRepository
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
+import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessage
+import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageRole
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
@@ -27,6 +30,7 @@ import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
+import com.eeseka.lynk.testing.data.FakeAssistantService
 import com.eeseka.lynk.testing.data.FakeHangoutParticipantService
 import com.eeseka.lynk.testing.data.FakeHangoutService
 import com.eeseka.lynk.testing.data.FakeLobbyConnectionClient
@@ -62,6 +66,7 @@ class HangoutDetailViewModelTest {
     private lateinit var connectionClient: FakeLobbyConnectionClient
     private lateinit var lobbyService: FakeLobbyService
     private lateinit var appPreferences: FakeAppPreferences
+    private lateinit var assistantService: FakeAssistantService
 
     private val chosenSpot = Spot(
         id = "spot_1", name = "The Lounge", category = SpotCategory.CAFE,
@@ -86,6 +91,7 @@ class HangoutDetailViewModelTest {
         connectionClient = FakeLobbyConnectionClient()
         lobbyService = FakeLobbyService()
         appPreferences = FakeAppPreferences()
+        assistantService = FakeAssistantService()
     }
 
     @AfterTest
@@ -106,6 +112,42 @@ class HangoutDetailViewModelTest {
         assertThat(state.currentUserId).isEqualTo(HOST_ID)
         assertThat(state.isLoading).isFalse()
         assertThat(state.error).isNull()
+    }
+
+    @Test
+    fun `a finished hangout with an old chat shows the way into it`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        hangoutService.completeHangout(hangoutId)
+        assistantService.hangoutMessages = mutableListOf(assistantQuestion())
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.hasAssistantChat).isTrue()
+    }
+
+    @Test
+    fun `a finished hangout with no chat hides the way into it`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        hangoutService.completeHangout(hangoutId)
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.hasAssistantChat).isFalse()
+    }
+
+    @Test
+    fun `a voting hangout never asks whether the chat has messages`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        assertThat(assistantService.messageCountRequestIds).isEmpty()
     }
 
     @Test
@@ -433,7 +475,7 @@ class HangoutDetailViewModelTest {
         viewModel.onAction(HangoutDetailAction.OnDismissInviteSheet)
 
         val state = viewModel.state.value
-        assertThat(state.isInviteSheetOpen).isFalse()
+        assertThat(state.showInviteSheet).isFalse()
         assertThat(state.inviteResult).isNull()
         assertThat(state.inviteQueryState.text.toString()).isEqualTo("")
     }
@@ -508,7 +550,7 @@ class HangoutDetailViewModelTest {
         connectionClient.sendEvent(LobbyEvent.HangoutCancelled(hangoutId, hostDisplayName = "Ada"))
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.isInviteSheetOpen).isFalse()
+        assertThat(viewModel.state.value.showInviteSheet).isFalse()
     }
 
     @Test
@@ -524,7 +566,7 @@ class HangoutDetailViewModelTest {
         connectionClient.sendEvent(LobbyEvent.HangoutStarted(hangoutId))
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.isInviteSheetOpen).isTrue()
+        assertThat(viewModel.state.value.showInviteSheet).isTrue()
     }
 
     @Test
@@ -539,7 +581,7 @@ class HangoutDetailViewModelTest {
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(secondId))
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.isInviteSheetOpen).isFalse()
+        assertThat(viewModel.state.value.showInviteSheet).isFalse()
         assertThat(viewModel.state.value.hangout?.name).isEqualTo("Brunch")
     }
 
@@ -565,13 +607,15 @@ class HangoutDetailViewModelTest {
         }
     }
 
-    // The real in-memory store, fed by the fake service, so every refresh behaves like the app's
+    // The real in-memory stores, fed by the fake services, so every refresh behaves like the app's
     private fun TestScope.createViewModel(): HangoutDetailViewModel {
         val repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
+        val assistantMessageCountRepository = InMemoryAssistantMessageCountRepository(assistantService, sessionStorage, backgroundScope)
         runCurrent()
         val viewModel = HangoutDetailViewModel(
             hangoutService = hangoutService,
             hangoutDetailRepository = repository,
+            assistantMessageCountRepository = assistantMessageCountRepository,
             participantService = participantService,
             spotService = spotService,
             connectionClient = connectionClient,
@@ -596,6 +640,16 @@ class HangoutDetailViewModelTest {
         )
         return hangoutService.hangouts.last().id
     }
+
+    private fun assistantQuestion() = AssistantMessage(
+        id = "message_1",
+        role = AssistantMessageRole.USER,
+        status = null,
+        content = "Somewhere chill for drinks",
+        failureReason = null,
+        recommendations = emptyList(),
+        createdAt = Instant.fromEpochMilliseconds(1700000000000L)
+    )
 
     private suspend fun joinAsGuest(hangoutId: String) {
         hangoutService.inviteParticipant(hangoutId, GUEST_ID)

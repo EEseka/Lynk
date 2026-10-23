@@ -68,7 +68,7 @@ class ProfileSetupViewModel(
             initialValue = ProfileSetupState()
         )
 
-    private val isBusyFlow = state.map {
+    private val isBusyFlow = _state.map {
         it.isSubmitting || it.isUploadingImage || it.isCompressingImage
     }.distinctUntilChanged()
 
@@ -189,7 +189,7 @@ class ProfileSetupViewModel(
     }
 
     private fun submitProfile() {
-        val currentState = state.value
+        val currentState = _state.value
 
         hasAttemptedSubmit = true
 
@@ -208,7 +208,7 @@ class ProfileSetupViewModel(
             // The debounced check may not have run for what is on screen right now, so an answer
             // is only trusted when it belongs to this exact username. Anything else is asked again.
             val isUsernameFree = if (checkedUsername == username) {
-                val isAvailable = state.value.isUsernameAvailable == true
+                val isAvailable = _state.value.isUsernameAvailable == true
                 // validateFormInputs just cleared the taken message, so put it back
                 if (!isAvailable) _state.update { it.copy(usernameError = UiText.Resource(Res.string.error_username_taken)) }
                 isAvailable
@@ -230,7 +230,7 @@ class ProfileSetupViewModel(
             }
 
             // Determine final URL (New uploaded URL, or the existing one)
-            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: state.value.profilePictureUrl
+            val finalPhotoUrl = (upload as? ImageUpload.Uploaded)?.url ?: _state.value.profilePictureUrl
 
             userService.createProfile(
                 username = username,
@@ -284,8 +284,8 @@ class ProfileSetupViewModel(
     }
 
     private suspend fun uploadLocalImageIfPresent(): ImageUpload {
-        val compressedUri = compressedImageUrl ?: state.value.localPhotoUri
-        val mimeType = state.value.localPhotoMimeType
+        val compressedUri = compressedImageUrl ?: _state.value.localPhotoUri
+        val mimeType = _state.value.localPhotoMimeType
 
         if (compressedUri == null || mimeType == null) return ImageUpload.None
 

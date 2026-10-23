@@ -23,7 +23,7 @@ data class HangoutVotingState(
     val isClosingVoting: Boolean = false,
 
     // Propose-spot sheet
-    val isProposeSpotSheetOpen: Boolean = false,
+    val showProposeSpotSheet: Boolean = false,
     val activeProposeSpotSheetSearchTab: SearchTab = SearchTab.ALL_SPOTS,
     val proposeSpotSheetSearchTextState: TextFieldState = TextFieldState(),
 

@@ -38,7 +38,7 @@ class InvitePreviewViewModel(
     }
 
     private fun submitRsvp(rsvpStatus: RsvpStatus) {
-        val hangoutId = state.value.hangoutPreview?.id ?: return
+        val hangoutId = _state.value.hangoutPreview?.id ?: return
 
         _state.update { it.copy(respondingTo = rsvpStatus) }
 

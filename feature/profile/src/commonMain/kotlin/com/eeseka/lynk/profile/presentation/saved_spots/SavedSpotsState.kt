@@ -13,5 +13,6 @@ data class SavedSpotsState(
     val isEndReached: Boolean = false,
     val searchResetEpoch: Int = 0,
     val selectedSpotId: String? = null,
+    val loadingSpotId: String? = null,
     val loadError: UiText? = null
 )

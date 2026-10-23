@@ -62,6 +62,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.spot.OpeningHoursCheck
 import com.eeseka.lynk.shared.domain.spot.model.BusinessStatus
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -155,24 +156,14 @@ private fun SpotDetailSheetContent(
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
 
-    // The server caches spots for up to an hour, so Google's open or closed can be out of date by the time it's shown
+    // Worked out from the week's periods each time the sheet opens, so a cached spot is never out of date
     val now = Clock.System.now()
-    val hasClosedSince = spot.nextCloseTime?.let { it <= now } == true
-    val hasOpenedSince = spot.nextOpenTime?.let { it <= now } == true
-    val isOpenNow = when (spot.isOpenNow) {
-        true -> !hasClosedSince
-        false -> hasOpenedSince
-        null -> null
-    }
+    val isOpenNow = spot.openingHours?.let { OpeningHoursCheck.isOpenAt(it, now) }
     // On the place's clock, so "Opens 8:00 AM" matches the week's hours wherever the viewer is
-    val spotTimeZone = placeTimeZone(spot.utcOffsetMinutes)
+    val spotTimeZone = placeTimeZone(spot.openingHours)
     // Said out loud when it differs from the phone's, or "Closes 8:30 PM" reads as the viewer's evening
     val isOnAnotherClock = spotTimeZone.offsetAt(now) != TimeZone.currentSystemDefault().offsetAt(now)
-    val nextChangeTime = when (isOpenNow) {
-        true -> spot.nextCloseTime
-        false -> spot.nextOpenTime
-        null -> null
-    }?.takeIf { it > now }
+    val nextChangeTime = spot.openingHours?.let { OpeningHoursCheck.nextChangeAt(it, now) }
     val nextChangeTimeLabel = nextChangeTime?.toUpcomingTimeLabel(spotTimeZone)?.let { label ->
         if (isOnAnotherClock) stringResource(Res.string.spot_local_time, label) else label
     }
@@ -520,8 +511,7 @@ private fun SpotDetailSheetFullPreview() = SpotDetailSheetContentPreview(
 private fun SpotDetailSheetPartialPreview() = SpotDetailSheetContentPreview(
     spot = previewSpot(
         category = SpotCategory.LOUNGE,
-        priceLevel = PriceLevel.EXPENSIVE,
-        isOpenNow = false
+        priceLevel = PriceLevel.EXPENSIVE
     ).copy(
         description = "Rooftop lounge with skyline views over Lagos Lagoon.",
         businessStatus = BusinessStatus.CLOSED_TEMPORARILY,
@@ -538,7 +528,7 @@ private fun SpotDetailSheetMinimalPreview() = SpotDetailSheetContentPreview(
         priceLevel = null,
         rating = null,
         reviewCount = null,
-        isOpenNow = null,
+        openingHours = null,
         shortAddress = null
     ),
     userLat = null,

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import com.eeseka.lynk.assistant.presentation.AssistantRoot
 import com.eeseka.lynk.hangouts.presentation.hangout_album.HangoutAlbumRoot
 import com.eeseka.lynk.hangouts.presentation.hangouts_list_detail.HangoutsListDetailAdaptiveLayout
 import com.eeseka.lynk.notifications.presentation.notifications.NotificationsRoot
@@ -38,7 +39,22 @@ fun NavGraphBuilder.hangoutsGraph(
                 },
                 navigateToAlbum = { hangoutId, initialPhotoId ->
                     navController.navigate(HangoutsGraphRoutes.HangoutAlbum(hangoutId, initialPhotoId))
+                },
+                navigateToAssistant = { hangoutId ->
+                    navController.navigate(HangoutsGraphRoutes.Assistant(hangoutId))
                 }
+            )
+        }
+
+        composable<HangoutsGraphRoutes.Assistant> { backStackEntry ->
+            val route = backStackEntry.toRoute<HangoutsGraphRoutes.Assistant>()
+
+            AssistantRoot(
+                hangoutId = route.hangoutId,
+                latitude = null,
+                longitude = null,
+                areaName = null,
+                navigateBack = { navController.navigateUp() }
             )
         }
 

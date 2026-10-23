@@ -1,5 +1,7 @@
 package com.eeseka.lynk.shared.data.di
 
+import com.eeseka.lynk.shared.data.assistant.InMemoryAssistantMessageCountRepository
+import com.eeseka.lynk.shared.data.assistant.KtorAssistantService
 import com.eeseka.lynk.shared.data.auth.DataStoreSessionStorage
 import com.eeseka.lynk.shared.data.auth.KtorAuthService
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
@@ -8,6 +10,7 @@ import com.eeseka.lynk.shared.data.hangout.KtorHangoutParticipantService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutPhotoService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutService
 import com.eeseka.lynk.shared.data.hangout.SignedUrlHangoutPhotoRepository
+import com.eeseka.lynk.shared.data.lobby.InMemoryBallotRepository
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyConnectionClient
 import com.eeseka.lynk.shared.data.lobby.WebSocketLobbyService
 import com.eeseka.lynk.shared.data.lobby.network.ConnectionRetryHandler
@@ -24,6 +27,8 @@ import com.eeseka.lynk.shared.data.location.DataStoreLastKnownLocationStorage
 import com.eeseka.lynk.shared.data.onboarding.DataStoreOnboardingStorage
 import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
 import com.eeseka.lynk.shared.data.spot.KtorSpotService
+import com.eeseka.lynk.shared.domain.assistant.AssistantMessageCountRepository
+import com.eeseka.lynk.shared.domain.assistant.AssistantService
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
@@ -32,6 +37,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
+import com.eeseka.lynk.shared.domain.lobby.BallotRepository
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
@@ -77,6 +83,8 @@ val sharedDataModule = module {
     singleOf(::InMemoryUnreadNotificationCounter) bind UnreadNotificationCounter::class
     singleOf(::InMemoryHangoutDetailRepository) bind HangoutDetailRepository::class
     singleOf(::InMemoryHangoutPhotoStatsRepository) bind HangoutPhotoStatsRepository::class
+    singleOf(::KtorAssistantService) bind AssistantService::class
+    singleOf(::InMemoryAssistantMessageCountRepository) bind AssistantMessageCountRepository::class
     single {
         Json {
             ignoreUnknownKeys = true
@@ -86,4 +94,5 @@ val sharedDataModule = module {
     singleOf(::KtorLobbyWebSocketConnector)
     singleOf(::WebSocketLobbyConnectionClient) bind LobbyConnectionClient::class
     singleOf(::WebSocketLobbyService) bind LobbyService::class
+    singleOf(::InMemoryBallotRepository) bind BallotRepository::class
 }

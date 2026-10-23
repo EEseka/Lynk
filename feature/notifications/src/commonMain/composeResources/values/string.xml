@@ -5,9 +5,9 @@
     <string name="mark_all_read">Mark all as read</string>
     <string name="unread">Unread</string>
 
-    <string name="notifications_load_error_title">Couldn't load notifications</string>
+    <string name="notifications_load_error_title">Couldn't Load Notifications</string>
 
-    <string name="notifications_empty_title">Nothing yet</string>
+    <string name="notifications_empty_title">Nothing Yet</string>
     <string name="notifications_empty_message">Invites, spot picks and payment updates for your hangouts will show up here.</string>
 
     <!-- Stands in for a name the backend did not send -->
@@ -53,15 +53,15 @@
     <string name="time_days_ago">%1$dd ago</string>
 
     <!-- Invite preview -->
-    <string name="invite_preview_title">You are invited</string>
+    <string name="invite_preview_title">You Are Invited</string>
     <string name="invite_preview_accept">Accept</string>
-    <string name="invite_preview_accepting">Accepting</string>
+    <string name="invite_preview_accepting">Accepting…</string>
     <string name="invite_preview_decline">Decline</string>
-    <string name="invite_preview_declining">Declining</string>
+    <string name="invite_preview_declining">Declining…</string>
     <string name="invite_preview_going">%1$d going</string>
     <string name="invite_preview_going_capped">%1$d of %2$d going</string>
     <string name="invite_preview_spot_pending">Spot still being voted on</string>
-    <string name="invite_preview_attendees">Already going</string>
+    <string name="invite_preview_attendees">Already Going</string>
     <string name="invite_preview_withdrawn">That invite was withdrawn</string>
     <string name="invite_preview_cannot_join">You can't join this hangout right now</string>
     <string name="invite_preview_already_declined">You already declined this invite</string>

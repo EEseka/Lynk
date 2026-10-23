@@ -274,14 +274,13 @@ private fun SpotPickerUI(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .minimumInteractiveComponentSize()
+                                .padding(8.dp)
                                 .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable(role = Role.Button) {
                                     hapticFeedback(AppHaptic.ImpactLight)
                                     onSpotSelected(null)
                                 }
-                                .padding(8.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surface)
                                 .padding(8.dp),
                             contentAlignment = Alignment.Center
                         ) {

@@ -43,6 +43,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_DESCRIPTION_LENGTH
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
@@ -64,8 +65,6 @@ import lynk.feature.create_hangout.generated.resources.time
 import lynk.feature.create_hangout.generated.resources.unlimited
 import lynk.feature.create_hangout.generated.resources.vibe
 import org.jetbrains.compose.resources.stringResource
-
-private const val MAX_DESCRIPTION_LENGTH = 500
 
 @Composable
 fun CreateHangoutStepOne(

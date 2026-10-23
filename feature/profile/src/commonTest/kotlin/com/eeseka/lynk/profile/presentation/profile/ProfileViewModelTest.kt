@@ -281,21 +281,6 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `the photo and the settings sheet open and close`() = runTest {
-        val viewModel = createViewModel(signedInAs = ada)
-
-        viewModel.onAction(ProfileAction.OnImageClick)
-        assertThat(viewModel.state.value.showFullScreenImage).isTrue()
-        viewModel.onAction(ProfileAction.OnDismissFullScreenImage)
-        assertThat(viewModel.state.value.showFullScreenImage).isFalse()
-
-        viewModel.onAction(ProfileAction.OnSettingsClick)
-        assertThat(viewModel.state.value.showSettingsSheet).isTrue()
-        viewModel.onAction(ProfileAction.OnDismissSettings)
-        assertThat(viewModel.state.value.showSettingsSheet).isFalse()
-    }
-
-    @Test
     fun `a guest tapping create account gives up the guest session`() = runTest {
         val viewModel = createViewModel(signedInAs = User.Guest(id = "guest_1"))
 
@@ -312,12 +297,12 @@ class ProfileViewModelTest {
         val viewModel = createViewModel(signedInAs = ada)
 
         viewModel.onAction(ProfileAction.OnSignOutClick)
-        viewModel.onAction(ProfileAction.OnDismissSignOutConfirmation)
-        assertThat(viewModel.state.value.showSignOutConfirmation).isFalse()
+        viewModel.onAction(ProfileAction.OnDismissSignOutDialog)
+        assertThat(viewModel.state.value.showSignOutDialog).isFalse()
 
         viewModel.onAction(ProfileAction.OnDeleteAccountClick)
-        viewModel.onAction(ProfileAction.OnDismissDeleteAccountConfirmation)
-        assertThat(viewModel.state.value.showDeleteAccountConfirmation).isFalse()
+        viewModel.onAction(ProfileAction.OnDismissDeleteAccountDialog)
+        assertThat(viewModel.state.value.showDeleteAccountDialog).isFalse()
 
         assertThat(sessionStorage.get()).isNotNull()
     }
@@ -328,7 +313,7 @@ class ProfileViewModelTest {
 
         viewModel.onAction(ProfileAction.OnSignOutClick)
 
-        assertThat(viewModel.state.value.showSignOutConfirmation).isTrue()
+        assertThat(viewModel.state.value.showSignOutDialog).isTrue()
         assertThat(sessionStorage.get()).isNotNull()
     }
 
@@ -337,7 +322,7 @@ class ProfileViewModelTest {
         pushNotificationService.deviceToken.value = "push_token_1"
         val viewModel = createViewModel(signedInAs = ada)
 
-        viewModel.onAction(ProfileAction.OnConfirmSignOut)
+        viewModel.onAction(ProfileAction.OnSignOutConfirmed)
         advanceUntilIdle()
 
         assertThat(deviceTokenService.unregisteredTokens).containsExactly("push_token_1")
@@ -351,7 +336,7 @@ class ProfileViewModelTest {
         authService.shouldReturnError = true
 
         viewModel.events.test {
-            viewModel.onAction(ProfileAction.OnConfirmSignOut)
+            viewModel.onAction(ProfileAction.OnSignOutConfirmed)
             advanceUntilIdle()
 
             assertThat(awaitItem()).isInstanceOf(ProfileEvent.Error::class)
@@ -366,7 +351,7 @@ class ProfileViewModelTest {
         viewModel.onAction(ProfileAction.OnSignOutClick)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.showSignOutConfirmation).isFalse()
+        assertThat(viewModel.state.value.showSignOutDialog).isFalse()
         assertThat(sessionStorage.get()).isNull()
         assertThat(deviceTokenService.unregisteredTokens).isEmpty()
     }
@@ -375,14 +360,14 @@ class ProfileViewModelTest {
     fun `deleting an account clears the session`() = runTest {
         val viewModel = createViewModel(signedInAs = ada)
         viewModel.onAction(ProfileAction.OnDeleteAccountClick)
-        assertThat(viewModel.state.value.showDeleteAccountConfirmation).isTrue()
+        assertThat(viewModel.state.value.showDeleteAccountDialog).isTrue()
 
-        viewModel.onAction(ProfileAction.OnConfirmDeleteAccount)
+        viewModel.onAction(ProfileAction.OnDeleteAccountConfirmed)
         advanceUntilIdle()
 
         assertThat(sessionStorage.get()).isNull()
         assertThat(viewModel.state.value.isDeletingAccount).isFalse()
-        assertThat(viewModel.state.value.showDeleteAccountConfirmation).isFalse()
+        assertThat(viewModel.state.value.showDeleteAccountDialog).isFalse()
     }
 
     @Test
@@ -392,7 +377,7 @@ class ProfileViewModelTest {
         authService.errorToReturn = DataError.Remote.NOT_FOUND
 
         viewModel.events.test {
-            viewModel.onAction(ProfileAction.OnConfirmDeleteAccount)
+            viewModel.onAction(ProfileAction.OnDeleteAccountConfirmed)
             advanceUntilIdle()
 
             assertThat(sessionStorage.get()).isNull()
@@ -407,7 +392,7 @@ class ProfileViewModelTest {
         authService.errorToReturn = DataError.Remote.CONFLICT
 
         viewModel.events.test {
-            viewModel.onAction(ProfileAction.OnConfirmDeleteAccount)
+            viewModel.onAction(ProfileAction.OnDeleteAccountConfirmed)
             advanceUntilIdle()
 
             assertThat(awaitItem()).isInstanceOf(ProfileEvent.Error::class)

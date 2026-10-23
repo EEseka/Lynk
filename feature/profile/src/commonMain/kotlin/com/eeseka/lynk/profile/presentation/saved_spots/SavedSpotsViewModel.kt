@@ -75,13 +75,18 @@ class SavedSpotsViewModel(
     }
 
     private fun selectSpot(spotId: String) {
-        _state.update { it.copy(selectedSpotId = spotId) }
-
         viewModelScope.launch {
+            _state.update { it.copy(loadingSpotId = spotId) }
             spotService
                 .getSpotDetails(spotId)
-                .onSuccess { spot -> replaceSpot(spot) }
-                .onFailure { error -> eventChannel.send(SavedSpotsEvent.Error(error.toUiText())) }
+                .onSuccess { spot ->
+                    replaceSpot(spot)
+                    _state.update { it.copy(selectedSpotId = spotId, loadingSpotId = null) }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(loadingSpotId = null) }
+                    eventChannel.send(SavedSpotsEvent.Error(error.toUiText()))
+                }
         }
     }
 
@@ -177,7 +182,7 @@ class SavedSpotsViewModel(
                 if (throwable is DataErrorException) {
                     val message = throwable.error.toUiText()
 
-                    if (state.value.spots.isEmpty()) {
+                    if (_state.value.spots.isEmpty()) {
                         _state.update { it.copy(loadError = message) }
                     } else {
                         eventChannel.send(SavedSpotsEvent.Error(message))

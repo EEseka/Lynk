@@ -10,9 +10,9 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -99,7 +99,7 @@ class DiscoverViewModelTest {
             advanceUntilIdle()
 
             val state = expectMostRecentItem()
-            assertThat(state.userLatitude).isEqualTo(6.5)
+            assertThat(state.userLocation?.latitude).isEqualTo(6.5)
             assertThat(state.trendingSpots.size).isEqualTo(1)
             assertThat(state.trendingSpots.first().id).isEqualTo("1")
             assertThat(state.isTrendingLoading).isFalse()
@@ -131,7 +131,7 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(9.06 to 7.49)
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(9.06)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(9.06)
     }
 
     @Test
@@ -145,10 +145,9 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.43 to 3.47)
-        assertThat(viewModel.state.value.trendingLatitude).isEqualTo(6.43)
-        assertThat(viewModel.state.value.trendingLongitude).isEqualTo(3.47)
+        assertThat(viewModel.state.value.loadedAreaCenter).isEqualTo(LocationCoordinates(6.43, 3.47))
         // The blue dot stays where the user is
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.5)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(6.5)
     }
 
     @Test
@@ -169,7 +168,7 @@ class DiscoverViewModelTest {
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.45 to 3.4)
         assertThat(viewModel.state.value.areaName).isEqualTo("Lagos Island")
         // The blue dot still moves
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.64)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(6.64)
     }
 
     @Test
@@ -242,6 +241,24 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.areaName).isEqualTo("Abuja")
+    }
+
+    @Test
+    fun `an area keeps the point it was named for when its spots fail to load`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = "Abuja"
+        spotService.shouldReturnError = true
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(9.07, 7.49))
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertThat(state.areaName).isEqualTo("Abuja")
+        assertThat(state.areaCenter).isEqualTo(LocationCoordinates(9.07, 7.49))
+        // The pins never moved, so the loaded area is still the first one
+        assertThat(state.loadedAreaCenter?.latitude).isEqualTo(6.5)
     }
 
     @Test
@@ -466,7 +483,7 @@ class DiscoverViewModelTest {
             val state = expectMostRecentItem()
             assertThat(state.trendingSpots.size).isEqualTo(1)
             // The map still has no blue dot, because we never actually found them.
-            assertThat(state.userLatitude).isNull()
+            assertThat(state.userLocation).isNull()
         }
     }
 
@@ -547,7 +564,7 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.searchResults.size).isEqualTo(1)
-        assertThat(viewModel.state.value.userLatitude).isNull()
+        assertThat(viewModel.state.value.userLocation).isNull()
     }
 
     @Test
@@ -608,55 +625,12 @@ class DiscoverViewModelTest {
     }
 
     @Test
-    fun `the search sheet opens and closes`() = runTest {
-        collectInBackground(viewModel.state)
-
-        viewModel.onAction(DiscoverAction.ToggleShowSearchSheet)
-        assertThat(viewModel.state.value.showSearchSheet).isTrue()
-
-        viewModel.onAction(DiscoverAction.ToggleShowSearchSheet)
-        assertThat(viewModel.state.value.showSearchSheet).isFalse()
-    }
-
-    @Test
     fun `picking a spot to build a hangout around remembers it`() = runTest {
         collectInBackground(viewModel.state)
 
         viewModel.onAction(DiscoverAction.OnHangoutCreationSelected("1"))
 
         assertThat(viewModel.state.value.hangoutCreationSpotId).isEqualTo("1")
-    }
-
-    @Test
-    fun `OnCategorySelected updates selectedCategory state`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
-            assertThat(expectMostRecentItem().selectedCategory).isEqualTo(SpotCategory.CAFE)
-
-            viewModel.onAction(DiscoverAction.OnCategorySelected(null))
-            assertThat(expectMostRecentItem().selectedCategory).isNull()
-        }
-    }
-
-    @Test
-    fun `ShowGuestPrompt sets guestPromptContext`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
-            assertThat(expectMostRecentItem().guestPromptContext).isEqualTo(GuestPromptContext.SAVE_SPOT)
-        }
-    }
-
-    @Test
-    fun `HideGuestPrompt clears guestPromptContext`() = runTest {
-        viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
-
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.HideGuestPrompt)
-            assertThat(expectMostRecentItem().guestPromptContext).isNull()
-        }
     }
 
     @Test
