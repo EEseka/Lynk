@@ -1,5 +1,9 @@
 package com.eeseka.lynk.profile.presentation.saved_spots.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +24,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +41,7 @@ import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Star
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
+import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
@@ -60,6 +67,7 @@ fun SavedSpotListItem(
     spotPriceLevel: PriceLevel?,
     spotRating: Double?,
     isSaved: Boolean,
+    isLoading: Boolean,
     onClick: () -> Unit,
     onToggleSave: () -> Unit,
     onPhotoLoadFailed: () -> Unit,
@@ -69,123 +77,143 @@ fun SavedSpotListItem(
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spotPhotos)
     }
     val imageRequest = rememberGoogleImageRequest(url = primaryPhotoUrl ?: "")
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (isLoading) 0.4f else 1f,
+        label = "saved_spot_item_alpha"
+    )
 
     LynkCard(
         style = LynkCardStyle.FILLED,
-        onClick = onClick,
+        onClick = onClick.takeIf { !isLoading },
         modifier = modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
+        Box(contentAlignment = Alignment.Center) {
+            Row(
                 modifier = Modifier
-                    .size(72.dp)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .graphicsLayer { alpha = contentAlpha }
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (primaryPhotoUrl != null) {
-                    LynkAsyncImage(
-                        model = imageRequest,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        onLoadFailed = onPhotoLoadFailed,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Icon(
-                        imageVector = Lucide.MapPin,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                LynkText(
-                    text = spotName,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                val metadata = buildString {
-                    append(spotCategory.getTitle())
-                    if (spotPriceLevel != null) {
-                        append(" • ")
-                        append(getPriceLevelSymbol(spotPriceLevel.tier))
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (primaryPhotoUrl != null) {
+                        LynkAsyncImage(
+                            model = imageRequest,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            onLoadFailed = onPhotoLoadFailed,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Lucide.MapPin,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
 
-                LynkText(
-                    text = metadata,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Spacer(modifier = Modifier.width(12.dp))
 
-                spotAddress?.let {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     LynkText(
-                        text = it,
-                        style = MaterialTheme.typography.labelSmall,
+                        text = spotName,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    val metadata = buildString {
+                        append(spotCategory.getTitle())
+                        spotPriceLevel?.let {
+                            append(" • ")
+                            append(getPriceLevelSymbol(spotPriceLevel.tier))
+                        }
+                    }
+
+                    LynkText(
+                        text = metadata,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                }
 
-                spotRating?.let {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Lucide.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.extended.gold
-                        )
+                    spotAddress?.let {
                         LynkText(
-                            text = it.toString(),
+                            text = it,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Medium
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+
+                    spotRating?.let {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Lucide.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint = MaterialTheme.colorScheme.extended.gold
+                            )
+                            LynkText(
+                                text = it.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Icon(
+                    imageVector = if (isSaved) Icons.Filled.Bookmark
+                    else Icons.Outlined.BookmarkBorder,
+                    contentDescription = stringResource(
+                        if (isSaved) Res.string.unsave_spot else Res.string.save_spot
+                    ),
+                    tint = if (isSaved) MaterialTheme.colorScheme.secondary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .clip(CircleShape)
+                        .clickable(enabled = !isLoading, onClick = onToggleSave)
+                        .padding(8.dp)
+                        .size(20.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Icon(
-                imageVector = if (isSaved) Icons.Filled.Bookmark
-                else Icons.Outlined.BookmarkBorder,
-                contentDescription = stringResource(
-                    if (isSaved) Res.string.unsave_spot else Res.string.save_spot
-                ),
-                tint = if (isSaved) MaterialTheme.colorScheme.secondary
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .clip(CircleShape)
-                    .clickable(onClick = onToggleSave)
-                    .padding(8.dp)
-                    .size(20.dp)
-            )
+            CardLoadingSpinner(isLoading = isLoading)
         }
+    }
+}
+
+@Composable
+private fun CardLoadingSpinner(isLoading: Boolean) {
+    AnimatedVisibility(
+        visible = isLoading,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        LynkProgressIndicator(modifier = Modifier.size(24.dp))
     }
 }
 
@@ -201,6 +229,30 @@ private fun SavedSpotListItemPreview() {
             spotPriceLevel = PriceLevel.MODERATE,
             spotRating = 4.6,
             isSaved = true,
+            isLoading = false,
+            onClick = {},
+            onToggleSave = {},
+            onPhotoLoadFailed = {},
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SavedSpotListItemLoadingPreview() {
+    LynkTheme {
+        SavedSpotListItem(
+            spotName = "Nok by Alara",
+            spotPhotos = persistentListOf(),
+            spotAddress = "Victoria Island, Lagos",
+            spotCategory = SpotCategory.RESTAURANT,
+            spotPriceLevel = PriceLevel.MODERATE,
+            spotRating = 4.6,
+            isSaved = true,
+            isLoading = true,
             onClick = {},
             onToggleSave = {},
             onPhotoLoadFailed = {},

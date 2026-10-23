@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -23,31 +24,31 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonPrimitive
 import org.maplibre.compose.expressions.dsl.asString
+import org.maplibre.compose.expressions.dsl.case
 import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.eq
 import org.maplibre.compose.expressions.dsl.feature
-import org.maplibre.compose.expressions.dsl.format
 import org.maplibre.compose.expressions.dsl.image
-import org.maplibre.compose.expressions.dsl.span
 import org.maplibre.compose.expressions.dsl.switch
-import org.maplibre.compose.expressions.dsl.textOffset
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
@@ -104,10 +105,12 @@ fun SpotLocationMapMarker(
     selectedSpotId: String?,
     isRanked: Boolean
 ) {
-    val geoJsonByCategory = remember(spots, isRanked) {
+    val layerDataByCategory = remember(spots, isRanked) {
         val rankById = if (isRanked) spots.mapIndexed { index, spot -> spot.id to index + 1 }.toMap() else emptyMap()
         SpotCategory.entries.associateWith { category ->
-            spots.filter { it.category == category }.toFeatureCollectionJson(rankById)
+            val categorySpots = spots.filter { it.category == category }
+            categorySpots.toFeatureCollectionJson(rankById) to
+                    categorySpots.mapNotNull { rankById[it.id] }.toImmutableList()
         }
     }
 
@@ -116,11 +119,12 @@ fun SpotLocationMapMarker(
     }
 
     SpotCategory.entries.forEach { category ->
+        val (geoJson, ranks) = layerDataByCategory.getValue(category)
         SpotCategoryLayer(
             category = category,
-            geoJson = geoJsonByCategory.getValue(category),
-            selectedSpotId = selectedSpotId.takeIf { category == selectedCategory },
-            isRanked = isRanked
+            geoJson = geoJson,
+            ranks = ranks,
+            selectedSpotId = selectedSpotId.takeIf { category == selectedCategory }
         )
     }
 }
@@ -129,7 +133,7 @@ fun SpotLocationMapMarker(
 fun MapOverlayScope.SelectedSpotPinOverlay(spot: SpotUi?, rank: Int? = null) {
     if (spot == null) return
 
-    val painter = rememberCategoryPinPainter(spot.category, showIcon = rank == null)
+    val painter = rememberCategoryPinPainter(spot.category, rank)
 
     val transition = rememberInfiniteTransition(label = "spot_bob")
     val bobFraction = transition.animateFloat(
@@ -161,20 +165,6 @@ fun MapOverlayScope.SelectedSpotPinOverlay(spot: SpotUi?, rank: Int? = null) {
             contentDescription = null,
             modifier = Modifier.matchParentSize()
         )
-        rank?.let { number ->
-            // The pin's round head, where the category icon usually sits
-            Box(
-                modifier = Modifier.size(PIN_WIDTH * SELECTED_PIN_SCALE),
-                contentAlignment = Alignment.Center
-            ) {
-                LynkText(
-                    text = number.toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
     }
 }
 
@@ -182,11 +172,14 @@ fun MapOverlayScope.SelectedSpotPinOverlay(spot: SpotUi?, rank: Int? = null) {
 private fun SpotCategoryLayer(
     category: SpotCategory,
     geoJson: String,
-    selectedSpotId: String?,
-    isRanked: Boolean
+    ranks: ImmutableList<Int>,
+    selectedSpotId: String?
 ) {
     val source = rememberGeoJsonSource(data = GeoJsonData.JsonString(geoJson))
-    val pinPainter = rememberCategoryPinPainter(category, showIcon = !isRanked)
+    val pinPainter = rememberCategoryPinPainter(category)
+    val rankedPinPainters = ranks.associateWith { rank ->
+        key(rank) { rememberCategoryPinPainter(category, rank) }
+    }
 
     val isSelected = feature["id"].asString() eq const(selectedSpotId ?: NO_SELECTION_ID)
     val selectedHidden = switch(
@@ -197,37 +190,37 @@ private fun SpotCategoryLayer(
     SymbolLayer(
         id = category.layerId(),
         source = source,
-        iconImage = image(pinPainter),
+        iconImage = switch(
+            input = feature["rank"].asString(),
+            cases = rankedPinPainters.map { (rank, painter) -> case(rank.toString(), image(painter)) },
+            fallback = image(pinPainter)
+        ),
         iconAnchor = const(SymbolAnchor.Bottom),
         iconAllowOverlap = const(true),
-        iconOpacity = selectedHidden,
-        // Blank on an unranked pin, so the normal map draws no text
-        textField = format(span(feature["rank"].asString())),
-        // A font both MapTiler styles ship, light and dark
-        textFont = const(listOf("Roboto Bold", "Noto Sans Bold")),
-        textColor = const(Color.White),
-        textSize = const(14.sp),
-        // Up from the pin's tip to the center of its round head
-        textOffset = textOffset(0.dp, -(PIN_HEIGHT - PIN_WIDTH / 2)),
-        textAllowOverlap = const(true),
-        textOpacity = selectedHidden
+        iconOpacity = selectedHidden
     )
 }
 
 @Composable
-private fun rememberCategoryPinPainter(category: SpotCategory, showIcon: Boolean = true): Painter {
+private fun rememberCategoryPinPainter(category: SpotCategory, rank: Int? = null): Painter {
     val coreColor = getCategoryPinColor(category)
     val surfaceColor = MaterialTheme.colorScheme.surface
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
     val iconPainter = rememberVectorPainter(image = category.getIcon())
+    val textMeasurer = rememberTextMeasurer()
+    val rankStyle = MaterialTheme.typography.titleSmall.copy(
+        fontWeight = FontWeight.Bold,
+        color = Color.White
+    )
 
     val density = LocalDensity.current
 
-    return remember(category, showIcon, surfaceColor, outlineColor, density) {
+    return remember(category, rank, surfaceColor, outlineColor, density) {
         object : Painter() {
             val widthPx = with(density) { PIN_WIDTH.toPx() }
             val heightPx = with(density) { PIN_HEIGHT.toPx() }
             val strokePx = with(density) { 2.dp.toPx() }
+            val rankLayout = rank?.let { textMeasurer.measure(it.toString(), rankStyle) }
 
             override val intrinsicSize: Size = Size(widthPx, heightPx)
 
@@ -252,7 +245,19 @@ private fun rememberCategoryPinPainter(category: SpotCategory, showIcon: Boolean
                     center = Offset(radius, radius)
                 )
 
-                if (!showIcon) return
+                if (rankLayout != null) {
+                    // Measured at the pin's own size, so it grows with the pin when drawn bigger
+                    scale(scale = width / widthPx, pivot = Offset(radius, radius)) {
+                        drawText(
+                            textLayoutResult = rankLayout,
+                            topLeft = Offset(
+                                x = radius - rankLayout.size.width / 2f,
+                                y = radius - rankLayout.size.height / 2f
+                            )
+                        )
+                    }
+                    return
+                }
 
                 val iconSize = width * 0.45f
                 translate(left = (width - iconSize) / 2f, top = (width - iconSize) / 2f) {
@@ -278,7 +283,7 @@ private fun getCategoryPinColor(category: SpotCategory): Color {
 
 private fun SpotCategory.layerId(): String = "spots-${name.lowercase()}"
 
-// Every pin carries a rank, blank when it has none, so the layer's text always has a string to read
+// Every pin carries a rank, blank when it has none, so the icon switch always has a string to match
 private fun List<SpotUi>.toFeatureCollectionJson(rankById: Map<String, Int>): String {
     val features = joinToString(",") { spot ->
         val rank = rankById[spot.id]?.toString().orEmpty()

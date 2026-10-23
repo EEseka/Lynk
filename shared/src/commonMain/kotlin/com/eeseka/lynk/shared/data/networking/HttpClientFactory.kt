@@ -19,6 +19,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.sse.SSE
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.header
 import io.ktor.client.statement.request
@@ -57,6 +58,7 @@ class HttpClientFactory(
             install(WebSockets) {
                 pingIntervalMillis = 20_000L
             }
+            install(SSE)
             defaultRequest {
                 header("x-api-key", AppConfig.API_KEY)
                 contentType(ContentType.Application.Json)

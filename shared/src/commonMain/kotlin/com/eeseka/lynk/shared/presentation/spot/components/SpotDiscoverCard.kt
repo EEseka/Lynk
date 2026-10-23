@@ -56,7 +56,8 @@ fun SpotDiscoverCard(
     userLat: Double?,
     userLng: Double?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    rankLabel: String? = null
 ) {
     val primaryPhotoUrl = remember(spotPhotos) {
         SpotPhotoUrlBuilder.getPrimaryPhotoUrl(spotPhotos)
@@ -88,6 +89,21 @@ fun SpotDiscoverCard(
                         contentDescription = spotName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                if (rankLabel != null) {
+                    LynkText(
+                        text = rankLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.5f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
 
@@ -187,7 +203,8 @@ private fun SpotDiscoverCardPreview() {
             spotRating = 4.8,
             userLat = 3.33,
             userLng = 2.344,
-            onClick = { }
+            onClick = { },
+            rankLabel = "#1"
         )
     }
 }

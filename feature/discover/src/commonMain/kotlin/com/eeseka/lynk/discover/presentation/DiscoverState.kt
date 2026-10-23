@@ -2,6 +2,7 @@ package com.eeseka.lynk.discover.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.settings.AppTheme
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -18,8 +19,7 @@ data class DiscoverState(
     val isGuestSigningOut: Boolean = false,
 
     // User Location
-    val userLatitude: Double? = null,
-    val userLongitude: Double? = null,
+    val userLocation: LocationCoordinates? = null,
     // Bumped on every fix so the blue dot can replay its pulse.
     val locationFetchEpoch: Int = 0,
 
@@ -28,11 +28,11 @@ data class DiscoverState(
     val isTrendingLoading: Boolean = false,
     val trendingError: UiText? = null,
     // Where the trending pins on the map were loaded around
-    val trendingLatitude: Double? = null,
-    val trendingLongitude: Double? = null,
+    val loadedAreaCenter: LocationCoordinates? = null,
 
-    // Top 10, for the area the user is in
+    // Top 10 and Lynk AI, for the area the user is in.
     val areaName: String? = null,
+    val areaCenter: LocationCoordinates? = null,
     val isTopSpotsMode: Boolean = false,
     val topSpots: ImmutableList<SpotUi> = persistentListOf(),
     val isTopSpotsLoading: Boolean = false,

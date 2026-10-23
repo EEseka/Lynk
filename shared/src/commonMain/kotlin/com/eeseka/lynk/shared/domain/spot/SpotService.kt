@@ -24,7 +24,6 @@ interface SpotService {
         query: String? = null,
         category: SpotCategory? = null,
         priceLevel: PriceLevel? = null,
-        radiusInMeters: Int = 5000,
         nextPageToken: String? = null // For Google Places pagination
     ): Result<PaginatedSpots, DataError.Remote>
 

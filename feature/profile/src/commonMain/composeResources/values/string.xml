@@ -25,12 +25,12 @@
     <string name="stat_unknown">—</string>
 
     <string name="saved_spots">Saved Spots</string>
-    <string name="saved_spots_empty_title">No saved spots yet</string>
+    <string name="saved_spots_empty_title">No Saved Spots Yet</string>
     <string name="saved_spots_empty_message">Tap the bookmark on any spot and it will wait for you here.</string>
     <string name="saved_spots_search_placeholder">Search your saved spots</string>
-    <string name="saved_spots_search_empty_title">No saved spots found</string>
+    <string name="saved_spots_search_empty_title">No Saved Spots Found</string>
     <string name="saved_spots_search_empty_message">Try a different name or clear the search to see everything you saved.</string>
-    <string name="saved_spots_load_error_title">Couldn't load your saved spots</string>
+    <string name="saved_spots_load_error_title">Couldn't Load Your Saved Spots</string>
     <string name="save_spot">Save spot</string>
     <string name="unsave_spot">Remove saved spot</string>
 
@@ -51,36 +51,36 @@
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
 
-    <string name="help_and_feedback">Help &amp; feedback</string>
-    <string name="contact_support">Contact support</string>
-    <string name="support_email_subject">Lynk Support Request</string>
+    <string name="help_and_feedback">Help &amp; Feedback</string>
+    <string name="contact_support">Contact Support</string>
+    <string name="support_email_subject">Lynk support request</string>
     <string name="support_email_body">Hello, I need help with…</string>
-    <string name="share_feedback">Share feedback</string>
-    <string name="feedback_email_subject">Lynk Feedback</string>
+    <string name="share_feedback">Share Feedback</string>
+    <string name="feedback_email_subject">Lynk feedback</string>
     <string name="feedback_email_body">Hello, here is what I think about Lynk…</string>
     <string name="email_device_info">Account ID: %1$s\nApp version: %2$s\nOS version: %3$s\nDevice model: %4$s</string>
 
     <string name="sign_out">Sign Out</string>
-    <string name="signing_out">Signing out…</string>
+    <string name="signing_out">Signing Out…</string>
     <string name="sign_out_confirm_title">Sign out?</string>
     <string name="sign_out_confirm_message">You'll need to sign in again to get back to your hangouts.</string>
 
     <string name="delete_account">Delete Account</string>
-    <string name="deleting_account">Deleting account…</string>
+    <string name="deleting_account">Deleting Account…</string>
     <string name="delete_account_confirm_title">Delete your account?</string>
     <string name="delete_account_confirm_message">This erases your profile, your saved spots and the photos you added to hangout albums. Past hangouts stay, with your name removed. It cannot be undone.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="error_delete_account_blocked">Your account still has something open: a hangout that has not finished, or money we are still moving. Cancel or leave the hangout, wait for any refund to land, then try again. Still stuck? Reach us from Contact support in Settings.</string>
 
-    <string name="guest_title">You're browsing as a guest</string>
+    <string name="guest_title">You're Browsing as a Guest</string>
     <string name="guest_message">Create an account to host hangouts, split bills and save the spots you like.</string>
     <string name="create_account">Create Account</string>
 
     <string name="made_with_love">Made with love by Eseka Emmanuel</string>
     <string name="app_version">Version %1$s</string>
 
-    <string name="notifications_required">Turn on notifications</string>
+    <string name="notifications_required">Turn On Notifications</string>
     <string name="notifications_required_message">Lynk needs notification permission to tell you about invites, spot picks and payment updates. Please enable it in your device settings.</string>
     <string name="open_settings">Open Settings</string>
     <string name="not_now">Not Now</string>

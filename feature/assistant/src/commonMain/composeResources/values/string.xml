@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="assistant_title">Lynk AI</string>
+    <string name="close">Close</string>
+    <string name="clear_chat">Clear Chat</string>
+    <string name="clear_chat_confirm_title">Clear this chat?</string>
+    <string name="clear_chat_confirm_message">Every message and spot in this chat will be deleted for good.</string>
+    <string name="dialog_dismiss">Cancel</string>
+    <string name="chat_cleared">Chat cleared</string>
+    <string name="chat_expired">This chat expired, so your next question starts a fresh one.</string>
+    <string name="spot_suggested">Spot suggested</string>
+
+    <!-- Empty chat -->
+    <string name="empty_title_discover">Find Your Next Spot</string>
+    <string name="empty_message_discover_area">Tell Lynk AI what you're in the mood for, and it will find places around %1$s.</string>
+    <string name="empty_message_discover">Tell Lynk AI what you're in the mood for, and it will find places in this area.</string>
+    <string name="empty_title_hangout">Find a Spot for %1$s</string>
+    <string name="empty_message_hangout">Lynk AI knows the vibe, the date and what's already on the ballot. Ask for places that fit, then suggest the best ones to the group.</string>
+    <string name="empty_message_hangout_read_only">There's nothing in your chat about this hangout.</string>
+    <string name="starter_discover_drinks">Somewhere chill for drinks tonight</string>
+    <string name="starter_discover_birthday">A good spot for a birthday dinner</string>
+    <string name="starter_discover_cheap">Cheap eats with a nice vibe</string>
+    <string name="starter_discover_music">Somewhere with live music</string>
+    <string name="starter_hangout_vibe">What spots fit our vibe?</string>
+    <string name="starter_hangout_reach">Somewhere easy for everyone to reach</string>
+    <string name="starter_hangout_budget">Something budget friendly for the group</string>
+    <string name="starter_hangout_late">A place that stays open late</string>
+
+    <!-- Answer -->
+    <string name="status_thinking">Thinking…</string>
+    <string name="status_searching">Looking for spots…</string>
+    <string name="status_reading_details">Checking the details…</string>
+    <string name="answer_pending">Lynk AI is still working on this answer.</string>
+    <string name="check_again">Check Again</string>
+    <string name="failure_timeout">Lynk AI took too long to answer.</string>
+    <string name="failure_refused">Lynk AI can only help you find a place to go.</string>
+    <string name="failure_error">Something went wrong while Lynk AI was answering.</string>
+    <string name="failure_not_counted">This one didn't count toward today's messages.</string>
+    <string name="failure_lost">Lynk AI's answer didn't reach you. Check your connection and ask again.</string>
+    <string name="try_again">Try Again</string>
+    <string name="copy_answer">Copy answer</string>
+    <string name="jump_to_latest">Jump to latest</string>
+    <string name="share_answer">Share answer</string>
+    <string name="retry_answer">Ask again</string>
+    <string name="history_load_error_title">Couldn't Load Your Chat</string>
+
+    <!-- Spot cards -->
+    <string name="suggest">Suggest</string>
+    <string name="on_the_ballot">On the ballot</string>
+    <string name="ballot_full">Ballot is full</string>
+
+    <!-- Input -->
+    <string name="input_placeholder">Ask about a place</string>
+    <string name="input_counter">%1$d / %2$d</string>
+    <string name="send">Send</string>
+    <string name="messages_left">%1$d of %2$d messages left today</string>
+    <string name="out_of_messages_title">You've Used Today's Messages</string>
+    <string name="out_of_messages_message">Lynk AI can take more questions at %1$s.</string>
+    <string name="out_of_messages_message_tomorrow">Lynk AI can take more questions tomorrow.</string>
+    <string name="read_only_voting_closed">This chat only takes messages while voting is open.</string>
+    <string name="read_only_ended">This hangout has ended, so this chat is read only.</string>
+    <string name="read_only_not_attending">Only people going to this hangout can ask Lynk AI.</string>
+
+    <!-- Errors before an answer starts -->
+    <string name="error_not_attending">You're no longer going to this hangout, so Lynk AI can't take questions here.</string>
+    <string name="error_hangout_busy">Lynk AI can't take that right now. Voting may have just closed, or it's still answering.</string>
+    <string name="error_still_answering">Lynk AI is still answering your last question.</string>
+    <string name="error_unavailable">Lynk AI is taking a break right now. Try again later.</string>
+</resources>

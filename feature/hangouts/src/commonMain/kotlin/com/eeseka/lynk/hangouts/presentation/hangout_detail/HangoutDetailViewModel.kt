@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
+import com.eeseka.lynk.shared.domain.assistant.AssistantMessageCountRepository
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
@@ -35,10 +36,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -64,6 +67,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class HangoutDetailViewModel(
     private val hangoutService: HangoutService,
     private val hangoutDetailRepository: HangoutDetailRepository,
+    private val assistantMessageCountRepository: AssistantMessageCountRepository,
     private val participantService: HangoutParticipantService,
     private val spotService: SpotService,
     private val connectionClient: LobbyConnectionClient,
@@ -82,17 +86,14 @@ class HangoutDetailViewModel(
 
     private var saveSpotJob: Job? = null
 
-    val state = combine(
-        _state,
-        appPreferences.theme
-    ) { currentState, theme ->
-        currentState.copy(mapTheme = theme)
-    }
+    val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
                 val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
                 _state.update { it.copy(currentUserId = authInfo?.user?.id) }
+                observeMapTheme()
                 observeHangout()
+                observeHasAssistantChat()
                 observeConnectionState()
                 observeInviteSearch()
                 observeLobbyEvents()
@@ -114,7 +115,7 @@ class HangoutDetailViewModel(
             HangoutDetailAction.OnCancelHangoutConfirmed -> cancelHangout()
             HangoutDetailAction.OnLeaveHangoutConfirmed -> leaveHangout()
             is HangoutDetailAction.OnWithdrawParticipantInvite -> withdrawParticipantInvite(action.userId)
-            HangoutDetailAction.OnInviteClick -> _state.update { it.copy(isInviteSheetOpen = true) }
+            HangoutDetailAction.OnInviteClick -> _state.update { it.copy(showInviteSheet = true) }
             HangoutDetailAction.OnDismissInviteSheet -> dismissInviteSheet()
             is HangoutDetailAction.OnInviteUser -> inviteParticipant(action.userId)
             is HangoutDetailAction.OnToggleSaveSpot -> toggleSaveSpot(spotId = action.spotId, isCurrentlySaved = action.isCurrentlySaved)
@@ -129,7 +130,8 @@ class HangoutDetailViewModel(
 
     private suspend fun handleLobbyEvent(event: LobbyEvent) {
         val currentHangoutId = _hangoutId.value ?: return
-        val isHost = state.value.hangout?.hostId == state.value.currentUserId
+        val currentState = _state.value
+        val isHost = currentState.hangout?.hostId == currentState.currentUserId
 
         when (event) {
             is LobbyEvent.PresenceUpdate -> {
@@ -211,7 +213,7 @@ class HangoutDetailViewModel(
             is LobbyEvent.PaymentReceived -> refreshDetailAndShowSnackbar(
                 match = event.hangoutId == currentHangoutId,
                 // The payer just came back from Paystack and knows perfectly well that they paid.
-                snackbar = if (event.userId == state.value.currentUserId) null else UiText.Resource(
+                snackbar = if (event.userId == _state.value.currentUserId) null else UiText.Resource(
                     Res.string.event_payment_received,
                     arrayOf(event.displayName)
                 ) to LynkFlashType.Success
@@ -332,6 +334,12 @@ class HangoutDetailViewModel(
         }
     }
 
+    private fun observeMapTheme() {
+        appPreferences.theme
+            .onEach { theme -> _state.update { it.copy(mapTheme = theme) } }
+            .launchIn(viewModelScope)
+    }
+
     private fun observeHangout() {
         _hangoutId
             .flatMapLatest { hangoutId ->
@@ -344,9 +352,32 @@ class HangoutDetailViewModel(
                 val areInvitesOpen = hangout?.status == HangoutStatus.VOTING ||
                         hangout?.status == HangoutStatus.SCHEDULED ||
                         hangout?.status == HangoutStatus.ONGOING
-                if (hangout != null && state.value.isInviteSheetOpen && !areInvitesOpen) {
+                if (hangout != null && _state.value.showInviteSheet && !areInvitesOpen) {
                     dismissInviteSheet()
                 }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeHasAssistantChat() {
+        _hangoutId
+            .flatMapLatest { hangoutId ->
+                if (hangoutId == null) return@flatMapLatest flowOf(false)
+
+                hangoutDetailRepository.observeHangout(hangoutId)
+                    .map { hangout -> hangout?.status }
+                    .distinctUntilChanged()
+                    // Voting always shows the way into the chat; after it, only a chat with messages does
+                    .onEach { status ->
+                        if (status != null && status != HangoutStatus.VOTING) {
+                            assistantMessageCountRepository.refreshMessageCount(hangoutId)
+                        }
+                    }
+                    .flatMapLatest { assistantMessageCountRepository.observeMessageCount(hangoutId) }
+                    .map { messageCount -> (messageCount ?: 0) > 0 }
+            }
+            .onEach { hasAssistantChat ->
+                _state.update { it.copy(hasAssistantChat = hasAssistantChat) }
             }
             .launchIn(viewModelScope)
     }
@@ -406,7 +437,7 @@ class HangoutDetailViewModel(
         _state.value.inviteQueryState.clearText()
         _state.update {
             it.copy(
-                isInviteSheetOpen = false,
+                showInviteSheet = false,
                 inviteResult = null,
                 inviteNotFound = false,
                 isInviteSearching = false

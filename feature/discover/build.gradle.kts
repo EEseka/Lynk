@@ -57,6 +57,7 @@ kotlin {
 
             implementation(projects.shared)
             implementation(projects.feature.createHangout)
+            implementation(projects.feature.assistant)
         }
 
         commonTest.dependencies {

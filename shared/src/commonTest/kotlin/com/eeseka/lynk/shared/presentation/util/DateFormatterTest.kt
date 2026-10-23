@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.doesNotContain
 import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -45,14 +46,20 @@ class DateFormatterTest {
 
     // A café in Kenya (UTC+3) that opens at 8:00 AM, as Google sent it on 2026-10-06
     @Test
-    fun `a place's time reads on its own clock`() {
+    fun `a place time reads on its own clock`() {
         val nextOpenTime = Instant.parse("2026-10-07T05:00:00Z")
+        val openingHours = SpotOpeningHours(
+            weekdayDescriptions = emptyList(),
+            utcOffsetMinutes = 180,
+            timeZoneId = "Africa/Nairobi",
+            periods = emptyList()
+        )
 
-        assertThat(nextOpenTime.toLocalDateTime(placeTimeZone(180)).time).isEqualTo(LocalTime(8, 0))
+        assertThat(nextOpenTime.toLocalDateTime(placeTimeZone(openingHours)).time).isEqualTo(LocalTime(8, 0))
     }
 
     @Test
-    fun `a place without an offset reads on the phone's clock`() {
+    fun `a place without hours reads on the phone clock`() {
         assertThat(placeTimeZone(null)).isEqualTo(TimeZone.currentSystemDefault())
     }
 }

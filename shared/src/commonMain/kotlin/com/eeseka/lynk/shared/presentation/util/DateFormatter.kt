@@ -1,11 +1,11 @@
 package com.eeseka.lynk.shared.presentation.util
 
 import androidx.compose.runtime.Composable
+import com.eeseka.lynk.shared.domain.spot.OpeningHoursCheck
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.UtcOffset
-import kotlinx.datetime.asTimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
 import kotlinx.datetime.format.DayOfWeekNames
@@ -18,7 +18,6 @@ import lynk.shared.generated.resources.am
 import lynk.shared.generated.resources.pm
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 fun Instant.toDateLabel(): String =
@@ -56,6 +55,17 @@ fun LocalTime.toTimeLabel(): String {
     )
 }
 
+// "8:00 PM" later today, "Sat 5 Sep · 8:00 PM" any other day; a place's hours pass its own clock, as Google Maps shows them
+@Composable
+fun Instant.toUpcomingTimeLabel(timeZone: TimeZone): String {
+    val isToday = toLocalDateTime(timeZone).date == Clock.System.now().toLocalDateTime(timeZone).date
+    return if (isToday) {
+        toLocalDateTime(timeZone).time.toTimeLabel()
+    } else {
+        toDateTimeLabel(timeZone)
+    }
+}
+
 // "Sat 5 Sep · 8:00 PM", on the phone's clock unless a place's clock is given
 @Composable
 fun Instant.toDateTimeLabel(timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
@@ -63,20 +73,9 @@ fun Instant.toDateTimeLabel(timeZone: TimeZone = TimeZone.currentSystemDefault()
     return "${dateTime.date.toDateLabel()} · ${dateTime.time.toTimeLabel()}"
 }
 
-// "8:00 PM" within a day, "Sat 5 Sep · 8:00 PM" further out; a place's hours pass its own clock, as Google Maps shows them
-@Composable
-fun Instant.toUpcomingTimeLabel(timeZone: TimeZone): String {
-    val isWithinADay = this - Clock.System.now() < 1.days
-    return if (isWithinADay) {
-        toLocalDateTime(timeZone).time.toTimeLabel()
-    } else {
-        toDateTimeLabel(timeZone)
-    }
-}
-
-// A place's own clock from Google's UTC offset in minutes; the phone's clock when Google didn't send one
-fun placeTimeZone(utcOffsetMinutes: Int?): TimeZone {
-    return utcOffsetMinutes?.let { UtcOffset(seconds = it * 60).asTimeZone() } ?: TimeZone.currentSystemDefault()
+// A place's own clock from Google's time zone or offset; the phone's clock when Google sent neither
+fun placeTimeZone(openingHours: SpotOpeningHours?): TimeZone {
+    return openingHours?.let { OpeningHoursCheck.placeTimeZoneOf(it) } ?: TimeZone.currentSystemDefault()
 }
 
 // The date picker hands back, and takes, midnight UTC. Converting in the phone's own time zone

@@ -77,6 +77,8 @@ fun MainShellScreen(
         currentDestination?.hierarchy?.any {
             it.hasRoute(HangoutsGraphRoutes.Notifications::class) ||
                     it.hasRoute(HangoutsGraphRoutes.HangoutAlbum::class) ||
+                    it.hasRoute(HangoutsGraphRoutes.Assistant::class) ||
+                    it.hasRoute(DiscoverGraphRoutes.Assistant::class) ||
                     it.hasRoute(ProfileGraphRoutes.SavedSpots::class)
         } == true
     }

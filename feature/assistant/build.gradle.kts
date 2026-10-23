@@ -1,0 +1,59 @@
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidKmpLibrary) // It is a Library, not an App
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+}
+
+kotlin {
+    android {
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        namespace = "com.eeseka.lynk.assistant"
+        androidResources { enable = true }
+
+        withHostTest {}
+    }
+
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "Assistant"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.material3)
+            implementation(libs.ui)
+            implementation(libs.components.resources)
+            implementation(libs.ui.tooling.preview)
+
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation(libs.icons.lucide.cmp)
+
+            implementation(libs.coil.compose)
+
+            implementation(libs.markdown.renderer.m3)
+
+            implementation(libs.bundles.koin.common)
+
+            implementation(libs.kotlinx.collections.immutable)
+            implementation(libs.kotlinx.datetime)
+
+            implementation(projects.shared)
+        }
+
+        commonTest.dependencies {
+            implementation(projects.testing)
+        }
+    }
+}

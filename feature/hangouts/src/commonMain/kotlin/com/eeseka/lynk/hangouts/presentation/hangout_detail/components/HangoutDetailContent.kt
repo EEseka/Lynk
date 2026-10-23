@@ -191,12 +191,8 @@ fun HangoutDetailContent(
 
             paymentSetup()
 
-            AnimatedContent(
-                targetState = hangout.payment,
-                contentKey = { payment -> payment != null },
-                transitionSpec = { fadeIn() togetherWith fadeOut() }
-            ) { payment ->
-                if (payment != null) {
+            AnimatedVisibility(visible = hangout.payment != null) {
+                hangout.payment?.let { payment ->
                     PaymentSection(
                         payment = payment,
                         isHost = isHost,

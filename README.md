@@ -24,12 +24,14 @@ Android and iOS against a live Spring Boot backend.
 |                   |                                                                                                                             |
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | **Sign in**       | Google Sign-In or a guest account, then a profile with a live username availability check and an optional photo             |
-| **Discover**      | A map of trending spots near you, search, a price filter, and saving the ones you like, with real photos from Google Places |
+| **Discover**      | A map of trending spots and a Top 10 near you, search, a price filter, opening hours, and saving the ones you like          |
+| **Lynk AI**       | Ask for ideas on Discover or in a voting hangout; answers stream in with spot cards you can open, save or suggest           |
 | **Hangouts**      | Create one in two steps, invite friends by username, RSVP, edit, cancel, and filter your list by status                     |
 | **Live lobby**    | Propose spots, vote in real time, see who is in the room, and let the host break a tie                                      |
 | **Payments**      | The host turns on bill-splitting, everyone pays their share through Paystack inside the app, the host gets paid out         |
+| **Albums**        | Everyone who went adds photos to one private album, with captions, saving and sharing                                       |
 | **Notifications** | Push notifications, an inbox with an unread badge, and invite previews you can accept or decline from the notification      |
-| **Profile**       | Edit your profile, saved spots, light and dark theme, push settings, account deletion that refuses to strand money          |
+| **Profile**       | Edit your profile, saved spots, light, dark and Lights Out themes, haptics, push settings, and safe account deletion        |
 
 It adapts to the screen: a bottom bar on phones, a navigation rail and a side-by-side hangout list and detail on tablets
 and foldables, bottom sheets on phones and dialogs on wide screens.
@@ -55,16 +57,18 @@ flowchart TB
         HANG[hangouts]
         NOTIF[notifications]
         PROF[profile]
+        AI[assistant]
     end
 
     SHARED["shared<br/>domain, data, design system"]
     TESTING["testing<br/>fakes and test helpers, tests only"]
 
-    API["Lynk API<br/>45 REST endpoints, 1 WebSocket"]
+    API["Lynk API<br/>REST, a WebSocket, Server-Sent Events"]
     GOOGLE["Google Places<br/>photos"]
     MAP["MapTiler<br/>map tiles"]
     PAYSTACK["Paystack<br/>checkout page"]
     FCM["Firebase<br/>push"]
+    STORAGE["Supabase Storage<br/>photo uploads"]
 
     ANDROID --> COMPOSE
     IOS --> COMPOSE
@@ -76,11 +80,12 @@ flowchart TB
     DISC --> MAP
     HANG --> PAYSTACK
     SHARED --> FCM
+    SHARED -->|signed links| STORAGE
 ```
 
 A feature depends on another only to embed one of its screens: `main_shell` hosts the Discover, Hangouts and Profile
-tabs, `discover` and `hangouts` open the `create_hangout` sheet, and `hangouts` shows the notifications inbox. Logic two
-features share always lives in `shared`.
+tabs, `discover` and `hangouts` open the `create_hangout` sheet and the Lynk AI chat, and `hangouts` shows the
+notifications inbox. Logic two features share always lives in `shared`.
 
 Every screen follows the same **MVI** shape: an immutable `State`, `Action`s in, one-off `Event`s out, a `Root`
 composable that wires the ViewModel and a `Screen` composable that only draws. Data flows through interfaces declared in
@@ -102,19 +107,20 @@ feature/
   auth           Google and guest sign-in
   profile_setup  username, display name and photo for a new account
   main_shell     tab navigation and the unread notification badge
-  discover       map, trending spots, search, saving a spot
+  discover       map, trending spots, Top 10, search, saving a spot
   create_hangout the two-step create sheet
-  hangouts       hangout list, detail, live voting, payments
+  hangouts       hangout list, detail, live voting, payments, albums
   notifications  inbox and invite previews
   profile        profile, settings, saved spots
+  assistant      the Lynk AI chat, streamed answers and spot cards
 ```
 
 ### Things worth a closer look
 
 **A lobby that manages its own connection.** The live lobby is a raw WebSocket with a small JSON envelope. It connects
 only while the user is signed in, online and has the app open, disconnects as soon as any of those stops being true, and
-retries with a backoff from 2 to 30 seconds. Nineteen event types arrive over it, from presence and votes to payments and
-host actions.
+retries with a backoff from 2 to 30 seconds. Everything from presence and votes to payments, new photos and host actions
+arrives over it.
 
 **Payments the app cannot fake.** Paystack's checkout opens in the phone's own in-app browser, Safari View Controller on
 iOS and a Chrome Custom Tab on Android, so card details go into the browser and never pass through Lynk. When the user
@@ -124,6 +130,10 @@ returns, the app does not mark anything as paid: it asks Lynk API, which checks 
 `HangoutVotingViewModel` for the lobby, and `HangoutPaymentsViewModel` for money. They share one in-memory
 `HangoutDetailRepository` in `shared`, so an update from any of them reaches the other two without passing data through
 the UI, and opening a different hangout starts all three from a clean slate.
+
+**Answers that type themselves out.** Lynk AI streams over Server-Sent Events. The text is revealed at a steady pace
+measured in frame time, so it reads the same on a 60 Hz and a 120 Hz screen, renders as Markdown, and the spot cards
+appear only once the words have finished. Every answer can be copied or shared, and the latest one asked again.
 
 **Map markers are Compose, not map layers.** MapLibre draws the map; every marker is an ordinary composable placed on top
 of it, so markers animate and theme like the rest of the app.
@@ -137,25 +147,26 @@ kind of interaction, and layouts avoid fixed heights so they grow with the syste
 
 **Kotlin 2.4** · **Compose Multiplatform 1.12** · Material 3 with adaptive layouts · Koin · Ktor (OkHttp and Darwin) ·
 kotlinx.serialization · kotlinx.coroutines · DataStore · Coil 3 · MapLibre Compose with MapTiler tiles · Google Places ·
-KMPAuth (Google Sign-In) · Calf · Chrome Custom Tabs · moko-permissions · moko-geo · Firebase Cloud Messaging · Kermit · Compottie · Lucide
-icons · BuildKonfig · Turbine · AssertK · GitHub Actions
+KMPAuth (Google Sign-In) · Calf · Chrome Custom Tabs · moko-permissions · moko-geo · Firebase Cloud Messaging · Kermit ·
+Compottie · Multiplatform Markdown Renderer · ZoomImage · Lucide icons · BuildKonfig · Turbine · AssertK · GitHub Actions
 
 ## Testing
 
-**322 tests**, all in `commonTest`, so the same test code runs on the **JVM** and on the **iOS simulator**.
+Every test lives in `commonTest`, so the same test code runs on the **JVM** and on the **iOS simulator**.
 
 ```
-hangouts          101   detail, lobby voting, payments, list, list-detail
-shared             57   stores, paginator, unread counter, mappers, date and money formatting, validators
-create_hangout     52   the two-step flow and its validators
-profile            32   profile, settings, saved spots
-notifications      22   inbox and invite previews
-profile_setup      18   username checks, photo upload, submission
-discover           12   trending, search, filters, saving spots
-composeApp         11   session, theme and first-run state
-auth                9   Google and guest sign-in
-main_shell          6   tabs and the unread badge
-onboarding          2   first run
+hangouts          detail, lobby voting, payments, albums, list, list-detail
+shared            stores, paginator, unread counter, mappers, opening hours, date and money formatting, validators
+create_hangout    the two-step flow and its validators
+assistant         sending, streaming, failures, daily limits, chat history
+profile           profile, settings, saved spots
+notifications     inbox and invite previews
+profile_setup     username checks, photo upload, submission
+discover          trending, Top 10, search, filters, saving spots
+composeApp        session, theme and first-run state
+auth              Google and guest sign-in
+main_shell        tabs and the unread badge
+onboarding        first run
 ```
 
 Every ViewModel is tested against every one of its actions, plus the logic that sits outside ViewModels: validators,
@@ -166,8 +177,8 @@ The suite tests behaviour, not pixels: screens only draw state that the ViewMode
 checked on real Android and iOS devices.
 
 ```bash
-./gradlew testAndroidHostTest       # all 322 on the JVM
-./gradlew iosSimulatorArm64Test     # all 322 on an iOS simulator (macOS only)
+./gradlew testAndroidHostTest       # every test on the JVM
+./gradlew iosSimulatorArm64Test     # every test on an iOS simulator (macOS only)
 ```
 
 ## CI and releases

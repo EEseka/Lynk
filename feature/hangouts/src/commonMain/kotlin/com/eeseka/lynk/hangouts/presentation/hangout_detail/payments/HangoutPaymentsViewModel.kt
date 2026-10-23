@@ -97,7 +97,7 @@ class HangoutPaymentsViewModel(
             initialValue = HangoutPaymentsState()
         )
 
-    private val isBusyFlow = state.map {
+    private val isBusyFlow = _state.map {
         it.isEnablingPayments || it.isResolvingAccount
     }.distinctUntilChanged()
 
@@ -115,8 +115,8 @@ class HangoutPaymentsViewModel(
             HangoutPaymentsAction.OnChangeDeadlineClick -> _state.update { it.copy(pendingDeadlineChange = DeadlineChangeIntent.CHANGE) }
             HangoutPaymentsAction.OnDismissDeadlinePicker -> _state.update { it.copy(pendingDeadlineChange = null) }
             is HangoutPaymentsAction.OnNewDeadlineSelected -> submitNewDeadline(action.date)
-            HangoutPaymentsAction.OnDeadlineDecisionClick -> _state.update { it.copy(isDeadlineDecisionSheetOpen = true) }
-            HangoutPaymentsAction.OnDismissDeadlineDecisionSheet -> _state.update { it.copy(isDeadlineDecisionSheetOpen = false) }
+            HangoutPaymentsAction.OnDeadlineDecisionClick -> _state.update { it.copy(showDeadlineDecisionSheet = true) }
+            HangoutPaymentsAction.OnDismissDeadlineDecisionSheet -> _state.update { it.copy(showDeadlineDecisionSheet = false) }
             is HangoutPaymentsAction.OnDeadlineDecisionSelected -> selectDeadlineDecision(action.decision)
             HangoutPaymentsAction.OnRetryPayoutClick -> retryPayout()
             HangoutPaymentsAction.OnPayClick -> initializePayment()
@@ -141,7 +141,7 @@ class HangoutPaymentsViewModel(
                 isResolvingAccount = false,
                 pendingDeadlineChange = null,
                 isChangingDeadline = false,
-                isDeadlineDecisionSheetOpen = false,
+                showDeadlineDecisionSheet = false,
                 isDecidingAtDeadline = false,
                 isRetryingPayout = false,
                 isInitializingPayment = false,
@@ -160,7 +160,7 @@ class HangoutPaymentsViewModel(
         }
         _state.update { it.copy(isCollectPaymentsOn = true) }
         // 262 banks in one unpaginated call, so it is fetched once when the form first opens.
-        if (state.value.allBanks.isEmpty()) loadBanks()
+        if (_state.value.allBanks.isEmpty()) loadBanks()
     }
 
     private fun selectPaymentDeadline(date: LocalDate) {
@@ -174,7 +174,7 @@ class HangoutPaymentsViewModel(
 
     private fun submitNewDeadline(date: LocalDate) {
         val hangoutId = _hangoutId.value ?: return
-        val intent = state.value.pendingDeadlineChange ?: return
+        val intent = _state.value.pendingDeadlineChange ?: return
         val scheduledAt = hangout.value?.scheduledAt ?: return
 
         date.deadlineError()?.let { error ->
@@ -221,7 +221,7 @@ class HangoutPaymentsViewModel(
         if (decision == DeadlineDecision.EXTEND) {
             _state.update {
                 it.copy(
-                    isDeadlineDecisionSheetOpen = false,
+                    showDeadlineDecisionSheet = false,
                     pendingDeadlineChange = DeadlineChangeIntent.EXTEND
                 )
             }
@@ -247,7 +247,8 @@ class HangoutPaymentsViewModel(
     private fun openBankPicker() {
         _state.update { it.copy(isBankPickerOpen = true) }
         // The banks load once, when payments are switched on. If that failed there is nothing to pick from, so opening the picker again is the retry.
-        if (state.value.allBanks.isEmpty() && !state.value.isLoadingBanks) loadBanks()
+        val currentState = _state.value
+        if (currentState.allBanks.isEmpty() && !currentState.isLoadingBanks) loadBanks()
     }
 
     private fun dismissBankPicker() {
@@ -256,7 +257,7 @@ class HangoutPaymentsViewModel(
     }
 
     private fun selectBank(bankCode: String) {
-        val bank = state.value.allBanks.firstOrNull { it.code == bankCode } ?: return
+        val bank = _state.value.allBanks.firstOrNull { it.code == bankCode } ?: return
         _state.value.bankSearchState.clearText()
         _state.update {
             it.copy(
@@ -313,7 +314,7 @@ class HangoutPaymentsViewModel(
     private fun observeAccountResolution() {
         combine(
             snapshotFlow { _state.value.accountNumberState.text.toString() },
-            state.map { it.selectedBank?.code }.distinctUntilChanged()
+            _state.map { it.selectedBank?.code }.distinctUntilChanged()
         ) { accountNumber, bankCode ->
             accountNumber.trim() to bankCode
         }
@@ -370,7 +371,7 @@ class HangoutPaymentsViewModel(
         val totalCostFlow = snapshotFlow { _state.value.totalCostState.text.toString() }
         val accountNumberFlow = snapshotFlow { _state.value.accountNumberState.text.toString() }
 
-        val pickedValuesFlow = state
+        val pickedValuesFlow = _state
             .map { Triple(it.paymentDeadlineDate, it.selectedBank, it.resolvedAccountName) }
             .distinctUntilChanged()
 
@@ -392,7 +393,7 @@ class HangoutPaymentsViewModel(
     }
 
     private fun enablePayments() {
-        val currentState = state.value
+        val currentState = _state.value
 
         hasAttemptedSubmit = true
 
@@ -450,7 +451,7 @@ class HangoutPaymentsViewModel(
     }
 
     private fun validateFormInputs(): Boolean {
-        val currentState = state.value
+        val currentState = _state.value
         val totalCostKobo = _state.value.totalCostState.text.toKoboOrNull()
         val attendingCount = hangout.value?.participants?.count { it.rsvpStatus == RsvpStatus.ATTENDING } ?: 0
         val isShareTooLow = totalCostKobo != null && attendingCount > 0 && totalCostKobo / attendingCount < MIN_COST_PER_PERSON_KOBO
@@ -531,7 +532,7 @@ class HangoutPaymentsViewModel(
     }
 
     private fun openPaymentPage() {
-        val url = state.value.paymentQuote?.authorizationUrl ?: return
+        val url = _state.value.paymentQuote?.authorizationUrl ?: return
         dismissPayConfirmSheet()
         _state.update { it.copy(paymentCheckoutUrl = url, isAwaitingPaymentReturn = true) }
     }

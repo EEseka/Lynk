@@ -2,6 +2,7 @@ package com.eeseka.lynk.notifications.presentation.mappers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.composables.icons.lucide.AlarmClock
 import com.composables.icons.lucide.Ban
 import com.composables.icons.lucide.BadgeCheck
 import com.composables.icons.lucide.CalendarClock
@@ -12,6 +13,7 @@ import com.composables.icons.lucide.Images
 import com.composables.icons.lucide.Landmark
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
+import com.composables.icons.lucide.MapPinOff
 import com.composables.icons.lucide.PartyPopper
 import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Play
@@ -49,6 +51,8 @@ import lynk.feature.notifications.generated.resources.notification_removed_for_n
 import lynk.feature.notifications.generated.resources.notification_schedule_changed
 import lynk.feature.notifications.generated.resources.notification_someone
 import lynk.feature.notifications.generated.resources.notification_spot_chosen
+import lynk.feature.notifications.generated.resources.notification_spot_reminder_after_start
+import lynk.feature.notifications.generated.resources.notification_spot_reminder_before_start
 import lynk.feature.notifications.generated.resources.notification_voting_reopened
 import org.jetbrains.compose.resources.stringResource
 
@@ -128,6 +132,16 @@ fun NotificationUi.toUiText(): UiText {
             arrayOf(actor, hangoutName)
         )
 
+        NotificationType.SPOT_REMINDER_BEFORE_START -> UiText.Resource(
+            Res.string.notification_spot_reminder_before_start,
+            arrayOf(hangoutName)
+        )
+
+        NotificationType.SPOT_REMINDER_AFTER_START -> UiText.Resource(
+            Res.string.notification_spot_reminder_after_start,
+            arrayOf(hangoutName)
+        )
+
         NotificationType.PAYMENT_DEADLINE_RESOLVED -> UiText.Resource(
             Res.string.notification_payment_deadline_resolved,
             arrayOf(hangoutName)
@@ -195,6 +209,8 @@ fun NotificationType.getIcon(): ImageVector {
         NotificationType.HANGOUT_COMPLETION_REMINDER -> Lucide.Hourglass
         NotificationType.HANGOUT_CANCELLED -> Lucide.Ban
         NotificationType.PHOTOS_ADDED -> Lucide.Images
+        NotificationType.SPOT_REMINDER_BEFORE_START -> Lucide.AlarmClock
+        NotificationType.SPOT_REMINDER_AFTER_START -> Lucide.MapPinOff
 
         NotificationType.PAYMENT_DEADLINE_RESOLVED -> Lucide.BadgeCheck
         NotificationType.PAYMENT_DEADLINE_NEEDS_DECISION -> Lucide.TriangleAlert

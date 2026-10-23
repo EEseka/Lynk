@@ -34,10 +34,10 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import kotlinx.coroutines.launch
 import lynk.feature.onboarding.generated.resources.Res
-import lynk.feature.onboarding.generated.resources.discover_trending_spots_nearby
+import lynk.feature.onboarding.generated.resources.bored_of_the_same_old_spot
 import lynk.feature.onboarding.generated.resources.end_the_debate
 import lynk.feature.onboarding.generated.resources.everyone_pays_before_deadline
-import lynk.feature.onboarding.generated.resources.find_the_perfect_spot
+import lynk.feature.onboarding.generated.resources.find_somewhere_new
 import lynk.feature.onboarding.generated.resources.split_the_cost_evenly
 import lynk.feature.onboarding.generated.resources.stop_the_group_chat_debate
 import org.jetbrains.compose.resources.stringResource
@@ -72,8 +72,8 @@ fun OnboardingScreen(onAction: (OnboardingAction) -> Unit) {
             animationFileName = ANIMATION_COMMUNITY
         ),
         OnboardingPageUi(
-            title = stringResource(Res.string.find_the_perfect_spot),
-            description = stringResource(Res.string.discover_trending_spots_nearby),
+            title = stringResource(Res.string.find_somewhere_new),
+            description = stringResource(Res.string.bored_of_the_same_old_spot),
             animationFileName = ANIMATION_MAP_PIN_LOCATION
         ),
         OnboardingPageUi(

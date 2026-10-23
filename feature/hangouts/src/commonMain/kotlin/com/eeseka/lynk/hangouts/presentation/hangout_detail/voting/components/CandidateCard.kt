@@ -295,14 +295,13 @@ private fun RemoveButton(
     Box(
         modifier = Modifier
             .minimumInteractiveComponentSize()
+            .padding(8.dp)
             .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.5f))
             .clickable(enabled = !isRemoving) {
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onRemove()
             }
-            .padding(8.dp)
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.5f))
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {

@@ -315,11 +315,12 @@ private fun CreateHangoutSheetContent(
 
                         CreateHangoutStepTwo(
                             isVotingMode = state.isVotingMode,
+                            isSpotLocked = state.originalHangout?.payment != null,
                             activeSearchTab = state.activeSearchTab,
                             searchState = state.spotSearchTextState,
                             selectedSpot = state.selectedSpot,
-                            userLatitude = state.userLatitude,
-                            userLongitude = state.userLongitude,
+                            userLatitude = state.userLocation?.latitude,
+                            userLongitude = state.userLocation?.longitude,
                             spots = spots,
                             isLoading = isLoading,
                             isEndReached = isEndReached,

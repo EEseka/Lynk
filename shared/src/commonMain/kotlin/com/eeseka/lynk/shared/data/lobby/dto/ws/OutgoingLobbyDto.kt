@@ -1,4 +1,4 @@
-package com.eeseka.lynk.shared.data.lobby.dto
+package com.eeseka.lynk.shared.data.lobby.dto.ws
 
 import kotlinx.serialization.Serializable
 

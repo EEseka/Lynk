@@ -1,5 +1,5 @@
 <resources>
-    <string name="search_spots_hint">Search for a spot...</string>
+    <string name="search_spots_hint">Search for a spot…</string>
     <string name="search_hint_lounge">Try ‘rooftop lounges in %1$s’</string>
     <string name="search_hint_cafe">Try ‘brunch spots in %1$s’</string>
     <string name="search_hint_club">Try ‘nightclubs in %1$s’</string>
@@ -8,29 +8,33 @@
 
     <string name="all">All</string>
     <string name="any_price">Any Price</string>
-    <string name="filter_price">Filter Price</string>
+    <string name="filter_price">Filter price</string>
 
     <string name="location_required">Location Required</string>
     <string name="location_required_message">Lynk needs your location to show you nearby spots and hangouts. Please enable it in your device settings.</string>
     <string name="open_settings">Open Settings</string>
     <string name="not_now">Not Now</string>
-    <string name="locate_me">Locate Me</string>
-    <string name="finding_your_location">Finding your location</string>
+    <string name="locate_me">Locate me</string>
+    <string name="finding_your_location">Finding your location…</string>
     <string name="location_not_found">We couldn't find your location. Please try again in a moment.</string>
     <string name="location_turned_off">Location is turned off on this device. Turn it on to see spots near you.</string>
     <string name="location_permission_needed">Lynk needs permission to use your location.</string>
 
     <string name="open_spot_search">Open spot search</string>
-    <string name="trending_load_error_title">Couldn't load nearby spots</string>
-    <string name="search_this_area">Search this area</string>
-    <string name="no_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
+    <string name="trending_load_error_title">Couldn't Load Nearby Spots</string>
+    <string name="search_this_area">Search This Area</string>
+    <string name="no_trending_spots_in_area">No spots around here. Try moving the map somewhere livelier.</string>
+    <string name="no_search_results">No matching spots around here. Try another search or move the map.</string>
+    <string name="no_top_spots_in_area">No top spots around here yet. Try moving the map somewhere livelier.</string>
     <string name="top_spots_in_area">Top 10 in %1$s</string>
     <string name="leave_top_spots">Leave Top 10</string>
     <string name="top_spot_rank">#%1$d in %2$s</string>
+    <string name="top_spot_number">#%1$d</string>
 
-    <string name="empty_search_title">No spots found</string>
+    <string name="empty_search_title">No Spots Found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>
 
     <string name="save_this_spot">save this spot</string>
     <string name="create_a_hangout">create a hangout</string>
+    <string name="ask_lynk_ai_for_spot_ideas">ask Lynk AI for spot ideas</string>
 </resources>

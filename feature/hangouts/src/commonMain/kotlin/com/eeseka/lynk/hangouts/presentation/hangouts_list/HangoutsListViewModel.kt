@@ -122,8 +122,8 @@ class HangoutsListViewModel(
         val searchQueryFlow = snapshotFlow { _state.value.searchTextState.text.toString().trim() }
             .debounce { query -> if (query.isBlank()) 0.milliseconds else 500.milliseconds }
 
-        val statusFilterFlow = state.map { it.selectedStatusFilter }.distinctUntilChanged()
-        val vibeFlow = state.map { it.selectedVibe }.distinctUntilChanged()
+        val statusFilterFlow = _state.map { it.selectedStatusFilter }.distinctUntilChanged()
+        val vibeFlow = _state.map { it.selectedVibe }.distinctUntilChanged()
 
         combine(
             searchQueryFlow,
@@ -172,7 +172,7 @@ class HangoutsListViewModel(
                 if (throwable is DataErrorException) {
                     val message = throwable.error.toUiText()
 
-                    if (state.value.hangouts.isEmpty()) {
+                    if (_state.value.hangouts.isEmpty()) {
                         _state.update { it.copy(loadError = message) }
                     } else {
                         eventChannel.send(HangoutsListEvent.Error(message))

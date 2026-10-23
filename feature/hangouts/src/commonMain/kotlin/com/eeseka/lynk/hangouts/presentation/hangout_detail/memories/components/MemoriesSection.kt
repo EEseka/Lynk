@@ -50,7 +50,7 @@ import lynk.feature.hangouts.generated.resources.memories_title
 import lynk.feature.hangouts.generated.resources.memories_title_with_count
 import org.jetbrains.compose.resources.stringResource
 
-private const val PLACEHOLDER_THUMBNAIL_COUNT = 5
+private const val PLACEHOLDER_THUMBNAIL_COUNT = 8
 
 @Composable
 fun MemoriesSection(
@@ -82,7 +82,7 @@ fun MemoriesSection(
                             hapticFeedback(AppHaptic.ImpactLight)
                             onSeeAllClick()
                         }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(start = 8.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

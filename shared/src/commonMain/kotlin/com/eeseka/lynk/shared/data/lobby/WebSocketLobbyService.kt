@@ -1,7 +1,7 @@
 package com.eeseka.lynk.shared.data.lobby
 
-import com.eeseka.lynk.shared.data.lobby.dto.OutgoingLobbyDto
-import com.eeseka.lynk.shared.data.lobby.dto.WebSocketMessageDto
+import com.eeseka.lynk.shared.data.lobby.dto.ws.OutgoingLobbyDto
+import com.eeseka.lynk.shared.data.lobby.dto.ws.WebSocketMessageDto
 import com.eeseka.lynk.shared.data.lobby.network.KtorLobbyWebSocketConnector
 import com.eeseka.lynk.shared.domain.lobby.LobbyService
 import com.eeseka.lynk.shared.domain.util.DataError

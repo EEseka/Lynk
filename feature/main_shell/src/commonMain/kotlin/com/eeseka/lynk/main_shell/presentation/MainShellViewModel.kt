@@ -87,7 +87,7 @@ class MainShellViewModel(
         isOnHangoutsTab = isActive
         if (!isActive) return
 
-        lastSeenUnreadCount = state.value.unreadNotificationCount
+        lastSeenUnreadCount = _state.value.unreadNotificationCount
         _state.update { it.copy(hasUnseenNotifications = false) }
 
         viewModelScope.launch {

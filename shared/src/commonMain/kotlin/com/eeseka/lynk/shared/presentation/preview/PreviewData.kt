@@ -9,6 +9,8 @@ import com.eeseka.lynk.shared.domain.spot.model.BusinessStatus
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.SpotAiSummary
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningHours
+import com.eeseka.lynk.shared.domain.spot.model.SpotOpeningPeriod
 import com.eeseka.lynk.shared.domain.spot.model.SpotPriceRange
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutPaymentUi
@@ -23,17 +25,33 @@ import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.DayOfWeek
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
-// Sample data shared by every @Preview in the app. Previews only — never read from production code.
+// Sample data shared by every @Preview in the app.
 
 const val PREVIEW_HOST_ID = "host-1"
 const val PREVIEW_GUEST_ID = "guest-1"
 
 val PREVIEW_SCHEDULED_AT: Instant = Instant.fromEpochSeconds(1_800_000_000L)
 val PREVIEW_CREATED_AT: Instant = Instant.fromEpochSeconds(1_790_000_000L)
+
+// The same week as previewWeekHours, in Lagos, so open or closed follows the time the preview renders
+val previewOpeningHours = SpotOpeningHours(
+    weekdayDescriptions = emptyList(),
+    utcOffsetMinutes = 60,
+    timeZoneId = "Africa/Lagos",
+    periods = listOf(
+        SpotOpeningPeriod(DayOfWeek.MONDAY, 12 * 60, DayOfWeek.MONDAY, 23 * 60),
+        SpotOpeningPeriod(DayOfWeek.TUESDAY, 12 * 60, DayOfWeek.TUESDAY, 23 * 60),
+        SpotOpeningPeriod(DayOfWeek.WEDNESDAY, 12 * 60, DayOfWeek.WEDNESDAY, 23 * 60),
+        SpotOpeningPeriod(DayOfWeek.THURSDAY, 12 * 60, DayOfWeek.FRIDAY, 60),
+        SpotOpeningPeriod(DayOfWeek.FRIDAY, 12 * 60, DayOfWeek.SATURDAY, 2 * 60),
+        SpotOpeningPeriod(DayOfWeek.SATURDAY, 12 * 60, DayOfWeek.SUNDAY, 2 * 60)
+    )
+)
 
 fun previewSpot(
     id: String = "s1",
@@ -42,7 +60,7 @@ fun previewSpot(
     priceLevel: PriceLevel? = PriceLevel.MODERATE,
     rating: Double? = 4.6,
     reviewCount: Int? = 214,
-    isOpenNow: Boolean? = true,
+    openingHours: SpotOpeningHours? = previewOpeningHours,
     shortAddress: String? = "Victoria Island, Lagos",
     isSaved: Boolean = false
 ) = SpotUi(
@@ -58,10 +76,7 @@ fun previewSpot(
     rating = rating,
     reviewCount = reviewCount,
     businessStatus = null,
-    isOpenNow = isOpenNow,
-    nextOpenTime = null,
-    nextCloseTime = null,
-    utcOffsetMinutes = null,
+    openingHours = openingHours,
     weekHours = persistentListOf(),
     highlights = persistentListOf(),
     shortAddress = shortAddress,
@@ -83,7 +98,6 @@ val previewSpots: ImmutableList<SpotUi> = persistentListOf(
         priceLevel = PriceLevel.CHEAP,
         rating = 4.4,
         reviewCount = 88,
-        isOpenNow = false,
         shortAddress = "Ikoyi, Lagos",
         isSaved = true
     ),
@@ -117,7 +131,6 @@ val previewFullSpot: SpotUi = previewSpot(isSaved = true).copy(
     photoUrls = persistentListOf("places/preview/photos/1", "places/preview/photos/2"),
     priceRange = SpotPriceRange(currencyCode = "NGN", startAmount = 20_000, endAmount = 40_000),
     businessStatus = BusinessStatus.OPERATIONAL,
-    nextCloseTime = PREVIEW_SCHEDULED_AT,
     weekHours = previewWeekHours,
     highlights = SpotHighlight.entries.filterNot { it == SpotHighlight.PAID_PARKING || it == SpotHighlight.CASH_ONLY }.toImmutableList(),
     phoneNumber = "+234 810 361 3662",

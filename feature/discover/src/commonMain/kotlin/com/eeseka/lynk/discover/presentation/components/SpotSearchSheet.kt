@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
@@ -78,6 +78,7 @@ import lynk.feature.discover.generated.resources.any_price
 import lynk.feature.discover.generated.resources.empty_search_message
 import lynk.feature.discover.generated.resources.empty_search_title
 import lynk.feature.discover.generated.resources.filter_price
+import lynk.feature.discover.generated.resources.top_spot_number
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -86,6 +87,7 @@ fun SpotSearchSheet(
     searchTextState: TextFieldState,
     searchHint: String,
     spots: ImmutableList<SpotUi>,
+    isRanked: Boolean,
     isSearchActive: Boolean,
     isSearchLoading: Boolean,
     searchError: String?,
@@ -110,6 +112,7 @@ fun SpotSearchSheet(
             searchTextState = searchTextState,
             searchHint = searchHint,
             spots = spots,
+            isRanked = isRanked,
             isSearchActive = isSearchActive,
             isSearchLoading = isSearchLoading,
             searchError = searchError,
@@ -132,6 +135,7 @@ private fun SpotSearchSheetContent(
     searchTextState: TextFieldState,
     searchHint: String,
     spots: ImmutableList<SpotUi>,
+    isRanked: Boolean,
     isSearchActive: Boolean,
     isSearchLoading: Boolean,
     searchError: String?,
@@ -188,7 +192,7 @@ private fun SpotSearchSheetContent(
                     DiscoverEmptyState(modifier = Modifier.padding(top = 64.dp))
                 }
             } else {
-                items(spots, key = { it.id }) { spot ->
+                itemsIndexed(spots, key = { _, spot -> spot.id }) { index, spot ->
                     Box(modifier = Modifier.animateItem()) {
                         SpotDiscoverCard(
                             spotName = spot.name,
@@ -204,7 +208,8 @@ private fun SpotSearchSheetContent(
                                 hapticFeedback(AppHaptic.ImpactLight)
                                 focusRequester.freeFocus()
                                 onSpotClick(spot.id)
-                            }
+                            },
+                            rankLabel = if (isRanked) stringResource(Res.string.top_spot_number, index + 1) else null
                         )
                     }
                 }
@@ -394,8 +399,15 @@ private fun SpotSearchSheetErrorPreview() = SpotSearchSheetContentPreview(
     selectedPriceLevel = PriceLevel.MODERATE
 )
 
+@PreviewLightDark
+@Composable
+private fun SpotSearchSheetRankedPreview() = SpotSearchSheetContentPreview(
+    isRanked = true
+)
+
 @Composable
 private fun SpotSearchSheetContentPreview(
+    isRanked: Boolean = false,
     isSearchLoading: Boolean = false,
     searchError: String? = null,
     selectedPriceLevel: PriceLevel? = null
@@ -405,6 +417,7 @@ private fun SpotSearchSheetContentPreview(
             searchTextState = TextFieldState(),
             searchHint = "Try ‘rooftop lounges in Lekki’",
             spots = previewSpots,
+            isRanked = isRanked,
             isSearchActive = false,
             isSearchLoading = isSearchLoading,
             searchError = searchError,

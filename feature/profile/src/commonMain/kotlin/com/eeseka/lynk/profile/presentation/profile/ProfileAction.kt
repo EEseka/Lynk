@@ -19,10 +19,10 @@ sealed interface ProfileAction {
     data object OnCreateAccountClick : ProfileAction
 
     data object OnSignOutClick : ProfileAction
-    data object OnConfirmSignOut : ProfileAction
-    data object OnDismissSignOutConfirmation : ProfileAction
+    data object OnSignOutConfirmed : ProfileAction
+    data object OnDismissSignOutDialog : ProfileAction
 
     data object OnDeleteAccountClick : ProfileAction
-    data object OnConfirmDeleteAccount : ProfileAction
-    data object OnDismissDeleteAccountConfirmation : ProfileAction
+    data object OnDeleteAccountConfirmed : ProfileAction
+    data object OnDismissDeleteAccountDialog : ProfileAction
 }

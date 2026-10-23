@@ -1,5 +1,6 @@
 package com.eeseka.lynk.di
 
+import com.eeseka.lynk.assistant.presentation.di.assistantPresentationModule
 import com.eeseka.lynk.auth.presentation.di.authPresentationModule
 import com.eeseka.lynk.create_hangout.presentation.di.createHangoutPresentationModule
 import com.eeseka.lynk.discover.presentation.di.discoverPresentationModule
@@ -29,6 +30,7 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             hangoutsPresentationModule,
             profilePresentationModule,
             notificationsPresentationModule,
+            assistantPresentationModule,
             mainShellPresentationModule
         )
     }

@@ -91,7 +91,7 @@ class HangoutAlbumViewModel(
         .distinctUntilChanged()
 
     // What the caption is compared against: the edited photo's caption as the album holds it
-    private val savedCaptionFlow = state.map { currentState ->
+    private val savedCaptionFlow = _state.map { currentState ->
         currentState.photos.find { it.id == currentState.captionEditPhotoId }?.caption.orEmpty()
     }.distinctUntilChanged()
 
@@ -102,7 +102,7 @@ class HangoutAlbumViewModel(
         caption != savedCaption
     }.distinctUntilChanged()
 
-    private val isSavingCaptionFlow = state.map { it.isSavingCaption }.distinctUntilChanged()
+    private val isSavingCaptionFlow = _state.map { it.isSavingCaption }.distinctUntilChanged()
 
     private fun observeCanSaveCaption() {
         combine(isCaptionDirtyFlow, isSavingCaptionFlow) { isCaptionDirty, isSavingCaption ->
@@ -117,7 +117,7 @@ class HangoutAlbumViewModel(
     }
 
     private suspend fun handleLobbyEvent(event: LobbyEvent) {
-        val currentHangoutId = state.value.hangoutId ?: return
+        val currentHangoutId = _state.value.hangoutId ?: return
 
         when (event) {
             is LobbyEvent.PhotosAdded -> {
@@ -164,7 +164,7 @@ class HangoutAlbumViewModel(
     }
 
     private fun selectHangout(hangoutId: String, initialPhotoId: String?) {
-        if (hangoutId == state.value.hangoutId) return
+        if (hangoutId == _state.value.hangoutId) return
         _state.update { it.copy(hangoutId = hangoutId) }
         photoIdToOpen = initialPhotoId
 
@@ -201,7 +201,7 @@ class HangoutAlbumViewModel(
                 if (throwable is DataErrorException) {
                     val message = throwable.error.toUiText()
 
-                    if (state.value.photos.isEmpty()) {
+                    if (_state.value.photos.isEmpty()) {
                         _state.update { it.copy(loadError = message) }
                     } else {
                         eventChannel.send(HangoutAlbumEvent.Error(message))
@@ -245,7 +245,7 @@ class HangoutAlbumViewModel(
 
     // Pages run newest first, so newer photos only arrive by starting the album over
     private fun showNewPhotos() {
-        val hangoutId = state.value.hangoutId ?: return
+        val hangoutId = _state.value.hangoutId ?: return
         restartAlbum(hangoutId)
     }
 
@@ -256,7 +256,7 @@ class HangoutAlbumViewModel(
 
     // A drag that starts on a picked photo unpicks, otherwise it picks
     private fun startDragSelect(photoId: String) {
-        selectionBeforeDrag = state.value.selectedPhotoIds
+        selectionBeforeDrag = _state.value.selectedPhotoIds
         dragStartPhotoId = photoId
         isDragUnpicking = photoId in selectionBeforeDrag
         _state.update { it.copy(isSelecting = true) }
@@ -267,7 +267,7 @@ class HangoutAlbumViewModel(
     // so dragging back over photos gives them back their old state
     private fun dragSelectOver(photoId: String) {
         val startPhotoId = dragStartPhotoId ?: return
-        val photoIds = state.value.photos.map { it.id }
+        val photoIds = _state.value.photos.map { it.id }
         val startIndex = photoIds.indexOf(startPhotoId)
         val overIndex = photoIds.indexOf(photoId)
         if (startIndex == -1 || overIndex == -1) return
@@ -323,11 +323,11 @@ class HangoutAlbumViewModel(
 
     // While selecting, a tap picks the photo instead of opening it
     private fun clickPhoto(photoId: String) {
-        if (state.value.isSelecting) togglePhotoSelection(photoId) else openViewer(photoId)
+        if (_state.value.isSelecting) togglePhotoSelection(photoId) else openViewer(photoId)
     }
 
     private fun togglePhotoSelection(photoId: String) {
-        val selectedPhotoIds = state.value.selectedPhotoIds
+        val selectedPhotoIds = _state.value.selectedPhotoIds
         when {
             photoId in selectedPhotoIds -> {
                 _state.update { it.copy(selectedPhotoIds = (selectedPhotoIds - photoId).toImmutableSet()) }
@@ -341,24 +341,24 @@ class HangoutAlbumViewModel(
     }
 
     private fun openViewer(photoId: String) {
-        val index = state.value.photos.indexOfFirst { it.id == photoId }
+        val index = _state.value.photos.indexOfFirst { it.id == photoId }
         if (index == -1) return
         _state.update { it.copy(viewerIndex = index) }
     }
 
     // Links last an hour; a photo that fails to load with an old link gets the whole album again
     private fun reloadIfLinksExpiring() {
-        val hangoutId = state.value.hangoutId ?: return
+        val hangoutId = _state.value.hangoutId ?: return
         val refreshBefore = Clock.System.now() + 5.minutes
-        if (state.value.photos.none { it.urlsExpireAt < refreshBefore }) return
+        if (_state.value.photos.none { it.urlsExpireAt < refreshBefore }) return
 
         restartAlbum(hangoutId)
     }
 
     // The viewer closes while the album is empty and reopens on the same photo once its page lands
     private fun restartAlbum(hangoutId: String) {
-        val viewerIndex = state.value.viewerIndex
-        photoIdToOpen = viewerIndex?.let { state.value.photos.getOrNull(it)?.id }
+        val currentState = _state.value
+        photoIdToOpen = currentState.viewerIndex?.let { currentState.photos.getOrNull(it)?.id }
 
         setupPhotosPaginator(hangoutId)
         _state.update {
@@ -388,7 +388,7 @@ class HangoutAlbumViewModel(
     }
 
     private fun openCaptionSheet(photoId: String) {
-        val photo = state.value.photos.find { it.id == photoId } ?: return
+        val photo = _state.value.photos.find { it.id == photoId } ?: return
         _state.value.captionState.setTextAndPlaceCursorAtEnd(photo.caption.orEmpty())
         _state.update { it.copy(captionEditPhotoId = photoId) }
     }
@@ -399,11 +399,12 @@ class HangoutAlbumViewModel(
     }
 
     private fun saveCaption() {
-        val hangoutId = state.value.hangoutId ?: return
-        val photoId = state.value.captionEditPhotoId ?: return
-        if (state.value.isSavingCaption) return
+        val currentState = _state.value
+        val hangoutId = currentState.hangoutId ?: return
+        val photoId = currentState.captionEditPhotoId ?: return
+        if (currentState.isSavingCaption) return
 
-        val caption = _state.value.captionState.text.toString().trim().takeIf { it.isNotEmpty() }
+        val caption = currentState.captionState.text.toString().trim().takeIf { it.isNotEmpty() }
 
         viewModelScope.launch {
             _state.update { it.copy(isSavingCaption = true) }
@@ -428,8 +429,9 @@ class HangoutAlbumViewModel(
     }
 
     private fun deletePhoto() {
-        val hangoutId = state.value.hangoutId ?: return
-        val photoId = state.value.pendingDeletePhotoId ?: return
+        val currentState = _state.value
+        val hangoutId = currentState.hangoutId ?: return
+        val photoId = currentState.pendingDeletePhotoId ?: return
 
         viewModelScope.launch {
             _state.update { it.copy(deletingPhotoId = photoId) }

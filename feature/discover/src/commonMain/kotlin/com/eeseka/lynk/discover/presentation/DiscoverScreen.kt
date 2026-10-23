@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
@@ -58,8 +56,10 @@ import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteracti
 import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.discover.presentation.util.flightDurationTo
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkAiButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
@@ -88,12 +88,15 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import lynk.feature.discover.generated.resources.Res
+import lynk.feature.discover.generated.resources.ask_lynk_ai_for_spot_ideas
 import lynk.feature.discover.generated.resources.create_a_hangout
 import lynk.feature.discover.generated.resources.finding_your_location
 import lynk.feature.discover.generated.resources.locate_me
 import lynk.feature.discover.generated.resources.location_required
 import lynk.feature.discover.generated.resources.location_required_message
-import lynk.feature.discover.generated.resources.no_spots_in_area
+import lynk.feature.discover.generated.resources.no_search_results
+import lynk.feature.discover.generated.resources.no_top_spots_in_area
+import lynk.feature.discover.generated.resources.no_trending_spots_in_area
 import lynk.feature.discover.generated.resources.not_now
 import lynk.feature.discover.generated.resources.open_settings
 import lynk.feature.discover.generated.resources.open_spot_search
@@ -110,6 +113,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.CameraAnimation
+import org.maplibre.compose.camera.CameraFit
 import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.MaplibreMap
@@ -126,6 +130,7 @@ import org.maplibre.spatialk.geojson.Position
 @Composable
 fun DiscoverRoot(
     navigateToHangouts: (String) -> Unit,
+    navigateToAssistant: (latitude: Double, longitude: Double, areaName: String?) -> Unit,
     mainShellPadding: PaddingValues,
     viewModel: DiscoverViewModel = koinViewModel()
 ) {
@@ -141,9 +146,26 @@ fun DiscoverRoot(
                 )
             }
 
-            DiscoverEvent.NoSpotsInArea -> {
+            DiscoverEvent.NoTrendingSpotsInArea -> {
                 snackbarHostState.showFlashMessage(
-                    message = getString(Res.string.no_spots_in_area),
+                    message = getString(Res.string.no_trending_spots_in_area),
+                    type = LynkFlashType.Info
+                )
+            }
+
+            DiscoverEvent.NoSearchResults -> {
+                // The open sheet shows its own empty state
+                if (!state.showSearchSheet) {
+                    snackbarHostState.showFlashMessage(
+                        message = getString(Res.string.no_search_results),
+                        type = LynkFlashType.Info
+                    )
+                }
+            }
+
+            DiscoverEvent.NoTopSpotsInArea -> {
+                snackbarHostState.showFlashMessage(
+                    message = getString(Res.string.no_top_spots_in_area),
                     type = LynkFlashType.Info
                 )
             }
@@ -155,6 +177,7 @@ fun DiscoverRoot(
         onAction = viewModel::onAction,
         snackbarHostState = snackbarHostState,
         navigateToHangouts = navigateToHangouts,
+        navigateToAssistant = navigateToAssistant,
         mainShellPadding = mainShellPadding
     )
 }
@@ -165,13 +188,21 @@ fun DiscoverScreen(
     onAction: (DiscoverAction) -> Unit,
     snackbarHostState: SnackbarHostState,
     navigateToHangouts: (String) -> Unit,
+    navigateToAssistant: (latitude: Double, longitude: Double, areaName: String?) -> Unit,
     mainShellPadding: PaddingValues
 ) {
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
 
-    val spotsToShow = if (state.isTopSpotsMode) state.topSpots
-    else state.searchResults.ifEmpty { state.trendingSpots }.toImmutableList()
+    val isSearchActive = state.searchTextState.text.isNotBlank() ||
+            state.selectedCategory != null ||
+            state.selectedPriceLevel != null
+
+    val spotsToShow = when {
+        state.isTopSpotsMode -> state.topSpots
+        isSearchActive -> state.searchResults
+        else -> state.trendingSpots
+    }
 
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(mapStyleUri(state.mapTheme)),
@@ -212,7 +243,7 @@ fun DiscoverScreen(
                     if (!hasMovedCameraThisFetch) {
                         val currentPosition = mapState.cameraPosition
                         val userPosition = currentPosition.copy(
-                            target = Position(
+                            center = Position(
                                 latitude = coordinate.latitude,
                                 longitude = coordinate.longitude
                             ),
@@ -221,8 +252,8 @@ fun DiscoverScreen(
 
                         if (isLocateMeTap) {
                             mapState.animateCamera(
-                                update = CameraUpdate(target = userPosition.target, zoom = userPosition.zoom),
-                                animation = CameraAnimation.Fly(duration = currentPosition.flightDurationTo(userPosition))
+                                update = CameraUpdate(center = userPosition.center, zoom = userPosition.zoom),
+                                animation = CameraAnimation.Fly { duration = currentPosition.flightDurationTo(userPosition) }
                             )
                         } else if (!hasCenteredOnUser) {
                             // Opening the screen lands on the user straight away
@@ -270,7 +301,7 @@ fun DiscoverScreen(
     }
 
     val selectedTopSpotIndex = state.topSpots.indexOfFirst { it.id == state.selectedSpotId }
-    val selectedSpotRank = (selectedTopSpotIndex + 1).takeIf { selectedTopSpotIndex >= 0 }
+    val selectedSpotRank = if (selectedTopSpotIndex == -1) null else selectedTopSpotIndex + 1
 
     val hangoutCreationSpot = state.hangoutCreationSpotId?.let { hangoutSpotId ->
         state.topSpots.find { it.id == hangoutSpotId }
@@ -297,7 +328,7 @@ fun DiscoverScreen(
         val topSpotsBounds = state.topSpots.toBoundingBox() ?: return@LaunchedEffect
         mapState.animateCameraToBounds(
             boundingBox = topSpotsBounds,
-            fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp)
+            fit = CameraFit(fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp))
         )
     }
 
@@ -305,12 +336,7 @@ fun DiscoverScreen(
             state.trendingSpots.isEmpty() &&
             !state.isTrendingLoading
 
-    val userLatitude = state.userLatitude
-    val userLongitude = state.userLongitude
-
-    val isSearchActive = state.searchTextState.text.isNotBlank() ||
-            state.selectedCategory != null ||
-            state.selectedPriceLevel != null
+    val userLocation = state.userLocation
 
     val spotMapInteractions = rememberSpotMapInteractions(mapState) { spotId ->
         hapticFeedback(AppHaptic.ImpactLight)
@@ -325,17 +351,27 @@ fun DiscoverScreen(
             MaplibreMap(
                 modifier = Modifier.fillMaxSize(),
                 state = mapState,
-                cameraConstraints = CameraConstraints(
-                    minZoom = 2.0,
-                    maxZoom = 20.0,
-                    minPitch = 0.0,
+                cameraConstraints = CameraConstraints {
+                    minZoom = 2.0
+                    maxZoom = 20.0
+                    minPitch = 0.0
                     maxPitch = 60.0
-                ),
+                },
                 interactions = spotMapInteractions,
                 viewportInsets = WindowInsets(top = scaffoldPadding.calculateTopPadding() + 72.dp + if (areaName != null) 48.dp else 0.dp)
-                    .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .union(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal))
                     .asPaddingValues()
             ) {
+                if (userLocation != null) {
+                    UserLocationMapMarker(
+                        userLatitude = userLocation.latitude,
+                        userLongitude = userLocation.longitude,
+                        pulseKey = state.locationFetchEpoch
+                    )
+                }
+
+                SelectedSpotPinOverlay(spot = selectedSpot, rank = selectedSpotRank)
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -349,7 +385,7 @@ fun DiscoverScreen(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         DisappearingScaleBar(
-                            metersPerDp = { mapState.viewport?.metersPerDpAtTarget ?: 0.0 },
+                            metersPerDp = { mapState.viewport?.metersPerDpAtCenter ?: 0.0 },
                             zoom = { mapState.cameraPosition.zoom },
                             color = MaterialTheme.colorScheme.onSurface,
                             haloColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
@@ -370,30 +406,18 @@ fun DiscoverScreen(
                             .height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!state.isTopSpotsMode) {
-                            SearchThisAreaButton(
-                                mapState = mapState,
-                                trendingLatitude = state.trendingLatitude,
-                                trendingLongitude = state.trendingLongitude,
-                                isLoading = state.isTrendingLoading,
-                                onClick = { latitude, longitude ->
-                                    hapticFeedback(AppHaptic.ImpactLight)
-                                    onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
-                                }
-                            )
-                        }
+                        SearchThisAreaButton(
+                            mapState = mapState,
+                            loadedAreaLatitude = state.loadedAreaCenter?.latitude,
+                            loadedAreaLongitude = state.loadedAreaCenter?.longitude,
+                            isLoading = state.isTrendingLoading,
+                            onClick = { latitude, longitude ->
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(DiscoverAction.OnSearchThisArea(latitude, longitude))
+                            }
+                        )
                     }
                 }
-
-                if (userLatitude != null && userLongitude != null) {
-                    UserLocationMapMarker(
-                        userLatitude = userLatitude,
-                        userLongitude = userLongitude,
-                        pulseKey = state.locationFetchEpoch
-                    )
-                }
-
-                SelectedSpotPinOverlay(spot = selectedSpot, rank = selectedSpotRank)
             }
 
             // Search Bar, with the Top 10 chip under it
@@ -411,7 +435,8 @@ fun DiscoverScreen(
                         placeholder = searchHint,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clearAndSetSemantics { }
+                            .clearAndSetSemantics { },
+                        showClearButton = false
                     )
 
                     Box(
@@ -452,46 +477,68 @@ fun DiscoverScreen(
             // The larger of the two, not the sum: a corner hole punch in landscape counts as a bottom inset
             val cornerControlsBottomPadding = maxOf(
                 mainShellPadding.calculateBottomPadding(),
-                WindowInsets.displayCutout.asPaddingValues().calculateBottomPadding()
+                WindowInsets.safeArea.asPaddingValues().calculateBottomPadding()
             ) + 16.dp
 
             // Attribution
             MapAttributionMenu(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Start))
                     .padding(
                         bottom = cornerControlsBottomPadding,
                         start = 16.dp
                     )
             )
 
-            // Action Button
-            LynkTonalIconButton(
-                onClick = {
-                    hapticFeedback(AppHaptic.ImpactLight)
-                    onAction(DiscoverAction.OnLocateMeClick)
-                    if (permissionState == PermissionState.GRANTED) {
-                        scope.launch { fetchCurrentLocationAndShowOnMap(true) }
-                    } else {
-                        scope.launch {
-                            permissionState =
-                                permissionController.requestPermission(Permission.LOCATION)
-                        }
-                    }
-                },
+            // Action Buttons
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.End))
                     .padding(
                         bottom = cornerControlsBottomPadding,
                         end = 16.dp
-                    )
+                    ),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = Lucide.Locate,
-                    contentDescription = stringResource(Res.string.locate_me)
+                LynkAiButton(
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        if (state.isGuest) {
+                            onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.ASK_LYNK_AI))
+                        } else {
+                            val cameraCenter = mapState.cameraPosition.center
+                            val areaCenter = state.areaCenter
+                            navigateToAssistant(
+                                areaCenter?.latitude ?: cameraCenter.latitude,
+                                areaCenter?.longitude ?: cameraCenter.longitude,
+                                areaName
+                            )
+                        }
+                    }
                 )
+
+                LynkTonalIconButton(
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onAction(DiscoverAction.OnLocateMeClick)
+                        if (permissionState == PermissionState.GRANTED) {
+                            scope.launch { fetchCurrentLocationAndShowOnMap(true) }
+                        } else {
+                            scope.launch {
+                                permissionState =
+                                    permissionController.requestPermission(Permission.LOCATION)
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Lucide.Locate,
+                        contentDescription = stringResource(Res.string.locate_me)
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -553,6 +600,7 @@ fun DiscoverScreen(
             val actionStr = when (guestPromptContext) {
                 GuestPromptContext.SAVE_SPOT -> stringResource(Res.string.save_this_spot)
                 GuestPromptContext.CREATE_HANGOUT -> stringResource(Res.string.create_a_hangout)
+                GuestPromptContext.ASK_LYNK_AI -> stringResource(Res.string.ask_lynk_ai_for_spot_ideas)
             }
             GuestPromptSheet(
                 actionStr = actionStr,
@@ -566,16 +614,17 @@ fun DiscoverScreen(
             SpotSearchSheet(
                 searchTextState = state.searchTextState,
                 searchHint = searchHint,
-                spots = if (isSearchActive) state.searchResults else state.trendingSpots,
+                spots = spotsToShow,
+                isRanked = state.isTopSpotsMode,
                 isSearchActive = isSearchActive,
-                isSearchLoading = state.isSearchLoading,
+                isSearchLoading = if (state.isTopSpotsMode) state.isTopSpotsLoading else state.isSearchLoading,
                 searchError = state.searchError?.asString(),
                 searchEndReached = if (isSearchActive) state.searchEndReached else true,
                 searchResetEpoch = state.searchResetEpoch,
                 selectedCategory = state.selectedCategory,
                 selectedPriceLevel = state.selectedPriceLevel,
-                userLatitude = state.userLatitude,
-                userLongitude = state.userLongitude,
+                userLatitude = state.userLocation?.latitude,
+                userLongitude = state.userLocation?.longitude,
                 onLoadNextSearchPage = { onAction(DiscoverAction.LoadNextSearchPage) },
                 onSelectPriceLevel = { onAction(DiscoverAction.OnPriceLevelSelected(it)) },
                 onSelectCategory = { onAction(DiscoverAction.OnCategorySelected(it)) },
@@ -590,8 +639,8 @@ fun DiscoverScreen(
         selectedSpot?.let { spot ->
             SpotDetailSheet(
                 spot = spot,
-                userLat = state.userLatitude,
-                userLng = state.userLongitude,
+                userLat = state.userLocation?.latitude,
+                userLng = state.userLocation?.longitude,
                 rankLabel = selectedSpotRank?.let { rank ->
                     areaName?.let { stringResource(Res.string.top_spot_rank, rank, it) }
                 },

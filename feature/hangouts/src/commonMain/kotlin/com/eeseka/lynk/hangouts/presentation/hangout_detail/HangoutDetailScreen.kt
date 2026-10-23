@@ -1,11 +1,15 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -54,6 +58,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVoting
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.LocationShareEffect
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.ProposeSpotSheet
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkAiButton
 import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePickerDialog
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDialog
@@ -70,11 +75,17 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import com.eeseka.lynk.shared.domain.util.onSuccess
 import com.eeseka.lynk.shared.presentation.components.LynkErrorState
 import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.media.rememberMediaPicker
+import com.eeseka.lynk.shared.presentation.permissions.Permission
+import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
 import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toPickerDate
@@ -130,6 +141,7 @@ fun HangoutDetailRoot(
     onHangoutLeft: () -> Unit,
     onEditHangoutClick: (HangoutUi) -> Unit,
     navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
+    navigateToAssistant: (hangoutId: String) -> Unit,
     viewModel: HangoutDetailViewModel = koinViewModel(),
     votingViewModel: HangoutVotingViewModel = koinViewModel(),
     paymentsViewModel: HangoutPaymentsViewModel = koinViewModel(),
@@ -274,7 +286,8 @@ fun HangoutDetailRoot(
         isDetailPaneFullScreen = isDetailPaneFullScreen,
         navigateBack = navigateBack,
         onEditClick = { state.hangout?.let(onEditHangoutClick) },
-        navigateToAlbum = navigateToAlbum
+        navigateToAlbum = navigateToAlbum,
+        navigateToAssistant = navigateToAssistant
     )
 }
 
@@ -292,15 +305,19 @@ fun HangoutDetailScreen(
     isDetailPaneFullScreen: Boolean,
     navigateBack: () -> Unit,
     onEditClick: () -> Unit,
-    navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit
+    navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
+    navigateToAssistant: (hangoutId: String) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
     val hapticFeedback = rememberAppHaptic()
     val mediaPicker = rememberMediaPicker()
+    val permissionController = rememberPermissionController()
+    val locationController = rememberLocationController()
 
     var showParticipantsSheet by remember { mutableStateOf(false) }
     var showChosenSpotSheet by remember { mutableStateOf(false) }
+    var userLocation by remember { mutableStateOf<LocationCoordinates?>(null) }
     var showMapDialog by remember { mutableStateOf(false) }
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -343,6 +360,9 @@ fun HangoutDetailScreen(
     val showMemories = hangout?.status == HangoutStatus.COMPLETED &&
             attendees.size >= MIN_ATTENDEES_FOR_PHOTOS &&
             attendees.any { it.user.userId == state.currentUserId }
+
+    val showAskLynk = attendees.any { it.user.userId == state.currentUserId } &&
+            (hangout?.status == HangoutStatus.VOTING || state.hasAssistantChat)
 
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
@@ -393,6 +413,15 @@ fun HangoutDetailScreen(
     // Closes on its own once voting ends
     val isMapShowing = showMapDialog && hangout?.status == HangoutStatus.VOTING
 
+    LaunchedEffect(showChosenSpotSheet) {
+        if (!showChosenSpotSheet) return@LaunchedEffect
+        if (permissionController.getPermissionState(Permission.LOCATION) != PermissionState.GRANTED) return@LaunchedEffect
+
+        locationController.observeCurrentLocation().collect { locationResult ->
+            locationResult.onSuccess { coordinate -> userLocation = coordinate }
+        }
+    }
+
     LynkScaffold(
         snackbarHostState = snackbarHostState.takeIf { !isMapShowing },
         topBar = {
@@ -416,6 +445,16 @@ fun HangoutDetailScreen(
             }
         }
     ) { scaffoldPadding ->
+        // Beside the list this pane has no bar (two native iOS bars overlap), so it leaves room for the list top app bar title (56.dp)
+        val contentPadding = if (isDetailPaneFullScreen) {
+            scaffoldPadding
+        } else {
+            PaddingValues(
+                top = scaffoldPadding.calculateTopPadding() + 56.dp,
+                bottom = scaffoldPadding.calculateBottomPadding()
+            )
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
             val bodyState = when {
                 state.isLoading -> DetailBodyState.Loading
@@ -560,8 +599,34 @@ fun HangoutDetailScreen(
                                 onCloseVoting = { onVotingAction(HangoutVotingAction.OnCloseVotingClick) },
                                 onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
                                 onMapClick = { showMapDialog = true },
-                                contentPadding = scaffoldPadding
+                                contentPadding = if (showAskLynk) {
+                                    PaddingValues(
+                                        top = contentPadding.calculateTopPadding(),
+                                        bottom = contentPadding.calculateBottomPadding() + 64.dp
+                                    )
+                                } else {
+                                    contentPadding
+                                }
                             )
+
+                            AnimatedVisibility(
+                                visible = showAskLynk,
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(
+                                        end = 16.dp,
+                                        bottom = contentPadding.calculateBottomPadding() + 16.dp
+                                    )
+                            ) {
+                                LynkAiButton(
+                                    onClick = {
+                                        hapticFeedback(AppHaptic.ImpactLight)
+                                        navigateToAssistant(target.hangout.id)
+                                    }
+                                )
+                            }
                         }
 
                         is DetailBodyState.Error -> {
@@ -588,7 +653,7 @@ fun HangoutDetailScreen(
                     connectionState = state.connectionState,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = scaffoldPadding.calculateTopPadding())
+                        .padding(top = contentPadding.calculateTopPadding())
                 )
             }
         }
@@ -612,8 +677,8 @@ fun HangoutDetailScreen(
     if (showChosenSpotSheet && chosenSpot != null) {
         SpotDetailSheet(
             spot = chosenSpot,
-            userLat = votingState.center?.latitude ?: votingState.myLocation?.latitude,
-            userLng = votingState.center?.longitude ?: votingState.myLocation?.longitude,
+            userLat = userLocation?.latitude,
+            userLng = userLocation?.longitude,
             onDismissRequest = { showChosenSpotSheet = false },
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(HangoutDetailAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
@@ -639,7 +704,7 @@ fun HangoutDetailScreen(
         )
     }
 
-    if (state.isInviteSheetOpen) {
+    if (state.showInviteSheet) {
         val resultId = state.inviteResult?.userId
         val alreadyInvited = resultId != null && state.hangout?.participants?.any {
             it.user.userId == resultId && it.rsvpStatus != RsvpStatus.DECLINED
@@ -660,7 +725,7 @@ fun HangoutDetailScreen(
         )
     }
 
-    if (votingState.isProposeSpotSheetOpen) {
+    if (votingState.showProposeSpotSheet) {
         ProposeSpotSheet(
             state = votingState,
             onTabSelected = { onVotingAction(HangoutVotingAction.OnTabSelected(it)) },
@@ -678,7 +743,7 @@ fun HangoutDetailScreen(
         )
     }
 
-    if (paymentsState.isDeadlineDecisionSheetOpen && needsDeadlineDecision) {
+    if (paymentsState.showDeadlineDecisionSheet && needsDeadlineDecision) {
         DeadlineDecisionSheet(
             unpaidCount = unpaidCount,
             onDecision = { decision ->

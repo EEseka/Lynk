@@ -35,8 +35,8 @@ data class ProfileState(
 
     val showSettingsSheet: Boolean = false,
     val showFullScreenImage: Boolean = false,
-    val showSignOutConfirmation: Boolean = false,
-    val showDeleteAccountConfirmation: Boolean = false,
+    val showSignOutDialog: Boolean = false,
+    val showDeleteAccountDialog: Boolean = false,
 
     val isSigningOut: Boolean = false,
     val isDeletingAccount: Boolean = false

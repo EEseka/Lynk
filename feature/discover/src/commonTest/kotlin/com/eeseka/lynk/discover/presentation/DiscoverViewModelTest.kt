@@ -10,9 +10,9 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -99,7 +99,7 @@ class DiscoverViewModelTest {
             advanceUntilIdle()
 
             val state = expectMostRecentItem()
-            assertThat(state.userLatitude).isEqualTo(6.5)
+            assertThat(state.userLocation?.latitude).isEqualTo(6.5)
             assertThat(state.trendingSpots.size).isEqualTo(1)
             assertThat(state.trendingSpots.first().id).isEqualTo("1")
             assertThat(state.isTrendingLoading).isFalse()
@@ -131,7 +131,7 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(9.06 to 7.49)
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(9.06)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(9.06)
     }
 
     @Test
@@ -145,10 +145,9 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.43 to 3.47)
-        assertThat(viewModel.state.value.trendingLatitude).isEqualTo(6.43)
-        assertThat(viewModel.state.value.trendingLongitude).isEqualTo(3.47)
+        assertThat(viewModel.state.value.loadedAreaCenter).isEqualTo(LocationCoordinates(6.43, 3.47))
         // The blue dot stays where the user is
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.5)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(6.5)
     }
 
     @Test
@@ -169,7 +168,7 @@ class DiscoverViewModelTest {
         assertThat(spotService.trendingRequestLocations.last()).isEqualTo(6.45 to 3.4)
         assertThat(viewModel.state.value.areaName).isEqualTo("Lagos Island")
         // The blue dot still moves
-        assertThat(viewModel.state.value.userLatitude).isEqualTo(6.64)
+        assertThat(viewModel.state.value.userLocation?.latitude).isEqualTo(6.64)
     }
 
     @Test
@@ -216,7 +215,7 @@ class DiscoverViewModelTest {
             spotService.trendingSpotsList = mutableListOf()
             viewModel.onAction(DiscoverAction.OnSearchThisArea(0.0, -30.0))
 
-            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSpotsInArea)
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoTrendingSpotsInArea)
             assertThat(viewModel.state.value.trendingSpots).isEmpty()
         }
     }
@@ -242,6 +241,24 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.areaName).isEqualTo("Abuja")
+    }
+
+    @Test
+    fun `an area keeps the point it was named for when its spots fail to load`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = "Abuja"
+        spotService.shouldReturnError = true
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(9.07, 7.49))
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertThat(state.areaName).isEqualTo("Abuja")
+        assertThat(state.areaCenter).isEqualTo(LocationCoordinates(9.07, 7.49))
+        // The pins never moved, so the loaded area is still the first one
+        assertThat(state.loadedAreaCenter?.latitude).isEqualTo(6.5)
     }
 
     @Test
@@ -318,6 +335,103 @@ class DiscoverViewModelTest {
     }
 
     @Test
+    fun `a search that finds nothing says so`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.LOUNGE))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoSearchResults)
+        }
+    }
+
+    @Test
+    fun `an area with no top spots says so and leaves the mode`() = runTest {
+        spotService.trendingSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(DiscoverEvent.NoTopSpotsInArea)
+            assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+            assertThat(viewModel.state.value.isTopSpotsLoading).isFalse()
+        }
+    }
+
+    @Test
+    fun `typing a search leaves Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        viewModel.state.value.searchTextState.typeText("suya")
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+    }
+
+    @Test
+    fun `tapping Top 10 puts the search away`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.state.value.searchTextState.typeText("suya")
+        viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
+        viewModel.onAction(DiscoverAction.OnPriceLevelSelected(PriceLevel.MODERATE))
+        advanceUntilIdle()
+
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.searchTextState.text.toString()).isEmpty()
+        assertThat(viewModel.state.value.selectedCategory).isNull()
+        assertThat(viewModel.state.value.selectedPriceLevel).isNull()
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+    }
+
+    @Test
+    fun `searching another area in Top 10 loads that area's Top 10`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = "Accra"
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(5.6, -0.19))
+        advanceUntilIdle()
+
+        assertThat(spotService.topRequestCities).containsExactly("Lagos", "Accra")
+        assertThat(viewModel.state.value.isTopSpotsMode).isTrue()
+    }
+
+    @Test
+    fun `searching an area with no name in Top 10 leaves the mode`() = runTest {
+        spotService.topSpotsList = mutableListOf(dummySpot)
+        collectInBackground(viewModel.state)
+        viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
+        viewModel.onAction(DiscoverAction.OnTopSpotsClick)
+        advanceUntilIdle()
+
+        areaNameResolver.areaName = null
+        viewModel.onAction(DiscoverAction.OnSearchThisArea(4.0, 2.0))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isTopSpotsMode).isFalse()
+        assertThat(viewModel.state.value.topSpots).isEmpty()
+    }
+
+    @Test
     fun `a Top 10 that fails to load says so and leaves the mode`() = runTest {
         // Trending finds something, so its "no spots" message isn't the event waiting first
         spotService.trendingSpotsList = mutableListOf(dummySpot)
@@ -369,7 +483,7 @@ class DiscoverViewModelTest {
             val state = expectMostRecentItem()
             assertThat(state.trendingSpots.size).isEqualTo(1)
             // The map still has no blue dot, because we never actually found them.
-            assertThat(state.userLatitude).isNull()
+            assertThat(state.userLocation).isNull()
         }
     }
 
@@ -450,7 +564,7 @@ class DiscoverViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.searchResults.size).isEqualTo(1)
-        assertThat(viewModel.state.value.userLatitude).isNull()
+        assertThat(viewModel.state.value.userLocation).isNull()
     }
 
     @Test
@@ -511,55 +625,12 @@ class DiscoverViewModelTest {
     }
 
     @Test
-    fun `the search sheet opens and closes`() = runTest {
-        collectInBackground(viewModel.state)
-
-        viewModel.onAction(DiscoverAction.ToggleShowSearchSheet)
-        assertThat(viewModel.state.value.showSearchSheet).isTrue()
-
-        viewModel.onAction(DiscoverAction.ToggleShowSearchSheet)
-        assertThat(viewModel.state.value.showSearchSheet).isFalse()
-    }
-
-    @Test
     fun `picking a spot to build a hangout around remembers it`() = runTest {
         collectInBackground(viewModel.state)
 
         viewModel.onAction(DiscoverAction.OnHangoutCreationSelected("1"))
 
         assertThat(viewModel.state.value.hangoutCreationSpotId).isEqualTo("1")
-    }
-
-    @Test
-    fun `OnCategorySelected updates selectedCategory state`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.OnCategorySelected(SpotCategory.CAFE))
-            assertThat(expectMostRecentItem().selectedCategory).isEqualTo(SpotCategory.CAFE)
-
-            viewModel.onAction(DiscoverAction.OnCategorySelected(null))
-            assertThat(expectMostRecentItem().selectedCategory).isNull()
-        }
-    }
-
-    @Test
-    fun `ShowGuestPrompt sets guestPromptContext`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.SAVE_SPOT))
-            assertThat(expectMostRecentItem().guestPromptContext).isEqualTo(GuestPromptContext.SAVE_SPOT)
-        }
-    }
-
-    @Test
-    fun `HideGuestPrompt clears guestPromptContext`() = runTest {
-        viewModel.onAction(DiscoverAction.ShowGuestPrompt(GuestPromptContext.CREATE_HANGOUT))
-
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(DiscoverAction.HideGuestPrompt)
-            assertThat(expectMostRecentItem().guestPromptContext).isNull()
-        }
     }
 
     @Test

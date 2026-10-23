@@ -14,4 +14,7 @@ sealed interface HangoutsGraphRoutes {
 
     @Serializable
     data class HangoutAlbum(val hangoutId: String, val initialPhotoId: String? = null) : HangoutsGraphRoutes
+
+    @Serializable
+    data class Assistant(val hangoutId: String) : HangoutsGraphRoutes
 }

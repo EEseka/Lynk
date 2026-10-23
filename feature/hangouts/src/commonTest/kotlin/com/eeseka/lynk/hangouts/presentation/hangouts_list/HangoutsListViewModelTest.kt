@@ -237,15 +237,6 @@ class HangoutsListViewModelTest {
     }
 
     @Test
-    fun `selecting a hangout stores its id`() = runTest {
-        collectInBackground(viewModel.state)
-
-        viewModel.onAction(HangoutsListAction.OnSelectHangout("hangout_1"))
-
-        assertThat(viewModel.state.value.selectedHangoutId).isEqualTo("hangout_1")
-    }
-
-    @Test
     fun `signing out a guest clears the session even when the backend fails`() = runTest {
         sessionStorage.set(session(User.Guest(id = "guest_1")))
         authService.shouldReturnError = true

@@ -39,7 +39,7 @@ class NotificationsViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 setupNotificationsPaginator()
-                notificationsPaginator?.loadNextItems()
+                loadNextPage()
                 hasLoadedInitialData = true
             }
         }
@@ -69,7 +69,7 @@ class NotificationsViewModel(
         hangoutId: String,
         type: NotificationType
     ) {
-        val isAlreadyRead = state.value.notifications
+        val isAlreadyRead = _state.value.notifications
             .any { it.id == notificationId && it.isRead }
 
         if (!isAlreadyRead) markAsRead(notificationId)
@@ -145,7 +145,7 @@ class NotificationsViewModel(
                 if (throwable is DataErrorException) {
                     val message = throwable.error.toUiText()
 
-                    if (state.value.notifications.isEmpty()) {
+                    if (_state.value.notifications.isEmpty()) {
                         _state.update { it.copy(loadError = message) }
                     } else {
                         eventChannel.send(NotificationsEvent.Error(message))

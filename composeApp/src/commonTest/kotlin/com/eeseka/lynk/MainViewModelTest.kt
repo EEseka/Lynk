@@ -115,7 +115,6 @@ class MainViewModelTest {
             advanceUntilIdle()
 
             assertThat(awaitItem()).isEqualTo(MainEvent.OnSessionExpired)
-            assertThat(viewModel.state.value.user).isNull()
             assertThat(sessionStorage.get()).isNull()
         }
     }

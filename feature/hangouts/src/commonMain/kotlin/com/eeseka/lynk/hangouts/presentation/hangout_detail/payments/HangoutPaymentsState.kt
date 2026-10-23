@@ -43,7 +43,7 @@ data class HangoutPaymentsState(
     val isChangingDeadline: Boolean = false,
 
     // The four-way answer the server waits for once a deadline lapses with people unpaid.
-    val isDeadlineDecisionSheetOpen: Boolean = false,
+    val showDeadlineDecisionSheet: Boolean = false,
     val isDecidingAtDeadline: Boolean = false,
 
     val isRetryingPayout: Boolean = false,

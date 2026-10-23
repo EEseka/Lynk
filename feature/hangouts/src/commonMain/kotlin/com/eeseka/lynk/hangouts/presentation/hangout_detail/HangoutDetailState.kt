@@ -23,9 +23,10 @@ data class HangoutDetailState(
     val isLeaving: Boolean = false,
     val withdrawingUserIds: ImmutableSet<String> = persistentSetOf(),
     val mapTheme: AppTheme = AppTheme.SYSTEM,
+    val hasAssistantChat: Boolean = false,
 
     // Invite search sheet
-    val isInviteSheetOpen: Boolean = false,
+    val showInviteSheet: Boolean = false,
     val inviteQueryState: TextFieldState = TextFieldState(),
     val inviteResult: HangoutUserUi? = null,
     val isInviteSearching: Boolean = false,

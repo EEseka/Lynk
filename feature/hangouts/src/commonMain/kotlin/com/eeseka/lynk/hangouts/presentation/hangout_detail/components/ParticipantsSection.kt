@@ -62,7 +62,8 @@ fun ParticipantsSection(
             LynkText(
                 text = goingText,
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 8.dp)
             )
         },
         modifier = modifier
@@ -87,7 +88,7 @@ fun ParticipantsSection(
                             hapticFeedback(AppHaptic.ImpactLight)
                             onSeeAllClick()
                         }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(start = 8.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

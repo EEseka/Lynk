@@ -16,8 +16,8 @@
     <string name="vibe">Vibe</string>
     <string name="max_people">Max People</string>
     <string name="people">People</string>
-    <string name="decrease_max_people">Decrease Max People</string>
-    <string name="increase_max_people">Increase Max People</string>
+    <string name="decrease_max_people">Decrease max people</string>
+    <string name="increase_max_people">Increase max people</string>
     <string name="unlimited">Unlimited</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
@@ -27,16 +27,17 @@
 
     <string name="pick_location">Pick Location</string>
     <string name="let_the_group_decide">Let the group decide!</string>
-    <string name="let_the_group_decide_description">You're setting up a Group Vote hangout. Everyone invited will be able to search and vote for their favorite spots in the Lobby.</string>
-    <string name="search_spots_hint">Search for a spot...</string>
-    <string name="search_favorite_spots_hint">Search favorite spots...</string>
+    <string name="let_the_group_decide_description">You're setting up a group vote hangout. Everyone invited will be able to search and vote for their favorite spots in the lobby.</string>
+    <string name="search_spots_hint">Search for a spot…</string>
+    <string name="search_favorite_spots_hint">Search favorite spots…</string>
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="empty_search_message">No spots found.</string>
     <string name="empty_favorite_search_message">No favorite spots found.</string>
     <string name="no_favorite_spots_message">No favorite spots yet. Try All Spots to find one.</string>
     <string name="selected">Selected</string>
-    <string name="change_location">Change Location</string>
+    <string name="change_location">Change location</string>
+    <string name="spot_locked_payments_on">The spot can't change once payments are on.</string>
     <string name="group_vote">Group Vote</string>
     <string name="pick_a_spot">Pick a Spot</string>
     <string name="next_review_and_confirm">Next: Review &amp; Confirm →</string>
@@ -48,14 +49,14 @@
     <string name="when_label">When</string>
     <string name="group_size_label">Group Size</string>
     <string name="location_label">Location</string>
-    <string name="unnamed_hangout">Unnamed Hangout</string>
+    <string name="unnamed_hangout">Unnamed hangout</string>
     <string name="tbd">TBD</string>
-    <string name="no_location_selected">No Location Selected</string>
+    <string name="no_location_selected">No location selected</string>
     <string name="create_hangout">Create Hangout</string>
     <string name="save_changes">Save Changes</string>
     <string name="create_hangout_loading">Creating…</string>
     <string name="save_changes_loading">Saving…</string>
 
-    <string name="go_back">Go Back</string>
+    <string name="go_back">Go back</string>
     <string name="close_sheet">Close</string>
 </resources>

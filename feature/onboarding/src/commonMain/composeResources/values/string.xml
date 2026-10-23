@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
-    <string name="stop_the_group_chat_debate">Stop the group chat debate</string>
+    <string name="stop_the_group_chat_debate">Stop the Group Chat Debate</string>
     <string name="end_the_debate">End the "where are we linking?" argument. Suggest spots and vote in real-time.</string>
 
-    <string name="find_the_perfect_spot">Find the perfect spot</string>
-    <string name="discover_trending_spots_nearby">See what's trending near you and save the places worth going back to.</string>
+    <string name="find_somewhere_new">Find Somewhere New</string>
+    <string name="bored_of_the_same_old_spot">Bored of the same old spot? Tell Lynk AI your vibe and budget and get places worth trying.</string>
 
-    <string name="split_the_cost_evenly">Split the cost evenly</string>
+    <string name="split_the_cost_evenly">Split the Cost Evenly</string>
     <string name="everyone_pays_before_deadline">Everyone pays their share before the host's deadline. No more "I'll send it to you later."</string>
 
     <string name="get_started">Get Started</string>
