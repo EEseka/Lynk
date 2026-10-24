@@ -277,6 +277,37 @@ class AssistantViewModelTest {
     }
 
     @Test
+    fun `a connection that breaks after the answer is done keeps the answer`() = runTest {
+        val viewModel = createDiscoverChat()
+        assistantService.streamEvents = mutableListOf(
+            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Text("Try these two."),
+            AssistantStreamEvent.Done
+        )
+        assistantService.streamEndResult = Result.Failure(DataError.Remote.UNKNOWN)
+
+        ask(viewModel, "Somewhere chill")
+
+        val answer = viewModel.state.value.messages.first()
+        assertThat(answer.status).isEqualTo(AssistantMessageStatus.ANSWERED)
+        assertThat(answer.content).isEqualTo("Try these two.")
+    }
+
+    @Test
+    fun `a connection that breaks after the server gave up keeps its reason`() = runTest {
+        val viewModel = createDiscoverChat()
+        assistantService.streamEvents = mutableListOf(
+            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Error(AssistantFailureReason.TIMEOUT)
+        )
+        assistantService.streamEndResult = Result.Failure(DataError.Remote.UNKNOWN)
+
+        ask(viewModel, "Somewhere chill")
+
+        assertThat(viewModel.state.value.messages.first().failureReason).isEqualTo(AssistantFailureReason.TIMEOUT)
+    }
+
+    @Test
     fun `retrying a failed answer asks the same question again`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(

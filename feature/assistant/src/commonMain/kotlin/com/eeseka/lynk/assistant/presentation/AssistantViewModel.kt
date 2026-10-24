@@ -283,7 +283,11 @@ class AssistantViewModel(
                     val lostAnswerId = answerId
                     if (lostAnswerId == null) {
                         handleRefusedQuestion(question, questionMessage.id, error)
-                    } else {
+                        return@onFailure
+                    }
+                    // A connection that breaks after the answer said it was done, or failed, has lost nothing
+                    val answer = _state.value.messages.find { it.id == lostAnswerId }
+                    if (answer?.status == AssistantMessageStatus.PENDING) {
                         handleLostAnswer(lostAnswerId)
                     }
                 }

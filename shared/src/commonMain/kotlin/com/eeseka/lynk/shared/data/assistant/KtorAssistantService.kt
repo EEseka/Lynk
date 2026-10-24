@@ -16,6 +16,7 @@ import com.eeseka.lynk.shared.domain.assistant.AssistantService
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessage
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantStreamEvent
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantUsage
+import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -36,7 +37,8 @@ import kotlinx.serialization.json.Json
 
 class KtorAssistantService(
     private val httpClient: HttpClient,
-    private val json: Json
+    private val json: Json,
+    private val logger: LynkLogger
 ) : AssistantService {
 
     companion object {
@@ -84,6 +86,7 @@ class KtorAssistantService(
             if (response != null && !response.status.isSuccess()) {
                 responseToResult(response)
             } else {
+                logger.error("Assistant stream failed", e.cause ?: e)
                 // Borrows the REST error mapping for a stream that failed or dropped
                 platformSafeCall(execute = { throw e.cause ?: e }) { Result.Success(Unit) }
             }
