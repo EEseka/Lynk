@@ -34,6 +34,8 @@
     <string name="notification_photos_added">%1$s added new photos to %2$s</string>
     <string name="notification_spot_reminder_before_start">%1$s starts in less than a day and still has no spot. Pick one or move the date</string>
     <string name="notification_spot_reminder_after_start">%1$s was meant to start but has no spot yet. Pick one, move the date or cancel it</string>
+    <string name="notification_solo_reminder">%1$s starts in less than a day and nobody has joined yet. Invite who's coming</string>
+    <string name="notification_solo_started">%1$s is starting now. Invite whoever is with you so you can share photos after</string>
 
     <!-- Money the host has to act on -->
     <string name="notification_payment_deadline_resolved">The payment deadline for %1$s has been settled</string>
