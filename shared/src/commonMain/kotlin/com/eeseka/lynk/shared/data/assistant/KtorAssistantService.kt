@@ -108,6 +108,14 @@ class KtorAssistantService(
         }
     }
 
+    override suspend fun getDiscoverMessages(discoverChatId: String): Result<List<AssistantMessage>, DataError.Remote> {
+        return httpClient.get<List<AssistantMessageDto>>(
+            route = "/assistant/discover/$discoverChatId/messages"
+        ).map { messages ->
+            messages.map { it.toDomain() }
+        }
+    }
+
     override suspend fun getHangoutMessageCount(hangoutId: String): Result<Long, DataError.Remote> {
         return httpClient.get<AssistantMessageCountDto>(
             route = "/assistant/hangouts/$hangoutId/messages/count"

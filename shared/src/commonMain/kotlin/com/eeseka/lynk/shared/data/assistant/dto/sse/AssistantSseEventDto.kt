@@ -19,7 +19,7 @@ sealed interface AssistantSseEventDto {
 
     @Serializable
     data class StartedDto(
-        val messageId: String?,
+        val messageId: String,
         val discoverChatId: String?
     ) : AssistantSseEventDto
 

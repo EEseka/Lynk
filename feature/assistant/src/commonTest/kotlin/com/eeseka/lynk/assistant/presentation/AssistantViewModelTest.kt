@@ -10,6 +10,7 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.eeseka.lynk.shared.data.assistant.InMemoryAssistantMessageCountRepository
+import com.eeseka.lynk.shared.data.assistant.InMemoryDiscoverChatRepository
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.data.lobby.InMemoryBallotRepository
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantFailureReason
@@ -68,6 +69,7 @@ class AssistantViewModelTest {
     private lateinit var appLifecycleObserver: FakeAppLifecycleObserver
     private lateinit var hangoutDetailRepository: InMemoryHangoutDetailRepository
     private lateinit var assistantMessageCountRepository: InMemoryAssistantMessageCountRepository
+    private lateinit var discoverChatRepository: InMemoryDiscoverChatRepository
     private lateinit var ballotRepository: InMemoryBallotRepository
 
     // The id FakeHangoutService gives the first hangout it creates
@@ -107,7 +109,7 @@ class AssistantViewModelTest {
     fun `a discover question streams its answer and cards into the chat`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(messageId = null, discoverChatId = "chat_1"),
+            AssistantStreamEvent.Started(messageId = "answer_1", discoverChatId = "chat_1"),
             AssistantStreamEvent.Status(AssistantStatusKind.SEARCHING),
             AssistantStreamEvent.Text("Try "),
             AssistantStreamEvent.Text("these two."),
@@ -202,7 +204,7 @@ class AssistantViewModelTest {
     fun `a failed answer keeps the reason the server gave`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Error(AssistantFailureReason.TIMEOUT)
         )
 
@@ -217,7 +219,7 @@ class AssistantViewModelTest {
     fun `a failed answer drops the words it streamed`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Text("Try "),
             AssistantStreamEvent.Error(AssistantFailureReason.TIMEOUT)
         )
@@ -231,7 +233,7 @@ class AssistantViewModelTest {
     fun `a finished answer is marked answered with all its words`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Text("Try "),
             AssistantStreamEvent.Text("these two."),
             AssistantStreamEvent.Done
@@ -248,7 +250,7 @@ class AssistantViewModelTest {
     fun `an answer the server gives up on tells the screen it failed`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Error(AssistantFailureReason.ERROR)
         )
 
@@ -260,27 +262,88 @@ class AssistantViewModelTest {
     }
 
     @Test
-    fun `a dropped discover answer is marked as lost`() = runTest {
+    fun `a dropped discover answer reads the chat again from the server`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("a1", "chat_1"),
             AssistantStreamEvent.Text("Try ")
         )
         assistantService.streamEndResult = Result.Failure(DataError.Remote.NO_INTERNET)
+        assistantService.discoverChats["chat_1"] = listOf(
+            message("a1", AssistantMessageRole.ASSISTANT, createdAtMillis = 2_000),
+            message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000)
+        )
 
         ask(viewModel, "Somewhere chill")
 
+        assertThat(assistantService.discoverRequestChatIds).containsExactly("chat_1")
         val answer = viewModel.state.value.messages.first()
-        assertThat(answer.status).isEqualTo(AssistantMessageStatus.FAILED)
-        assertThat(answer.failureReason).isNull()
-        assertThat(answer.content).isEqualTo("")
+        assertThat(answer.status).isEqualTo(AssistantMessageStatus.ANSWERED)
+        assertThat(answer.content).isEqualTo("Message a1")
+    }
+
+    @Test
+    fun `reopening discover picks the last chat back up`() = runTest {
+        val firstViewModel = createDiscoverChat()
+        assistantService.streamEvents = answeredStream(messageId = "a1", discoverChatId = "chat_1")
+        ask(firstViewModel, "Somewhere chill")
+        assistantService.discoverChats["chat_1"] = listOf(
+            message("a1", AssistantMessageRole.ASSISTANT, createdAtMillis = 2_000),
+            message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000)
+        )
+
+        val reopened = openDiscoverChat(createViewModel(keepDiscoverChat = true))
+
+        assertThat(reopened.state.value.discoverChatId).isEqualTo("chat_1")
+        assertThat(reopened.state.value.messages.map { it.id }).containsExactly("a1", "q1")
+    }
+
+    @Test
+    fun `reopening discover after the chat expired starts afresh without a message`() = runTest {
+        val firstViewModel = createDiscoverChat()
+        assistantService.streamEvents = answeredStream(messageId = "a1", discoverChatId = "chat_1")
+        ask(firstViewModel, "Somewhere chill")
+
+        val reopened = createViewModel(keepDiscoverChat = true)
+        reopened.events.test {
+            openDiscoverChat(reopened)
+
+            assertThat(reopened.state.value.discoverChatId).isNull()
+            assertThat(reopened.state.value.messages).isEmpty()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `a new chat empties the screen and the next question starts a fresh one`() = runTest {
+        val viewModel = createDiscoverChat()
+        assistantService.streamEvents = answeredStream(discoverChatId = "chat_1")
+        ask(viewModel, "Somewhere chill")
+
+        viewModel.onAction(AssistantAction.OnNewChatClick)
+        ask(viewModel, "Something cheaper")
+
+        assertThat(assistantService.sentMessages.map { it.discoverChatId }).containsExactly(null, null)
+    }
+
+    @Test
+    fun `a new chat is not picked back up on reopening`() = runTest {
+        val viewModel = createDiscoverChat()
+        assistantService.streamEvents = answeredStream(discoverChatId = "chat_1")
+        ask(viewModel, "Somewhere chill")
+
+        viewModel.onAction(AssistantAction.OnNewChatClick)
+        val reopened = openDiscoverChat(createViewModel(keepDiscoverChat = true))
+
+        assertThat(reopened.state.value.discoverChatId).isNull()
+        assertThat(assistantService.discoverRequestChatIds).isEmpty()
     }
 
     @Test
     fun `a connection that breaks after the answer is done keeps the answer`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Text("Try these two."),
             AssistantStreamEvent.Done
         )
@@ -297,7 +360,7 @@ class AssistantViewModelTest {
     fun `a connection that breaks after the server gave up keeps its reason`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Error(AssistantFailureReason.TIMEOUT)
         )
         assistantService.streamEndResult = Result.Failure(DataError.Remote.UNKNOWN)
@@ -311,7 +374,7 @@ class AssistantViewModelTest {
     fun `retrying a failed answer asks the same question again`() = runTest {
         val viewModel = createDiscoverChat()
         assistantService.streamEvents = mutableListOf(
-            AssistantStreamEvent.Started(null, "chat_1"),
+            AssistantStreamEvent.Started("answer_1", "chat_1"),
             AssistantStreamEvent.Error(AssistantFailureReason.ERROR)
         )
         ask(viewModel, "Somewhere chill")
@@ -495,8 +558,9 @@ class AssistantViewModelTest {
         advanceUntilIdle()
     }
 
-    private fun TestScope.createDiscoverChat(): AssistantViewModel {
-        val viewModel = createViewModel()
+    private fun TestScope.createDiscoverChat(): AssistantViewModel = openDiscoverChat(createViewModel())
+
+    private fun TestScope.openDiscoverChat(viewModel: AssistantViewModel): AssistantViewModel {
         viewModel.onAction(AssistantAction.OnOpenDiscoverChat(latitude = 6.44, longitude = 3.42, areaName = "Lekki"))
         advanceUntilIdle()
         return viewModel
@@ -522,15 +586,17 @@ class AssistantViewModelTest {
         return viewModel
     }
 
-    private fun TestScope.createViewModel(): AssistantViewModel {
+    private fun TestScope.createViewModel(keepDiscoverChat: Boolean = false): AssistantViewModel {
         hangoutDetailRepository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
         assistantMessageCountRepository = InMemoryAssistantMessageCountRepository(assistantService, sessionStorage, backgroundScope)
+        if (!keepDiscoverChat) discoverChatRepository = InMemoryDiscoverChatRepository(sessionStorage, backgroundScope)
         ballotRepository = InMemoryBallotRepository(sessionStorage, backgroundScope)
         runCurrent()
 
         val viewModel = AssistantViewModel(
             assistantService = assistantService,
             assistantMessageCountRepository = assistantMessageCountRepository,
+            discoverChatRepository = discoverChatRepository,
             hangoutDetailRepository = hangoutDetailRepository,
             ballotRepository = ballotRepository,
             spotService = spotService,
@@ -544,7 +610,7 @@ class AssistantViewModelTest {
     }
 
     private fun answeredStream(
-        messageId: String? = null,
+        messageId: String = "answer_1",
         discoverChatId: String? = null
     ) = mutableListOf(
         AssistantStreamEvent.Started(messageId, discoverChatId),

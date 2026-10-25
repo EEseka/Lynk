@@ -1,6 +1,7 @@
 package com.eeseka.lynk.shared.data.di
 
 import com.eeseka.lynk.shared.data.assistant.InMemoryAssistantMessageCountRepository
+import com.eeseka.lynk.shared.data.assistant.InMemoryDiscoverChatRepository
 import com.eeseka.lynk.shared.data.assistant.KtorAssistantService
 import com.eeseka.lynk.shared.data.auth.DataStoreSessionStorage
 import com.eeseka.lynk.shared.data.auth.KtorAuthService
@@ -29,6 +30,7 @@ import com.eeseka.lynk.shared.data.settings.DataStoreAppPreferences
 import com.eeseka.lynk.shared.data.spot.KtorSpotService
 import com.eeseka.lynk.shared.domain.assistant.AssistantMessageCountRepository
 import com.eeseka.lynk.shared.domain.assistant.AssistantService
+import com.eeseka.lynk.shared.domain.assistant.DiscoverChatRepository
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
@@ -85,6 +87,7 @@ val sharedDataModule = module {
     singleOf(::InMemoryHangoutPhotoStatsRepository) bind HangoutPhotoStatsRepository::class
     singleOf(::KtorAssistantService) bind AssistantService::class
     singleOf(::InMemoryAssistantMessageCountRepository) bind AssistantMessageCountRepository::class
+    singleOf(::InMemoryDiscoverChatRepository) bind DiscoverChatRepository::class
     single {
         Json {
             ignoreUnknownKeys = true

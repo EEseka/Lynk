@@ -35,6 +35,9 @@ class FakeAssistantService : AssistantService {
     val messageCountRequestIds = mutableListOf<String>()
     val clearedHangoutIds = mutableListOf<String>()
 
+    val discoverChats = mutableMapOf<String, List<AssistantMessage>>()
+    val discoverRequestChatIds = mutableListOf<String>()
+
     var usage = AssistantUsage(used = 0, limit = 20, resetsInSeconds = null)
     var usageRequestCount = 0
 
@@ -66,6 +69,13 @@ class FakeAssistantService : AssistantService {
                 .filter { beforeInstant == null || it.createdAt < beforeInstant }
                 .take(AssistantConstants.PAGE_SIZE)
         )
+    }
+
+    override suspend fun getDiscoverMessages(discoverChatId: String): Result<List<AssistantMessage>, DataError.Remote> {
+        discoverRequestChatIds.add(discoverChatId)
+        if (shouldReturnError) return Result.Failure(errorToReturn)
+        val messages = discoverChats[discoverChatId] ?: return Result.Failure(DataError.Remote.NOT_FOUND)
+        return Result.Success(messages)
     }
 
     override suspend fun getHangoutMessageCount(hangoutId: String): Result<Long, DataError.Remote> {
