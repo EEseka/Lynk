@@ -277,11 +277,11 @@ class CreateHangoutViewModel(
         _state.update { it.copy(isTrendingLoading = true) }
 
         spotService.getTrendingSpots(location.latitude, location.longitude)
-            .onSuccess { spots ->
+            .onSuccess { trending ->
                 _state.update {
                     it.copy(
                         isTrendingLoading = false,
-                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                        trendingSpots = trending.spots.map { spot -> spot.toSpotUi() }.toImmutableList()
                     )
                 }
             }

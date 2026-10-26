@@ -5,12 +5,14 @@ import com.eeseka.lynk.shared.data.networking.get
 import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.data.spot.dto.PaginatedSpotsDto
 import com.eeseka.lynk.shared.data.spot.dto.SpotDto
+import com.eeseka.lynk.shared.data.spot.dto.TrendingSpotsDto
 import com.eeseka.lynk.shared.data.spot.mappers.toDomain
 import com.eeseka.lynk.shared.domain.spot.SpotService
 import com.eeseka.lynk.shared.domain.spot.model.PaginatedSpots
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.TrendingSpots
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -25,17 +27,15 @@ class KtorSpotService(
         latitude: Double,
         longitude: Double,
         limit: Int
-    ): Result<List<Spot>, DataError.Remote> {
-        return httpClient.get<List<SpotDto>>(
+    ): Result<TrendingSpots, DataError.Remote> {
+        return httpClient.get<TrendingSpotsDto>(
             route = "/spots/trending",
             queryParams = mapOf(
                 "latitude" to latitude,
                 "longitude" to longitude,
                 "limit" to limit
             )
-        ).map { trendingSpots ->
-            trendingSpots.map { it.toDomain() }
-        }
+        ).map { it.toDomain() }
     }
 
     override suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote> {

@@ -380,11 +380,11 @@ class HangoutVotingViewModel(
                 }
                 _state.update { it.copy(isTrendingLoading = true) }
                 spotService.getTrendingSpots(origin.latitude, origin.longitude)
-                    .onSuccess { spots ->
+                    .onSuccess { trending ->
                         _state.update {
                             it.copy(
                                 isTrendingLoading = false,
-                                trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList()
+                                trendingSpots = trending.spots.map { spot -> spot.toSpotUi() }.toImmutableList()
                             )
                         }
                     }

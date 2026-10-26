@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.shared.domain.auth.AuthService
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.auth.model.User
-import com.eeseka.lynk.shared.domain.location.AreaNameResolver
 import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.settings.AppPreferences
@@ -52,8 +51,7 @@ class DiscoverViewModel(
     private val sessionStorage: SessionStorage,
     private val authService: AuthService,
     private val appPreferences: AppPreferences,
-    private val lastKnownLocationStorage: LastKnownLocationStorage,
-    private val areaNameResolver: AreaNameResolver
+    private val lastKnownLocationStorage: LastKnownLocationStorage
 ) : ViewModel() {
 
     private val eventChannel = Channel<DiscoverEvent>()
@@ -82,7 +80,6 @@ class DiscoverViewModel(
                 observeMapTheme()
                 observeSearchFilters()
                 observeTrendingSpots()
-                observeAreaName()
                 observeTopSpots()
                 hasLoadedInitialData = true
             }
@@ -194,24 +191,6 @@ class DiscoverViewModel(
             .launchIn(viewModelScope)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeAreaName() {
-        searchOrigin
-            .filterNotNull()
-            .distinctUntilChanged()
-            .mapLatest { location -> location to areaNameResolver.getAreaName(location.latitude, location.longitude) }
-            .onEach { (location, areaName) ->
-                _state.update {
-                    it.copy(
-                        areaName = areaName,
-                        areaCenter = location
-                    )
-                }
-                if (topSpotsArea.value != null) topSpotsArea.value = areaName
-            }
-            .launchIn(viewModelScope)
-    }
-
     // A new area or leaving the mode cancels a Top 10 still loading
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeTopSpots() {
@@ -273,24 +252,30 @@ class DiscoverViewModel(
         _state.update { it.copy(isTrendingLoading = true, trendingError = null) }
 
         spotService.getTrendingSpots(location.latitude, location.longitude)
-            .onSuccess { spots ->
+            .onSuccess { trending ->
                 _state.update {
                     it.copy(
                         isTrendingLoading = false,
-                        trendingSpots = spots.map { spot -> spot.toSpotUi() }.toImmutableList(),
-                        loadedAreaCenter = location
+                        trendingSpots = trending.spots.map { spot -> spot.toSpotUi() }.toImmutableList(),
+                        loadedAreaCenter = location,
+                        areaName = trending.areaName,
+                        areaCenter = location
                     )
                 }
+                if (topSpotsArea.value != null) topSpotsArea.value = trending.areaName
                 // The sea, a forest, anywhere Google has nothing to show
-                if (spots.isEmpty()) eventChannel.send(DiscoverEvent.NoTrendingSpotsInArea)
+                if (trending.spots.isEmpty()) eventChannel.send(DiscoverEvent.NoTrendingSpotsInArea)
             }
             .onFailure { error ->
                 _state.update {
                     it.copy(
                         isTrendingLoading = false,
-                        trendingError = error.toUiText()
+                        trendingError = error.toUiText(),
+                        areaName = null,
+                        areaCenter = location
                     )
                 }
+                topSpotsArea.value = null
             }
     }
 
