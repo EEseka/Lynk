@@ -2,7 +2,7 @@ package com.eeseka.lynk.shared.domain.assistant.model
 
 sealed interface AssistantStreamEvent {
     data class Started(
-        val messageId: String?,
+        val messageId: String,
         val discoverChatId: String?
     ) : AssistantStreamEvent
 

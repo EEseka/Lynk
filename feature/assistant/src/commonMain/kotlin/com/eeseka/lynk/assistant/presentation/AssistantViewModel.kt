@@ -10,6 +10,7 @@ import com.eeseka.lynk.assistant.presentation.mappers.toAssistantUiText
 import com.eeseka.lynk.assistant.presentation.model.AssistantMessageUi
 import com.eeseka.lynk.shared.domain.assistant.AssistantMessageCountRepository
 import com.eeseka.lynk.shared.domain.assistant.AssistantService
+import com.eeseka.lynk.shared.domain.assistant.DiscoverChatRepository
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessage
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageRole
 import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageStatus
@@ -61,6 +62,7 @@ import kotlin.uuid.Uuid
 class AssistantViewModel(
     private val assistantService: AssistantService,
     private val assistantMessageCountRepository: AssistantMessageCountRepository,
+    private val discoverChatRepository: DiscoverChatRepository,
     private val hangoutDetailRepository: HangoutDetailRepository,
     private val ballotRepository: BallotRepository,
     private val spotService: SpotService,
@@ -109,6 +111,7 @@ class AssistantViewModel(
             AssistantAction.OnRetryClick -> retryLoad()
             AssistantAction.OnCheckPendingAnswerClick -> reloadMessages()
             AssistantAction.OnClearChatConfirmed -> clearChat()
+            AssistantAction.OnNewChatClick -> startNewChat()
             is AssistantAction.OnRecommendationClick -> openSpot(action.spotId)
             is AssistantAction.OnCoverPhotoLoadFailed -> refreshCoverPhoto(action.spotId)
             AssistantAction.OnDismissSpotSheet -> _state.update { it.copy(selectedSpot = null) }
@@ -132,6 +135,22 @@ class AssistantViewModel(
         observeAppReturning()
         setupMessagesPaginator(hangoutId)
         loadNextPage()
+    }
+
+    private fun openDiscoverChat(latitude: Double, longitude: Double, areaName: String?) {
+        if (_state.value.searchCenter != null) return
+        val discoverChatId = discoverChatRepository.getChatId()
+        _state.update {
+            it.copy(
+                searchCenter = LocationCoordinates(latitude, longitude),
+                areaName = areaName,
+                discoverChatId = discoverChatId,
+                isEndReached = discoverChatId == null
+            )
+        }
+
+        observeAppReturning()
+        if (discoverChatId != null) loadDiscoverMessages(discoverChatId)
     }
 
     // Another device on this account may have cleared the chat or asked in it while this one was away.
@@ -205,17 +224,6 @@ class AssistantViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun openDiscoverChat(latitude: Double, longitude: Double, areaName: String?) {
-        if (_state.value.searchCenter != null) return
-        _state.update {
-            it.copy(
-                searchCenter = LocationCoordinates(latitude, longitude),
-                areaName = areaName,
-                isEndReached = true // A Discover chat lives only on this screen, so there is never anything older to load
-            )
-        }
-    }
-
     private fun sendTypedQuestion() {
         val question = _state.value.messageTextState.text.toString().trim()
         _state.value.messageTextState.clearText()
@@ -263,10 +271,8 @@ class AssistantViewModel(
                     content = question
                 ) { event ->
                     if (event is AssistantStreamEvent.Started) {
-                        // A Discover answer has no id of its own, so this phone gives it one
-                        val startedAnswerId = event.messageId ?: Uuid.random().toString()
-                        answerId = startedAnswerId
-                        startAnswer(startedAnswerId, event.discoverChatId)
+                        answerId = event.messageId
+                        startAnswer(event.messageId, event.discoverChatId)
                     } else {
                         answerId?.let { applyStreamEvent(it, event) }
                     }
@@ -276,15 +282,19 @@ class AssistantViewModel(
                     val answer = _state.value.messages.find { it.id == endedAnswerId }
                     // The stream closed without saying the answer was done, so it never fully arrived
                     if (answer?.status == AssistantMessageStatus.PENDING) {
-                        handleLostAnswer(endedAnswerId)
+                        reloadMessages()
                     }
                 }
                 .onFailure { error ->
                     val lostAnswerId = answerId
                     if (lostAnswerId == null) {
                         handleRefusedQuestion(question, questionMessage.id, error)
-                    } else {
-                        handleLostAnswer(lostAnswerId)
+                        return@onFailure
+                    }
+                    // A connection that breaks after the answer said it was done, or failed, has lost nothing.
+                    val answer = _state.value.messages.find { it.id == lostAnswerId }
+                    if (answer?.status == AssistantMessageStatus.PENDING) {
+                        reloadMessages()
                     }
                 }
 
@@ -302,6 +312,7 @@ class AssistantViewModel(
             failureReason = null,
             recommendations = persistentListOf()
         )
+        discoverChatId?.let { discoverChatRepository.setChatId(it) }
         _state.update {
             it.copy(
                 discoverChatId = discoverChatId ?: it.discoverChatId,
@@ -355,6 +366,7 @@ class AssistantViewModel(
         when (error) {
             DataError.Remote.TOO_MANY_REQUESTS -> Unit
             DataError.Remote.NOT_FOUND if !isHangoutChat -> {
+                discoverChatRepository.setChatId(null)
                 _state.update { it.copy(discoverChatId = null) }
                 eventChannel.send(AssistantEvent.ChatExpired)
             }
@@ -369,18 +381,6 @@ class AssistantViewModel(
                 }
                 eventChannel.send(AssistantEvent.Error(error.toAssistantUiText(isHangoutChat)))
             }
-        }
-    }
-
-    // The connection dropped mid-answer. The server still finishes it: a hangout chat reads it back, a Discover one has lost it
-    private fun handleLostAnswer(answerId: String) {
-        if (_state.value.hangoutId != null) {
-            reloadMessages()
-        } else {
-            updateMessage(answerId) {
-                it.copy(status = AssistantMessageStatus.FAILED, content = "", failureReason = null)
-            }
-            sendAnswerEvent(AssistantEvent.AnswerFailed)
         }
     }
 
@@ -408,6 +408,20 @@ class AssistantViewModel(
                     if (error == DataError.Remote.CONFLICT) reloadMessages() // A conflict means an answer is still being written, which the reread shows
                     eventChannel.send(AssistantEvent.Error(error.toAssistantUiText(isHangoutChat = true)))
                 }
+        }
+    }
+
+    private fun startNewChat() {
+        if (_state.value.isAnswering) return
+        discoverChatRepository.setChatId(null)
+        _state.update {
+            it.copy(
+                discoverChatId = null,
+                messages = persistentListOf(),
+                isEndReached = true,
+                loadError = null,
+                messagesResetEpoch = it.messagesResetEpoch + 1
+            )
         }
     }
 
@@ -517,11 +531,19 @@ class AssistantViewModel(
 
     private fun retryLoad() {
         _state.update { it.copy(loadError = null) }
-        loadNextPage()
+        if (_state.value.hangoutId == null) {
+            _state.value.discoverChatId?.let { loadDiscoverMessages(it) }
+        } else {
+            loadNextPage()
+        }
     }
 
     private fun reloadMessages() {
-        val hangoutId = _state.value.hangoutId ?: return
+        val hangoutId = _state.value.hangoutId
+        if (hangoutId == null) {
+            _state.value.discoverChatId?.let { loadDiscoverMessages(it) }
+            return
+        }
 
         _state.update {
             it.copy(
@@ -569,6 +591,55 @@ class AssistantViewModel(
                 }
             }
         )
+    }
+
+    private fun loadDiscoverMessages(discoverChatId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            val result = assistantService.getDiscoverMessages(discoverChatId)
+            if (_state.value.discoverChatId != discoverChatId) {
+                _state.update { it.copy(isLoading = false) }
+                return@launch
+            }
+
+            result
+                .onSuccess { messages ->
+                    _state.update {
+                        it.copy(
+                            messages = messages.map { message -> message.toAssistantMessageUi() }.toImmutableList(),
+                            isLoading = false,
+                            isEndReached = true,
+                            loadError = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    val wasShowingMessages = _state.value.messages.isNotEmpty()
+                    when {
+                        error == DataError.Remote.NOT_FOUND -> {
+                            discoverChatRepository.setChatId(null)
+                            _state.update {
+                                it.copy(
+                                    discoverChatId = null,
+                                    messages = persistentListOf(),
+                                    isLoading = false,
+                                    isEndReached = true,
+                                    messagesResetEpoch = it.messagesResetEpoch + 1
+                                )
+                            }
+                            // Reopening after it expired just starts afresh; losing the one on screen is worth saying
+                            if (wasShowingMessages) eventChannel.send(AssistantEvent.ChatExpired)
+                        }
+
+                        wasShowingMessages -> {
+                            _state.update { it.copy(isLoading = false) }
+                            eventChannel.send(AssistantEvent.Error(error.toUiText()))
+                        }
+
+                        else -> _state.update { it.copy(isLoading = false, loadError = error.toUiText()) }
+                    }
+                }
+        }
     }
 
     private fun loadNextPage() {

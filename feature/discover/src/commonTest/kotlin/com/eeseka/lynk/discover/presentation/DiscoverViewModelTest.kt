@@ -18,7 +18,6 @@ import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
-import com.eeseka.lynk.testing.data.FakeAreaNameResolver
 import com.eeseka.lynk.testing.data.FakeAuthService
 import com.eeseka.lynk.testing.data.FakeLastKnownLocationStorage
 import com.eeseka.lynk.testing.data.FakeSessionStorage
@@ -47,7 +46,6 @@ class DiscoverViewModelTest {
     private lateinit var authService: FakeAuthService
     private lateinit var appPreferences: FakeAppPreferences
     private lateinit var lastKnownLocationStorage: FakeLastKnownLocationStorage
-    private lateinit var areaNameResolver: FakeAreaNameResolver
     private lateinit var viewModel: DiscoverViewModel
 
     private val dummySpot = Spot(
@@ -70,14 +68,13 @@ class DiscoverViewModelTest {
         authService = FakeAuthService()
         appPreferences = FakeAppPreferences()
         lastKnownLocationStorage = FakeLastKnownLocationStorage()
-        areaNameResolver = FakeAreaNameResolver()
+        spotService.trendingAreaName = "Lagos"
         viewModel = DiscoverViewModel(
             spotService,
             sessionStorage,
             authService,
             appPreferences,
-            lastKnownLocationStorage,
-            areaNameResolver
+            lastKnownLocationStorage
         )
     }
 
@@ -156,12 +153,12 @@ class DiscoverViewModelTest {
         collectInBackground(viewModel.state)
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         advanceUntilIdle()
-        areaNameResolver.areaName = "Lagos Island"
+        spotService.trendingAreaName = "Lagos Island"
         viewModel.onAction(DiscoverAction.OnSearchThisArea(6.45, 3.4))
         advanceUntilIdle()
 
         // Coming back to the tab fetches the user's location again
-        areaNameResolver.areaName = "Ifako-Ijaiye"
+        spotService.trendingAreaName = "Ifako-Ijaiye"
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.64, 3.33))
         advanceUntilIdle()
 
@@ -236,26 +233,26 @@ class DiscoverViewModelTest {
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         advanceUntilIdle()
 
-        areaNameResolver.areaName = "Abuja"
+        spotService.trendingAreaName = "Abuja"
         viewModel.onAction(DiscoverAction.OnSearchThisArea(9.07, 7.49))
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.areaName).isEqualTo("Abuja")
     }
 
+    // Offline, or the server is down: the name comes with the spots, so the old one must not label the new area
     @Test
-    fun `an area keeps the point it was named for when its spots fail to load`() = runTest {
+    fun `an area whose spots fail to load has no name`() = runTest {
         collectInBackground(viewModel.state)
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         advanceUntilIdle()
 
-        areaNameResolver.areaName = "Abuja"
         spotService.shouldReturnError = true
         viewModel.onAction(DiscoverAction.OnSearchThisArea(9.07, 7.49))
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertThat(state.areaName).isEqualTo("Abuja")
+        assertThat(state.areaName).isNull()
         assertThat(state.areaCenter).isEqualTo(LocationCoordinates(9.07, 7.49))
         // The pins never moved, so the loaded area is still the first one
         assertThat(state.loadedAreaCenter?.latitude).isEqualTo(6.5)
@@ -267,7 +264,7 @@ class DiscoverViewModelTest {
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         advanceUntilIdle()
 
-        areaNameResolver.areaName = null
+        spotService.trendingAreaName = null
         viewModel.onAction(DiscoverAction.OnSearchThisArea(4.0, 2.0))
         advanceUntilIdle()
 
@@ -275,8 +272,8 @@ class DiscoverViewModelTest {
     }
 
     @Test
-    fun `a device that can't name the area has no Top 10`() = runTest {
-        areaNameResolver.areaName = null
+    fun `an area the server cannot name has no Top 10`() = runTest {
+        spotService.trendingAreaName = null
         collectInBackground(viewModel.state)
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         advanceUntilIdle()
@@ -290,7 +287,7 @@ class DiscoverViewModelTest {
     }
 
     @Test
-    fun `tapping Top 10 loads the area's top spots`() = runTest {
+    fun `tapping Top 10 loads the top spots of the area`() = runTest {
         spotService.topSpotsList = mutableListOf(dummySpot)
         collectInBackground(viewModel.state)
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
@@ -400,14 +397,14 @@ class DiscoverViewModelTest {
     }
 
     @Test
-    fun `searching another area in Top 10 loads that area's Top 10`() = runTest {
+    fun `searching another area in Top 10 loads the Top 10 of that area`() = runTest {
         spotService.topSpotsList = mutableListOf(dummySpot)
         collectInBackground(viewModel.state)
         viewModel.onAction(DiscoverAction.OnLocationFetched(6.5, 3.3))
         viewModel.onAction(DiscoverAction.OnTopSpotsClick)
         advanceUntilIdle()
 
-        areaNameResolver.areaName = "Accra"
+        spotService.trendingAreaName = "Accra"
         viewModel.onAction(DiscoverAction.OnSearchThisArea(5.6, -0.19))
         advanceUntilIdle()
 
@@ -423,7 +420,7 @@ class DiscoverViewModelTest {
         viewModel.onAction(DiscoverAction.OnTopSpotsClick)
         advanceUntilIdle()
 
-        areaNameResolver.areaName = null
+        spotService.trendingAreaName = null
         viewModel.onAction(DiscoverAction.OnSearchThisArea(4.0, 2.0))
         advanceUntilIdle()
 

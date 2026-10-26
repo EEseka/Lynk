@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Hourglass
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.UserRoundPlus
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.VotingSection
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
@@ -61,6 +62,9 @@ import lynk.feature.hangouts.generated.resources.detail_complete
 import lynk.feature.hangouts.generated.resources.detail_completing
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_message
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_title
+import lynk.feature.hangouts.generated.resources.detail_solo_hint_message
+import lynk.feature.hangouts.generated.resources.detail_solo_hint_message_ongoing
+import lynk.feature.hangouts.generated.resources.detail_solo_hint_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -76,6 +80,7 @@ fun HangoutDetailContent(
     isClosingVoting: Boolean,
     isCompleting: Boolean,
     showCompletionReminder: Boolean,
+    showSoloHint: Boolean,
     canCopyAddress: Boolean,
     hasUnpaidGuests: Boolean,
     hasCurrentUserPaid: Boolean,
@@ -158,6 +163,19 @@ fun HangoutDetailContent(
                 presentUserIds = presentUserIds,
                 onSeeAllClick = onSeeAllParticipantsClick
             )
+
+            AnimatedVisibility(visible = showSoloHint) {
+                PlaceholderCard(
+                    icon = Lucide.UserRoundPlus,
+                    title = stringResource(Res.string.detail_solo_hint_title),
+                    message = if (hangout.status == HangoutStatus.ONGOING) {
+                        stringResource(Res.string.detail_solo_hint_message_ongoing)
+                    } else {
+                        stringResource(Res.string.detail_solo_hint_message)
+                    },
+                    iconTint = MaterialTheme.colorScheme.tertiary
+                )
+            }
 
             AnimatedContent(
                 targetState = hangout.status == HangoutStatus.VOTING,
@@ -289,6 +307,7 @@ private fun HangoutDetailContentPreview(
             isClosingVoting = false,
             isCompleting = false,
             showCompletionReminder = false,
+            showSoloHint = false,
             canCopyAddress = hangout.chosenSpot != null,
             hasUnpaidGuests = hangout.participants.any {
                 it.rsvpStatus == RsvpStatus.ATTENDING && !it.hasPaid

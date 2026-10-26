@@ -20,6 +20,7 @@ import com.composables.icons.lucide.Play
 import com.composables.icons.lucide.TriangleAlert
 import com.composables.icons.lucide.UserMinus
 import com.composables.icons.lucide.UserPlus
+import com.composables.icons.lucide.UserRoundPlus
 import com.composables.icons.lucide.Undo2
 import com.composables.icons.lucide.Vote
 import com.composables.icons.lucide.Wallet
@@ -49,6 +50,8 @@ import lynk.feature.notifications.generated.resources.notification_photos_added
 import lynk.feature.notifications.generated.resources.notification_refund_issued
 import lynk.feature.notifications.generated.resources.notification_removed_for_non_payment
 import lynk.feature.notifications.generated.resources.notification_schedule_changed
+import lynk.feature.notifications.generated.resources.notification_solo_reminder
+import lynk.feature.notifications.generated.resources.notification_solo_started
 import lynk.feature.notifications.generated.resources.notification_someone
 import lynk.feature.notifications.generated.resources.notification_spot_chosen
 import lynk.feature.notifications.generated.resources.notification_spot_reminder_after_start
@@ -142,6 +145,16 @@ fun NotificationUi.toUiText(): UiText {
             arrayOf(hangoutName)
         )
 
+        NotificationType.SOLO_REMINDER -> UiText.Resource(
+            Res.string.notification_solo_reminder,
+            arrayOf(hangoutName)
+        )
+
+        NotificationType.SOLO_STARTED -> UiText.Resource(
+            Res.string.notification_solo_started,
+            arrayOf(hangoutName)
+        )
+
         NotificationType.PAYMENT_DEADLINE_RESOLVED -> UiText.Resource(
             Res.string.notification_payment_deadline_resolved,
             arrayOf(hangoutName)
@@ -211,6 +224,8 @@ fun NotificationType.getIcon(): ImageVector {
         NotificationType.PHOTOS_ADDED -> Lucide.Images
         NotificationType.SPOT_REMINDER_BEFORE_START -> Lucide.AlarmClock
         NotificationType.SPOT_REMINDER_AFTER_START -> Lucide.MapPinOff
+        NotificationType.SOLO_REMINDER -> Lucide.UserRoundPlus
+        NotificationType.SOLO_STARTED -> Lucide.Play
 
         NotificationType.PAYMENT_DEADLINE_RESOLVED -> Lucide.BadgeCheck
         NotificationType.PAYMENT_DEADLINE_NEEDS_DECISION -> Lucide.TriangleAlert

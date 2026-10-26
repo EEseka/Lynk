@@ -4,6 +4,7 @@ import com.eeseka.lynk.shared.domain.spot.model.PaginatedSpots
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.TrendingSpots
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -14,7 +15,7 @@ interface SpotService {
         latitude: Double,
         longitude: Double,
         limit: Int = 20
-    ): Result<List<Spot>, DataError.Remote>
+    ): Result<TrendingSpots, DataError.Remote>
 
     suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote>
 

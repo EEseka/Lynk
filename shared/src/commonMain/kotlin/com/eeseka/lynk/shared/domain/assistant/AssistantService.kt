@@ -24,6 +24,8 @@ interface AssistantService {
         before: String? = null
     ): Result<List<AssistantMessage>, DataError.Remote>
 
+    suspend fun getDiscoverMessages(discoverChatId: String): Result<List<AssistantMessage>, DataError.Remote>
+
     suspend fun getHangoutMessageCount(hangoutId: String): Result<Long, DataError.Remote>
 
     suspend fun clearHangoutChat(hangoutId: String): EmptyResult<DataError.Remote>

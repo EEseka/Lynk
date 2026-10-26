@@ -70,6 +70,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_PHOTOS_PER_UPLOAD
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PAYMENTS
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_GROUP
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PHOTOS
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
@@ -354,7 +355,10 @@ fun HangoutDetailScreen(
     val canLeave = hangout != null && !isHost && isUpcoming
     val canEdit = isHost && isUpcoming
     val canComplete = hangout != null && isHost && hangout.status == HangoutStatus.ONGOING
-    val showCompletionReminder = canComplete && Clock.System.now() - hangout.scheduledAt > 1.days
+    val isSolo = hangout != null && hangout.participantCount < MIN_ATTENDEES_FOR_GROUP
+
+    val showCompletionReminder = canComplete && !isSolo && Clock.System.now() - hangout.scheduledAt > 1.days
+    val showSoloHint = showInvite && isSolo
 
     val attendees = hangout?.participants?.filter { it.rsvpStatus == RsvpStatus.ATTENDING }.orEmpty()
     val showMemories = hangout?.status == HangoutStatus.COMPLETED &&
@@ -495,6 +499,7 @@ fun HangoutDetailScreen(
                                 isClosingVoting = votingState.isClosingVoting,
                                 isCompleting = state.isCompleting,
                                 showCompletionReminder = showCompletionReminder,
+                                showSoloHint = showSoloHint,
                                 canCopyAddress = canCopyAddress,
                                 hasUnpaidGuests = unpaidCount > 0,
                                 hasCurrentUserPaid = hasCurrentUserPaid,

@@ -3,6 +3,7 @@
     <string name="assistant_title">Lynk AI</string>
     <string name="close">Close</string>
     <string name="clear_chat">Clear Chat</string>
+    <string name="new_chat">New Chat</string>
     <string name="clear_chat_confirm_title">Clear this chat?</string>
     <string name="clear_chat_confirm_message">Every message and spot in this chat will be deleted for good.</string>
     <string name="dialog_dismiss">Cancel</string>

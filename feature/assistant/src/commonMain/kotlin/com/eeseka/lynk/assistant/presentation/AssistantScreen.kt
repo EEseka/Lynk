@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ArrowDown
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.SquarePen
 import com.composables.icons.lucide.Trash2
 import com.composables.icons.lucide.X
 import com.eeseka.lynk.assistant.presentation.components.AssistantAnswerRow
@@ -104,6 +105,7 @@ import lynk.feature.assistant.generated.resources.assistant_title
 import lynk.feature.assistant.generated.resources.chat_cleared
 import lynk.feature.assistant.generated.resources.chat_expired
 import lynk.feature.assistant.generated.resources.clear_chat
+import lynk.feature.assistant.generated.resources.new_chat
 import lynk.feature.assistant.generated.resources.clear_chat_confirm_message
 import lynk.feature.assistant.generated.resources.clear_chat_confirm_title
 import lynk.feature.assistant.generated.resources.close
@@ -244,13 +246,14 @@ fun AssistantScreen(
     val isChatOpen = !isHangoutChat || (state.isAttending == true && isVoting) // !isHangoutChat is essentially discover chat
     val isOutOfMessages = state.messagesLeft == 0
     val canAsk = isChatOpen && !isOutOfMessages && !isAnswerInProgress
-    val isWaitingForHistory = isHangoutChat && state.messages.isEmpty() && (state.isLoading || state.loadError != null)
+    val isWaitingForHistory = state.messages.isEmpty() && (!state.isEndReached || state.loadError != null)
 
     val canSend = canAsk && !isWaitingForHistory && state.messageTextState.text.isNotBlank()
     val canSuggest = isHangoutChat && state.isAttending == true && isVoting
 
     val showClearChat = isHangoutChat && state.messages.isNotEmpty()
     val isClearChatEnabled = !isAnswerInProgress && !state.isClearingChat
+    val showNewChat = !isHangoutChat && state.messages.isNotEmpty()
 
     val onCopyClick = { content: String ->
         hapticFeedback(AppHaptic.ImpactLight)
@@ -285,6 +288,7 @@ fun AssistantScreen(
         topBar = {
             val closeLabel = stringResource(Res.string.close)
             val clearChatLabel = stringResource(Res.string.clear_chat)
+            val newChatLabel = stringResource(Res.string.new_chat)
 
             LynkTopAppBar(
                 title = stringResource(Res.string.assistant_title),
@@ -316,6 +320,20 @@ fun AssistantScreen(
                             )
                         }
                     }
+                    if (showNewChat) {
+                        LynkIconButton(
+                            enabled = !isAnswerInProgress,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(AssistantAction.OnNewChatClick)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Lucide.SquarePen,
+                                contentDescription = newChatLabel
+                            )
+                        }
+                    }
                 },
                 iosLeadingItems = persistentListOf(
                     LynkIosBarButtonItem(
@@ -326,8 +344,8 @@ fun AssistantScreen(
                         }
                     )
                 ),
-                iosTrailingItems = if (showClearChat) {
-                    persistentListOf(
+                iosTrailingItems = when {
+                    showClearChat -> persistentListOf(
                         LynkIosBarButtonItem(
                             sfSymbol = "trash",
                             enabled = isClearChatEnabled,
@@ -337,8 +355,19 @@ fun AssistantScreen(
                             }
                         )
                     )
-                } else {
-                    persistentListOf()
+
+                    showNewChat -> persistentListOf(
+                        LynkIosBarButtonItem(
+                            sfSymbol = "square.and.pencil",
+                            enabled = !isAnswerInProgress,
+                            onClick = {
+                                hapticFeedback(AppHaptic.ImpactLight)
+                                onAction(AssistantAction.OnNewChatClick)
+                            }
+                        )
+                    )
+
+                    else -> persistentListOf()
                 }
             )
         },

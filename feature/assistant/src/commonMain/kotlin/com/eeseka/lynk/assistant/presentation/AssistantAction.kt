@@ -13,11 +13,12 @@ sealed interface AssistantAction {
     data class OnStarterPromptClick(val prompt: String) : AssistantAction
     data class OnRetryAnswerClick(val answerId: String) : AssistantAction
 
-    // Hangout history
+    // History
     data object LoadNextPage : AssistantAction
     data object OnRetryClick : AssistantAction
     data object OnCheckPendingAnswerClick : AssistantAction
     data object OnClearChatConfirmed : AssistantAction
+    data object OnNewChatClick : AssistantAction
 
     // Spot cards
     data class OnRecommendationClick(val spotId: String) : AssistantAction

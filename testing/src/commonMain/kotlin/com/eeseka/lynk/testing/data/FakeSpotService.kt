@@ -5,6 +5,7 @@ import com.eeseka.lynk.shared.domain.spot.model.PaginatedSpots
 import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.shared.domain.spot.model.TrendingSpots
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -14,6 +15,7 @@ class FakeSpotService : SpotService {
     var shouldReturnError = false
     var errorToReturn = DataError.Remote.SERVER_ERROR
     var trendingSpotsList = mutableListOf<Spot>()
+    var trendingAreaName: String? = null
     var searchSpotsList = mutableListOf<Spot>()
     var savedSpotsList = mutableListOf<Spot>()
     var savedSpots = mutableSetOf<String>()
@@ -29,10 +31,10 @@ class FakeSpotService : SpotService {
         latitude: Double,
         longitude: Double,
         limit: Int
-    ): Result<List<Spot>, DataError.Remote> {
+    ): Result<TrendingSpots, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
         trendingRequestLocations.add(latitude to longitude)
-        return Result.Success(trendingSpotsList.take(limit))
+        return Result.Success(TrendingSpots(spots = trendingSpotsList.take(limit), areaName = trendingAreaName))
     }
 
     override suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote> {

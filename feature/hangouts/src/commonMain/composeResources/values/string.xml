@@ -68,6 +68,9 @@
     <string name="detail_completing">Completing…</string>
     <string name="detail_completion_reminder_title">Did it end?</string>
     <string name="detail_completion_reminder_message">Mark it complete to open the album for everyone who went.</string>
+    <string name="detail_solo_hint_title">Nobody has joined yet</string>
+    <string name="detail_solo_hint_message">Invite who's coming so they're in on the plan.</string>
+    <string name="detail_solo_hint_message_ongoing">Invite who came so you can all share photos once it ends.</string>
     <string name="detail_cancel">Cancel Hangout</string>
     <string name="detail_update">Edit Hangout</string>
     <string name="detail_completed_message">Hangout completed</string>
