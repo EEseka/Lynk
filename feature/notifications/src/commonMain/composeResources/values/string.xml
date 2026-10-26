@@ -7,7 +7,7 @@
 
     <string name="notifications_load_error_title">Couldn't Load Notifications</string>
 
-    <string name="notifications_empty_title">Nothing Yet</string>
+    <string name="notifications_empty_title">No Notifications Yet</string>
     <string name="notifications_empty_message">Invites, spot picks and payment updates for your hangouts will show up here.</string>
 
     <!-- Stands in for a name the backend did not send -->

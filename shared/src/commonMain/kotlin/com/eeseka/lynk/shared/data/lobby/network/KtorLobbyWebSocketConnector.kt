@@ -5,6 +5,7 @@ import com.eeseka.lynk.shared.data.lobby.dto.ws.WebSocketMessageDto
 import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
 import com.eeseka.lynk.shared.data.networking.UrlConstants
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.logging.LynkLogger
 import com.eeseka.lynk.shared.domain.util.DataError
@@ -94,6 +95,14 @@ class KtorLobbyWebSocketConnector(
                 currentSession?.close()
                 currentSession = null
                 connectionRetryHandler.resetDelay()
+                null
+            }
+
+            authInfo.user is User.Guest -> {
+                logger.info("Guest session, no lobby to join.")
+                _connectionState.value = ConnectionState.DISCONNECTED
+                currentSession?.close()
+                currentSession = null
                 null
             }
 

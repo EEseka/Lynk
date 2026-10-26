@@ -28,14 +28,14 @@
     <string name="empty_hangouts_upcoming_title">No Upcoming Hangouts</string>
     <string name="empty_hangouts_upcoming_message">Tap + to plan something with your crew.</string>
 
-    <string name="empty_hangouts_ongoing_title">Nothing Happening Now</string>
-    <string name="empty_hangouts_ongoing_message">You have no active hangouts at the moment.</string>
+    <string name="empty_hangouts_ongoing_title">No Ongoing Hangouts</string>
+    <string name="empty_hangouts_ongoing_message">Hangouts show up here once they start.</string>
 
-    <string name="empty_hangouts_completed_title">No Past Hangouts</string>
-    <string name="empty_hangouts_completed_message">Hangouts you've finished will appear here.</string>
+    <string name="empty_hangouts_completed_title">No Completed Hangouts</string>
+    <string name="empty_hangouts_completed_message">Hangouts show up here once they're done.</string>
 
     <string name="empty_hangouts_cancelled_title">No Cancelled Hangouts</string>
-    <string name="empty_hangouts_cancelled_message">Nothing to see here right now.</string>
+    <string name="empty_hangouts_cancelled_message">Hangouts that get called off show up here.</string>
 
     <string name="empty_search_title">No Hangouts Found</string>
     <string name="empty_search_message">Try adjusting your filters or using different keywords.</string>

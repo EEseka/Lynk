@@ -44,8 +44,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private const val ANIMATION_COMMUNITY = "community.json"
+private const val ANIMATION_COMMUNITY_ASPECT_RATIO = 1080f / 1080f
 private const val ANIMATION_MAP_PIN_LOCATION = "map_pin_location.json"
+private const val ANIMATION_MAP_PIN_LOCATION_ASPECT_RATIO = 813f / 813f
 private const val ANIMATION_PAYMENT_SUCCESS = "payment_success.json"
+private const val ANIMATION_PAYMENT_SUCCESS_ASPECT_RATIO = 320f / 320f
 
 @Composable
 fun OnboardingRoot(
@@ -69,17 +72,20 @@ fun OnboardingScreen(onAction: (OnboardingAction) -> Unit) {
         OnboardingPageUi(
             title = stringResource(Res.string.stop_the_group_chat_debate),
             description = stringResource(Res.string.end_the_debate),
-            animationFileName = ANIMATION_COMMUNITY
+            animationFileName = ANIMATION_COMMUNITY,
+            animationAspectRatio = ANIMATION_COMMUNITY_ASPECT_RATIO
         ),
         OnboardingPageUi(
             title = stringResource(Res.string.find_somewhere_new),
             description = stringResource(Res.string.bored_of_the_same_old_spot),
-            animationFileName = ANIMATION_MAP_PIN_LOCATION
+            animationFileName = ANIMATION_MAP_PIN_LOCATION,
+            animationAspectRatio = ANIMATION_MAP_PIN_LOCATION_ASPECT_RATIO
         ),
         OnboardingPageUi(
             title = stringResource(Res.string.split_the_cost_evenly),
             description = stringResource(Res.string.everyone_pays_before_deadline),
-            animationFileName = ANIMATION_PAYMENT_SUCCESS
+            animationFileName = ANIMATION_PAYMENT_SUCCESS,
+            animationAspectRatio = ANIMATION_PAYMENT_SUCCESS_ASPECT_RATIO
         )
     )
 

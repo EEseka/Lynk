@@ -6,10 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import lynk.feature.hangouts.generated.resources.memories_empty_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val ANIMATION_EMPTY_ALBUM = "empty_album.json"
+private const val ANIMATION_ASPECT_RATIO = 985f / 910f
 
 @Composable
 fun HangoutAlbumEmptyState(modifier: Modifier = Modifier) {
@@ -61,7 +63,9 @@ fun HangoutAlbumEmptyState(modifier: Modifier = Modifier) {
                     iterations = Compottie.IterateForever
                 ),
                 contentDescription = null,
-                modifier = Modifier.size(animationSize)
+                modifier = Modifier
+                    .width(animationSize)
+                    .aspectRatio(ANIMATION_ASPECT_RATIO)
             )
 
             Spacer(modifier = Modifier.height(12.dp))

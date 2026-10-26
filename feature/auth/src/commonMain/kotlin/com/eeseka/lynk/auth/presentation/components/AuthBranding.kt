@@ -4,8 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import lynk.feature.auth.generated.resources.lynk
 import org.jetbrains.compose.resources.stringResource
 
 private const val ANIMATION_LYNK_LOGO = "lynk.json"
+private const val ANIMATION_ASPECT_RATIO = 300f / 300f
 
 @Composable
 fun AuthBranding(modifier: Modifier = Modifier) {
@@ -53,7 +55,9 @@ fun AuthBranding(modifier: Modifier = Modifier) {
                 iterations = Compottie.IterateForever
             ),
             contentDescription = null,
-            modifier = Modifier.size(animationSize)
+            modifier = Modifier
+                .width(animationSize)
+                .aspectRatio(ANIMATION_ASPECT_RATIO)
         )
 
         LynkText(

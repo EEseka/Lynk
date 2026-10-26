@@ -5,9 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import lynk.feature.hangouts.generated.resources.detail_select_title
 import org.jetbrains.compose.resources.stringResource
 
 private const val ANIMATION_NO_SELECTION = "tumbleweed_rolling.json"
+private const val ANIMATION_ASPECT_RATIO = 3835f / 1678f
 
 @Composable
 fun DetailEmptyState(modifier: Modifier = Modifier) {
@@ -54,7 +56,9 @@ fun DetailEmptyState(modifier: Modifier = Modifier) {
                 iterations = Compottie.IterateForever
             ),
             contentDescription = null,
-            modifier = Modifier.size(220.dp)
+            modifier = Modifier
+                .width(220.dp)
+                .aspectRatio(ANIMATION_ASPECT_RATIO)
         )
         Spacer(modifier = Modifier.height(12.dp))
         LynkText(
