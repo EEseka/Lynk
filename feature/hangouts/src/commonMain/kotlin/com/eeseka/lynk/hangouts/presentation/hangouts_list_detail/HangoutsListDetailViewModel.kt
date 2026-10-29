@@ -6,12 +6,15 @@ import com.eeseka.lynk.hangouts.presentation.mappers.toHangoutStatusFilter
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -40,6 +43,7 @@ class HangoutsListDetailViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 observeLobbyEvents()
+                observeReconnections()
                 observeHangoutToShowInList()
                 hasLoadedInitialData = true
             }
@@ -119,6 +123,14 @@ class HangoutsListDetailViewModel(
                 }
                 if (affectsList) refreshList()
             }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeReconnections() {
+        connectionClient.connectionState
+            .filter { it == ConnectionState.CONNECTED }
+            .drop(1)
+            .onEach { refreshList() }
             .launchIn(viewModelScope)
     }
 

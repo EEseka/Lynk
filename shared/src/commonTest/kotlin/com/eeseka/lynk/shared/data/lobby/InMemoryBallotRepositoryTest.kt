@@ -3,8 +3,11 @@ package com.eeseka.lynk.shared.data.lobby
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.testing.data.FakeSessionStorage
@@ -75,17 +78,32 @@ class InMemoryBallotRepositoryTest {
         assertThat(repository.observeCandidates(OTHER_HANGOUT_ID).first()).isEmpty()
     }
 
+    @Test
+    fun `a center is kept per hangout and cleared with null`() = runTest {
+        val repository = createRepository()
+        repository.replaceCenter(HANGOUT_ID, LocationCoordinates(6.5, 3.3))
+
+        assertThat(repository.observeCenter(HANGOUT_ID).first()).isEqualTo(LocationCoordinates(6.5, 3.3))
+        assertThat(repository.observeCenter(OTHER_HANGOUT_ID).first()).isNull()
+
+        repository.replaceCenter(HANGOUT_ID, null)
+
+        assertThat(repository.observeCenter(HANGOUT_ID).first()).isNull()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `a change of user clears every ballot`() = runTest {
+    fun `a change of user clears every ballot and center`() = runTest {
         sessionStorage.set(guestSession(userId = "user_a"))
         val repository = createRepository()
         repository.replaceCandidates(HANGOUT_ID, listOf(lounge))
+        repository.replaceCenter(HANGOUT_ID, LocationCoordinates(6.5, 3.3))
 
         sessionStorage.set(guestSession(userId = "user_b"))
         runCurrent()
 
         assertThat(repository.observeCandidates(HANGOUT_ID).first()).isEmpty()
+        assertThat(repository.observeCenter(HANGOUT_ID).first()).isNull()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

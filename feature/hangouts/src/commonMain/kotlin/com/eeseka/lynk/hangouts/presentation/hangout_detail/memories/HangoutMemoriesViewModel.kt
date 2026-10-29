@@ -14,6 +14,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.Hangout
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.domain.util.onFailure
 import com.eeseka.lynk.shared.domain.util.onSuccess
@@ -27,7 +28,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -64,6 +67,7 @@ class HangoutMemoriesViewModel(
             if (!hasLoadedInitialData) {
                 observeAlbum()
                 observeLobbyEvents()
+                observeReconnections()
                 hasLoadedInitialData = true
             }
         }
@@ -166,6 +170,14 @@ class HangoutMemoriesViewModel(
     private fun observeLobbyEvents() {
         connectionClient.events
             .onEach { event -> handleLobbyEvent(event) }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeReconnections() {
+        connectionClient.connectionState
+            .filter { it == ConnectionState.CONNECTED }
+            .drop(1)
+            .onEach { _hangoutId.value?.let { hangoutPhotoStatsRepository.refreshPhotoStats(it) } }
             .launchIn(viewModelScope)
     }
 

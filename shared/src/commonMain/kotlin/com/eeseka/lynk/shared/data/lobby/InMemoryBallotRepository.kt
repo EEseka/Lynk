@@ -1,6 +1,7 @@
 package com.eeseka.lynk.shared.data.lobby
 
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.lobby.BallotRepository
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +20,7 @@ class InMemoryBallotRepository(
 
     // Kept per hangout id, so one hangout's ballot can never show on another.
     private val candidates = MutableStateFlow<Map<String, List<Spot>>>(emptyMap())
+    private val centers = MutableStateFlow<Map<String, LocationCoordinates>>(emptyMap())
 
     init {
         // This outlives sign-out, so the next user must never be shown the last user's ballots.
@@ -26,7 +28,10 @@ class InMemoryBallotRepository(
             .observeAuthInfo()
             .map { authInfo -> authInfo?.user?.id }
             .distinctUntilChanged()
-            .onEach { candidates.value = emptyMap() }
+            .onEach {
+                candidates.value = emptyMap()
+                centers.value = emptyMap()
+            }
             .launchIn(applicationScope)
     }
 
@@ -53,5 +58,15 @@ class InMemoryBallotRepository(
             val ballot = ballots[hangoutId] ?: return@update ballots
             ballots + (hangoutId to ballot.filterNot { it.id == spotId })
         }
+    }
+
+    override fun observeCenter(hangoutId: String): Flow<LocationCoordinates?> {
+        return centers
+            .map { it[hangoutId] }
+            .distinctUntilChanged()
+    }
+
+    override fun replaceCenter(hangoutId: String, center: LocationCoordinates?) {
+        centers.update { if (center == null) it - hangoutId else it + (hangoutId to center) }
     }
 }

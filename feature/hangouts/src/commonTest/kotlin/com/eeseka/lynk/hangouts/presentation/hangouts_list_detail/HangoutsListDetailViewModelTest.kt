@@ -8,6 +8,7 @@ import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.testing.collectInBackground
@@ -122,6 +123,33 @@ class HangoutsListDetailViewModelTest {
             connectionClient.sendEvent(LobbyEvent.CandidateRemoved(hangoutId = "hangout_1", spotId = "spot_1"))
 
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `the first connection does not refresh the list`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+
+        viewModel.events.test {
+            connectionClient.connectionState.value = ConnectionState.CONNECTING
+            connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `reconnecting after the app was in the background refreshes the list`() = runTest {
+        createViewModel()
+        collectInBackground(viewModel.state)
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+        viewModel.events.test {
+            connectionClient.connectionState.value = ConnectionState.DISCONNECTED
+            connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+            assertThat(awaitItem()).isEqualTo(HangoutsListDetailEvent.RefreshList)
         }
     }
 

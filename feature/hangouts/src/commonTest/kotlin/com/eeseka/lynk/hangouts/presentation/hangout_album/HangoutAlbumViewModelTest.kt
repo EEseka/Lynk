@@ -18,6 +18,7 @@ import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhoto
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeHangoutPhotoService
@@ -220,6 +221,48 @@ class HangoutAlbumViewModelTest {
 
         val photoIds = viewModel.state.value.photos.map { it.id }
         assertThat(photoIds[viewModel.state.value.viewerIndex!!]).isEqualTo("p2")
+    }
+
+    @Test
+    fun `offers photos added while the app was in the background once it reconnects`() = runTest {
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+        val viewModel = createViewModel()
+        hangoutPhotoService.photos.add(0, photo("p4", createdAtMillis = 4_000))
+
+        viewModel.events.test {
+            connectionClient.connectionState.value = ConnectionState.DISCONNECTED
+            connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+            assertThat(awaitItem()).isEqualTo(HangoutAlbumEvent.NewPhotosAdded)
+        }
+        // Nothing moves until the user asks
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p3", "p2", "p1")
+    }
+
+    @Test
+    fun `removes photos deleted while the app was in the background once it reconnects`() = runTest {
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+        val viewModel = createViewModel()
+        hangoutPhotoService.photos.removeAll { it.id == "p2" }
+
+        connectionClient.connectionState.value = ConnectionState.DISCONNECTED
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p3", "p1")
+    }
+
+    @Test
+    fun `reconnecting with nothing missed leaves the album alone`() = runTest {
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+        val viewModel = createViewModel()
+
+        viewModel.events.test {
+            connectionClient.connectionState.value = ConnectionState.DISCONNECTED
+            connectionClient.connectionState.value = ConnectionState.CONNECTED
+
+            expectNoEvents()
+        }
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p3", "p2", "p1")
     }
 
     @Test

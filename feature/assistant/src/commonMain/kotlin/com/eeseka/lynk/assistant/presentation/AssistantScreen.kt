@@ -242,6 +242,7 @@ fun AssistantScreen(
 
     val isAnswerInProgress = state.isAnswering || newestMessage?.status == AssistantMessageStatus.PENDING
     val isVoting = state.hangoutStatus == HangoutStatus.VOTING
+    val votingCenter = state.center?.takeIf { isVoting }
 
     val isChatOpen = !isHangoutChat || (state.isAttending == true && isVoting) // !isHangoutChat is essentially discover chat
     val isOutOfMessages = state.messagesLeft == 0
@@ -633,8 +634,9 @@ fun AssistantScreen(
     state.selectedSpot?.let { spot ->
         SpotDetailSheet(
             spot = spot,
-            userLat = userLocation?.latitude,
-            userLng = userLocation?.longitude,
+            userLat = votingCenter?.latitude ?: userLocation?.latitude,
+            userLng = votingCenter?.longitude ?: userLocation?.longitude,
+            isDistanceFromMiddle = votingCenter != null,
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(AssistantAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
             },

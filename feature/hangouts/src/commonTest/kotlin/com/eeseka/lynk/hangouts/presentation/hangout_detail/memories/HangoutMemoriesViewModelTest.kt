@@ -17,6 +17,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhoto
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeHangoutPhotoRepository
@@ -95,6 +96,21 @@ class HangoutMemoriesViewModelTest {
         hangoutPhotoService.photos.add(0, photo("p2"))
 
         connectionClient.sendEvent(LobbyEvent.PhotosAdded(hangoutId, uploaderIds = setOf(GUEST_ID)))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p2", "p1")
+    }
+
+    @Test
+    fun `shows photos added while the app was in the background once it reconnects`() = runTest {
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
+        val hangoutId = createHangout(attendees = listOf(GUEST_ID))
+        completeHangout(hangoutId)
+        val viewModel = createViewModel(hangoutId)
+        hangoutPhotoService.photos.add(0, photo("p2"))
+
+        connectionClient.connectionState.value = ConnectionState.DISCONNECTED
+        connectionClient.connectionState.value = ConnectionState.CONNECTED
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p2", "p1")

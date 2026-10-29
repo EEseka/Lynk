@@ -12,6 +12,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhoto
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
+import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.DataErrorException
@@ -29,6 +30,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -77,6 +80,7 @@ class HangoutAlbumViewModel(
                 _state.update { it.copy(currentUserId = authInfo?.user?.id) }
                 observeCanSaveCaption()
                 observeLobbyEvents()
+                observeReconnections()
                 hasLoadedInitialData = true
             }
         }
@@ -114,6 +118,34 @@ class HangoutAlbumViewModel(
         connectionClient.events
             .onEach { event -> handleLobbyEvent(event) }
             .launchIn(viewModelScope)
+    }
+
+    private fun observeReconnections() {
+        connectionClient.connectionState
+            .filter { it == ConnectionState.CONNECTED }
+            .drop(1)
+            .onEach { catchUpOnMissedPhotos() }
+            .launchIn(viewModelScope)
+    }
+
+    private suspend fun catchUpOnMissedPhotos() {
+        val hangoutId = _state.value.hangoutId ?: return
+
+        hangoutPhotoService.getPhotos(hangoutId = hangoutId, before = null)
+            .onSuccess { newestPage ->
+                val heldPhotos = _state.value.photos
+                val newestHeldAt = heldPhotos.maxOfOrNull { it.createdAt }
+                if (newestPage.any { newestHeldAt == null || it.createdAt > newestHeldAt }) {
+                    eventChannel.send(HangoutAlbumEvent.NewPhotosAdded)
+                }
+
+                val oldestInPage = newestPage.minOfOrNull { it.createdAt }
+                val newestPageIds = newestPage.map { it.id }.toSet()
+                heldPhotos
+                    .filter { oldestInPage == null || it.createdAt >= oldestInPage }
+                    .filterNot { it.id in newestPageIds }
+                    .forEach { removePhoto(it.id) }
+            }
     }
 
     private suspend fun handleLobbyEvent(event: LobbyEvent) {

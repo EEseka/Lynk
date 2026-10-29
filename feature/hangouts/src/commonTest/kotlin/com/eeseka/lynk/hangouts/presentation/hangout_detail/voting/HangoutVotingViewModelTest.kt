@@ -31,6 +31,7 @@ import com.eeseka.lynk.testing.data.FakeSpotService
 import com.eeseka.lynk.testing.typeText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -56,6 +57,7 @@ class HangoutVotingViewModelTest {
     private lateinit var connectionClient: FakeLobbyConnectionClient
     private lateinit var lobbyService: FakeLobbyService
     private lateinit var repository: InMemoryHangoutDetailRepository
+    private lateinit var ballotRepository: InMemoryBallotRepository
 
     private val savedAt = Instant.fromEpochMilliseconds(4102444800000L)
     private val lounge = spot(id = "spot_1", name = "The Lounge")
@@ -341,6 +343,23 @@ class HangoutVotingViewModelTest {
     }
 
     @Test
+    fun `the group center is shared with the Lynk chat until voting ends`() = runTest {
+        val hangoutId = createVotingHangout()
+        createViewModel(hangoutId)
+
+        connectionClient.sendEvent(LobbyEvent.CenterUpdate(hangoutId, 6.5, 3.3))
+        advanceUntilIdle()
+
+        assertThat(ballotRepository.observeCenter(hangoutId).first()).isEqualTo(LocationCoordinates(6.5, 3.3))
+
+        changeStatusOnServer(hangoutId, HangoutStatus.SCHEDULED)
+        repository.refreshHangout(hangoutId)
+        advanceUntilIdle()
+
+        assertThat(ballotRepository.observeCenter(hangoutId).first()).isNull()
+    }
+
+    @Test
     fun `a refresh that stays in voting keeps the ballot`() = runTest {
         val hangoutId = createVotingHangout()
         val viewModel = createViewModel(hangoutId)
@@ -455,7 +474,7 @@ class HangoutVotingViewModelTest {
     // The real in-memory stores: one fed by the fake service with the hangout, one holding its ballot
     private suspend fun TestScope.createViewModel(hangoutId: String): HangoutVotingViewModel {
         repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
-        val ballotRepository = InMemoryBallotRepository(sessionStorage, backgroundScope)
+        ballotRepository = InMemoryBallotRepository(sessionStorage, backgroundScope)
         runCurrent()
         val viewModel = HangoutVotingViewModel(
             hangoutDetailRepository = repository,

@@ -92,6 +92,7 @@ class HangoutVotingViewModel(
                 currentUserId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
                 observeVotingRound()
                 observeCandidates()
+                observeCenter()
                 observePendingVotingActions()
                 observeLobbyEvents()
                 observeTrendingSpots()
@@ -127,11 +128,13 @@ class HangoutVotingViewModel(
 
         previousStatus = null
         dismissProposeSpotSheet()
-        hangoutId?.let { ballotRepository.replaceCandidates(it, emptyList()) }
+        hangoutId?.let {
+            ballotRepository.replaceCandidates(it, emptyList())
+            ballotRepository.replaceCenter(it, null)
+        }
         _state.update {
             it.copy(
                 votes = persistentMapOf(),
-                center = null,
                 tiedSpotIds = persistentListOf(),
                 trendingSpots = persistentListOf(),
                 isTrendingLoading = false
@@ -151,11 +154,11 @@ class HangoutVotingViewModel(
                 val sameVotingRound = previousStatus == HangoutStatus.VOTING && currentHangout.status == HangoutStatus.VOTING
                 if (previousStatus != null && !sameVotingRound) {
                     ballotRepository.replaceCandidates(currentHangout.id, emptyList())
+                    ballotRepository.replaceCenter(currentHangout.id, null)
                     _state.update {
                         it.copy(
                             votes = persistentMapOf(),
-                            tiedSpotIds = persistentListOf(),
-                            center = null
+                            tiedSpotIds = persistentListOf()
                         ).clearPendingVotingActions()
                     }
                 }
@@ -178,6 +181,15 @@ class HangoutVotingViewModel(
                     it.copy(candidates = candidates.map { spot -> spot.toSpotUi() }.toImmutableList())
                 }
             }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeCenter() {
+        _hangoutId
+            .flatMapLatest { hangoutId ->
+                hangoutId?.let(ballotRepository::observeCenter) ?: flowOf(null)
+            }
+            .onEach { center -> _state.update { it.copy(center = center) } }
             .launchIn(viewModelScope)
     }
 
@@ -211,13 +223,14 @@ class HangoutVotingViewModel(
                     val longitude = event.longitude
 
                     ballotRepository.replaceCandidates(currentHangoutId, event.candidates)
+                    ballotRepository.replaceCenter(
+                        currentHangoutId,
+                        if (latitude != null && longitude != null) LocationCoordinates(latitude, longitude) else null
+                    )
                     _state.update {
                         it.copy(
                             votes = event.votes.toImmutableMap(),
-                            tiedSpotIds = persistentListOf(),
-                            center = if (latitude != null && longitude != null) {
-                                LocationCoordinates(latitude, longitude)
-                            } else null
+                            tiedSpotIds = persistentListOf()
                         )
                     }
                 }
@@ -260,9 +273,7 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CenterUpdate -> {
                 if (event.hangoutId == currentHangoutId) {
-                    _state.update {
-                        it.copy(center = LocationCoordinates(event.latitude, event.longitude))
-                    }
+                    ballotRepository.replaceCenter(currentHangoutId, LocationCoordinates(event.latitude, event.longitude))
                 }
             }
 

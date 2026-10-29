@@ -97,6 +97,8 @@ import lynk.shared.generated.resources.open_in_google_maps
 import lynk.shared.generated.resources.reviews_count
 import lynk.shared.generated.resources.save_spot
 import lynk.shared.generated.resources.spot_closes_at
+import lynk.shared.generated.resources.spot_distance_away
+import lynk.shared.generated.resources.spot_distance_from_middle
 import lynk.shared.generated.resources.spot_hours_local
 import lynk.shared.generated.resources.spot_local_time
 import lynk.shared.generated.resources.spot_opens_at
@@ -111,6 +113,7 @@ fun SpotDetailSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     rankLabel: String? = null,
+    isDistanceFromMiddle: Boolean = false,
     onCreateHangoutClick: ((String) -> Unit)? = null,
     onToggleSave: ((String, Boolean) -> Unit)? = null
 ) {
@@ -134,6 +137,7 @@ fun SpotDetailSheet(
             userLat = userLat,
             userLng = userLng,
             rankLabel = rankLabel,
+            isDistanceFromMiddle = isDistanceFromMiddle,
             onPhotoClick = { index -> initialImageIndex = index },
             onCreateHangoutClick = onCreateHangoutClick,
             onToggleSave = onToggleSave
@@ -147,6 +151,7 @@ private fun SpotDetailSheetContent(
     userLat: Double?,
     userLng: Double?,
     rankLabel: String?,
+    isDistanceFromMiddle: Boolean,
     onPhotoClick: (Int) -> Unit,
     onCreateHangoutClick: ((String) -> Unit)?,
     onToggleSave: ((String, Boolean) -> Unit)?,
@@ -259,10 +264,16 @@ private fun SpotDetailSheetContent(
                 spotLatitude = spot.latitude,
                 spotLongitude = spot.longitude
             )
+            val distanceText = distanceLabel?.let { distance ->
+                stringResource(
+                    if (isDistanceFromMiddle) Res.string.spot_distance_from_middle else Res.string.spot_distance_away,
+                    distance
+                )
+            }
             val metaLine = listOfNotNull(
                 spot.typeLabel ?: spot.category.getTitle(),
                 spot.priceLevel?.let { getPriceLevelSymbol(it.tier) },
-                distanceLabel
+                distanceText
             ).joinToString("  ·  ")
 
             Column(
@@ -548,6 +559,7 @@ private fun SpotDetailSheetContentPreview(
             userLat = userLat,
             userLng = userLng,
             rankLabel = rankLabel,
+            isDistanceFromMiddle = false,
             onPhotoClick = {},
             onCreateHangoutClick = {},
             onToggleSave = { _, _ -> },

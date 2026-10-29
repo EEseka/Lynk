@@ -130,6 +130,7 @@ class AssistantViewModel(
 
         observeHangout(hangoutId)
         observeBallotSpotIds(hangoutId)
+        observeCenter(hangoutId)
         observePendingSuggestions()
         observeSuggestionErrors()
         observeAppReturning()
@@ -180,6 +181,13 @@ class AssistantViewModel(
                 )
             }
         }.launchIn(viewModelScope)
+    }
+
+    private fun observeCenter(hangoutId: String) {
+        ballotRepository
+            .observeCenter(hangoutId)
+            .onEach { center -> _state.update { it.copy(center = center) } }
+            .launchIn(viewModelScope)
     }
 
     private fun observeBallotSpotIds(hangoutId: String) {

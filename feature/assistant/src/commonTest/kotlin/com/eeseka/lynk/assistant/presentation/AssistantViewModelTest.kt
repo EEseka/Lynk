@@ -26,6 +26,7 @@ import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -526,6 +527,16 @@ class AssistantViewModelTest {
             assertThat(viewModel.state.value.ballotSpotIds).isEqualTo(setOf("spot_2"))
             assertThat(lobbyService.proposedSpotIds).containsExactly("spot_2")
         }
+    }
+
+    @Test
+    fun `a hangout chat follows the group center the voting section reports`() = runTest {
+        val viewModel = createHangoutChat()
+        assertThat(viewModel.state.value.center).isNull()
+
+        ballotRepository.replaceCenter(hangoutId, LocationCoordinates(6.5, 3.3))
+
+        assertThat(viewModel.state.value.center).isEqualTo(LocationCoordinates(6.5, 3.3))
     }
 
     @Test

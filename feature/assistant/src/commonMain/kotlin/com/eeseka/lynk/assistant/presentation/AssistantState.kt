@@ -27,6 +27,7 @@ data class AssistantState(
     val hangoutStatus: HangoutStatus? = null,
     val isAttending: Boolean? = null,
     val ballotSpotIds: ImmutableSet<String> = persistentSetOf(),
+    val center: LocationCoordinates? = null,
     val suggestingSpotIds: ImmutableSet<String> = persistentSetOf(),
 
     val messages: ImmutableList<AssistantMessageUi> = persistentListOf(),

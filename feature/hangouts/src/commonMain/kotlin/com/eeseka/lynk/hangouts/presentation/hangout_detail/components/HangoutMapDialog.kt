@@ -103,6 +103,21 @@ fun HangoutMapDialog(
     onBreakTie: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val permissionController = rememberPermissionController()
+    val locationController = rememberLocationController()
+
+    var userLocation by remember { mutableStateOf<LocationCoordinates?>(null) }
+
+    // Your own dot only when location is already allowed; this map never asks for it
+    LaunchedEffect(Unit) {
+        val permissionState = permissionController.getPermissionState(Permission.LOCATION)
+        if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
+
+        locationController.observeCurrentLocation().collect { locationResult ->
+            locationResult.onSuccess { coordinate -> userLocation = coordinate }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = hangoutMapDialogProperties()
@@ -121,6 +136,8 @@ fun HangoutMapDialog(
                 tiedSpotIds = tiedSpotIds,
                 centerLatitude = centerLatitude,
                 centerLongitude = centerLongitude,
+                userLatitude = userLocation?.latitude,
+                userLongitude = userLocation?.longitude,
                 mapTheme = mapTheme,
                 onCastVote = onCastVote,
                 onBreakTie = onBreakTie,
@@ -140,6 +157,8 @@ private fun HangoutMapContent(
     tiedSpotIds: ImmutableList<String>,
     centerLatitude: Double?,
     centerLongitude: Double?,
+    userLatitude: Double?,
+    userLongitude: Double?,
     mapTheme: AppTheme,
     onCastVote: (String) -> Unit,
     onBreakTie: (String) -> Unit,
@@ -147,11 +166,8 @@ private fun HangoutMapContent(
 ) {
     val hapticFeedback = rememberAppHaptic()
     val scope = rememberCoroutineScope()
-    val permissionController = rememberPermissionController()
-    val locationController = rememberLocationController()
 
     var sheetSpotId by remember { mutableStateOf<String?>(null) }
-    var userLocation by remember { mutableStateOf<LocationCoordinates?>(null) }
 
     // Same tally as VotingSection
     val counts = remember(votes) { votes.values.groupingBy { it }.eachCount() }
@@ -175,16 +191,6 @@ private fun HangoutMapContent(
         baseStyle = BaseStyle.Uri(mapStyleUri(mapTheme)),
         initialCameraPosition = CameraPosition(center = openingCenter, zoom = 15.0)
     )
-
-    // Your own dot only when location is already allowed; this map never asks for it
-    LaunchedEffect(Unit) {
-        val permissionState = permissionController.getPermissionState(Permission.LOCATION)
-        if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
-
-        locationController.observeCurrentLocation().collect { locationResult ->
-            locationResult.onSuccess { coordinate -> userLocation = coordinate }
-        }
-    }
 
     // Frames the center and every spot once; one point alone keeps the opening zoom
     LaunchedEffect(Unit) {
@@ -237,10 +243,10 @@ private fun HangoutMapContent(
                 )
             }
 
-            userLocation?.let { location ->
+            if (userLatitude != null && userLongitude != null) {
                 UserLocationMapMarker(
-                    userLatitude = location.latitude,
-                    userLongitude = location.longitude,
+                    userLatitude = userLatitude,
+                    userLongitude = userLongitude,
                     pulseKey = 0
                 )
             }
@@ -387,8 +393,9 @@ private fun HangoutMapContent(
     candidates.find { it.id == sheetSpotId }?.let { spot ->
         SpotDetailSheet(
             spot = spot,
-            userLat = centerLatitude ?: userLocation?.latitude,
-            userLng = centerLongitude ?: userLocation?.longitude,
+            userLat = centerLatitude ?: userLatitude,
+            userLng = centerLongitude ?: userLongitude,
+            isDistanceFromMiddle = centerPosition != null,
             onDismissRequest = { sheetSpotId = null }
         )
     }

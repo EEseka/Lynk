@@ -1,5 +1,6 @@
 package com.eeseka.lynk.shared.domain.lobby
 
+import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import kotlinx.coroutines.flow.Flow
 
@@ -16,4 +17,8 @@ interface BallotRepository {
     fun addCandidate(hangoutId: String, spot: Spot)
 
     fun removeCandidate(hangoutId: String, spotId: String)
+
+    fun observeCenter(hangoutId: String): Flow<LocationCoordinates?>
+
+    fun replaceCenter(hangoutId: String, center: LocationCoordinates?)
 }

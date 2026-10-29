@@ -76,6 +76,8 @@
     <string name="save_spot">Save spot</string>
     <string name="unsave_spot">Remove saved spot</string>
     <string name="create_hangout_here">Create Hangout Here</string>
+    <string name="spot_distance_away">%1$s away</string>
+    <string name="spot_distance_from_middle">%1$s from the middle</string>
     <string name="spot_closes_at">Closes %1$s</string>
     <string name="spot_opens_at">Opens %1$s</string>
     <string name="spot_local_time">%1$s local time</string>
