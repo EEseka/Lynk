@@ -14,6 +14,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.util.DataErrorException
 import com.eeseka.lynk.shared.domain.util.Paginator
+import com.eeseka.lynk.shared.domain.util.Result
 import com.eeseka.lynk.shared.presentation.hangout.mappers.toHangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.util.toUiText
 import kotlinx.collections.immutable.persistentListOf
@@ -52,6 +53,7 @@ class HangoutsListViewModel(
     private var hangoutsPaginator: Paginator<String?, HangoutSummary>? = null
 
     private val refreshTrigger = MutableStateFlow(0)
+    private var loadedFilters: Triple<String?, HangoutStatusFilter, HangoutVibe?>? = null
 
     val state = _state
         .onStart {
@@ -132,7 +134,14 @@ class HangoutsListViewModel(
             refreshTrigger
         ) { query, statusFilter, vibe, _ ->
             Triple(query.takeIf { it.isNotBlank() }, statusFilter, vibe)
-        }.mapLatest { (query, statusFilter, vibe) ->
+        }.mapLatest { filters ->
+            val (query, statusFilter, vibe) = filters
+            // A refresh with the same filters keeps the list on screen and swaps in fresh hangouts quietly
+            if (filters == loadedFilters && _state.value.hangouts.isNotEmpty()) {
+                refreshHeldHangouts(query, statusFilter, vibe)
+                return@mapLatest
+            }
+            loadedFilters = filters
             setupHangoutsPaginator(query, statusFilter, vibe)
             _state.update {
                 it.copy(
@@ -189,6 +198,46 @@ class HangoutsListViewModel(
                 }
             }
         )
+    }
+
+    private suspend fun refreshHeldHangouts(
+        query: String?,
+        statusFilter: HangoutStatusFilter,
+        vibe: HangoutVibe?
+    ) {
+        val oldestHeldAt = _state.value.hangouts.minOfOrNull { it.createdAt } ?: return
+
+        val freshHangouts = buildList {
+            var before: String? = null
+            do {
+                val pageResult = hangoutService.getHangouts(
+                    query = query,
+                    status = statusFilter.toHangoutStatus(),
+                    vibe = vibe,
+                    before = before
+                )
+                val page = when (pageResult) {
+                    is Result.Failure -> return
+                    is Result.Success -> pageResult.data
+                }
+                addAll(page)
+
+                val pageOldestAt = page.minOfOrNull { it.createdAt }
+                before = pageOldestAt?.toString()
+            } while (pageOldestAt != null && pageOldestAt > oldestHeldAt)
+        }
+
+        _state.update { state ->
+            val refreshed = freshHangouts
+                .filter { it.createdAt >= oldestHeldAt }
+                .map { it.toHangoutSummaryUi() }
+            // A next page that landed meanwhile sits below what was held, so it stays
+            val loadedSince = state.hangouts.filter { it.createdAt < oldestHeldAt }
+            state.copy(
+                hangouts = (refreshed + loadedSince).toImmutableList(),
+                searchResetEpoch = state.searchResetEpoch + 1
+            )
+        }
     }
 
     private fun loadNextPage() {

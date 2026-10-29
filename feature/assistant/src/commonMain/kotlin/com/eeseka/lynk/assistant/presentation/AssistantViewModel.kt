@@ -161,7 +161,7 @@ class AssistantViewModel(
             .distinctUntilChanged()
             .drop(1)
             .onEach { isInForeground ->
-                if (isInForeground && !_state.value.isAnswering) reloadMessages()
+                if (isInForeground && !_state.value.isAnswering) refreshHeldMessages()
             }
             .launchIn(viewModelScope)
     }
@@ -546,6 +546,38 @@ class AssistantViewModel(
         }
     }
 
+    private fun refreshHeldMessages() {
+        val hangoutId = _state.value.hangoutId
+        if (hangoutId == null) {
+            _state.value.discoverChatId?.let { loadDiscoverMessages(it, showLoading = false) }
+            return
+        }
+        if (_state.value.messages.isEmpty()) {
+            reloadMessages()
+            return
+        }
+
+        viewModelScope.launch {
+            assistantService.getHangoutMessages(hangoutId = hangoutId)
+                .onSuccess { newestMessages ->
+                    // A question asked meanwhile is newer than this page, so the page is dropped
+                    if (_state.value.isAnswering) return@onSuccess
+
+                    setupMessagesPaginator(
+                        hangoutId = hangoutId,
+                        initialKey = newestMessages.minOfOrNull { it.createdAt }?.toString()
+                    )
+                    _state.update {
+                        it.copy(
+                            messages = newestMessages.map { message -> message.toAssistantMessageUi() }.toImmutableList(),
+                            isEndReached = newestMessages.isEmpty(),
+                            messagesResetEpoch = it.messagesResetEpoch + 1
+                        )
+                    }
+                }
+        }
+    }
+
     private fun reloadMessages() {
         val hangoutId = _state.value.hangoutId
         if (hangoutId == null) {
@@ -565,10 +597,10 @@ class AssistantViewModel(
         loadNextPage()
     }
 
-    private fun setupMessagesPaginator(hangoutId: String) {
+    private fun setupMessagesPaginator(hangoutId: String, initialKey: String? = null) {
         messagesPaginator?.close()
         messagesPaginator = Paginator(
-            initialKey = null,
+            initialKey = initialKey,
             onLoadUpdated = { isLoading ->
                 _state.update { it.copy(isLoading = isLoading) }
             },
@@ -601,9 +633,9 @@ class AssistantViewModel(
         )
     }
 
-    private fun loadDiscoverMessages(discoverChatId: String) {
+    private fun loadDiscoverMessages(discoverChatId: String, showLoading: Boolean = true) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            if (showLoading) _state.update { it.copy(isLoading = true) }
             val result = assistantService.getDiscoverMessages(discoverChatId)
             if (_state.value.discoverChatId != discoverChatId) {
                 _state.update { it.copy(isLoading = false) }

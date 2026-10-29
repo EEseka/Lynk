@@ -23,6 +23,7 @@ import com.eeseka.lynk.testing.data.FakeSessionStorage
 import com.eeseka.lynk.testing.typeText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -234,6 +235,56 @@ class HangoutsListViewModelTest {
             "Night Out",
             "Brunch"
         )
+    }
+
+    @Test
+    fun `refresh keeps the list on screen without a loading indicator`() = runTest {
+        createHangout("Night Out")
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+
+        val seenStates = mutableListOf<HangoutsListState>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.collect { seenStates += it }
+        }
+        createHangout("Brunch")
+        viewModel.onAction(HangoutsListAction.Refresh)
+        advanceUntilIdle()
+
+        assertThat(seenStates.none { it.hangouts.isEmpty() }).isTrue()
+        assertThat(seenStates.none { it.isLoading }).isTrue()
+        assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly("Night Out", "Brunch")
+    }
+
+    @Test
+    fun `refresh drops a hangout that went away`() = runTest {
+        createHangout("Night Out")
+        createHangout("Brunch")
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+
+        hangoutService.hangouts.removeAll { it.name == "Night Out" }
+        viewModel.onAction(HangoutsListAction.Refresh)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly("Brunch")
+    }
+
+    @Test
+    fun `a failed refresh keeps the list as it was`() = runTest {
+        createHangout("Night Out")
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            hangoutService.shouldReturnError = true
+            viewModel.onAction(HangoutsListAction.Refresh)
+            advanceUntilIdle()
+
+            assertThat(viewModel.state.value.hangouts.map { it.name }).containsExactly("Night Out")
+            assertThat(viewModel.state.value.loadError).isNull()
+            expectNoEvents()
+        }
     }
 
     @Test

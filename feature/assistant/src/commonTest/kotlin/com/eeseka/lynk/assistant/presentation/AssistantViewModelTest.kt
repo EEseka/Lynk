@@ -48,6 +48,7 @@ import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -461,6 +462,39 @@ class AssistantViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.messages).isEmpty()
+    }
+
+    @Test
+    fun `coming back to the app keeps the chat on screen while it is reread`() = runTest {
+        assistantService.hangoutMessages = mutableListOf(message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000))
+        val viewModel = createHangoutChat()
+
+        val seenStates = mutableListOf<AssistantState>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.collect { seenStates += it }
+        }
+        appLifecycleObserver.isInForeground.value = false
+        assistantService.hangoutMessages.add(0, message("q2", AssistantMessageRole.USER, createdAtMillis = 2_000))
+        appLifecycleObserver.isInForeground.value = true
+        advanceUntilIdle()
+
+        assertThat(seenStates.none { it.messages.isEmpty() }).isTrue()
+        assertThat(seenStates.none { it.isLoading }).isTrue()
+        assertThat(viewModel.state.value.messages.map { it.id }).containsExactly("q2", "q1")
+    }
+
+    @Test
+    fun `a failed reread on coming back keeps the chat as it was`() = runTest {
+        assistantService.hangoutMessages = mutableListOf(message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000))
+        val viewModel = createHangoutChat()
+
+        appLifecycleObserver.isInForeground.value = false
+        assistantService.shouldReturnError = true
+        appLifecycleObserver.isInForeground.value = true
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.messages.map { it.id }).containsExactly("q1")
+        assertThat(viewModel.state.value.loadError).isNull()
     }
 
     @Test
