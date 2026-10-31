@@ -2,7 +2,9 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
@@ -25,6 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangoutDetailTopBar(
+    containerColor: Color,
     showInvite: Boolean,
     inviteEnabled: Boolean,
     canEdit: Boolean,
@@ -56,6 +59,7 @@ fun HangoutDetailTopBar(
         onLeaveClick = onLeaveClick
     )
     LynkTopAppBar(
+        containerColor = containerColor,
         navigationIcon = {
             LynkIconButton(
                 onClick = {
@@ -152,6 +156,7 @@ private fun HangoutDetailTopBarAttendeePreview() = HangoutDetailTopBarPreview(is
 private fun HangoutDetailTopBarPreview(isHost: Boolean) {
     LynkTheme {
         HangoutDetailTopBar(
+            containerColor = MaterialTheme.colorScheme.surface,
             showInvite = isHost,
             inviteEnabled = true,
             canEdit = isHost,

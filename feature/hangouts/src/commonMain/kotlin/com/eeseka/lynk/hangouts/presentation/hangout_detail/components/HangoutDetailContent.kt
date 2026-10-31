@@ -2,12 +2,14 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -21,12 +23,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.composables.icons.lucide.Hourglass
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UserRoundPlus
@@ -47,6 +52,7 @@ import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
 import com.eeseka.lynk.shared.presentation.preview.previewHangout
 import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
 import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
@@ -113,25 +119,41 @@ fun HangoutDetailContent(
     onMapClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    scrollState: ScrollState = rememberScrollState(),
     heroActions: @Composable RowScope.() -> Unit = {}
 ) {
     val configuration = currentDeviceConfiguration()
     val contentMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
     val hapticFeedback = rememberAppHaptic()
+    val chosenSpotPhotoUrl = remember(hangout.chosenSpot?.photoUrls) {
+        hangout.chosenSpot?.photoUrls?.let(SpotPhotoUrlBuilder::getPrimaryPhotoUrl)
+    }
 
-    Box(
+    val topInset = contentPadding.calculateTopPadding()
+
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .clearFocusOnTap()
-            .padding(
-                top = contentPadding.calculateTopPadding() + 16.dp,
-                bottom = contentPadding.calculateBottomPadding() + 16.dp
-            ),
+            .padding(bottom = contentPadding.calculateBottomPadding() + 16.dp),
         contentAlignment = Alignment.TopCenter
     ) {
+        val heroPhotoHeight = min(maxWidth * 3 / 4, 360.dp)
+        val contentTopPadding by animateDpAsState(
+            targetValue = topInset + 16.dp + if (chosenSpotPhotoUrl != null) heroPhotoHeight else 0.dp
+        )
+
+        HangoutHeroPhoto(
+            photoUrl = chosenSpotPhotoUrl,
+            topInset = topInset,
+            photoHeight = heroPhotoHeight,
+            scrollOffset = { scrollState.value }
+        )
+
         Column(
             modifier = Modifier
+                .padding(top = contentTopPadding)
                 .widthIn(max = contentMaxWidth)
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),

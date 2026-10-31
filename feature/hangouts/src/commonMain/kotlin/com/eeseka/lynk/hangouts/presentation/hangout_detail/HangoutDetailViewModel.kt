@@ -167,7 +167,7 @@ class HangoutDetailViewModel(
 
             is LobbyEvent.RsvpUpdated -> refreshDetailAndShowSnackbar(
                 match = event.hangoutId == currentHangoutId,
-                snackbar = when (event.rsvpStatus) {
+                snackbar = if (event.userId == _state.value.currentUserId) null else when (event.rsvpStatus) {
                     RsvpStatus.ATTENDING -> UiText.Resource(
                         Res.string.event_rsvp_in,
                         arrayOf(event.displayName)
@@ -242,11 +242,7 @@ class HangoutDetailViewModel(
                 }
             )
 
-            is LobbyEvent.LobbyError -> {
-                eventChannel.send(HangoutDetailEvent.Error(event.toUiText()))
-            }
-
-            // The ballot events belong to HangoutVotingViewModel, the photo ones to HangoutMemoriesViewModel.
+            // The ballot events and lobby errors belong to HangoutVotingViewModel, the photo ones to HangoutMemoriesViewModel.
             else -> Unit
         }
     }

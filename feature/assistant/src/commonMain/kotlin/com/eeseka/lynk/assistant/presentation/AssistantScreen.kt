@@ -2,6 +2,8 @@ package com.eeseka.lynk.assistant.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -147,6 +149,7 @@ private sealed interface AssistantBodyState {
 }
 
 private enum class AssistantBottomBar {
+    NONE,
     NOT_ATTENDING,
     ENDED,
     VOTING_CLOSED,
@@ -373,7 +376,13 @@ fun AssistantScreen(
             )
         },
         bottomBar = {
+            val isChatKnown = if (isHangoutChat) {
+                state.hangoutStatus != null && state.isAttending != null
+            } else {
+                state.searchCenter != null
+            }
             val bottomBar = when {
+                !isChatKnown -> AssistantBottomBar.NONE
                 isHangoutChat && state.isAttending == false -> AssistantBottomBar.NOT_ATTENDING
                 state.hangoutStatus == HangoutStatus.COMPLETED || state.hangoutStatus == HangoutStatus.CANCELLED -> AssistantBottomBar.ENDED
                 isHangoutChat && state.hangoutStatus != null && !isVoting -> AssistantBottomBar.VOTING_CLOSED
@@ -389,7 +398,13 @@ fun AssistantScreen(
             ) {
                 AnimatedContent(
                     targetState = bottomBar,
-                    transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) },
+                    transitionSpec = {
+                        if (initialState == AssistantBottomBar.NONE) {
+                            EnterTransition.None togetherWith ExitTransition.None using null
+                        } else {
+                            fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                        }
+                    },
                     label = "assistant_bottom_bar",
                     modifier = Modifier
                         .widthIn(max = contentMaxWidth)
@@ -397,6 +412,8 @@ fun AssistantScreen(
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
                 ) { target ->
                     when (target) {
+                        AssistantBottomBar.NONE -> Unit
+
                         AssistantBottomBar.NOT_ATTENDING -> {
                             AssistantClosedNotice(
                                 title = null,

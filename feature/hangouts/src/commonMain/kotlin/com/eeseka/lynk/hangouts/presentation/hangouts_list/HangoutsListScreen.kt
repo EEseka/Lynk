@@ -266,6 +266,7 @@ fun HangoutsListScreen(
                                     scheduledDate = hangout.scheduledAt.toDateTimeLabel(),
                                     isSelected = hangout.id == state.selectedHangoutId,
                                     isHost = hangout.hostId == state.currentUserId,
+                                    showStatus = state.selectedStatusFilter == HangoutStatusFilter.UPCOMING,
                                     onClick = {
                                         hapticFeedback(AppHaptic.ImpactLight)
                                         onAction(HangoutsListAction.OnSelectHangout(hangout.id))

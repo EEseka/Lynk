@@ -35,6 +35,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.preview.previewSpot
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
@@ -137,7 +138,7 @@ private fun ChosenSpotCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(scheme.secondaryContainer),
+                    .background(scheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 // Photo when there is one; the pin icon is the fallback.
@@ -149,12 +150,7 @@ private fun ChosenSpotCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Icon(
-                        imageVector = Lucide.MapPin,
-                        contentDescription = null,
-                        tint = scheme.onSecondaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    SpotPhotoFallback(iconSize = 20.dp, modifier = Modifier.fillMaxSize())
                 }
             }
             Column(

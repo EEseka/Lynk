@@ -54,6 +54,7 @@ import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import kotlinx.collections.immutable.ImmutableList
@@ -136,12 +137,7 @@ fun CandidateCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Icon(
-                        imageVector = Lucide.MapPin,
-                        contentDescription = null,
-                        tint = scheme.onSurfaceVariant,
-                        modifier = Modifier.size(40.dp)
-                    )
+                    SpotPhotoFallback(iconSize = 40.dp, modifier = Modifier.fillMaxSize())
                 }
             }
 

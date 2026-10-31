@@ -208,20 +208,18 @@ class CreateHangoutViewModel(
                 _state.update { it.copy(currentStep = (it.currentStep - 1).coerceAtLeast(1)) }
             }
 
+            is CreateHangoutAction.OnLimitGroupSizeToggled -> {
+                _state.update { it.copy(maxAttendees = if (action.isOn) it.minAttendees else null) }
+            }
+
             CreateHangoutAction.IncrementAttendees -> {
-                val current = _state.value.maxAttendees
-                val nextValue = if (current == null) _state.value.minAttendees else current + 1
-                if (nextValue <= MAX_ATTENDEES) _state.update { it.copy(maxAttendees = nextValue) }
+                val current = _state.value.maxAttendees ?: return
+                if (current < MAX_ATTENDEES) _state.update { it.copy(maxAttendees = current + 1) }
             }
 
             CreateHangoutAction.DecrementAttendees -> {
-                val current = _state.value.maxAttendees
-                if (current != null) {
-                    val nextValue = current - 1
-                    _state.update {
-                        it.copy(maxAttendees = if (nextValue < it.minAttendees) null else nextValue)
-                    }
-                }
+                val current = _state.value.maxAttendees ?: return
+                if (current > _state.value.minAttendees) _state.update { it.copy(maxAttendees = current - 1) }
             }
 
             CreateHangoutAction.LoadNextSpotSearchPage -> loadNextSpotSearchPage()

@@ -47,6 +47,7 @@ fun HangoutSummaryCard(
     scheduledDate: String,
     isSelected: Boolean,
     isHost: Boolean,
+    showStatus: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -134,7 +135,9 @@ fun HangoutSummaryCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
-                    StatusChip(status = hangout.status)
+                    if (showStatus) {
+                        StatusChip(status = hangout.status)
+                    }
                 }
 
                 Row(
@@ -193,6 +196,7 @@ private fun HangoutSummaryCardPreview() {
                     scheduledDate = "Mon 15 Jun · 8:00 PM",
                     isSelected = index == 1,
                     isHost = index == 0,
+                    showStatus = true,
                     onClick = {}
                 )
             }

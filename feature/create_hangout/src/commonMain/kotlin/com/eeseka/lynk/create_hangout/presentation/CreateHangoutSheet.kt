@@ -282,12 +282,14 @@ private fun CreateHangoutSheetContent(
                             timeErrorMessage = state.hangoutTimeError?.asString(),
                             expandedPicker = state.expandedPicker,
                             maxAttendees = state.maxAttendees,
+                            minAttendees = state.minAttendees,
                             onVibeSelected = { onAction(CreateHangoutAction.OnVibeSelected(it)) },
                             onPickerToggled = { onAction(CreateHangoutAction.OnPickerToggled(it)) },
                             onDateSelected = { onAction(CreateHangoutAction.OnDateSelected(it)) },
                             onTimeSelected = { hour, minute ->
                                 onAction(CreateHangoutAction.OnTimeSelected(hour, minute))
                             },
+                            onLimitGroupSizeToggled = { onAction(CreateHangoutAction.OnLimitGroupSizeToggled(it)) },
                             onIncrementAttendees = { onAction(CreateHangoutAction.IncrementAttendees) },
                             onDecrementAttendees = { onAction(CreateHangoutAction.DecrementAttendees) }
                         )

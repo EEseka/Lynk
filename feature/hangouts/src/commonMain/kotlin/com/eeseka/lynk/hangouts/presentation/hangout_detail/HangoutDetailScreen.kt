@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutMa
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.rememberDetailTopBarColor
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesEvent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesState
@@ -426,11 +429,18 @@ fun HangoutDetailScreen(
         }
     }
 
+    val detailScrollState = rememberSaveable(hangout?.id, saver = ScrollState.Saver) { ScrollState(0) }
+    val topBarColor = rememberDetailTopBarColor(
+        hasHeroPhoto = hangout?.chosenSpot?.photoUrls?.isNotEmpty() == true,
+        scrollState = detailScrollState
+    )
+
     LynkScaffold(
         snackbarHostState = snackbarHostState.takeIf { !isMapShowing },
         topBar = {
             if (isDetailPaneFullScreen) {
                 HangoutDetailTopBar(
+                    containerColor = topBarColor,
                     showInvite = showInvite,
                     inviteEnabled = inviteEnabled,
                     canEdit = canEdit,
@@ -604,6 +614,7 @@ fun HangoutDetailScreen(
                                 onCloseVoting = { onVotingAction(HangoutVotingAction.OnCloseVotingClick) },
                                 onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
                                 onMapClick = { showMapDialog = true },
+                                scrollState = detailScrollState,
                                 contentPadding = if (showAskLynk) {
                                     PaddingValues(
                                         top = contentPadding.calculateTopPadding(),

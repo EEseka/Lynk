@@ -14,11 +14,11 @@
     <string name="hangout_description_placeholder">What are we doing?</string>
     <string name="hangout_description_counter">%1$d / %2$d</string>
     <string name="vibe">Vibe</string>
-    <string name="max_people">Max People</string>
+    <string name="limit_group_size">Limit Group Size</string>
     <string name="people">People</string>
+    <string name="up_to_people">Up to %1$d People</string>
     <string name="decrease_max_people">Decrease max people</string>
     <string name="increase_max_people">Increase max people</string>
-    <string name="unlimited">Unlimited</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
     <string name="pick_date">Pick a date</string>

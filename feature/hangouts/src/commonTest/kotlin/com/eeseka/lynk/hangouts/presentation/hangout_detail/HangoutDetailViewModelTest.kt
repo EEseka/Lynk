@@ -263,6 +263,25 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
+    fun `your own rsvp refreshes the hangout without an announcement`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            renameOnServer(hangoutId, "Night Out Moved")
+            connectionClient.sendEvent(
+                LobbyEvent.RsvpUpdated(hangoutId, HOST_ID, "Ada", RsvpStatus.ATTENDING)
+            )
+            advanceUntilIdle()
+
+            expectNoEvents()
+            assertThat(viewModel.state.value.hangout?.name).isEqualTo("Night Out Moved")
+        }
+    }
+
+    @Test
     fun `the host is not told about a change they made themselves`() = runTest {
         val hangoutId = createHangoutAsHost()
         val viewModel = createViewModel()
