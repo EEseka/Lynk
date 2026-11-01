@@ -380,7 +380,7 @@ class AssistantViewModel(
             }
 
             else -> {
-                // Voting closed, the user left, or another answer is still being written; the hangout says which
+                // The hangout ended, the user left, or another answer is still being written; the hangout says which
                 _state.value.hangoutId?.let { hangoutId ->
                     if (error == DataError.Remote.CONFLICT || error == DataError.Remote.FORBIDDEN) {
                         hangoutDetailRepository.refreshHangout(hangoutId)

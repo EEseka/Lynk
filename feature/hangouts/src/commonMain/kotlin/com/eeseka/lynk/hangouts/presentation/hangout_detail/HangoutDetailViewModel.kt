@@ -363,9 +363,8 @@ class HangoutDetailViewModel(
                 hangoutDetailRepository.observeHangout(hangoutId)
                     .map { hangout -> hangout?.status }
                     .distinctUntilChanged()
-                    // Voting always shows the way into the chat; after it, only a chat with messages does
                     .onEach { status ->
-                        if (status != null && status != HangoutStatus.VOTING) {
+                        if (status == HangoutStatus.COMPLETED || status == HangoutStatus.CANCELLED) {
                             assistantMessageCountRepository.refreshMessageCount(hangoutId)
                         }
                     }

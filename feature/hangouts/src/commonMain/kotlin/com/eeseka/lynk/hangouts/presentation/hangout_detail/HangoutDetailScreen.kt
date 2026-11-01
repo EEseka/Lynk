@@ -369,7 +369,7 @@ fun HangoutDetailScreen(
             attendees.any { it.user.userId == state.currentUserId }
 
     val showAskLynk = attendees.any { it.user.userId == state.currentUserId } &&
-            (hangout?.status == HangoutStatus.VOTING || state.hasAssistantChat)
+            (isUpcoming || hangout?.status == HangoutStatus.ONGOING || state.hasAssistantChat)
 
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
