@@ -3,9 +3,19 @@ package com.eeseka.lynk.shared.data.payment.mappers
 import com.eeseka.lynk.shared.data.payment.dto.BankAccountDto
 import com.eeseka.lynk.shared.data.payment.dto.BankDto
 import com.eeseka.lynk.shared.data.payment.dto.PaymentInitializationDto
+import com.eeseka.lynk.shared.data.payment.dto.PayoutAccountDto
 import com.eeseka.lynk.shared.domain.payment.model.Bank
 import com.eeseka.lynk.shared.domain.payment.model.BankAccount
 import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
+import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
+
+fun PayoutAccountDto.toDomain(): PayoutAccount {
+    return PayoutAccount(
+        bankName = bankName,
+        accountNumberLast4 = accountNumberLast4,
+        accountHolderName = accountHolderName
+    )
+}
 
 fun BankDto.toDomain(): Bank {
     return Bank(
@@ -18,7 +28,7 @@ fun BankDto.toDomain(): Bank {
 fun BankAccountDto.toDomain(): BankAccount {
     return BankAccount(
         accountNumber = accountNumber,
-        accountName = accountName,
+        accountHolderName = accountHolderName,
         bankCode = bankCode
     )
 }

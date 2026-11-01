@@ -53,6 +53,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaym
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsState
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.BankPickerSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.ChangePayoutAccountSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.CollectPaymentsSetup
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.DeadlineDecisionSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PayConfirmSheet
@@ -124,6 +125,7 @@ import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm
 import lynk.feature.hangouts.generated.resources.payment_decision_saved
 import lynk.feature.hangouts.generated.resources.payment_enabled_message
 import lynk.feature.hangouts.generated.resources.payment_not_completed
+import lynk.feature.hangouts.generated.resources.payment_account_changed
 import lynk.feature.hangouts.generated.resources.payment_payout_queued
 import lynk.feature.hangouts.generated.resources.payment_still_processing
 import lynk.feature.hangouts.generated.resources.spot_suggested_message
@@ -251,6 +253,11 @@ fun HangoutDetailRoot(
             HangoutPaymentsEvent.PayoutQueued -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.payment_payout_queued),
                 type = LynkFlashType.Info
+            )
+
+            HangoutPaymentsEvent.PayoutAccountChanged -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.payment_account_changed),
+                type = LynkFlashType.Success
             )
 
             HangoutPaymentsEvent.PaymentPending -> snackbarHostState.showFlashMessage(
@@ -420,6 +427,15 @@ fun HangoutDetailScreen(
 
     val canRetryPayout = isHost && hangout.payment?.state == PaymentState.PAYOUT_FAILED
 
+    val canChangePayoutAccount = isHost && when (hangout.payment?.state) {
+        PaymentState.COLLECTING,
+        PaymentState.AWAITING_HOST_DECISION,
+        PaymentState.READY_FOR_PAYOUT,
+        PaymentState.PAYOUT_FAILED -> true
+
+        else -> false
+    }
+
     val canGetToSpot = hangout?.chosenSpot != null &&
             (hangout.status == HangoutStatus.SCHEDULED || hangout.status == HangoutStatus.ONGOING)
     val addressCopiedMessage = stringResource(Res.string.detail_address_copied)
@@ -545,6 +561,11 @@ fun HangoutDetailScreen(
                                 needsDeadlineDecision = needsDeadlineDecision,
                                 isDecidingAtDeadline = paymentsState.isDecidingAtDeadline,
                                 canRetryPayout = canRetryPayout,
+                                payoutAccount = paymentsState.payoutAccount,
+                                canChangePayoutAccount = canChangePayoutAccount,
+                                onChangePayoutAccountClick = {
+                                    onPaymentsAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+                                },
                                 isRetryingPayout = paymentsState.isRetryingPayout,
                                 onSeeAllParticipantsClick = { showParticipantsSheet = true },
                                 onChosenSpotClick = { showChosenSpotSheet = true },
@@ -853,6 +874,23 @@ fun HangoutDetailScreen(
             chargeLabel = paymentQuote.chargeLabel,
             onConfirm = { onPaymentsAction(HangoutPaymentsAction.OnConfirmPayment) },
             onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPayConfirmSheet) }
+        )
+    }
+
+    if (paymentsState.showPayoutAccountSheet && canChangePayoutAccount) {
+        ChangePayoutAccountSheet(
+            currentAccount = paymentsState.payoutAccount,
+            accountNumberState = paymentsState.accountNumberState,
+            selectedBankName = paymentsState.selectedBank?.name,
+            bankError = paymentsState.bankError?.asString(),
+            resolvedAccountHolderName = paymentsState.resolvedAccountHolderName,
+            accountError = paymentsState.accountResolutionError?.asString()
+                ?: paymentsState.accountNumberError?.asString(),
+            isResolvingAccount = paymentsState.isResolvingAccount,
+            isChanging = paymentsState.isChangingPayoutAccount,
+            onBankPickerClick = { onPaymentsAction(HangoutPaymentsAction.OnBankPickerClick) },
+            onConfirm = { onPaymentsAction(HangoutPaymentsAction.OnPayoutAccountConfirmed) },
+            onDismiss = { onPaymentsAction(HangoutPaymentsAction.OnDismissPayoutAccountSheet) }
         )
     }
 

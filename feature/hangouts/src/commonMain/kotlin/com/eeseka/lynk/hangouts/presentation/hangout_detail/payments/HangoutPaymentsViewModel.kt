@@ -8,8 +8,11 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.Deadl
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.mappers.toAccountResolutionUiText
 import com.eeseka.lynk.hangouts.presentation.mappers.toBankUi
+import com.eeseka.lynk.hangouts.presentation.mappers.toPayoutAccountUi
+import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_COST_PER_PERSON_KOBO
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
+import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.payment.PaymentConstants.NUBAN_LENGTH
 import com.eeseka.lynk.shared.domain.payment.PaymentService
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -61,7 +65,8 @@ import kotlin.time.Instant
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HangoutPaymentsViewModel(
     private val hangoutDetailRepository: HangoutDetailRepository,
-    private val paymentService: PaymentService
+    private val paymentService: PaymentService,
+    private val sessionStorage: SessionStorage
 ) : ViewModel() {
     private val eventChannel = Channel<HangoutPaymentsEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -81,9 +86,13 @@ class HangoutPaymentsViewModel(
             initialValue = null
         )
 
+    private var currentUserId: String? = null
+
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
+                currentUserId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
+                observePayoutAccount()
                 observeBankSearch()
                 observeAccountResolution()
                 observeCanEnablePayments()
@@ -119,6 +128,9 @@ class HangoutPaymentsViewModel(
             HangoutPaymentsAction.OnDismissDeadlineDecisionSheet -> _state.update { it.copy(showDeadlineDecisionSheet = false) }
             is HangoutPaymentsAction.OnDeadlineDecisionSelected -> selectDeadlineDecision(action.decision)
             HangoutPaymentsAction.OnRetryPayoutClick -> retryPayout()
+            HangoutPaymentsAction.OnChangePayoutAccountClick -> openPayoutAccountSheet()
+            HangoutPaymentsAction.OnDismissPayoutAccountSheet -> dismissPayoutAccountSheet()
+            HangoutPaymentsAction.OnPayoutAccountConfirmed -> changePayoutAccount()
             HangoutPaymentsAction.OnPayClick -> initializePayment()
             HangoutPaymentsAction.OnDismissPayConfirmSheet -> dismissPayConfirmSheet()
             HangoutPaymentsAction.OnConfirmPayment -> openPaymentPage()
@@ -144,6 +156,8 @@ class HangoutPaymentsViewModel(
                 showDeadlineDecisionSheet = false,
                 isDecidingAtDeadline = false,
                 isRetryingPayout = false,
+                showPayoutAccountSheet = false,
+                isChangingPayoutAccount = false,
                 isInitializingPayment = false,
                 paymentQuote = null,
                 paymentCheckoutUrl = null,
@@ -262,9 +276,10 @@ class HangoutPaymentsViewModel(
         _state.update {
             it.copy(
                 selectedBank = bank,
+                bankError = null,
                 isBankPickerOpen = false,
                 // The old name belonged to the old bank, so it cannot stand while the new one resolves.
-                resolvedAccountName = null,
+                resolvedAccountHolderName = null,
                 accountResolutionError = null
             )
         }
@@ -324,7 +339,7 @@ class HangoutPaymentsViewModel(
             if (bankCode == null || accountNumber.length != NUBAN_LENGTH) {
                 _state.update {
                     it.copy(
-                        resolvedAccountName = null,
+                        resolvedAccountHolderName = null,
                         accountResolutionError = null,
                         isResolvingAccount = false
                     )
@@ -335,7 +350,7 @@ class HangoutPaymentsViewModel(
             _state.update {
                 it.copy(
                     isResolvingAccount = true,
-                    resolvedAccountName = null,
+                    resolvedAccountHolderName = null,
                     accountResolutionError = null
                 )
             }
@@ -344,7 +359,8 @@ class HangoutPaymentsViewModel(
                 .onSuccess { account ->
                     _state.update {
                         it.copy(
-                            resolvedAccountName = account.accountName,
+                            resolvedAccountHolderName = account.accountHolderName,
+                            accountNumberError = null,
                             isResolvingAccount = false
                         )
                     }
@@ -361,6 +377,22 @@ class HangoutPaymentsViewModel(
         .launchIn(viewModelScope)
     }
 
+    // Only the host's, and only until the payout lands, because the server erases it then.
+    private fun observePayoutAccount() {
+        hangout
+            .map { currentHangout ->
+                val state = currentHangout?.payment?.state
+                val isVisible = state != null && state != PaymentState.PAID_OUT && state != PaymentState.CANCELLED
+                currentHangout?.id?.takeIf { isVisible && currentHangout.hostId == currentUserId }
+            }
+            .distinctUntilChanged()
+            .mapLatest { hangoutId ->
+                _state.update { it.copy(payoutAccount = null) }
+                hangoutId?.let { loadPayoutAccount(it) }
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun observeCanEnablePayments() {
         isBusyFlow
             .onEach { isBusy -> _state.update { it.copy(canEnablePayments = !isBusy) } }
@@ -372,7 +404,7 @@ class HangoutPaymentsViewModel(
         val accountNumberFlow = snapshotFlow { _state.value.accountNumberState.text.toString() }
 
         val pickedValuesFlow = _state
-            .map { Triple(it.paymentDeadlineDate, it.selectedBank, it.resolvedAccountName) }
+            .map { Triple(it.paymentDeadlineDate, it.selectedBank, it.resolvedAccountHolderName) }
             .distinctUntilChanged()
 
         // The share check reads the headcount, and the deadline check reads the hangout's date.
@@ -443,7 +475,7 @@ class HangoutPaymentsViewModel(
                 paymentDeadlineError = null,
                 selectedBank = null,
                 bankError = null,
-                resolvedAccountName = null,
+                resolvedAccountHolderName = null,
                 accountResolutionError = null,
                 accountNumberError = null
             )
@@ -457,7 +489,7 @@ class HangoutPaymentsViewModel(
         val isShareTooLow = totalCostKobo != null && attendingCount > 0 && totalCostKobo / attendingCount < MIN_COST_PER_PERSON_KOBO
         val deadline = currentState.paymentDeadlineDate
         val deadlineError = deadline?.deadlineError()
-        val isAccountConfirmed = currentState.resolvedAccountName != null
+        val isAccountConfirmed = currentState.resolvedAccountHolderName != null
 
         _state.update {
             it.copy(
@@ -501,6 +533,62 @@ class HangoutPaymentsViewModel(
                 }
             _state.update { it.copy(isRetryingPayout = false) }
         }
+    }
+
+    private fun openPayoutAccountSheet() {
+        _state.update { it.copy(showPayoutAccountSheet = true) }
+        if (_state.value.allBanks.isEmpty()) loadBanks()
+    }
+
+    private fun changePayoutAccount() {
+        val currentState = _state.value
+        if (currentState.isChangingPayoutAccount || currentState.isResolvingAccount) return
+
+        val bankCode = currentState.selectedBank?.code
+        if (bankCode == null || currentState.resolvedAccountHolderName == null) {
+            _state.update {
+                it.copy(
+                    bankError = if (bankCode == null) UiText.Resource(Res.string.payment_bank_required) else null,
+                    accountNumberError = UiText.Resource(Res.string.payment_account_required)
+                )
+            }
+            return
+        }
+
+        val hangoutId = _hangoutId.value ?: return
+        val accountNumber = _state.value.accountNumberState.text.toString().trim()
+
+        viewModelScope.launch {
+            _state.update { it.copy(isChangingPayoutAccount = true) }
+            paymentService
+                .changePayoutAccount(
+                    hangoutId = hangoutId,
+                    accountNumber = accountNumber,
+                    bankCode = bankCode
+                )
+                .onSuccess {
+                    dismissPayoutAccountSheet()
+                    loadPayoutAccount(hangoutId)
+                    eventChannel.send(HangoutPaymentsEvent.PayoutAccountChanged)
+                }
+                .onFailure { error ->
+                    eventChannel.send(HangoutPaymentsEvent.Error(error.toUiText()))
+                }
+            _state.update { it.copy(isChangingPayoutAccount = false) }
+        }
+    }
+
+    private fun dismissPayoutAccountSheet() {
+        resetCollectPaymentsForm()
+        _state.update { it.copy(showPayoutAccountSheet = false) }
+    }
+
+    private suspend fun loadPayoutAccount(hangoutId: String) {
+        paymentService
+            .getPayoutAccount(hangoutId)
+            .onSuccess { payoutAccount ->
+                _state.update { it.copy(payoutAccount = payoutAccount.toPayoutAccountUi()) }
+            }
     }
 
     private fun initializePayment() {

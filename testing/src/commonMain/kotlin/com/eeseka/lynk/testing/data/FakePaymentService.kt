@@ -6,6 +6,7 @@ import com.eeseka.lynk.shared.domain.payment.model.BankAccount
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
 import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
+import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -17,7 +18,7 @@ class FakePaymentService : PaymentService {
     var shouldReturnError = false
     var errorToReturn = DataError.Remote.SERVER_ERROR
     var banks = mutableListOf<Bank>()
-    var accountNamesByNumber = mutableMapOf<String, String>()
+    var accountHolderNamesByNumber = mutableMapOf<String, String>()
     var paymentInitializationToReturn = PaymentInitialization(
         authorizationUrl = "https://checkout.paystack.com/fake",
         reference = "ref_1",
@@ -32,6 +33,12 @@ class FakePaymentService : PaymentService {
     var changedDeadlines = mutableListOf<Instant>()
     var deadlineDecisions = mutableListOf<Pair<DeadlineDecision, Instant?>>()
     var retriedPayoutHangoutIds = mutableListOf<String>()
+    var changedPayoutAccounts = mutableListOf<Pair<String, String>>()
+    var payoutAccountToReturn = PayoutAccount(
+        bankName = "GTBank",
+        accountNumberLast4 = "6789",
+        accountHolderName = "ADA OBI"
+    )
 
     data class EnabledPayment(
         val hangoutId: String,
@@ -53,10 +60,10 @@ class FakePaymentService : PaymentService {
     ): Result<BankAccount, DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
-        val accountName = accountNamesByNumber[accountNumber]
+        val accountHolderName = accountHolderNamesByNumber[accountNumber]
             ?: return Result.Failure(DataError.Remote.BAD_REQUEST)
         return Result.Success(
-            BankAccount(accountNumber = accountNumber, accountName = accountName, bankCode = bankCode)
+            BankAccount(accountNumber = accountNumber, accountHolderName = accountHolderName, bankCode = bankCode)
         )
     }
 
@@ -87,6 +94,21 @@ class FakePaymentService : PaymentService {
     override suspend fun changeDeadline(hangoutId: String, newDeadline: Instant): EmptyResult<DataError.Remote> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
         changedDeadlines.add(newDeadline)
+        return Result.Success(Unit)
+    }
+
+    override suspend fun getPayoutAccount(hangoutId: String): Result<PayoutAccount, DataError.Remote> {
+        if (shouldReturnError) return Result.Failure(errorToReturn)
+        return Result.Success(payoutAccountToReturn)
+    }
+
+    override suspend fun changePayoutAccount(
+        hangoutId: String,
+        accountNumber: String,
+        bankCode: String
+    ): EmptyResult<DataError.Remote> {
+        if (shouldReturnError) return Result.Failure(errorToReturn)
+        changedPayoutAccounts.add(accountNumber to bankCode)
         return Result.Success(Unit)
     }
 

@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BankAccountDto(
     val accountNumber: String,
-    val accountName: String,
+    val accountHolderName: String,
     val bankCode: String
 )

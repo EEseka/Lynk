@@ -22,6 +22,11 @@ sealed interface HangoutPaymentsAction {
     data class OnDeadlineDecisionSelected(val decision: DeadlineDecision) : HangoutPaymentsAction
     data object OnRetryPayoutClick : HangoutPaymentsAction
 
+    // Payout account (host)
+    data object OnChangePayoutAccountClick : HangoutPaymentsAction
+    data object OnDismissPayoutAccountSheet : HangoutPaymentsAction
+    data object OnPayoutAccountConfirmed : HangoutPaymentsAction
+
     // Paying (guest)
     data object OnPayClick : HangoutPaymentsAction
     data object OnDismissPayConfirmSheet : HangoutPaymentsAction

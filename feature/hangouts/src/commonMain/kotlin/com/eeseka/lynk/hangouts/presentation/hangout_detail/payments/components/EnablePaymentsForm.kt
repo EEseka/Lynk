@@ -20,29 +20,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.Building2
 import com.composables.icons.lucide.CalendarDays
 import com.composables.icons.lucide.ChevronRight
-import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.hangouts.presentation.util.accountNumberInput
 import com.eeseka.lynk.hangouts.presentation.util.amountInput
 import com.eeseka.lynk.hangouts.presentation.util.amountOutput
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.util.NAIRA_SYMBOL
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import lynk.feature.hangouts.generated.resources.Res
-import lynk.feature.hangouts.generated.resources.payment_account_number_label
-import lynk.feature.hangouts.generated.resources.payment_account_number_placeholder
-import lynk.feature.hangouts.generated.resources.payment_bank_label
-import lynk.feature.hangouts.generated.resources.payment_bank_placeholder
 import lynk.feature.hangouts.generated.resources.payment_deadline_label
 import lynk.feature.hangouts.generated.resources.payment_deadline_placeholder
 import lynk.feature.hangouts.generated.resources.payment_enable_confirm
@@ -62,7 +53,7 @@ fun EnablePaymentsForm(
     deadlineError: String?,
     selectedBankName: String?,
     bankError: String?,
-    resolvedAccountName: String?,
+    resolvedAccountHolderName: String?,
     accountError: String?,
     isResolvingAccount: Boolean,
     isEnabling: Boolean,
@@ -108,54 +99,16 @@ fun EnablePaymentsForm(
             onClick = onDeadlineClick
         )
 
-        PickerRow(
-            label = stringResource(Res.string.payment_bank_label),
-            value = selectedBankName,
-            placeholder = stringResource(Res.string.payment_bank_placeholder),
-            errorMessage = bankError,
-            leadingIcon = Lucide.Building2,
-            enabled = !isEnabling,
-            onClick = onBankPickerClick
+        PayoutAccountFields(
+            accountNumberState = accountNumberState,
+            selectedBankName = selectedBankName,
+            bankError = bankError,
+            resolvedAccountHolderName = resolvedAccountHolderName,
+            accountError = accountError,
+            isResolvingAccount = isResolvingAccount,
+            isEnabled = !isEnabling,
+            onBankPickerClick = onBankPickerClick
         )
-
-        LynkTextField(
-            state = accountNumberState,
-            label = stringResource(Res.string.payment_account_number_label),
-            placeholder = stringResource(Res.string.payment_account_number_placeholder),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            inputTransformation = accountNumberInput,
-            errorMessage = accountError,
-            enabled = !isEnabling && selectedBankName != null,
-            trailingIcon = {
-                if (isResolvingAccount) {
-                    LynkProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        resolvedAccountName?.let { name ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Lucide.CircleCheck,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.extended.success,
-                    modifier = Modifier.size(16.dp)
-                )
-                LynkText(
-                    text = name,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
 
         LynkText(
             text = stringResource(Res.string.payment_enable_warning),
@@ -178,7 +131,7 @@ fun EnablePaymentsForm(
 }
 
 @Composable
-private fun PickerRow(
+internal fun PickerRow(
     label: String,
     value: String?,
     placeholder: String,
@@ -254,7 +207,7 @@ private fun EnablePaymentsFormPreview() {
             deadlineError = null,
             selectedBankName = "Guaranty Trust Bank",
             bankError = null,
-            resolvedAccountName = "EMMANUEL ESEKA",
+            resolvedAccountHolderName = "EMMANUEL ESEKA",
             accountError = null,
             isResolvingAccount = false,
             isEnabling = false,

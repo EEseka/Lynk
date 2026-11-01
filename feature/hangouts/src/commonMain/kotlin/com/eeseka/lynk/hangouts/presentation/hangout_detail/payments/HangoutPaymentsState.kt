@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.DeadlineChangeIntent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
+import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
 import com.eeseka.lynk.shared.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -32,7 +33,7 @@ data class HangoutPaymentsState(
 
     // Account resolution
     val accountNumberState: TextFieldState = TextFieldState(),
-    val resolvedAccountName: String? = null,
+    val resolvedAccountHolderName: String? = null,
     val isResolvingAccount: Boolean = false,
     val accountResolutionError: UiText? = null,
     val accountNumberError: UiText? = null,
@@ -47,6 +48,10 @@ data class HangoutPaymentsState(
     val isDecidingAtDeadline: Boolean = false,
 
     val isRetryingPayout: Boolean = false,
+
+    val payoutAccount: PayoutAccountUi? = null,
+    val showPayoutAccountSheet: Boolean = false,
+    val isChangingPayoutAccount: Boolean = false,
 
     val isInitializingPayment: Boolean = false,
     val paymentQuote: PaymentQuoteUi? = null,

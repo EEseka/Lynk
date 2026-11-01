@@ -37,6 +37,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UserRoundPlus
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.VotingSection
+import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -104,6 +105,8 @@ fun HangoutDetailContent(
     isDecidingAtDeadline: Boolean,
     canRetryPayout: Boolean,
     isRetryingPayout: Boolean,
+    payoutAccount: PayoutAccountUi?,
+    canChangePayoutAccount: Boolean,
     onSeeAllParticipantsClick: () -> Unit,
     onChosenSpotClick: () -> Unit,
     onCopyAddressClick: () -> Unit,
@@ -115,6 +118,7 @@ fun HangoutDetailContent(
     onChangeDeadlineClick: () -> Unit,
     onDecideClick: () -> Unit,
     onRetryPayoutClick: () -> Unit,
+    onChangePayoutAccountClick: () -> Unit,
     onCompleteClick: () -> Unit,
     onCastVote: (String) -> Unit,
     onRemoveSpot: (String) -> Unit,
@@ -268,11 +272,14 @@ fun HangoutDetailContent(
                         isDecidingAtDeadline = isDecidingAtDeadline,
                         canRetryPayout = canRetryPayout,
                         isRetryingPayout = isRetryingPayout,
+                        payoutAccount = payoutAccount,
+                        canChangePayoutAccount = canChangePayoutAccount,
                         onPayClick = onPayClick,
                         onCheckPaymentClick = onCheckPaymentClick,
                         onChangeDeadlineClick = onChangeDeadlineClick,
                         onDecideClick = onDecideClick,
-                        onRetryPayoutClick = onRetryPayoutClick
+                        onRetryPayoutClick = onRetryPayoutClick,
+                        onChangePayoutAccountClick = onChangePayoutAccountClick
                     )
                 }
             }
@@ -368,6 +375,8 @@ private fun HangoutDetailContentPreview(
             isDecidingAtDeadline = false,
             canRetryPayout = false,
             isRetryingPayout = false,
+            payoutAccount = null,
+            canChangePayoutAccount = false,
             onSeeAllParticipantsClick = {},
             onChosenSpotClick = {},
             onCopyAddressClick = {},
@@ -379,6 +388,7 @@ private fun HangoutDetailContentPreview(
             onChangeDeadlineClick = {},
             onDecideClick = {},
             onRetryPayoutClick = {},
+            onChangePayoutAccountClick = {},
             onCompleteClick = {},
             onCastVote = {},
             onRemoveSpot = {},

@@ -176,11 +176,11 @@
     <string name="payment_account_number_label">Account Number</string>
     <string name="payment_account_number_placeholder">10 digits</string>
     <string name="payment_account_not_found">No account with that number at this bank. Check both.</string>
-    <string name="payment_account_check_limit">Checking too fast! Please wait a moment.</string>
+    <string name="payment_account_check_limit">Too many account checks. Try again in a while.</string>
     <string name="payment_account_required">Put in your 10-digit account number and wait for the name to show.</string>
     <string name="payment_enable_confirm">Turn On Payments</string>
     <string name="payment_enabling">Turning On…</string>
-    <string name="payment_enable_warning">Once payments are on, none of this can change. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out. Check the details.</string>
+    <string name="payment_enable_warning">The total can't change once payments are on, but the date and your payout account can. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out.</string>
     <string name="payment_bank_picker_title">Choose Your Bank</string>
     <string name="payment_bank_search_hint">Search banks</string>
     <string name="payment_bank_empty">No bank matches that name.</string>
@@ -213,6 +213,13 @@
     <string name="payment_decision_cancel_confirm_message">Everyone who paid gets refunded and the hangout is called off.</string>
 
     <!-- Payout retry (host) -->
+    <string name="payment_paying_out_to">Paying Out To</string>
+    <string name="payment_account_masked">%1$s ••••••%2$s</string>
+    <string name="payment_change_account">Change Payout Account</string>
+    <string name="payment_change_account_hint">Your payout will go here instead. Nothing else changes.</string>
+    <string name="payment_change_account_confirm">Save Account</string>
+    <string name="payment_changing_account">Saving…</string>
+    <string name="payment_account_changed">Your payout account was changed</string>
     <string name="payment_retry_payout">Try the Payout Again</string>
     <string name="payment_retrying_payout">Queueing…</string>
     <string name="payment_payout_queued">Queued. We'll send it to your bank shortly.</string>

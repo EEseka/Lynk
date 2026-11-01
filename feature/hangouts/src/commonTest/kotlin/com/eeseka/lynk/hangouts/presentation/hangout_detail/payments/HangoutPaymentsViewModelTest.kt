@@ -71,7 +71,7 @@ class HangoutPaymentsViewModelTest {
             Bank(name = "Access Bank", code = "044", logoUrl = null),
             Bank(name = "GTBank", code = "058", logoUrl = null)
         )
-        paymentService.accountNamesByNumber = mutableMapOf(ACCOUNT_NUMBER to "ADA OBI")
+        paymentService.accountHolderNamesByNumber = mutableMapOf(ACCOUNT_NUMBER to "ADA OBI")
     }
 
     @AfterTest
@@ -134,7 +134,7 @@ class HangoutPaymentsViewModelTest {
         advanceTimeBy(801.milliseconds)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.resolvedAccountName).isEqualTo("ADA OBI")
+        assertThat(viewModel.state.value.resolvedAccountHolderName).isEqualTo("ADA OBI")
         assertThat(viewModel.state.value.isResolvingAccount).isFalse()
     }
 
@@ -149,7 +149,7 @@ class HangoutPaymentsViewModelTest {
         advanceTimeBy(801.milliseconds)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.resolvedAccountName).isNull()
+        assertThat(viewModel.state.value.resolvedAccountHolderName).isNull()
         assertThat(viewModel.state.value.accountResolutionError).isNotNull()
     }
 
@@ -160,7 +160,7 @@ class HangoutPaymentsViewModelTest {
 
         viewModel.onAction(HangoutPaymentsAction.OnBankSelected("044"))
 
-        assertThat(viewModel.state.value.resolvedAccountName).isNull()
+        assertThat(viewModel.state.value.resolvedAccountHolderName).isNull()
         assertThat(viewModel.state.value.selectedBank?.code).isEqualTo("044")
     }
 
@@ -240,6 +240,114 @@ class HangoutPaymentsViewModelTest {
             assertThat(awaitItem()).isInstanceOf(HangoutPaymentsEvent.Error::class)
             assertThat(viewModel.state.value.isCollectPaymentsOn).isTrue()
             assertThat(viewModel.state.value.isEnablingPayments).isFalse()
+        }
+    }
+
+    @Test
+    fun `the host sees where the payout goes`() = runTest {
+        val viewModel = createViewModel(payment = collectingPayment())
+
+        assertThat(viewModel.state.value.payoutAccount?.accountHolderName).isEqualTo("ADA OBI")
+        assertThat(viewModel.state.value.payoutAccount?.accountNumberLast4).isEqualTo("6789")
+    }
+
+    @Test
+    fun `nothing is shown once the payout has landed`() = runTest {
+        val viewModel = createViewModel(payment = collectingPayment().copy(state = PaymentState.PAID_OUT))
+
+        assertThat(viewModel.state.value.payoutAccount).isNull()
+    }
+
+    @Test
+    fun `saving a new account shows it straight away`() = runTest {
+        val viewModel = createViewModel(payment = collectingPayment())
+        viewModel.onAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+        advanceUntilIdle()
+        viewModel.onAction(HangoutPaymentsAction.OnBankSelected("058"))
+        viewModel.state.value.accountNumberState.typeText(ACCOUNT_NUMBER)
+        advanceTimeBy(801.milliseconds)
+        advanceUntilIdle()
+        paymentService.payoutAccountToReturn = paymentService.payoutAccountToReturn.copy(accountHolderName = "ADA NEW")
+
+        viewModel.onAction(HangoutPaymentsAction.OnPayoutAccountConfirmed)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.payoutAccount?.accountHolderName).isEqualTo("ADA NEW")
+    }
+
+    @Test
+    fun `saving a confirmed account sends it and closes the sheet`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+        advanceUntilIdle()
+        viewModel.onAction(HangoutPaymentsAction.OnBankSelected("058"))
+        viewModel.state.value.accountNumberState.typeText(ACCOUNT_NUMBER)
+        advanceTimeBy(801.milliseconds)
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutPaymentsAction.OnPayoutAccountConfirmed)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutPaymentsEvent.PayoutAccountChanged)
+            assertThat(paymentService.changedPayoutAccounts).containsExactly(ACCOUNT_NUMBER to "058")
+            assertThat(viewModel.state.value.showPayoutAccountSheet).isFalse()
+            assertThat(viewModel.state.value.selectedBank).isNull()
+            assertThat(viewModel.state.value.accountNumberState.text.toString()).isEqualTo("")
+        }
+    }
+
+    @Test
+    fun `an unconfirmed account shows errors and sends nothing`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+        advanceUntilIdle()
+
+        viewModel.onAction(HangoutPaymentsAction.OnPayoutAccountConfirmed)
+        advanceUntilIdle()
+
+        assertThat(paymentService.changedPayoutAccounts).isEmpty()
+        assertThat(viewModel.state.value.bankError).isNotNull()
+        assertThat(viewModel.state.value.accountNumberError).isNotNull()
+        assertThat(viewModel.state.value.showPayoutAccountSheet).isTrue()
+    }
+
+    @Test
+    fun `fixing the bank and number clears their errors`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+        advanceUntilIdle()
+        viewModel.onAction(HangoutPaymentsAction.OnPayoutAccountConfirmed)
+        advanceUntilIdle()
+
+        viewModel.onAction(HangoutPaymentsAction.OnBankSelected("058"))
+        viewModel.state.value.accountNumberState.typeText(ACCOUNT_NUMBER)
+        advanceTimeBy(801.milliseconds)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.bankError).isNull()
+        assertThat(viewModel.state.value.accountNumberError).isNull()
+    }
+
+    @Test
+    fun `a refused account change keeps the sheet open with what was typed`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutPaymentsAction.OnChangePayoutAccountClick)
+        advanceUntilIdle()
+        viewModel.onAction(HangoutPaymentsAction.OnBankSelected("058"))
+        viewModel.state.value.accountNumberState.typeText(ACCOUNT_NUMBER)
+        advanceTimeBy(801.milliseconds)
+        advanceUntilIdle()
+        paymentService.shouldReturnError = true
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutPaymentsAction.OnPayoutAccountConfirmed)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isInstanceOf(HangoutPaymentsEvent.Error::class)
+            assertThat(viewModel.state.value.showPayoutAccountSheet).isTrue()
+            assertThat(viewModel.state.value.accountNumberState.text.toString()).isEqualTo(ACCOUNT_NUMBER)
+            assertThat(viewModel.state.value.isChangingPayoutAccount).isFalse()
         }
     }
 
@@ -487,13 +595,21 @@ class HangoutPaymentsViewModelTest {
     }
 
     // The real in-memory store fed by the fake service, holding the hangout being paid for
+    private fun collectingPayment() = HangoutPayment(
+        totalCostKobo = 500_000,
+        costPerPersonKobo = 250_000,
+        splitHeadcount = 2,
+        deadline = Instant.fromEpochMilliseconds(4102444800000L),
+        state = PaymentState.COLLECTING
+    )
+
     private suspend fun TestScope.createViewModel(payment: HangoutPayment? = null): HangoutPaymentsViewModel {
         val hangoutId = createHangout()
         val hangoutIndex = hangoutService.hangouts.indexOfFirst { it.id == hangoutId }
         hangoutService.hangouts[hangoutIndex] = hangoutService.hangouts[hangoutIndex].copy(payment = payment)
         val repository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
         runCurrent()
-        val viewModel = HangoutPaymentsViewModel(repository, paymentService)
+        val viewModel = HangoutPaymentsViewModel(repository, paymentService, sessionStorage)
         collectInBackground(viewModel.state)
         viewModel.onAction(HangoutPaymentsAction.OnSelectHangout(hangoutId))
         repository.refreshHangout(hangoutId)
