@@ -61,6 +61,31 @@ class LocationController(
         }
     }
 
+    /** Every fix the tracker finds for as long as this is collected, starting with the one the phone already has. */
+    fun observeLocationUpdates(): Flow<LocationCoordinates> = flow {
+        deviceLocation.getLastKnownLocation(MAX_CACHED_FIX_AGE)?.let { emit(it) }
+
+        if (!deviceLocation.isLocationTurnedOn()) return@flow
+
+        try {
+            mokoTracker.startTracking()
+            mokoTracker.getLocationsFlow().collect { mokoLatLng ->
+                emit(
+                    LocationCoordinates(
+                        latitude = mokoLatLng.latitude,
+                        longitude = mokoLatLng.longitude
+                    )
+                )
+            }
+        } catch (_: DeniedException) {
+            return@flow
+        } catch (_: RequestCanceledException) {
+            return@flow
+        } finally {
+            mokoTracker.stopTracking()
+        }
+    }
+
     companion object {
         private val FIX_TIMEOUT = 25.seconds
         // Older than this and the phone could have been in another town since.

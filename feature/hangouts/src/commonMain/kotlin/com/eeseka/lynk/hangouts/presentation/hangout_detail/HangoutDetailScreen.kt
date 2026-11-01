@@ -40,6 +40,9 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InvitePar
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.rememberDetailTopBarColor
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesEvent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesState
@@ -151,11 +154,13 @@ fun HangoutDetailRoot(
     navigateToAssistant: (hangoutId: String) -> Unit,
     viewModel: HangoutDetailViewModel = koinViewModel(),
     votingViewModel: HangoutVotingViewModel = koinViewModel(),
+    liveLocationViewModel: HangoutLiveLocationViewModel = koinViewModel(),
     paymentsViewModel: HangoutPaymentsViewModel = koinViewModel(),
     memoriesViewModel: HangoutMemoriesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val votingState by votingViewModel.state.collectAsStateWithLifecycle()
+    val liveLocationState by liveLocationViewModel.state.collectAsStateWithLifecycle()
     val paymentsState by paymentsViewModel.state.collectAsStateWithLifecycle()
     val memoriesState by memoriesViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -277,6 +282,7 @@ fun HangoutDetailRoot(
     LaunchedEffect(hangoutId) {
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
         votingViewModel.onAction(HangoutVotingAction.OnSelectHangout(hangoutId))
+        liveLocationViewModel.onAction(HangoutLiveLocationAction.OnSelectHangout(hangoutId))
         paymentsViewModel.onAction(HangoutPaymentsAction.OnSelectHangout(hangoutId))
         memoriesViewModel.onAction(HangoutMemoriesAction.OnSelectHangout(hangoutId))
     }
@@ -286,6 +292,8 @@ fun HangoutDetailRoot(
         onAction = viewModel::onAction,
         votingState = votingState,
         onVotingAction = votingViewModel::onAction,
+        liveLocationState = liveLocationState,
+        onLiveLocationAction = liveLocationViewModel::onAction,
         paymentsState = paymentsState,
         onPaymentsAction = paymentsViewModel::onAction,
         memoriesState = memoriesState,
@@ -305,6 +313,8 @@ fun HangoutDetailScreen(
     onAction: (HangoutDetailAction) -> Unit,
     votingState: HangoutVotingState,
     onVotingAction: (HangoutVotingAction) -> Unit,
+    liveLocationState: HangoutLiveLocationState,
+    onLiveLocationAction: (HangoutLiveLocationAction) -> Unit,
     paymentsState: HangoutPaymentsState,
     onPaymentsAction: (HangoutPaymentsAction) -> Unit,
     memoriesState: HangoutMemoriesState,
@@ -379,6 +389,8 @@ fun HangoutDetailScreen(
             (hangout?.status == HangoutStatus.SCHEDULED && Clock.System.now() >= hangout.scheduledAt - STARTING_SOON_MINUTES.minutes)
     val canMarkArrived = isArrivalOpen && !isSolo &&
             attendees.any { it.user.userId == state.currentUserId && !it.hasArrived }
+    val canShareLocation = isArrivalOpen && !isSolo &&
+            attendees.any { it.user.userId == state.currentUserId }
 
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
@@ -408,7 +420,7 @@ fun HangoutDetailScreen(
 
     val canRetryPayout = isHost && hangout.payment?.state == PaymentState.PAYOUT_FAILED
 
-    val canCopyAddress = hangout?.chosenSpot != null &&
+    val canGetToSpot = hangout?.chosenSpot != null &&
             (hangout.status == HangoutStatus.SCHEDULED || hangout.status == HangoutStatus.ONGOING)
     val addressCopiedMessage = stringResource(Res.string.detail_address_copied)
     val onCopyAddressClick = {
@@ -426,8 +438,8 @@ fun HangoutDetailScreen(
         }
     }
 
-    // Closes on its own once voting ends
-    val isMapShowing = showMapDialog && hangout?.status == HangoutStatus.VOTING
+    // Closes on its own once the hangout ends
+    val isMapShowing = showMapDialog && (hangout?.status == HangoutStatus.VOTING || canGetToSpot)
 
     LaunchedEffect(showChosenSpotSheet) {
         if (!showChosenSpotSheet) return@LaunchedEffect
@@ -519,7 +531,7 @@ fun HangoutDetailScreen(
                                 isCompleting = state.isCompleting,
                                 showCompletionReminder = showCompletionReminder,
                                 showSoloHint = showSoloHint,
-                                canCopyAddress = canCopyAddress,
+                                canGetToSpot = canGetToSpot,
                                 canMarkArrived = canMarkArrived,
                                 isMarkingArrived = state.isMarkingArrived,
                                 hasUnpaidGuests = unpaidCount > 0,
@@ -718,17 +730,30 @@ fun HangoutDetailScreen(
     if (isMapShowing) {
         HangoutMapDialog(
             candidates = votingState.candidates,
+            chosenSpot = hangout.chosenSpot,
             votes = votingState.votes,
             participants = hangout.participants,
             currentUserId = state.currentUserId,
+            hostId = hangout.hostId,
             isHost = isHost,
             tiedSpotIds = votingState.tiedSpotIds,
+            liveLocations = liveLocationState.liveLocations,
+            isTrackingLive = isArrivalOpen,
+            canShareLocation = canShareLocation,
+            isSharingLocation = liveLocationState.isSharingLocation,
             centerLatitude = votingState.center?.latitude,
             centerLongitude = votingState.center?.longitude,
             mapTheme = state.mapTheme,
             snackbarHostState = snackbarHostState,
             onCastVote = { onVotingAction(HangoutVotingAction.OnCastVote(it)) },
             onBreakTie = { onVotingAction(HangoutVotingAction.OnBreakTie(it)) },
+            onToggleSaveSpot = { spotId, isCurrentlySaved ->
+                onAction(HangoutDetailAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
+            },
+            onSharingChange = { onLiveLocationAction(HangoutLiveLocationAction.OnSharingChange(it)) },
+            onLocationChange = { latitude, longitude ->
+                onLiveLocationAction(HangoutLiveLocationAction.OnLocationChange(latitude, longitude))
+            },
             onDismiss = { showMapDialog = false }
         )
     }

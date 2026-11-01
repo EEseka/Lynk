@@ -3,6 +3,7 @@ package com.eeseka.lynk.shared.data.lobby
 import com.eeseka.lynk.shared.data.lobby.dto.ws.IncomingLobbyDto
 import com.eeseka.lynk.shared.data.lobby.dto.ws.IncomingLobbyMessageType
 import com.eeseka.lynk.shared.data.lobby.dto.ws.WebSocketMessageDto
+import com.eeseka.lynk.shared.data.lobby.mappers.toDomain
 import com.eeseka.lynk.shared.data.lobby.network.KtorLobbyWebSocketConnector
 import com.eeseka.lynk.shared.data.spot.mappers.toDomain
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
@@ -156,6 +157,21 @@ class WebSocketLobbyConnectionClient(
             IncomingLobbyMessageType.VOTING_TIE -> {
                 val dto = json.decodeFromString<IncomingLobbyDto.VotingTieDto>(payload)
                 LobbyEvent.VotingTie(dto.hangoutId, dto.tiedSpotIds)
+            }
+
+            IncomingLobbyMessageType.LIVE_LOCATION_UPDATE -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LiveLocationDto>(payload)
+                LobbyEvent.LiveLocationUpdated(dto.hangoutId, dto.toDomain())
+            }
+
+            IncomingLobbyMessageType.LIVE_LOCATION_STOPPED -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LiveLocationStoppedDto>(payload)
+                LobbyEvent.LiveLocationStopped(dto.hangoutId, dto.userId)
+            }
+
+            IncomingLobbyMessageType.LIVE_LOCATION_SNAPSHOT -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LiveLocationSnapshotDto>(payload)
+                LobbyEvent.LiveLocationSnapshot(dto.hangoutId, dto.locations.map { it.toDomain() })
             }
 
             IncomingLobbyMessageType.ERROR -> {

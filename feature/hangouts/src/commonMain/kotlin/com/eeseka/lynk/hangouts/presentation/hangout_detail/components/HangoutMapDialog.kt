@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -24,27 +25,42 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.X
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.LiveLocationShareEffect
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.components.LiveParticipantsSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.components.ParticipantMapPin
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.components.ShareLocationCard
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.model.LiveLocationUi
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.CandidateMapCard
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.CandidateMapPin
+import com.eeseka.lynk.hangouts.presentation.mappers.toLiveParticipants
+import com.eeseka.lynk.hangouts.presentation.util.toLiveParticipantStacks
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
 import com.eeseka.lynk.shared.design_system.components.layouts.safeArea
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
+import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.showFlashMessage
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
@@ -54,10 +70,9 @@ import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.map.components.MapAttributionMenu
-import com.eeseka.lynk.shared.presentation.map.components.UserLocationMapMarker
+import com.eeseka.lynk.shared.presentation.map.util.boundingBoxOf
 import com.eeseka.lynk.shared.presentation.map.util.isMapDark
 import com.eeseka.lynk.shared.presentation.map.util.mapStyleUri
-import com.eeseka.lynk.shared.presentation.map.util.toBoundingBox
 import com.eeseka.lynk.shared.presentation.permissions.Permission
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
 import com.eeseka.lynk.shared.presentation.permissions.rememberPermissionController
@@ -66,10 +81,13 @@ import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.map_close
+import lynk.feature.hangouts.generated.resources.map_share_location_denied
+import lynk.feature.hangouts.generated.resources.map_shared_minutes_short
 import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.camera.CameraFit
 import org.maplibre.compose.camera.CameraPosition
@@ -85,38 +103,76 @@ import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.DpPadding
 import org.maplibre.spatialk.geojson.Position
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+
+private val STALE_LABEL_REFRESH_INTERVAL = 30.seconds
+private const val STACK_RADIUS_DP = 40.0
 
 // Covers the whole screen like LynkFullScreenDialog, but follows the app theme instead of staying dark
 @Composable
 fun HangoutMapDialog(
     candidates: ImmutableList<SpotUi>,
+    chosenSpot: SpotUi?,
     votes: ImmutableMap<String, String>,
     participants: ImmutableList<HangoutParticipantUi>,
     currentUserId: String?,
+    hostId: String,
     isHost: Boolean,
     tiedSpotIds: ImmutableList<String>,
+    liveLocations: ImmutableMap<String, LiveLocationUi>,
+    isTrackingLive: Boolean,
+    canShareLocation: Boolean,
+    isSharingLocation: Boolean,
     centerLatitude: Double?,
     centerLongitude: Double?,
     mapTheme: AppTheme,
     snackbarHostState: SnackbarHostState,
     onCastVote: (String) -> Unit,
     onBreakTie: (String) -> Unit,
+    onToggleSaveSpot: (String, Boolean) -> Unit,
+    onSharingChange: (Boolean) -> Unit,
+    onLocationChange: (Double, Double) -> Unit,
     onDismiss: () -> Unit
 ) {
     val permissionController = rememberPermissionController()
     val locationController = rememberLocationController()
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var userLocation by remember { mutableStateOf<LocationCoordinates?>(null) }
+    var hasLocationPermission by remember { mutableStateOf(false) }
 
-    // Your own dot only when location is already allowed; this map never asks for it
+    val sharingDeniedMessage = stringResource(Res.string.map_share_location_denied)
+
+    // Your own avatar only when location is already allowed; only the sharing switch ever asks for it
     LaunchedEffect(Unit) {
-        val permissionState = permissionController.getPermissionState(Permission.LOCATION)
-        if (permissionState != PermissionState.GRANTED) return@LaunchedEffect
+        hasLocationPermission = permissionController.getPermissionState(Permission.LOCATION) == PermissionState.GRANTED
+    }
 
-        locationController.observeCurrentLocation().collect { locationResult ->
-            locationResult.onSuccess { coordinate -> userLocation = coordinate }
+    // Tied to the lifecycle so the GPS rests while the app is in the background
+    LaunchedEffect(lifecycleOwner, hasLocationPermission, isTrackingLive) {
+        if (!hasLocationPermission) return@LaunchedEffect
+
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            if (isTrackingLive) {
+                locationController.observeLocationUpdates().collect { coordinate -> userLocation = coordinate }
+            } else {
+                locationController.observeCurrentLocation().collect { locationResult ->
+                    locationResult.onSuccess { coordinate -> userLocation = coordinate }
+                }
+            }
         }
     }
+
+    LiveLocationShareEffect(
+        isSharing = isSharingLocation,
+        canShare = canShareLocation,
+        latitude = userLocation?.latitude,
+        longitude = userLocation?.longitude,
+        onSharingChange = onSharingChange,
+        onLocationChange = onLocationChange
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -129,11 +185,16 @@ fun HangoutMapDialog(
         ) {
             HangoutMapContent(
                 candidates = candidates,
+                chosenSpot = chosenSpot,
                 votes = votes,
                 participants = participants,
                 currentUserId = currentUserId,
+                hostId = hostId,
                 isHost = isHost,
                 tiedSpotIds = tiedSpotIds,
+                liveLocations = liveLocations,
+                canShareLocation = canShareLocation,
+                isSharingLocation = isSharingLocation,
                 centerLatitude = centerLatitude,
                 centerLongitude = centerLongitude,
                 userLatitude = userLocation?.latitude,
@@ -141,6 +202,24 @@ fun HangoutMapDialog(
                 mapTheme = mapTheme,
                 onCastVote = onCastVote,
                 onBreakTie = onBreakTie,
+                onToggleSaveSpot = onToggleSaveSpot,
+                onShareLocationToggle = { isSharing ->
+                    scope.launch {
+                        var permissionState = permissionController.getPermissionState(Permission.LOCATION)
+                        if (isSharing && permissionState != PermissionState.GRANTED) {
+                            permissionState = permissionController.requestPermission(Permission.LOCATION)
+                        }
+                        if (isSharing && permissionState != PermissionState.GRANTED) {
+                            snackbarHostState.showFlashMessage(
+                                message = sharingDeniedMessage,
+                                type = LynkFlashType.Error
+                            )
+                            return@launch
+                        }
+                        hasLocationPermission = permissionState == PermissionState.GRANTED
+                        onSharingChange(isSharing)
+                    }
+                },
                 onDismiss = onDismiss
             )
         }
@@ -150,11 +229,16 @@ fun HangoutMapDialog(
 @Composable
 private fun HangoutMapContent(
     candidates: ImmutableList<SpotUi>,
+    chosenSpot: SpotUi?,
     votes: ImmutableMap<String, String>,
     participants: ImmutableList<HangoutParticipantUi>,
     currentUserId: String?,
+    hostId: String,
     isHost: Boolean,
     tiedSpotIds: ImmutableList<String>,
+    liveLocations: ImmutableMap<String, LiveLocationUi>,
+    canShareLocation: Boolean,
+    isSharingLocation: Boolean,
     centerLatitude: Double?,
     centerLongitude: Double?,
     userLatitude: Double?,
@@ -162,12 +246,28 @@ private fun HangoutMapContent(
     mapTheme: AppTheme,
     onCastVote: (String) -> Unit,
     onBreakTie: (String) -> Unit,
+    onToggleSaveSpot: (String, Boolean) -> Unit,
+    onShareLocationToggle: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val hapticFeedback = rememberAppHaptic()
     val scope = rememberCoroutineScope()
 
     var sheetSpotId by remember { mutableStateOf<String?>(null) }
+    var sheetUserIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Keeps "2 min ago" honest while nothing else on the map changes
+    val now by produceState(Clock.System.now()) {
+        while (true) {
+            delay(STALE_LABEL_REFRESH_INTERVAL)
+            value = Clock.System.now()
+        }
+    }
+
+    val currentUser = participants.find { it.user.userId == currentUserId }?.user
+    val liveParticipants = remember(participants, liveLocations, currentUserId, now) {
+        participants.toLiveParticipants(liveLocations, currentUserId, now).toImmutableList()
+    }
 
     // Same tally as VotingSection
     val counts = remember(votes) { votes.values.groupingBy { it }.eachCount() }
@@ -184,7 +284,7 @@ private fun HangoutMapContent(
     } else null
     // Opens on the group center, else the first spot; 0,0 never shows since the map only opens with a spot
     val openingCenter = centerPosition
-        ?: candidates.firstOrNull()?.let { Position(longitude = it.longitude, latitude = it.latitude) }
+        ?: (chosenSpot ?: candidates.firstOrNull())?.let { Position(longitude = it.longitude, latitude = it.latitude) }
         ?: Position(longitude = 0.0, latitude = 0.0)
 
     val mapState = rememberMapState(
@@ -192,16 +292,36 @@ private fun HangoutMapContent(
         initialCameraPosition = CameraPosition(center = openingCenter, zoom = 15.0)
     )
 
-    // Frames the center and every spot once; one point alone keeps the opening zoom
-    LaunchedEffect(Unit) {
-        val pointCount = candidates.size + if (centerPosition != null) 1 else 0
-        if (pointCount < 2) return@LaunchedEffect
+    // Voting frames the center and every spot once, a chosen spot frames it with you and whoever is sharing,
+    // again when your fix lands; one point alone keeps the opening zoom
+    LaunchedEffect(chosenSpot?.id, chosenSpot != null && userLatitude != null) {
+        val positions = if (chosenSpot != null) {
+            buildList {
+                add(Position(longitude = chosenSpot.longitude, latitude = chosenSpot.latitude))
+                if (userLatitude != null && userLongitude != null) {
+                    add(Position(longitude = userLongitude, latitude = userLatitude))
+                }
+                liveParticipants.forEach { add(Position(longitude = it.longitude, latitude = it.latitude)) }
+            }
+        } else {
+            candidates.map { Position(longitude = it.longitude, latitude = it.latitude) } + listOfNotNull(centerPosition)
+        }
+        if (positions.size < 2) return@LaunchedEffect
 
-        val pointsBounds = candidates.toBoundingBox(including = centerPosition) ?: return@LaunchedEffect
+        val pointsBounds = boundingBoxOf(positions) ?: return@LaunchedEffect
         mapState.animateCameraToBounds(
             boundingBox = pointsBounds,
             fit = CameraFit(fitPadding = DpPadding(left = 48.dp, top = 64.dp, right = 48.dp, bottom = 48.dp))
         )
+    }
+
+    // Avatars regroup as you zoom, only when somebody actually joins or leaves a stack
+    val latestLiveParticipants by rememberUpdatedState(liveParticipants)
+    val liveParticipantStacks by remember {
+        derivedStateOf(structuralEqualityPolicy()) {
+            val metersPerDp = mapState.viewport?.metersPerDpAtCenter ?: 0.0
+            latestLiveParticipants.toLiveParticipantStacks(radiusMeters = metersPerDp * STACK_RADIUS_DP)
+        }
     }
 
     // Swiping to a card glides the camera to its pin; the first page is skipped so the opening fit stays
@@ -233,7 +353,7 @@ private fun HangoutMapContent(
             },
             viewportInsets = WindowInsets(
                 top = WindowInsets.safeArea.asPaddingValues().calculateTopPadding() + 64.dp,
-                bottom = WindowInsets.safeArea.asPaddingValues().calculateBottomPadding() + 216.dp
+                bottom = WindowInsets.safeArea.asPaddingValues().calculateBottomPadding() + if (chosenSpot != null) 120.dp else 216.dp
             ).union(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal)).asPaddingValues()
         ) {
             centerPosition?.let { groupCenter ->
@@ -243,11 +363,51 @@ private fun HangoutMapContent(
                 )
             }
 
-            if (userLatitude != null && userLongitude != null) {
-                UserLocationMapMarker(
-                    userLatitude = userLatitude,
-                    userLongitude = userLongitude,
-                    pulseKey = 0
+            chosenSpot?.let { spot ->
+                CandidateMapPin(
+                    spotName = spot.name,
+                    latitude = spot.latitude,
+                    longitude = spot.longitude,
+                    photoUrls = spot.photoUrls,
+                    voteCount = 0,
+                    isMyVote = false,
+                    isLeading = false,
+                    isTiebreakTarget = false,
+                    isSelected = false,
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        sheetSpotId = spot.id
+                    }
+                )
+            }
+
+            liveParticipantStacks.forEach { stack ->
+                val person = stack.first()
+                key(person.participant.user.userId) {
+                    ParticipantMapPin(
+                        user = person.participant.user,
+                        latitude = person.latitude,
+                        longitude = person.longitude,
+                        ringColor = MaterialTheme.colorScheme.surface,
+                        stackSize = stack.size,
+                        lastSharedLabel = person.minutesSinceShared
+                            .takeIf { stack.size == 1 && it >= 1 }
+                            ?.let { stringResource(Res.string.map_shared_minutes_short, it) },
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            sheetUserIds = stack.map { it.participant.user.userId }.toSet()
+                        }
+                    )
+                }
+            }
+
+            if (currentUser != null && userLatitude != null && userLongitude != null) {
+                ParticipantMapPin(
+                    user = currentUser,
+                    latitude = userLatitude,
+                    longitude = userLongitude,
+                    ringColor = MaterialTheme.colorScheme.primary,
+                    onClick = null
                 )
             }
 
@@ -337,54 +497,70 @@ private fun HangoutMapContent(
                     .padding(start = 16.dp)
             )
 
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val horizontalSafePadding = WindowInsets.safeArea.only(WindowInsetsSides.Horizontal).asPaddingValues()
-                val layoutDirection = LocalLayoutDirection.current
-                val safeStart = horizontalSafePadding.calculateStartPadding(layoutDirection)
-                val safeEnd = horizontalSafePadding.calculateEndPadding(layoutDirection)
-                val usableWidth = maxWidth - safeStart - safeEnd
-                // A card of at most 416dp, centred; on narrow screens the 32dp minimum keeps the next card peeking in
-                val sidePadding = maxOf(32.dp, (usableWidth - 416.dp) / 2)
+            if (canShareLocation) {
+                ShareLocationCard(
+                    isSharing = isSharingLocation,
+                    onToggle = { isSharing ->
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onShareLocationToggle(isSharing)
+                    },
+                    modifier = Modifier
+                        .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal))
+                        .padding(horizontal = 16.dp)
+                        .widthIn(max = 416.dp)
+                )
+            }
 
-                HorizontalPager(
-                    state = pagerState,
-                    contentPadding = PaddingValues(
-                        start = safeStart + sidePadding,
-                        end = safeEnd + sidePadding
-                    ),
-                    pageSpacing = 12.dp,
-                    key = { page -> candidates.getOrNull(page)?.id ?: page },
-                    modifier = Modifier.fillMaxWidth()
-                ) { page ->
-                    val spot = candidates.getOrNull(page) ?: return@HorizontalPager
-                    val voters = remember(votes, participants, spot.id) {
-                        participants
-                            .filter { votes[it.user.userId] == spot.id }
-                            .map { it.user }
-                            .toImmutableList()
-                    }
-                    val voteCount = counts[spot.id] ?: 0
-                    val isTiebreakTarget = tie && isHost && spot.id in tiedSpotIds
+            if (candidates.isNotEmpty()) {
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                    val horizontalSafePadding = WindowInsets.safeArea.only(WindowInsetsSides.Horizontal).asPaddingValues()
+                    val layoutDirection = LocalLayoutDirection.current
+                    val safeStart = horizontalSafePadding.calculateStartPadding(layoutDirection)
+                    val safeEnd = horizontalSafePadding.calculateEndPadding(layoutDirection)
+                    val usableWidth = maxWidth - safeStart - safeEnd
+                    // A card of at most 416dp, centred; on narrow screens the 32dp minimum keeps the next card peeking in
+                    val sidePadding = maxOf(32.dp, (usableWidth - 416.dp) / 2)
 
-                    CandidateMapCard(
-                        spotName = spot.name,
-                        photoUrls = spot.photoUrls,
-                        distanceFromMiddle = rememberSpotDistanceLabel(
-                            userLatitude = centerLatitude,
-                            userLongitude = centerLongitude,
-                            spotLatitude = spot.latitude,
-                            spotLongitude = spot.longitude
+                    HorizontalPager(
+                        state = pagerState,
+                        contentPadding = PaddingValues(
+                            start = safeStart + sidePadding,
+                            end = safeEnd + sidePadding
                         ),
-                        voters = voters,
-                        isMyVote = myVote == spot.id,
-                        isLeading = voteCount > 0 && voteCount == maxCount,
-                        isTiebreakTarget = isTiebreakTarget,
-                        isTieLocked = tie && !isTiebreakTarget,
-                        onClick = { sheetSpotId = spot.id },
-                        onVoteClick = {
-                            if (isTiebreakTarget) onBreakTie(spot.id) else onCastVote(spot.id)
+                        pageSpacing = 12.dp,
+                        key = { page -> candidates.getOrNull(page)?.id ?: page },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { page ->
+                        val spot = candidates.getOrNull(page) ?: return@HorizontalPager
+                        val voters = remember(votes, participants, spot.id) {
+                            participants
+                                .filter { votes[it.user.userId] == spot.id }
+                                .map { it.user }
+                                .toImmutableList()
                         }
-                    )
+                        val voteCount = counts[spot.id] ?: 0
+                        val isTiebreakTarget = tie && isHost && spot.id in tiedSpotIds
+
+                        CandidateMapCard(
+                            spotName = spot.name,
+                            photoUrls = spot.photoUrls,
+                            distanceFromMiddle = rememberSpotDistanceLabel(
+                                userLatitude = centerLatitude,
+                                userLongitude = centerLongitude,
+                                spotLatitude = spot.latitude,
+                                spotLongitude = spot.longitude
+                            ),
+                            voters = voters,
+                            isMyVote = myVote == spot.id,
+                            isLeading = voteCount > 0 && voteCount == maxCount,
+                            isTiebreakTarget = isTiebreakTarget,
+                            isTieLocked = tie && !isTiebreakTarget,
+                            onClick = { sheetSpotId = spot.id },
+                            onVoteClick = {
+                                if (isTiebreakTarget) onBreakTie(spot.id) else onCastVote(spot.id)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -397,6 +573,25 @@ private fun HangoutMapContent(
             userLng = centerLongitude ?: userLongitude,
             isDistanceFromMiddle = centerPosition != null,
             onDismissRequest = { sheetSpotId = null }
+        )
+    }
+
+    chosenSpot?.takeIf { it.id == sheetSpotId }?.let { spot ->
+        SpotDetailSheet(
+            spot = spot,
+            userLat = userLatitude,
+            userLng = userLongitude,
+            onDismissRequest = { sheetSpotId = null },
+            onToggleSave = onToggleSaveSpot
+        )
+    }
+
+    val sheetPeople = liveParticipants.filter { it.participant.user.userId in sheetUserIds }.toImmutableList()
+    if (sheetPeople.isNotEmpty()) {
+        LiveParticipantsSheet(
+            people = sheetPeople,
+            hostId = hostId,
+            onDismiss = { sheetUserIds = emptySet() }
         )
     }
 }

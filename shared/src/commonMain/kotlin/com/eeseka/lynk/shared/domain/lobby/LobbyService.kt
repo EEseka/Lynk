@@ -18,6 +18,16 @@ interface LobbyService {
         longitude: Double
     ): EmptyResult<DataError.Connection>
 
+    /** Where this user is right now, for anyone with this hangout's lobby open. */
+    suspend fun shareLiveLocation(
+        hangoutId: String,
+        latitude: Double,
+        longitude: Double
+    ): EmptyResult<DataError.Connection>
+
+    /** Takes this user off the hangout's map. */
+    suspend fun stopLiveLocation(hangoutId: String): EmptyResult<DataError.Connection>
+
     /** Add a spot to the candidate list for voting. */
     suspend fun proposeSpot(hangoutId: String, spotId: String): EmptyResult<DataError.Connection>
 

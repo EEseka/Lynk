@@ -25,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Copy
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Star
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -45,6 +48,7 @@ import lynk.feature.hangouts.generated.resources.detail_chosen_spot
 import lynk.feature.hangouts.generated.resources.detail_get_a_ride
 import lynk.feature.hangouts.generated.resources.detail_no_spot_message
 import lynk.feature.hangouts.generated.resources.detail_no_spot_title
+import lynk.feature.hangouts.generated.resources.voting_see_on_map
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -52,12 +56,15 @@ fun ChosenSpotSection(
     chosenSpot: SpotUi?,
     onSpotClick: () -> Unit,
     modifier: Modifier = Modifier,
-    canCopyAddress: Boolean = false,
-    onCopyAddressClick: () -> Unit = {}
+    canGetToSpot: Boolean = false,
+    onCopyAddressClick: () -> Unit = {},
+    onMapClick: () -> Unit = {}
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     DetailSection(
         title = stringResource(Res.string.detail_chosen_spot),
-        trailing = if (canCopyAddress) {
+        trailing = if (canGetToSpot) {
             {
                 Row(
                     modifier = Modifier
@@ -92,6 +99,23 @@ fun ChosenSpotSection(
                 rating = chosenSpot.rating,
                 onClick = onSpotClick
             )
+            if (canGetToSpot) {
+                LynkButton(
+                    text = stringResource(Res.string.voting_see_on_map),
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onMapClick()
+                    },
+                    style = LynkButtonStyle.TEXT,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Lucide.Map,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                )
+            }
         } else {
             PlaceholderCard(
                 icon = Lucide.MapPin,
@@ -205,7 +229,7 @@ private fun ChosenSpotSectionPreview(chosenSpot: SpotUi?) {
         ChosenSpotSection(
             chosenSpot = chosenSpot,
             onSpotClick = {},
-            canCopyAddress = chosenSpot != null,
+            canGetToSpot = chosenSpot != null,
             onCopyAddressClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)

@@ -89,7 +89,7 @@ fun HangoutDetailContent(
     isCompleting: Boolean,
     showCompletionReminder: Boolean,
     showSoloHint: Boolean,
-    canCopyAddress: Boolean,
+    canGetToSpot: Boolean,
     canMarkArrived: Boolean,
     isMarkingArrived: Boolean,
     hasUnpaidGuests: Boolean,
@@ -229,8 +229,9 @@ fun HangoutDetailContent(
                     ChosenSpotSection(
                         chosenSpot = hangout.chosenSpot,
                         onSpotClick = onChosenSpotClick,
-                        canCopyAddress = canCopyAddress,
-                        onCopyAddressClick = onCopyAddressClick
+                        canGetToSpot = canGetToSpot,
+                        onCopyAddressClick = onCopyAddressClick,
+                        onMapClick = onMapClick
                     )
                 }
             }
@@ -348,7 +349,7 @@ private fun HangoutDetailContentPreview(
             isCompleting = false,
             showCompletionReminder = false,
             showSoloHint = false,
-            canCopyAddress = hangout.chosenSpot != null,
+            canGetToSpot = hangout.chosenSpot != null,
             canMarkArrived = false,
             isMarkingArrived = false,
             hasUnpaidGuests = hangout.participants.any {

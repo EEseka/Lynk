@@ -3,6 +3,7 @@ package com.eeseka.lynk.shared.data.lobby.dto.ws
 import com.eeseka.lynk.shared.data.spot.dto.SpotDto
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 enum class IncomingLobbyMessageType {
     PARTICIPANT_INVITED,
@@ -27,6 +28,9 @@ enum class IncomingLobbyMessageType {
     VOTE_TALLY,
     CENTER_UPDATE,
     VOTING_TIE,
+    LIVE_LOCATION_UPDATE,
+    LIVE_LOCATION_STOPPED,
+    LIVE_LOCATION_SNAPSHOT,
     ERROR
 }
 
@@ -121,6 +125,27 @@ sealed interface IncomingLobbyDto {
     data class VotingTieDto(
         val hangoutId: String,
         val tiedSpotIds: List<String>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationDto(
+        val hangoutId: String,
+        val userId: String,
+        val latitude: Double,
+        val longitude: Double,
+        val sharedAt: Instant
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationStoppedDto(
+        val hangoutId: String,
+        val userId: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationSnapshotDto(
+        val hangoutId: String,
+        val locations: List<LiveLocationDto>
     ) : IncomingLobbyDto
 
     @Serializable
