@@ -18,4 +18,5 @@ sealed interface HangoutDetailEvent {
     ) : HangoutDetailEvent
 
     data object NavigateBack : HangoutDetailEvent
+    data class NotAttending(val hangoutId: String) : HangoutDetailEvent
 }

@@ -68,6 +68,8 @@ import lynk.feature.hangouts.generated.resources.detail_complete
 import lynk.feature.hangouts.generated.resources.detail_completing
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_message
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_title
+import lynk.feature.hangouts.generated.resources.detail_im_here
+import lynk.feature.hangouts.generated.resources.detail_marking_arrived
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_message
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_message_ongoing
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_title
@@ -88,6 +90,8 @@ fun HangoutDetailContent(
     showCompletionReminder: Boolean,
     showSoloHint: Boolean,
     canCopyAddress: Boolean,
+    canMarkArrived: Boolean,
+    isMarkingArrived: Boolean,
     hasUnpaidGuests: Boolean,
     hasCurrentUserPaid: Boolean,
     canPay: Boolean,
@@ -103,6 +107,7 @@ fun HangoutDetailContent(
     onSeeAllParticipantsClick: () -> Unit,
     onChosenSpotClick: () -> Unit,
     onCopyAddressClick: () -> Unit,
+    onMarkArrivedClick: () -> Unit,
     paymentSetup: @Composable () -> Unit,
     memories: @Composable () -> Unit,
     onPayClick: () -> Unit,
@@ -182,6 +187,7 @@ fun HangoutDetailContent(
                 participants = hangout.participants,
                 participantCount = hangout.participantCount,
                 maxAttendees = hangout.maxAttendees,
+                hangoutStatus = hangout.status,
                 presentUserIds = presentUserIds,
                 onSeeAllClick = onSeeAllParticipantsClick
             )
@@ -227,6 +233,19 @@ fun HangoutDetailContent(
                         onCopyAddressClick = onCopyAddressClick
                     )
                 }
+            }
+
+            AnimatedVisibility(visible = canMarkArrived) {
+                LynkButton(
+                    text = stringResource(Res.string.detail_im_here),
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onMarkArrivedClick()
+                    },
+                    style = LynkButtonStyle.SECONDARY,
+                    isLoading = isMarkingArrived,
+                    loadingText = stringResource(Res.string.detail_marking_arrived)
+                )
             }
 
             paymentSetup()
@@ -275,7 +294,6 @@ fun HangoutDetailContent(
                         hapticFeedback(AppHaptic.ImpactLight)
                         onCompleteClick()
                     },
-                    style = LynkButtonStyle.PRIMARY,
                     isLoading = isCompleting,
                     loadingText = stringResource(Res.string.detail_completing)
                 )
@@ -331,6 +349,8 @@ private fun HangoutDetailContentPreview(
             showCompletionReminder = false,
             showSoloHint = false,
             canCopyAddress = hangout.chosenSpot != null,
+            canMarkArrived = false,
+            isMarkingArrived = false,
             hasUnpaidGuests = hangout.participants.any {
                 it.rsvpStatus == RsvpStatus.ATTENDING && !it.hasPaid
             },
@@ -350,6 +370,7 @@ private fun HangoutDetailContentPreview(
             onSeeAllParticipantsClick = {},
             onChosenSpotClick = {},
             onCopyAddressClick = {},
+            onMarkArrivedClick = {},
             paymentSetup = {},
             memories = {},
             onPayClick = {},

@@ -45,7 +45,8 @@ class FakeHangoutService : HangoutService {
         val host = HangoutParticipant(
             user = hangoutUser(currentUserId),
             rsvpStatus = RsvpStatus.ATTENDING,
-            hasPaid = false
+            hasPaid = false,
+            arrivedAt = null
         )
         val hangout = Hangout(
             id = "hangout_${hangouts.size + 1}",
@@ -186,7 +187,8 @@ class FakeHangoutService : HangoutService {
         val invitee = HangoutParticipant(
             user = hangoutUser(userId),
             rsvpStatus = RsvpStatus.PENDING,
-            hasPaid = false
+            hasPaid = false,
+            arrivedAt = null
         )
         changeHangout(hangoutId) { it.withParticipants(it.participants + invitee) }
             ?: return Result.Failure(DataError.Remote.NOT_FOUND)
@@ -237,6 +239,23 @@ class FakeHangoutService : HangoutService {
 
         changeHangout(hangoutId) { current ->
             current.withParticipants(current.participants.filterNot { it.user.userId == currentUserId })
+        } ?: return Result.Failure(DataError.Remote.NOT_FOUND)
+        return Result.Success(Unit)
+    }
+
+    override suspend fun markArrived(hangoutId: String): EmptyResult<DataError.Remote> {
+        if (shouldReturnError) return Result.Failure(errorToReturn)
+
+        changeHangout(hangoutId) { current ->
+            current.withParticipants(
+                current.participants.map { participant ->
+                    if (participant.user.userId == currentUserId) {
+                        participant.copy(arrivedAt = Instant.fromEpochSeconds(0))
+                    } else {
+                        participant
+                    }
+                }
+            )
         } ?: return Result.Failure(DataError.Remote.NOT_FOUND)
         return Result.Success(Unit)
     }

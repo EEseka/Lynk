@@ -22,8 +22,6 @@
 
     <string name="participants_format">%1$d going</string>
     <string name="participants_max_format">%1$d / %2$d going</string>
-    <string name="participants_attended_format">%1$d attended</string>
-    <string name="participants_attended_max_format">%1$d / %2$d attended</string>
 
     <string name="empty_hangouts_upcoming_title">No Upcoming Hangouts</string>
     <string name="empty_hangouts_upcoming_message">Tap + to plan something with your crew.</string>
@@ -52,10 +50,20 @@
     <string name="detail_load_error_title">Couldn't Load This Hangout</string>
     <string name="detail_about">About</string>
     <string name="detail_going">Going</string>
+    <string name="detail_went">Went</string>
+    <string name="detail_was_going">Was Going</string>
+    <string name="detail_went_count">%1$d went</string>
     <string name="detail_going_count">%1$d going</string>
     <string name="detail_going_count_max">%1$d / %2$d going</string>
+    <string name="detail_going_count_here">%1$d going, %2$d here</string>
+    <string name="detail_going_count_max_here">%1$d / %2$d going, %3$d here</string>
+    <string name="detail_here_badge">Here</string>
+    <string name="detail_im_here">I'm Here</string>
+    <string name="detail_marking_arrived">Telling Everyone…</string>
     <string name="detail_see_all">See All</string>
     <string name="participants_sheet_title">Who's Going</string>
+    <string name="participants_sheet_title_went">Who Went</string>
+    <string name="participants_sheet_title_was_going">Who Was Going</string>
     <string name="detail_chosen_spot">Chosen Spot</string>
     <string name="detail_no_spot_title">No Spot Yet</string>
     <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
@@ -90,7 +98,6 @@
     <string name="detail_dialog_dismiss">Never Mind</string>
 
     <!-- Participants sheet groups -->
-    <string name="detail_group_going">Going</string>
     <string name="detail_group_pending">Pending</string>
     <string name="detail_group_declined">Declined</string>
     <string name="detail_withdraw">Withdraw</string>

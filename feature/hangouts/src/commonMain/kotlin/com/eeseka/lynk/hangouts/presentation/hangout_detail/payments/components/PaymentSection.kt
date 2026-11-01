@@ -224,7 +224,6 @@ fun PaymentSection(
                             hapticFeedback(AppHaptic.ImpactMedium)
                             onPayClick()
                         },
-                        style = LynkButtonStyle.PRIMARY,
                         isLoading = isInitializingPayment,
                         loadingText = stringResource(Res.string.payment_preparing),
                         modifier = Modifier.fillMaxWidth()

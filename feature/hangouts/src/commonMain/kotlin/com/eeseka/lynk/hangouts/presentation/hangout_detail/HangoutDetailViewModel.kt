@@ -114,6 +114,7 @@ class HangoutDetailViewModel(
             HangoutDetailAction.OnCompleteHangoutConfirmed -> completeHangout()
             HangoutDetailAction.OnCancelHangoutConfirmed -> cancelHangout()
             HangoutDetailAction.OnLeaveHangoutConfirmed -> leaveHangout()
+            HangoutDetailAction.OnMarkArrivedClick -> markArrived()
             is HangoutDetailAction.OnWithdrawParticipantInvite -> withdrawParticipantInvite(action.userId)
             HangoutDetailAction.OnInviteClick -> _state.update { it.copy(showInviteSheet = true) }
             HangoutDetailAction.OnDismissInviteSheet -> dismissInviteSheet()
@@ -186,6 +187,12 @@ class HangoutDetailViewModel(
                     Res.string.event_updated,
                     arrayOf(event.hostDisplayName)
                 ) to LynkFlashType.Info
+            )
+
+            // The arrival push already told everyone still on the way.
+            is LobbyEvent.ParticipantArrived -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = null
             )
 
             // The "has started" push already told everyone who is going.
@@ -306,6 +313,7 @@ class HangoutDetailViewModel(
                 isCompleting = false,
                 isCancelling = false,
                 isLeaving = false,
+                isMarkingArrived = false,
                 error = null,
                 isLoading = hangoutId != null
             )
@@ -325,6 +333,12 @@ class HangoutDetailViewModel(
                 }
                 .onFailure { error ->
                     if (hangoutId != _hangoutId.value) return@onFailure
+                    // Someone who never accepted, like an invitee tapping "called off", can't open detail
+                    if (error == DataError.Remote.FORBIDDEN) {
+                        _state.update { it.copy(isLoading = false) }
+                        eventChannel.send(HangoutDetailEvent.NotAttending(hangoutId))
+                        return@onFailure
+                    }
                     _state.update { it.copy(isLoading = false, error = error.toUiText()) }
                 }
         }
@@ -425,6 +439,20 @@ class HangoutDetailViewModel(
                     eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
                 }
             _state.update { it.copy(isLeaving = false) }
+        }
+    }
+
+    private fun markArrived() {
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isMarkingArrived = true) }
+            hangoutService
+                .markArrived(hangoutId)
+                .onSuccess { hangoutDetailRepository.refreshHangout(hangoutId) }
+                .onFailure { error ->
+                    eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
+                }
+            _state.update { it.copy(isMarkingArrived = false) }
         }
     }
 

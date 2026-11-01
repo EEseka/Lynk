@@ -23,6 +23,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
@@ -36,8 +37,13 @@ import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_going_count
+import lynk.feature.hangouts.generated.resources.detail_going_count_here
 import lynk.feature.hangouts.generated.resources.detail_going_count_max
+import lynk.feature.hangouts.generated.resources.detail_going_count_max_here
 import lynk.feature.hangouts.generated.resources.detail_see_all
+import lynk.feature.hangouts.generated.resources.detail_was_going
+import lynk.feature.hangouts.generated.resources.detail_went
+import lynk.feature.hangouts.generated.resources.detail_went_count
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -45,19 +51,32 @@ fun ParticipantsSection(
     participants: ImmutableList<HangoutParticipantUi>,
     participantCount: Int,
     maxAttendees: Int?,
+    hangoutStatus: HangoutStatus,
     presentUserIds: ImmutableSet<String>,
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val goingText = maxAttendees?.let { max ->
-        stringResource(Res.string.detail_going_count_max, participantCount, max)
-    } ?: stringResource(Res.string.detail_going_count, participantCount)
-
     val attending = participants.filter { it.rsvpStatus == RsvpStatus.ATTENDING }
+    val hereCount = attending.count { it.hasArrived }
     val hapticFeedback = rememberAppHaptic()
 
+    val goingText = when {
+        hangoutStatus == HangoutStatus.COMPLETED -> stringResource(Res.string.detail_went_count, participantCount)
+        hangoutStatus == HangoutStatus.CANCELLED -> participantCount.toString()
+        maxAttendees != null && hereCount > 0 -> stringResource(Res.string.detail_going_count_max_here, participantCount, maxAttendees, hereCount)
+        maxAttendees != null -> stringResource(Res.string.detail_going_count_max, participantCount, maxAttendees)
+        hereCount > 0 -> stringResource(Res.string.detail_going_count_here, participantCount, hereCount)
+        else -> stringResource(Res.string.detail_going_count, participantCount)
+    }
+
     DetailSection(
-        title = stringResource(Res.string.detail_going),
+        title = stringResource(
+            when (hangoutStatus) {
+                HangoutStatus.COMPLETED -> Res.string.detail_went
+                HangoutStatus.CANCELLED -> Res.string.detail_was_going
+                else -> Res.string.detail_going
+            }
+        ),
         trailing = {
             LynkText(
                 text = goingText,
@@ -124,6 +143,7 @@ private fun ParticipantsSectionPreview(participants: ImmutableList<HangoutPartic
             participants = participants,
             participantCount = participants.size,
             maxAttendees = 10,
+            hangoutStatus = HangoutStatus.SCHEDULED,
             presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2"),
             onSeeAllClick = {},
             modifier = Modifier

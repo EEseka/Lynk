@@ -32,6 +32,7 @@ import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.detail_here_badge
 import lynk.feature.hangouts.generated.resources.payment_host_badge
 import lynk.feature.hangouts.generated.resources.payment_paid_badge
 import org.jetbrains.compose.resources.stringResource
@@ -43,6 +44,7 @@ fun ParticipantCard(
     isOnline: Boolean = false,
     showPaidBadge: Boolean = false,
     showHostBadge: Boolean = false,
+    showHereBadge: Boolean = false,
     trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -86,6 +88,13 @@ fun ParticipantCard(
         ) {
             PaidBadge()
         }
+        AnimatedVisibility(
+            visible = showHereBadge,
+            enter = scaleIn() + fadeIn(),
+            exit = scaleOut() + fadeOut()
+        ) {
+            HereBadge()
+        }
         trailing?.invoke()
     }
 }
@@ -128,6 +137,19 @@ private fun PaidBadge(modifier: Modifier = Modifier) {
 }
 
 @Composable
+private fun HereBadge(modifier: Modifier = Modifier) {
+    LynkText(
+        text = stringResource(Res.string.detail_here_badge),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    )
+}
+
+@Composable
 private fun ParticipantCardPreview(
     displayName: String = "Eseka Emmanuel",
     username: String = "e.eseka",
@@ -135,7 +157,8 @@ private fun ParticipantCardPreview(
     hasPaid: Boolean = true,
     isOnline: Boolean = true,
     showPaidBadge: Boolean = false,
-    showHostBadge: Boolean = false
+    showHostBadge: Boolean = false,
+    showHereBadge: Boolean = false
 ) {
     LynkTheme {
         ParticipantCard(
@@ -148,11 +171,13 @@ private fun ParticipantCardPreview(
                     profilePictureUrl = null
                 ),
                 rsvpStatus = RsvpStatus.ATTENDING,
-                hasPaid = hasPaid
+                hasPaid = hasPaid,
+                hasArrived = showHereBadge
             ),
             isOnline = isOnline,
             showPaidBadge = showPaidBadge,
             showHostBadge = showHostBadge,
+            showHereBadge = showHereBadge,
             modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
         )
     }
@@ -161,6 +186,10 @@ private fun ParticipantCardPreview(
 @PreviewLightDark
 @Composable
 private fun ParticipantCardPaidPreview() = ParticipantCardPreview(showPaidBadge = true)
+
+@PreviewLightDark
+@Composable
+private fun ParticipantCardHerePreview() = ParticipantCardPreview(showHereBadge = true)
 
 @PreviewLightDark
 @Composable

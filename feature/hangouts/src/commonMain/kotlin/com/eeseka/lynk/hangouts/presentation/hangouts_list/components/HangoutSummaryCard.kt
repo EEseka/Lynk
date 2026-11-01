@@ -34,9 +34,8 @@ import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.detail_went_count
 import lynk.feature.hangouts.generated.resources.host_badge_description
-import lynk.feature.hangouts.generated.resources.participants_attended_format
-import lynk.feature.hangouts.generated.resources.participants_attended_max_format
 import lynk.feature.hangouts.generated.resources.participants_format
 import lynk.feature.hangouts.generated.resources.participants_max_format
 import org.jetbrains.compose.resources.stringResource
@@ -54,11 +53,7 @@ fun HangoutSummaryCard(
     val scheme = MaterialTheme.colorScheme
 
     val participantsText = when (hangout.status) {
-        HangoutStatus.COMPLETED -> {
-            hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(Res.string.participants_attended_max_format, hangout.participantCount, maxAttendees)
-            } ?: stringResource(Res.string.participants_attended_format, hangout.participantCount)
-        }
+        HangoutStatus.COMPLETED -> stringResource(Res.string.detail_went_count, hangout.participantCount)
 
         HangoutStatus.CANCELLED -> null
 

@@ -114,12 +114,12 @@ private fun GuestPromptSheetContent(
             onClick = onCreateAccountClick
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         LynkButton(
             text = stringResource(Res.string.guest_prompt_not_now),
             onClick = onDismissRequest,
-            style = LynkButtonStyle.SECONDARY
+            style = LynkButtonStyle.TEXT
         )
 
         Spacer(modifier = Modifier.height(16.dp))

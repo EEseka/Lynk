@@ -151,6 +151,21 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
+    fun `saying I am here shows on the participant`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.onAction(HangoutDetailAction.OnMarkArrivedClick)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertThat(state.isMarkingArrived).isFalse()
+        assertThat(state.hangout?.participants?.first { it.user.userId == HOST_ID }?.hasArrived).isEqualTo(true)
+    }
+
+    @Test
     fun `the map follows the app theme`() = runTest {
         val viewModel = createViewModel()
 
@@ -158,6 +173,23 @@ class HangoutDetailViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.mapTheme).isEqualTo(AppTheme.DARK)
+    }
+
+    @Test
+    fun `someone not going is sent away instead of shown an error`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        hangoutService.shouldReturnError = true
+        hangoutService.errorToReturn = DataError.Remote.FORBIDDEN
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.NotAttending(hangoutId))
+        }
+        assertThat(viewModel.state.value.error).isNull()
+        assertThat(viewModel.state.value.isLoading).isFalse()
     }
 
     @Test

@@ -27,6 +27,7 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
@@ -36,16 +37,21 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_group_declined
-import lynk.feature.hangouts.generated.resources.detail_group_going
 import lynk.feature.hangouts.generated.resources.detail_group_pending
+import lynk.feature.hangouts.generated.resources.detail_was_going
+import lynk.feature.hangouts.generated.resources.detail_went
 import lynk.feature.hangouts.generated.resources.detail_withdraw
 import lynk.feature.hangouts.generated.resources.participants_sheet_title
+import lynk.feature.hangouts.generated.resources.participants_sheet_title_was_going
+import lynk.feature.hangouts.generated.resources.participants_sheet_title_went
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ParticipantsSheet(
     participants: ImmutableList<HangoutParticipantUi>,
+    hangoutStatus: HangoutStatus,
     isHost: Boolean,
     canWithdraw: Boolean,
     onDismiss: () -> Unit,
@@ -63,6 +69,7 @@ fun ParticipantsSheet(
     ) {
         ParticipantsSheetContent(
             participants = participants,
+            hangoutStatus = hangoutStatus,
             isHost = isHost,
             canWithdraw = canWithdraw,
             onWithdraw = onWithdraw,
@@ -77,6 +84,7 @@ fun ParticipantsSheet(
 @Composable
 private fun ParticipantsSheetContent(
     participants: ImmutableList<HangoutParticipantUi>,
+    hangoutStatus: HangoutStatus,
     isHost: Boolean,
     canWithdraw: Boolean,
     onWithdraw: (String) -> Unit,
@@ -90,15 +98,29 @@ private fun ParticipantsSheetContent(
     val pending = participants.filter { it.rsvpStatus == RsvpStatus.PENDING }
     val declined = participants.filter { it.rsvpStatus == RsvpStatus.DECLINED }
 
+    val hasEnded = hangoutStatus == HangoutStatus.COMPLETED || hangoutStatus == HangoutStatus.CANCELLED
+
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
         LynkText(
-            text = stringResource(Res.string.participants_sheet_title),
+            text = stringResource(
+                when (hangoutStatus) {
+                    HangoutStatus.COMPLETED -> Res.string.participants_sheet_title_went
+                    HangoutStatus.CANCELLED -> Res.string.participants_sheet_title_was_going
+                    else -> Res.string.participants_sheet_title
+                }
+            ),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        val goingTitle = stringResource(Res.string.detail_group_going)
+        val goingTitle = stringResource(
+            when (hangoutStatus) {
+                HangoutStatus.COMPLETED -> Res.string.detail_went
+                HangoutStatus.CANCELLED -> Res.string.detail_was_going
+                else -> Res.string.detail_going
+            }
+        )
         val pendingTitle = stringResource(Res.string.detail_group_pending)
         val declinedTitle = stringResource(Res.string.detail_group_declined)
 
@@ -113,7 +135,8 @@ private fun ParticipantsSheetContent(
                 presentUserIds = presentUserIds,
                 showHeader = isHost,
                 arePaymentsOn = arePaymentsOn,
-                hostId = hostId
+                hostId = hostId,
+                showHereBadges = !hasEnded
             )
 
             if (isHost && pending.isNotEmpty()) {
@@ -148,6 +171,7 @@ private fun LazyListScope.participantGroup(
     showHeader: Boolean = true,
     arePaymentsOn: Boolean = false,
     hostId: String? = null,
+    showHereBadges: Boolean = false,
     trailing: (@Composable (HangoutParticipantUi) -> Unit)? = null
 ) {
     if (participants.isEmpty()) return
@@ -170,6 +194,7 @@ private fun LazyListScope.participantGroup(
                         participant.hasPaid &&
                         participant.user.userId != hostId,
                 showHostBadge = participant.user.userId == hostId,
+                showHereBadge = showHereBadges && participant.hasArrived,
                 trailing = trailing?.let { { it(participant) } },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -233,6 +258,7 @@ private fun ParticipantsSheetPreview(isHost: Boolean) {
     LynkTheme {
         ParticipantsSheetContent(
             participants = previewRoster,
+            hangoutStatus = HangoutStatus.SCHEDULED,
             isHost = isHost,
             canWithdraw = isHost,
             onWithdraw = {},

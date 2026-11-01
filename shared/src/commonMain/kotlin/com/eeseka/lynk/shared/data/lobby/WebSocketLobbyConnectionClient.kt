@@ -62,6 +62,11 @@ class WebSocketLobbyConnectionClient(
                 LobbyEvent.ParticipantLeft(dto.hangoutId, dto.userId, dto.displayName)
             }
 
+            IncomingLobbyMessageType.PARTICIPANT_ARRIVED -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LobbyHangoutDto>(payload)
+                LobbyEvent.ParticipantArrived(dto.hangoutId)
+            }
+
             IncomingLobbyMessageType.PAYMENT_RECEIVED -> {
                 val dto = json.decodeFromString<IncomingLobbyDto.LobbyParticipantDto>(payload)
                 LobbyEvent.PaymentReceived(dto.hangoutId, dto.userId, dto.displayName)

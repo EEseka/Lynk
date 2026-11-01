@@ -29,7 +29,6 @@ import com.eeseka.lynk.hangouts.presentation.util.accountNumberInput
 import com.eeseka.lynk.hangouts.presentation.util.amountInput
 import com.eeseka.lynk.hangouts.presentation.util.amountOutput
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
@@ -170,7 +169,6 @@ fun EnablePaymentsForm(
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onConfirm()
             },
-            style = LynkButtonStyle.PRIMARY,
             enabled = canConfirm,
             isLoading = isEnabling,
             loadingText = stringResource(Res.string.payment_enabling),

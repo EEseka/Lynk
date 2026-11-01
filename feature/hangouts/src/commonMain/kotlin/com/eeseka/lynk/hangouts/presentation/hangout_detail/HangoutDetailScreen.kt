@@ -75,6 +75,7 @@ import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_PHOTOS_PER_UPL
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PAYMENTS
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_GROUP
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PHOTOS
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.STARTING_SOON_MINUTES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
@@ -129,6 +130,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 private sealed interface DetailBodyState {
     data object Loading : DetailBodyState
@@ -143,6 +145,7 @@ fun HangoutDetailRoot(
     isDetailPaneFullScreen: Boolean,
     navigateBack: () -> Unit,
     onHangoutLeft: () -> Unit,
+    onNotAttending: (hangoutId: String) -> Unit,
     onEditHangoutClick: (HangoutUi) -> Unit,
     navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
     navigateToAssistant: (hangoutId: String) -> Unit,
@@ -195,6 +198,7 @@ fun HangoutDetailRoot(
             )
 
             HangoutDetailEvent.NavigateBack -> onHangoutLeft()
+            is HangoutDetailEvent.NotAttending -> onNotAttending(event.hangoutId)
         }
     }
 
@@ -371,6 +375,11 @@ fun HangoutDetailScreen(
     val showAskLynk = attendees.any { it.user.userId == state.currentUserId } &&
             (isUpcoming || hangout?.status == HangoutStatus.ONGOING || state.hasAssistantChat)
 
+    val isArrivalOpen = hangout?.status == HangoutStatus.ONGOING ||
+            (hangout?.status == HangoutStatus.SCHEDULED && Clock.System.now() >= hangout.scheduledAt - STARTING_SOON_MINUTES.minutes)
+    val canMarkArrived = isArrivalOpen && !isSolo &&
+            attendees.any { it.user.userId == state.currentUserId && !it.hasArrived }
+
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
     val canPay = hangout != null &&
@@ -511,6 +520,8 @@ fun HangoutDetailScreen(
                                 showCompletionReminder = showCompletionReminder,
                                 showSoloHint = showSoloHint,
                                 canCopyAddress = canCopyAddress,
+                                canMarkArrived = canMarkArrived,
+                                isMarkingArrived = state.isMarkingArrived,
                                 hasUnpaidGuests = unpaidCount > 0,
                                 hasCurrentUserPaid = hasCurrentUserPaid,
                                 canPay = canPay && !paymentsState.isAwaitingPaymentReturn,
@@ -526,6 +537,7 @@ fun HangoutDetailScreen(
                                 onSeeAllParticipantsClick = { showParticipantsSheet = true },
                                 onChosenSpotClick = { showChosenSpotSheet = true },
                                 onCopyAddressClick = onCopyAddressClick,
+                                onMarkArrivedClick = { onAction(HangoutDetailAction.OnMarkArrivedClick) },
                                 heroActions = {
                                     if (!isDetailPaneFullScreen) {
                                         HangoutHeroActions(
@@ -678,6 +690,7 @@ fun HangoutDetailScreen(
     if (showParticipantsSheet && state.hangout != null) {
         ParticipantsSheet(
             participants = state.hangout.participants,
+            hangoutStatus = state.hangout.status,
             isHost = isHost,
             canWithdraw = canWithdraw,
             onDismiss = { showParticipantsSheet = false },

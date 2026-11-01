@@ -36,6 +36,7 @@ fun HangoutsListDetailAdaptiveLayout(
     mainShellPadding: PaddingValues,
     unreadNotificationCount: Int,
     navigateToNotifications: () -> Unit,
+    navigateToInvitePreview: (hangoutId: String) -> Unit,
     navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
     navigateToAssistant: (hangoutId: String) -> Unit,
     hangoutsListDetailViewModel: HangoutsListDetailViewModel = koinViewModel()
@@ -146,6 +147,15 @@ fun HangoutsListDetailAdaptiveLayout(
                             }
                             hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
                             hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.RefreshList)
+                        }
+                    },
+                    onNotAttending = { hangoutId ->
+                        scope.launch {
+                            if (scaffoldNavigator.canNavigateBack()) {
+                                scaffoldNavigator.navigateBack()
+                            }
+                            hangoutsListDetailViewModel.onAction(HangoutsListDetailAction.OnSelectHangout(null))
+                            navigateToInvitePreview(hangoutId)
                         }
                     },
                     onEditHangoutClick = { hangout ->

@@ -18,6 +18,7 @@
     <string name="notification_invite_cancelled">%1$s withdrew your invite to %2$s</string>
     <string name="notification_removed_for_non_payment">You were removed from %1$s because your share was not paid in time</string>
     <string name="notification_participant_left">%1$s left %2$s</string>
+    <string name="notification_participant_arrived">%1$s arrived at %2$s</string>
 
     <!-- The hangout changed -->
     <string name="notification_details_edited">%1$s updated %2$s</string>
@@ -27,6 +28,7 @@
     <string name="notification_payments_enabled">%1$s split the bill for %2$s</string>
 
     <!-- Where the hangout is in its life -->
+    <string name="notification_hangout_starting_soon">%1$s starts in about an hour</string>
     <string name="notification_hangout_started">%1$s is starting now</string>
     <string name="notification_hangout_completed">%1$s is all done. Got photos from it? The album is open</string>
     <string name="notification_hangout_completion_reminder">Did %1$s end? Mark it complete to open the album</string>

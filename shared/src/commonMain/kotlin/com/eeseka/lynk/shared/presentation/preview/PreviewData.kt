@@ -163,7 +163,8 @@ fun previewParticipants(
     HangoutParticipantUi(
         user = previewUser(index),
         rsvpStatus = RsvpStatus.ATTENDING,
-        hasPaid = index == 0 || index <= paidGuestCount
+        hasPaid = index == 0 || index <= paidGuestCount,
+        hasArrived = false
     )
 }.toImmutableList()
 

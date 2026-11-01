@@ -54,7 +54,8 @@ fun HangoutParticipantDto.toDomain(): HangoutParticipant {
     return HangoutParticipant(
         user = user.toDomain(),
         rsvpStatus = rsvpStatus,
-        hasPaid = hasPaid
+        hasPaid = hasPaid,
+        arrivedAt = arrivedAt
     )
 }
 
