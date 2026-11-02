@@ -1,10 +1,12 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -45,6 +47,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.composables.icons.lucide.Locate
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.X
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.LiveLocationShareEffect
@@ -71,6 +74,7 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.map.components.MapAttributionMenu
 import com.eeseka.lynk.shared.presentation.map.util.boundingBoxOf
+import com.eeseka.lynk.shared.presentation.map.util.flightDurationTo
 import com.eeseka.lynk.shared.presentation.map.util.isMapDark
 import com.eeseka.lynk.shared.presentation.map.util.mapStyleUri
 import com.eeseka.lynk.shared.presentation.permissions.Permission
@@ -86,9 +90,12 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.map_close
+import lynk.feature.hangouts.generated.resources.map_locate_me
 import lynk.feature.hangouts.generated.resources.map_share_location_denied
+import lynk.feature.hangouts.generated.resources.map_share_location_off
 import lynk.feature.hangouts.generated.resources.map_shared_minutes_short
 import org.jetbrains.compose.resources.stringResource
+import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.camera.CameraFit
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraUpdate
@@ -108,6 +115,7 @@ import kotlin.time.Duration.Companion.seconds
 
 private val STALE_LABEL_REFRESH_INTERVAL = 30.seconds
 private const val STACK_RADIUS_DP = 40.0
+private const val MAP_ZOOM = 15.0
 
 // Covers the whole screen like LynkFullScreenDialog, but follows the app theme instead of staying dark
 @Composable
@@ -144,14 +152,13 @@ fun HangoutMapDialog(
     var hasLocationPermission by remember { mutableStateOf(false) }
 
     val sharingDeniedMessage = stringResource(Res.string.map_share_location_denied)
+    val sharingLocationOffMessage = stringResource(Res.string.map_share_location_off)
 
-    // Your own avatar only when location is already allowed; only the sharing switch ever asks for it
     LaunchedEffect(Unit) {
         hasLocationPermission = permissionController.getPermissionState(Permission.LOCATION) == PermissionState.GRANTED
     }
 
-    // Tied to the lifecycle so the GPS rests while the app is in the background
-    LaunchedEffect(lifecycleOwner, hasLocationPermission, isTrackingLive) {
+    LaunchedEffect(lifecycleOwner, hasLocationPermission, isTrackingLive, isSharingLocation) {
         if (!hasLocationPermission) return@LaunchedEffect
 
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -170,6 +177,16 @@ fun HangoutMapDialog(
         canShare = canShareLocation,
         latitude = userLocation?.latitude,
         longitude = userLocation?.longitude,
+        isLocationTurnedOn = locationController::isLocationTurnedOn,
+        onLocationTurnedOff = {
+            onSharingChange(false)
+            scope.launch {
+                snackbarHostState.showFlashMessage(
+                    message = sharingLocationOffMessage,
+                    type = LynkFlashType.Error
+                )
+            }
+        },
         onSharingChange = onSharingChange,
         onLocationChange = onLocationChange
     )
@@ -217,6 +234,13 @@ fun HangoutMapDialog(
                             return@launch
                         }
                         hasLocationPermission = permissionState == PermissionState.GRANTED
+                        if (isSharing && !locationController.isLocationTurnedOn()) {
+                            snackbarHostState.showFlashMessage(
+                                message = sharingLocationOffMessage,
+                                type = LynkFlashType.Error
+                            )
+                            return@launch
+                        }
                         onSharingChange(isSharing)
                     }
                 },
@@ -289,7 +313,7 @@ private fun HangoutMapContent(
 
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(mapStyleUri(mapTheme)),
-        initialCameraPosition = CameraPosition(center = openingCenter, zoom = 15.0)
+        initialCameraPosition = CameraPosition(center = openingCenter, zoom = MAP_ZOOM)
     )
 
     // Voting frames the center and every spot once, a chosen spot frames it with you and whoever is sharing,
@@ -490,12 +514,44 @@ private fun HangoutMapContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            MapAttributionMenu(
+            Row(
                 modifier = Modifier
-                    .align(Alignment.Start)
-                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Start))
-                    .padding(start = 16.dp)
-            )
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeArea.only(WindowInsetsSides.Horizontal))
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MapAttributionMenu()
+
+                AnimatedVisibility(visible = userLatitude != null && userLongitude != null) {
+                    LynkTonalIconButton(
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            if (userLatitude != null && userLongitude != null) {
+                                val currentPosition = mapState.cameraPosition
+                                val userPosition = currentPosition.copy(
+                                    center = Position(longitude = userLongitude, latitude = userLatitude),
+                                    zoom = MAP_ZOOM
+                                )
+                                scope.launch {
+                                    mapState.animateCamera(
+                                        update = CameraUpdate(center = userPosition.center, zoom = userPosition.zoom),
+                                        animation = CameraAnimation.Fly {
+                                            duration = currentPosition.flightDurationTo(userPosition)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Lucide.Locate,
+                            contentDescription = stringResource(Res.string.map_locate_me)
+                        )
+                    }
+                }
+            }
 
             if (canShareLocation) {
                 ShareLocationCard(

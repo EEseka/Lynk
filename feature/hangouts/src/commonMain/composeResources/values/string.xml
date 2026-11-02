@@ -60,6 +60,7 @@
     <string name="detail_here_badge">Here</string>
     <string name="detail_im_here">I'm Here</string>
     <string name="detail_marking_arrived">Telling Everyone…</string>
+    <string name="detail_arrived_message">The others going can now see you're here</string>
     <string name="detail_see_all">See All</string>
     <string name="participants_sheet_title">Who's Going</string>
     <string name="participants_sheet_title_went">Who Went</string>
@@ -70,9 +71,11 @@
     <string name="detail_get_a_ride">Get a Ride</string>
     <string name="detail_address_copied">Address copied. Paste it as your destination in any ride app.</string>
     <string name="map_close">Close map</string>
+    <string name="map_locate_me">Locate me</string>
     <string name="map_share_location">Share My Location</string>
     <string name="map_share_location_hint">People going can see you while this map is open.</string>
     <string name="map_share_location_denied">Allow location for Lynk in your phone settings to share where you are.</string>
+    <string name="map_share_location_off">Turn on location to share where you are.</string>
     <string name="map_shared_just_now">Updated just now</string>
     <string name="map_shared_minutes_ago">Updated %1$d min ago</string>
     <string name="map_shared_minutes_short">%1$d min ago</string>

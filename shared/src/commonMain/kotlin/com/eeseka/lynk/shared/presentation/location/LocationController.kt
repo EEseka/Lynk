@@ -61,6 +61,8 @@ class LocationController(
         }
     }
 
+    fun isLocationTurnedOn(): Boolean = deviceLocation.isLocationTurnedOn()
+
     /** Every fix the tracker finds for as long as this is collected, starting with the one the phone already has. */
     fun observeLocationUpdates(): Flow<LocationCoordinates> = flow {
         deviceLocation.getLastKnownLocation(MAX_CACHED_FIX_AGE)?.let { emit(it) }

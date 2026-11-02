@@ -18,19 +18,30 @@ fun LiveLocationShareEffect(
     canShare: Boolean,
     latitude: Double?,
     longitude: Double?,
+    isLocationTurnedOn: () -> Boolean,
+    onLocationTurnedOff: () -> Unit,
     onSharingChange: (Boolean) -> Unit,
     onLocationChange: (Double, Double) -> Unit
 ) {
     val currentLatitude by rememberUpdatedState(latitude)
     val currentLongitude by rememberUpdatedState(longitude)
+    val currentIsLocationTurnedOn by rememberUpdatedState(isLocationTurnedOn)
+    val currentOnLocationTurnedOff by rememberUpdatedState(onLocationTurnedOff)
     val currentOnSharingChange by rememberUpdatedState(onSharingChange)
     val currentOnLocationChange by rememberUpdatedState(onLocationChange)
 
-    // Also the heartbeat: a phone standing still reports no new fix, but it must not look gone
-    LaunchedEffect(isSharing, latitude != null) {
+    // Resends the last fix on a timer, since a phone standing still gets no new one and would look gone.
+    // Stops sharing if location is turned off, or that old fix would keep going out as current.
+    val hasFix = latitude != null && longitude != null
+    LaunchedEffect(isSharing, hasFix) {
         if (!isSharing) return@LaunchedEffect
 
         while (true) {
+            if (!currentIsLocationTurnedOn()) {
+                currentOnLocationTurnedOff()
+                return@LaunchedEffect
+            }
+
             val sharedLatitude = currentLatitude
             val sharedLongitude = currentLongitude
             if (sharedLatitude != null && sharedLongitude != null) {

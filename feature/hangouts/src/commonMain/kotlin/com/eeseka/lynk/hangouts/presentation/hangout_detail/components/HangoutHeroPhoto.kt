@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,10 +9,13 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -46,17 +49,40 @@ private const val PARALLAX_FACTOR = 0.4f
 private val PHOTO_TOP_BLEND = 40.dp
 private val PAGE_CORNER_RADIUS = 24.dp
 
-// Android's bar stays see-through over the photo; derivedStateOf keeps scrolling from recomposing the screen
 @Composable
-fun rememberDetailTopBarColor(hasHeroPhoto: Boolean, scrollState: ScrollState): Color {
+fun rememberIsDetailBarOverPhoto(hasHeroPhoto: Boolean, scrollState: ScrollState): Boolean {
     val solidAfterPx = with(LocalDensity.current) { BAR_SOLID_AFTER_SCROLL.toPx() }
-    val isBarOverPhoto by remember(scrollState, solidAfterPx) {
+    val isBeforeSolid by remember(scrollState, solidAfterPx) {
         derivedStateOf { scrollState.value < solidAfterPx }
     }
-    val barColor by animateColorAsState(
-        if (hasHeroPhoto && isBarOverPhoto) Color.Transparent else MaterialTheme.colorScheme.surface
+    return hasHeroPhoto && isBeforeSolid
+}
+
+internal expect fun canBlurHeroBackdrop(): Boolean
+
+// The photo's own fade scrolls away with the page, so the status bar keeps a fixed one over the photo
+@Composable
+fun HangoutStatusBarProtection(
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val pageColor = MaterialTheme.colorScheme.background
+    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val protectionAlpha by animateFloatAsState(if (isVisible) 1f else 0f)
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(statusBarHeight * 2)
+            .graphicsLayer { alpha = protectionAlpha }
+            .background(
+                Brush.verticalGradient(
+                    0f to pageColor.copy(alpha = 0.8f),
+                    0.5f to pageColor.copy(alpha = 0.8f),
+                    1f to Color.Transparent
+                )
+            )
     )
-    return barColor
 }
 
 @Composable
@@ -92,7 +118,7 @@ fun HangoutHeroPhoto(
                         .fillMaxSize()
                         .graphicsLayer { translationY = scrollOffset() * PARALLAX_FACTOR }
                 ) {
-                    if (isPhotoLoaded) {
+                    if (isPhotoLoaded && canBlurHeroBackdrop()) {
                         AsyncImage(
                             model = imageRequest,
                             contentDescription = null,

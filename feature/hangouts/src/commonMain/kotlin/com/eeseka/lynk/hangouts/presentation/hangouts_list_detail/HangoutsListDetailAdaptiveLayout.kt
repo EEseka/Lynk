@@ -133,6 +133,7 @@ fun HangoutsListDetailAdaptiveLayout(
                 HangoutDetailRoot(
                     hangoutId = sharedState.selectedHangoutId,
                     isDetailPaneFullScreen = isDetailPaneFullScreen,
+                    mainShellPadding = mainShellPadding,
                     navigateBack = {
                         scope.launch {
                             if (scaffoldNavigator.canNavigateBack()) {

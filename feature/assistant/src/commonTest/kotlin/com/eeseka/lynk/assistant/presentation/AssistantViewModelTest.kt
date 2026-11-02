@@ -45,6 +45,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -481,6 +482,42 @@ class AssistantViewModelTest {
         assertThat(seenStates.none { it.messages.isEmpty() }).isTrue()
         assertThat(seenStates.none { it.isLoading }).isTrue()
         assertThat(viewModel.state.value.messages.map { it.id }).containsExactly("q2", "q1")
+    }
+
+    @Test
+    fun `coming back while an older page loads leaves no spinner behind`() = runTest {
+        assistantService.hangoutMessages = mutableListOf(message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000))
+        val viewModel = createHangoutChat()
+        val olderPage = CompletableDeferred<Unit>()
+        assistantService.olderPageGate = olderPage
+        viewModel.onAction(AssistantAction.LoadNextPage)
+        advanceUntilIdle()
+        assertThat(viewModel.state.value.isLoading).isTrue()
+
+        appLifecycleObserver.isInForeground.value = false
+        appLifecycleObserver.isInForeground.value = true
+        advanceUntilIdle()
+        olderPage.complete(Unit)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isLoading).isFalse()
+    }
+
+    @Test
+    fun `clearing the chat while an older page loads leaves no spinner behind`() = runTest {
+        assistantService.hangoutMessages = mutableListOf(message("q1", AssistantMessageRole.USER, createdAtMillis = 1_000))
+        val viewModel = createHangoutChat()
+        val olderPage = CompletableDeferred<Unit>()
+        assistantService.olderPageGate = olderPage
+        viewModel.onAction(AssistantAction.LoadNextPage)
+        advanceUntilIdle()
+
+        viewModel.onAction(AssistantAction.OnClearChatConfirmed)
+        advanceUntilIdle()
+        olderPage.complete(Unit)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.isLoading).isFalse()
     }
 
     @Test

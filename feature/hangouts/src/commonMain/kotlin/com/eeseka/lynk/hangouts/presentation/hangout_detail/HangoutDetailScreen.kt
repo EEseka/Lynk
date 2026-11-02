@@ -36,10 +36,11 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDe
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutDetailTopBar
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutHeroActions
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutMapDialog
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.HangoutStatusBarProtection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.InviteParticipantSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.ParticipantsSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.detailOverflowItems
-import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.rememberDetailTopBarColor
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.rememberIsDetailBarOverPhoto
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationState
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.HangoutLiveLocationViewModel
@@ -65,6 +66,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVoting
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVotingViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.LocationShareEffect
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.ProposeSpotSheet
+import com.eeseka.lynk.hangouts.presentation.util.rememberHasTimePassed
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkAiButton
 import com.eeseka.lynk.shared.design_system.components.date_and_time.LynkDatePickerDialog
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -102,6 +104,7 @@ import com.eeseka.lynk.shared.presentation.util.toPickerMillis
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_address_copied
+import lynk.feature.hangouts.generated.resources.detail_arrived_message
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_action
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_cancel_confirm_title
@@ -148,6 +151,7 @@ private sealed interface DetailBodyState {
 fun HangoutDetailRoot(
     hangoutId: String?,
     isDetailPaneFullScreen: Boolean,
+    mainShellPadding: PaddingValues,
     navigateBack: () -> Unit,
     onHangoutLeft: () -> Unit,
     onNotAttending: (hangoutId: String) -> Unit,
@@ -197,6 +201,11 @@ fun HangoutDetailRoot(
             HangoutDetailEvent.InviteWithdrawn -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.detail_withdrawn_message),
                 type = LynkFlashType.Info
+            )
+
+            HangoutDetailEvent.ArrivalMarked -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_arrived_message),
+                type = LynkFlashType.Success
             )
 
             is HangoutDetailEvent.LobbyAnnouncement -> snackbarHostState.showFlashMessage(
@@ -307,6 +316,7 @@ fun HangoutDetailRoot(
         onMemoriesAction = memoriesViewModel::onAction,
         snackbarHostState = snackbarHostState,
         isDetailPaneFullScreen = isDetailPaneFullScreen,
+        mainShellPadding = mainShellPadding,
         navigateBack = navigateBack,
         onEditClick = { state.hangout?.let(onEditHangoutClick) },
         navigateToAlbum = navigateToAlbum,
@@ -328,6 +338,7 @@ fun HangoutDetailScreen(
     onMemoriesAction: (HangoutMemoriesAction) -> Unit,
     snackbarHostState: SnackbarHostState,
     isDetailPaneFullScreen: Boolean,
+    mainShellPadding: PaddingValues,
     navigateBack: () -> Unit,
     onEditClick: () -> Unit,
     navigateToAlbum: (hangoutId: String, initialPhotoId: String?) -> Unit,
@@ -392,8 +403,11 @@ fun HangoutDetailScreen(
     val showAskLynk = attendees.any { it.user.userId == state.currentUserId } &&
             (isUpcoming || hangout?.status == HangoutStatus.ONGOING || state.hasAssistantChat)
 
+    val isStartingSoon = rememberHasTimePassed(
+        hangout?.scheduledAt?.minus(STARTING_SOON_MINUTES.minutes)?.toEpochMilliseconds()
+    )
     val isArrivalOpen = hangout?.status == HangoutStatus.ONGOING ||
-            (hangout?.status == HangoutStatus.SCHEDULED && Clock.System.now() >= hangout.scheduledAt - STARTING_SOON_MINUTES.minutes)
+            (hangout?.status == HangoutStatus.SCHEDULED && isStartingSoon)
     val canMarkArrived = isArrivalOpen && !isSolo &&
             attendees.any { it.user.userId == state.currentUserId && !it.hasArrived }
     val canShareLocation = isArrivalOpen && !isSolo &&
@@ -467,7 +481,7 @@ fun HangoutDetailScreen(
     }
 
     val detailScrollState = rememberSaveable(hangout?.id, saver = ScrollState.Saver) { ScrollState(0) }
-    val topBarColor = rememberDetailTopBarColor(
+    val isTopBarOverPhoto = rememberIsDetailBarOverPhoto(
         hasHeroPhoto = hangout?.chosenSpot?.photoUrls?.isNotEmpty() == true,
         scrollState = detailScrollState
     )
@@ -477,7 +491,7 @@ fun HangoutDetailScreen(
         topBar = {
             if (isDetailPaneFullScreen) {
                 HangoutDetailTopBar(
-                    containerColor = topBarColor,
+                    isOverPhoto = isTopBarOverPhoto,
                     showInvite = showInvite,
                     inviteEnabled = inviteEnabled,
                     canEdit = canEdit,
@@ -497,12 +511,16 @@ fun HangoutDetailScreen(
         }
     ) { scaffoldPadding ->
         // Beside the list this pane has no bar (two native iOS bars overlap), so it leaves room for the list top app bar title (56.dp)
+        // and clears the shell's bottom bar. The larger of the two, not the sum: both can count the same system inset
         val contentPadding = if (isDetailPaneFullScreen) {
             scaffoldPadding
         } else {
             PaddingValues(
                 top = scaffoldPadding.calculateTopPadding() + 56.dp,
-                bottom = scaffoldPadding.calculateBottomPadding()
+                bottom = maxOf(
+                    scaffoldPadding.calculateBottomPadding(),
+                    mainShellPadding.calculateBottomPadding()
+                )
             )
         }
 
@@ -705,6 +723,11 @@ fun HangoutDetailScreen(
                     }
                 }
             }
+
+            HangoutStatusBarProtection(
+                isVisible = isTopBarOverPhoto,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
 
             if (state.hangout != null &&
                 state.hangout.status != HangoutStatus.COMPLETED &&

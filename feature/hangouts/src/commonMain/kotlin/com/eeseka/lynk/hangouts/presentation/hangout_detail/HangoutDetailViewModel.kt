@@ -448,7 +448,10 @@ class HangoutDetailViewModel(
             _state.update { it.copy(isMarkingArrived = true) }
             hangoutService
                 .markArrived(hangoutId)
-                .onSuccess { hangoutDetailRepository.refreshHangout(hangoutId) }
+                .onSuccess {
+                    hangoutDetailRepository.refreshHangout(hangoutId)
+                    eventChannel.send(HangoutDetailEvent.ArrivalMarked)
+                }
                 .onFailure { error ->
                     eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
                 }

@@ -403,6 +403,7 @@ class AssistantViewModel(
                     _state.update {
                         it.copy(
                             messages = persistentListOf(),
+                            isLoading = false,
                             isEndReached = true,
                             messagesResetEpoch = it.messagesResetEpoch + 1,
                             isClearingChat = false
@@ -570,6 +571,7 @@ class AssistantViewModel(
                     _state.update {
                         it.copy(
                             messages = newestMessages.map { message -> message.toAssistantMessageUi() }.toImmutableList(),
+                            isLoading = false,
                             isEndReached = newestMessages.isEmpty(),
                             messagesResetEpoch = it.messagesResetEpoch + 1
                         )

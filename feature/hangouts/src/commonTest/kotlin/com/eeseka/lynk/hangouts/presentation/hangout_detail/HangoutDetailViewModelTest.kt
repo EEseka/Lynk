@@ -151,18 +151,21 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
-    fun `saying I am here shows on the participant`() = runTest {
+    fun `saying I am here shows on the participant and confirms it`() = runTest {
         val hangoutId = createHangoutAsHost()
         val viewModel = createViewModel()
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
         advanceUntilIdle()
 
-        viewModel.onAction(HangoutDetailAction.OnMarkArrivedClick)
-        advanceUntilIdle()
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnMarkArrivedClick)
+            advanceUntilIdle()
 
-        val state = viewModel.state.value
-        assertThat(state.isMarkingArrived).isFalse()
-        assertThat(state.hangout?.participants?.first { it.user.userId == HOST_ID }?.hasArrived).isEqualTo(true)
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.ArrivalMarked)
+            val state = viewModel.state.value
+            assertThat(state.isMarkingArrived).isFalse()
+            assertThat(state.hangout?.participants?.first { it.user.userId == HOST_ID }?.hasArrived).isEqualTo(true)
+        }
     }
 
     @Test

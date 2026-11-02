@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import com.composables.icons.lucide.Copy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
+import com.composables.icons.lucide.MapPinCheck
 import com.composables.icons.lucide.Star
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
@@ -46,6 +48,8 @@ import kotlinx.collections.immutable.ImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_chosen_spot
 import lynk.feature.hangouts.generated.resources.detail_get_a_ride
+import lynk.feature.hangouts.generated.resources.detail_im_here
+import lynk.feature.hangouts.generated.resources.detail_marking_arrived
 import lynk.feature.hangouts.generated.resources.detail_no_spot_message
 import lynk.feature.hangouts.generated.resources.detail_no_spot_title
 import lynk.feature.hangouts.generated.resources.voting_see_on_map
@@ -58,7 +62,10 @@ fun ChosenSpotSection(
     modifier: Modifier = Modifier,
     canGetToSpot: Boolean = false,
     onCopyAddressClick: () -> Unit = {},
-    onMapClick: () -> Unit = {}
+    onMapClick: () -> Unit = {},
+    canMarkArrived: Boolean = false,
+    isMarkingArrived: Boolean = false,
+    onMarkArrivedClick: () -> Unit = {}
 ) {
     val hapticFeedback = rememberAppHaptic()
 
@@ -99,7 +106,20 @@ fun ChosenSpotSection(
                 rating = chosenSpot.rating,
                 onClick = onSpotClick
             )
-            if (canGetToSpot) {
+        } else {
+            PlaceholderCard(
+                icon = Lucide.MapPin,
+                title = stringResource(Res.string.detail_no_spot_title),
+                message = stringResource(Res.string.detail_no_spot_message),
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (canGetToSpot) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 LynkButton(
                     text = stringResource(Res.string.voting_see_on_map),
                     onClick = {
@@ -113,16 +133,31 @@ fun ChosenSpotSection(
                             contentDescription = null,
                             modifier = Modifier.size(24.dp)
                         )
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                AnimatedVisibility(visible = canMarkArrived) {
+                    LynkButton(
+                        text = stringResource(Res.string.detail_im_here),
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onMarkArrivedClick()
+                        },
+                        style = LynkButtonStyle.SECONDARY,
+                        isLoading = isMarkingArrived,
+                        loadingText = stringResource(Res.string.detail_marking_arrived),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Lucide.MapPinCheck,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-        } else {
-            PlaceholderCard(
-                icon = Lucide.MapPin,
-                title = stringResource(Res.string.detail_no_spot_title),
-                message = stringResource(Res.string.detail_no_spot_message),
-                iconTint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
@@ -230,6 +265,7 @@ private fun ChosenSpotSectionPreview(chosenSpot: SpotUi?) {
             chosenSpot = chosenSpot,
             onSpotClick = {},
             canGetToSpot = chosenSpot != null,
+            canMarkArrived = chosenSpot != null,
             onCopyAddressClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)

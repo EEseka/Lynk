@@ -165,6 +165,22 @@ class HangoutPaymentsViewModelTest {
     }
 
     @Test
+    fun `editing the number drops the old name before the new one resolves`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutPaymentsAction.OnCollectPaymentsToggled(isOn = true))
+        advanceUntilIdle()
+        viewModel.onAction(HangoutPaymentsAction.OnBankSelected("058"))
+        viewModel.state.value.accountNumberState.typeText(ACCOUNT_NUMBER)
+        advanceTimeBy(801.milliseconds)
+        advanceUntilIdle()
+
+        viewModel.state.value.accountNumberState.typeText("9999999999")
+        runCurrent()
+
+        assertThat(viewModel.state.value.resolvedAccountHolderName).isNull()
+    }
+
+    @Test
     fun `pressing turn on with an empty form shows every error and sends nothing`() = runTest {
         val viewModel = createViewModel()
         viewModel.onAction(HangoutPaymentsAction.OnCollectPaymentsToggled(isOn = true))

@@ -334,6 +334,7 @@ class HangoutPaymentsViewModel(
             accountNumber.trim() to bankCode
         }
         .distinctUntilChanged()
+        .onEach { _state.update { it.copy(resolvedAccountHolderName = null) } }
         .debounce(800.milliseconds)
         .mapLatest { (accountNumber, bankCode) ->
             if (bankCode == null || accountNumber.length != NUBAN_LENGTH) {

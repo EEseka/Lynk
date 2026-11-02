@@ -21,7 +21,7 @@ object DistanceCalculator {
         spotLat: Double,
         spotLng: Double
     ): Int {
-        // Convert latitude and longitude from degrees to pure Kotlin radians
+        // Convert latitude and longitude from degrees to radians
         val lat1Rad = userLat.toRadians()
         val lat2Rad = spotLat.toRadians()
         val deltaLat = (spotLat - userLat).toRadians()

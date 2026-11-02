@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.eeseka.lynk.shared.domain.util.onSuccess
-import com.eeseka.lynk.shared.presentation.location.LocationAccuracy
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
 import com.eeseka.lynk.shared.presentation.permissions.PermissionState
@@ -18,8 +17,7 @@ fun LocationShareEffect(
     isConnected: Boolean,
     onShareLocation: (Double, Double) -> Unit
 ) {
-    // The lobby pins you on a shared map, so this is the one place the sharper fix is worth the wait.
-    val locationController = rememberLocationController(LocationAccuracy.Precise)
+    val locationController = rememberLocationController()
     var permissionState by remember { mutableStateOf(PermissionState.NOT_DETERMINED) }
 
     LocationPermissionEffect(isEnabled = enabled) { resolvedPermissionState ->

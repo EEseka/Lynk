@@ -39,7 +39,6 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.VotingSection
 import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -69,8 +68,6 @@ import lynk.feature.hangouts.generated.resources.detail_complete
 import lynk.feature.hangouts.generated.resources.detail_completing
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_message
 import lynk.feature.hangouts.generated.resources.detail_completion_reminder_title
-import lynk.feature.hangouts.generated.resources.detail_im_here
-import lynk.feature.hangouts.generated.resources.detail_marking_arrived
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_message
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_message_ongoing
 import lynk.feature.hangouts.generated.resources.detail_solo_hint_title
@@ -235,22 +232,12 @@ fun HangoutDetailContent(
                         onSpotClick = onChosenSpotClick,
                         canGetToSpot = canGetToSpot,
                         onCopyAddressClick = onCopyAddressClick,
-                        onMapClick = onMapClick
+                        onMapClick = onMapClick,
+                        canMarkArrived = canMarkArrived,
+                        isMarkingArrived = isMarkingArrived,
+                        onMarkArrivedClick = onMarkArrivedClick
                     )
                 }
-            }
-
-            AnimatedVisibility(visible = canMarkArrived) {
-                LynkButton(
-                    text = stringResource(Res.string.detail_im_here),
-                    onClick = {
-                        hapticFeedback(AppHaptic.ImpactLight)
-                        onMarkArrivedClick()
-                    },
-                    style = LynkButtonStyle.SECONDARY,
-                    isLoading = isMarkingArrived,
-                    loadingText = stringResource(Res.string.detail_marking_arrived)
-                )
             }
 
             paymentSetup()
