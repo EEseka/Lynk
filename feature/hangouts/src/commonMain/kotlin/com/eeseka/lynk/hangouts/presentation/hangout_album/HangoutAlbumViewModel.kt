@@ -128,14 +128,30 @@ class HangoutAlbumViewModel(
             .launchIn(viewModelScope)
     }
 
+    private suspend fun handleLobbyEvent(event: LobbyEvent) {
+        val currentHangoutId = _state.value.hangoutId ?: return
+
+        when (event) {
+            is LobbyEvent.PhotosAdded -> {
+                if (event.hangoutId == currentHangoutId) catchUpOnMissedPhotos()
+            }
+
+            is LobbyEvent.PhotoDeleted -> {
+                if (event.hangoutId == currentHangoutId) removePhoto(event.photoId)
+            }
+
+            else -> Unit
+        }
+    }
+
     private suspend fun catchUpOnMissedPhotos() {
         val hangoutId = _state.value.hangoutId ?: return
 
         hangoutPhotoService.getPhotos(hangoutId = hangoutId, before = null)
             .onSuccess { newestPage ->
                 val heldPhotos = _state.value.photos
-                val newestHeldAt = heldPhotos.maxOfOrNull { it.createdAt }
-                if (newestPage.any { newestHeldAt == null || it.createdAt > newestHeldAt }) {
+                val heldPhotoIds = heldPhotos.map { it.id }.toSet()
+                if (newestPage.any { it.id !in heldPhotoIds }) {
                     eventChannel.send(HangoutAlbumEvent.NewPhotosAdded)
                 }
 
@@ -146,24 +162,6 @@ class HangoutAlbumViewModel(
                     .filterNot { it.id in newestPageIds }
                     .forEach { removePhoto(it.id) }
             }
-    }
-
-    private suspend fun handleLobbyEvent(event: LobbyEvent) {
-        val currentHangoutId = _state.value.hangoutId ?: return
-
-        when (event) {
-            is LobbyEvent.PhotosAdded -> {
-                if (event.hangoutId == currentHangoutId) {
-                    eventChannel.send(HangoutAlbumEvent.NewPhotosAdded)
-                }
-            }
-
-            is LobbyEvent.PhotoDeleted -> {
-                if (event.hangoutId == currentHangoutId) removePhoto(event.photoId)
-            }
-
-            else -> Unit
-        }
     }
 
     fun onAction(action: HangoutAlbumAction) {

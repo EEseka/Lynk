@@ -1,9 +1,16 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.Lucide
@@ -22,9 +29,12 @@ import lynk.feature.hangouts.generated.resources.detail_invite
 import lynk.feature.hangouts.generated.resources.detail_more_actions
 import org.jetbrains.compose.resources.stringResource
 
+private val ICON_BACKDROP_RADIUS = 20.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangoutDetailTopBar(
+    isOverPhoto: Boolean,
     showInvite: Boolean,
     inviteEnabled: Boolean,
     canEdit: Boolean,
@@ -45,6 +55,16 @@ fun HangoutDetailTopBar(
     val inviteLabel = stringResource(Res.string.detail_invite)
     val moreLabel = stringResource(Res.string.detail_more_actions)
 
+    val barColor by animateColorAsState(
+        if (isOverPhoto) Color.Transparent else MaterialTheme.colorScheme.surface
+    )
+    val iconBackdropColor by animateColorAsState(
+        if (isOverPhoto) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent
+    )
+    val iconBackdrop = Modifier.drawBehind {
+        drawCircle(color = iconBackdropColor, radius = ICON_BACKDROP_RADIUS.toPx())
+    }
+
     val overflowItems = detailOverflowItems(
         canEdit = canEdit,
         canCancel = canCancel,
@@ -56,12 +76,14 @@ fun HangoutDetailTopBar(
         onLeaveClick = onLeaveClick
     )
     LynkTopAppBar(
+        containerColor = barColor,
         navigationIcon = {
             LynkIconButton(
                 onClick = {
                     hapticFeedback(AppHaptic.ImpactLight)
                     onBackClick()
-                }
+                },
+                modifier = iconBackdrop
             ) {
                 Icon(
                     imageVector = Lucide.ChevronLeft,
@@ -85,6 +107,7 @@ fun HangoutDetailTopBar(
                         hapticFeedback(AppHaptic.ImpactLight)
                         onInviteClick()
                     },
+                    modifier = iconBackdrop,
                     enabled = inviteEnabled
                 ) {
                     Icon(
@@ -104,7 +127,8 @@ fun HangoutDetailTopBar(
                             onClick = {
                                 hapticFeedback(AppHaptic.ImpactLight)
                                 onOverflowExpandedChange(true)
-                            }
+                            },
+                            modifier = iconBackdrop
                         ) {
                             Icon(
                                 imageVector = Lucide.EllipsisVertical,
@@ -152,6 +176,7 @@ private fun HangoutDetailTopBarAttendeePreview() = HangoutDetailTopBarPreview(is
 private fun HangoutDetailTopBarPreview(isHost: Boolean) {
     LynkTheme {
         HangoutDetailTopBar(
+            isOverPhoto = false,
             showInvite = isHost,
             inviteEnabled = true,
             canEdit = isHost,

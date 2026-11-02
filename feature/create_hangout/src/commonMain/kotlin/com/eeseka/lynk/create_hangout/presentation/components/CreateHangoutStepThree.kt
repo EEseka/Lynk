@@ -34,6 +34,7 @@ import com.composables.icons.lucide.Users
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
@@ -46,8 +47,8 @@ import lynk.feature.create_hangout.generated.resources.name_label
 import lynk.feature.create_hangout.generated.resources.no_location_selected
 import lynk.feature.create_hangout.generated.resources.people
 import lynk.feature.create_hangout.generated.resources.review_and_confirm_description
-import lynk.feature.create_hangout.generated.resources.unlimited
 import lynk.feature.create_hangout.generated.resources.unnamed_hangout
+import lynk.feature.create_hangout.generated.resources.up_to_people
 import lynk.feature.create_hangout.generated.resources.vibe
 import lynk.feature.create_hangout.generated.resources.when_label
 import org.jetbrains.compose.resources.stringResource
@@ -169,7 +170,7 @@ fun CreateHangoutStepThree(
 
                     LynkText(
                         text = maxAttendees?.let { "$it $people" }
-                            ?: stringResource(Res.string.unlimited),
+                            ?: stringResource(Res.string.up_to_people, MAX_ATTENDEES),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium

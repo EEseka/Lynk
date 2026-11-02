@@ -11,6 +11,7 @@ sealed interface HangoutDetailEvent {
     data object HangoutLeft : HangoutDetailEvent
     data object InviteSent : HangoutDetailEvent
     data object InviteWithdrawn : HangoutDetailEvent
+    data object ArrivalMarked : HangoutDetailEvent
 
     data class LobbyAnnouncement(
         val message: UiText,
@@ -18,4 +19,5 @@ sealed interface HangoutDetailEvent {
     ) : HangoutDetailEvent
 
     data object NavigateBack : HangoutDetailEvent
+    data class NotAttending(val hangoutId: String) : HangoutDetailEvent
 }

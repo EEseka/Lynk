@@ -1,5 +1,10 @@
 package com.eeseka.lynk.create_hangout.presentation.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,11 +44,13 @@ import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
+import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_DESCRIPTION_LENGTH
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
@@ -57,12 +64,12 @@ import lynk.feature.create_hangout.generated.resources.hangout_description_place
 import lynk.feature.create_hangout.generated.resources.hangout_name
 import lynk.feature.create_hangout.generated.resources.hangout_name_placeholder
 import lynk.feature.create_hangout.generated.resources.increase_max_people
-import lynk.feature.create_hangout.generated.resources.max_people
+import lynk.feature.create_hangout.generated.resources.limit_group_size
 import lynk.feature.create_hangout.generated.resources.people
 import lynk.feature.create_hangout.generated.resources.pick_date
 import lynk.feature.create_hangout.generated.resources.pick_time
 import lynk.feature.create_hangout.generated.resources.time
-import lynk.feature.create_hangout.generated.resources.unlimited
+import lynk.feature.create_hangout.generated.resources.up_to_people
 import lynk.feature.create_hangout.generated.resources.vibe
 import org.jetbrains.compose.resources.stringResource
 
@@ -81,10 +88,12 @@ fun CreateHangoutStepOne(
     timeErrorMessage: String?,
     expandedPicker: PickerType?,
     maxAttendees: Int?,
+    minAttendees: Int,
     onVibeSelected: (HangoutVibe) -> Unit,
     onPickerToggled: (PickerType) -> Unit,
     onDateSelected: (epochMilliseconds: Long?) -> Unit,
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
+    onLimitGroupSizeToggled: (isOn: Boolean) -> Unit,
     onIncrementAttendees: () -> Unit,
     onDecrementAttendees: () -> Unit,
     modifier: Modifier = Modifier
@@ -208,50 +217,81 @@ fun CreateHangoutStepOne(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val people = stringResource(Res.string.people)
-            Column {
-                LynkText(
-                    text = stringResource(Res.string.max_people),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                LynkText(
-                    text = maxAttendees?.let { "$it $people" }
-                        ?: stringResource(Res.string.unlimited),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            LynkText(
+                text = stringResource(Res.string.limit_group_size),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
+            LynkSwitch(
+                checked = maxAttendees != null,
+                onCheckedChange = { isOn ->
+                    hapticFeedback(AppHaptic.Selection)
+                    onLimitGroupSizeToggled(isOn)
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        AnimatedContent(
+            targetState = maxAttendees,
+            contentKey = { it != null },
+            transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) },
+            label = "group_size",
+            modifier = Modifier.fillMaxWidth()
+        ) { limit ->
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                LynkTonalIconButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.Selection)
-                        onDecrementAttendees()
-                    },
-                    enabled = maxAttendees != null
-                ) {
-                    Icon(
-                        imageVector = Lucide.Minus,
-                        contentDescription = stringResource(Res.string.decrease_max_people)
+                val people = stringResource(Res.string.people)
+                if (limit != null) {
+                    LynkText(
+                        text = "$limit $people",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    LynkText(
+                        text = stringResource(Res.string.up_to_people, MAX_ATTENDEES),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                LynkTonalIconButton(
-                    onClick = {
-                        hapticFeedback(AppHaptic.Selection)
-                        onIncrementAttendees()
-                    },
-                    enabled = maxAttendees == null || maxAttendees < MAX_ATTENDEES
-                ) {
-                    Icon(
-                        imageVector = Lucide.Plus,
-                        contentDescription = stringResource(Res.string.increase_max_people)
-                    )
+                if (limit != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        LynkTonalIconButton(
+                            onClick = {
+                                hapticFeedback(AppHaptic.Selection)
+                                onDecrementAttendees()
+                            },
+                            enabled = limit > minAttendees
+                        ) {
+                            Icon(
+                                imageVector = Lucide.Minus,
+                                contentDescription = stringResource(Res.string.decrease_max_people)
+                            )
+                        }
+
+                        LynkTonalIconButton(
+                            onClick = {
+                                hapticFeedback(AppHaptic.Selection)
+                                onIncrementAttendees()
+                            },
+                            enabled = limit < MAX_ATTENDEES
+                        ) {
+                            Icon(
+                                imageVector = Lucide.Plus,
+                                contentDescription = stringResource(Res.string.increase_max_people)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -282,10 +322,12 @@ private fun CreateHangoutStepOnePreview(
             timeErrorMessage = timeErrorMessage,
             expandedPicker = null,
             maxAttendees = maxAttendees,
+            minAttendees = MIN_ATTENDEES,
             onVibeSelected = {},
             onPickerToggled = {},
             onDateSelected = {},
             onTimeSelected = { _, _ -> },
+            onLimitGroupSizeToggled = {},
             onIncrementAttendees = {},
             onDecrementAttendees = {},
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)

@@ -2,18 +2,22 @@ package com.eeseka.lynk.shared.data.payment
 
 import com.eeseka.lynk.shared.data.networking.get
 import com.eeseka.lynk.shared.data.networking.patch
+import com.eeseka.lynk.shared.data.networking.put
 import com.eeseka.lynk.shared.data.networking.post
 import com.eeseka.lynk.shared.data.payment.dto.BankAccountDto
 import com.eeseka.lynk.shared.data.payment.dto.BankDto
 import com.eeseka.lynk.shared.data.payment.dto.PaymentInitializationDto
 import com.eeseka.lynk.shared.data.payment.dto.PaymentVerificationDto
+import com.eeseka.lynk.shared.data.payment.dto.PayoutAccountDto
 import com.eeseka.lynk.shared.data.payment.dto.requests.ChangeDeadlineRequest
+import com.eeseka.lynk.shared.data.payment.dto.requests.ChangePayoutAccountRequest
 import com.eeseka.lynk.shared.data.payment.dto.requests.DeadlineDecisionRequest
 import com.eeseka.lynk.shared.data.payment.dto.requests.EnablePaymentsRequest
 import com.eeseka.lynk.shared.data.payment.mappers.toDomain
 import com.eeseka.lynk.shared.domain.payment.PaymentService
 import com.eeseka.lynk.shared.domain.payment.model.Bank
 import com.eeseka.lynk.shared.domain.payment.model.BankAccount
+import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
 import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
@@ -88,6 +92,23 @@ class KtorPaymentService(
         return httpClient.patch<ChangeDeadlineRequest, Unit>(
             route = "/payments/hangouts/$hangoutId/deadline",
             body = ChangeDeadlineRequest(newDeadline = newDeadline)
+        )
+    }
+
+    override suspend fun getPayoutAccount(hangoutId: String): Result<PayoutAccount, DataError.Remote> {
+        return httpClient.get<PayoutAccountDto>(
+            route = "/payments/hangouts/$hangoutId/payout-account"
+        ).map { it.toDomain() }
+    }
+
+    override suspend fun changePayoutAccount(
+        hangoutId: String,
+        accountNumber: String,
+        bankCode: String
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.put<ChangePayoutAccountRequest, Unit>(
+            route = "/payments/hangouts/$hangoutId/payout-account",
+            body = ChangePayoutAccountRequest(accountNumber = accountNumber, bankCode = bankCode)
         )
     }
 

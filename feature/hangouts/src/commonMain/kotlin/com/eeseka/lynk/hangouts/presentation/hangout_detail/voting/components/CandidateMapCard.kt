@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.MapPin
 import com.composables.icons.lucide.Navigation
 import com.composables.icons.lucide.Scale
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
@@ -48,6 +47,7 @@ import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantStack
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
 import com.eeseka.lynk.shared.presentation.preview.previewUsers
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import kotlinx.collections.immutable.ImmutableList
@@ -129,12 +129,7 @@ fun CandidateMapCard(
                             modifier = Modifier.size(72.dp)
                         )
                     } else {
-                        Icon(
-                            imageVector = Lucide.MapPin,
-                            contentDescription = null,
-                            tint = scheme.onSurfaceVariant,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        SpotPhotoFallback(modifier = Modifier.size(72.dp))
                     }
                 }
 

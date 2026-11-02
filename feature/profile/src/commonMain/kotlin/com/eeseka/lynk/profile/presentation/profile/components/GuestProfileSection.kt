@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UserRound
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
@@ -86,7 +85,6 @@ fun GuestProfileSection(
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onCreateAccountClick()
             },
-            style = LynkButtonStyle.PRIMARY,
             isLoading = isDeletingAccount,
             loadingText = "",
             modifier = Modifier.fillMaxWidth()

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,11 +22,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.MapPin
 import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
 import kotlinx.collections.immutable.ImmutableList
@@ -101,11 +99,12 @@ fun MapOverlayScope.CandidateMapPin(
                         .clip(CircleShape)
                 )
             } else {
-                Icon(
-                    imageVector = Lucide.MapPin,
+                SpotPhotoFallback(
+                    iconSize = 20.dp,
                     contentDescription = spotName,
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier
+                        .size(PHOTO_SIZE - RING_WIDTH * 2)
+                        .clip(CircleShape)
                 )
             }
         }

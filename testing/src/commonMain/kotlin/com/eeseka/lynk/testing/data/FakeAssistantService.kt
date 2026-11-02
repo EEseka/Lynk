@@ -8,6 +8,7 @@ import com.eeseka.lynk.shared.domain.assistant.model.AssistantUsage
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
+import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Instant
 
 class FakeAssistantService : AssistantService {
@@ -32,6 +33,8 @@ class FakeAssistantService : AssistantService {
 
     var hangoutMessages = mutableListOf<AssistantMessage>()
     val historyRequestBefores = mutableListOf<String?>()
+    // Holds an older page in flight until the test completes it
+    var olderPageGate: CompletableDeferred<Unit>? = null
     val messageCountRequestIds = mutableListOf<String>()
     val clearedHangoutIds = mutableListOf<String>()
 
@@ -61,6 +64,7 @@ class FakeAssistantService : AssistantService {
         before: String?
     ): Result<List<AssistantMessage>, DataError.Remote> {
         historyRequestBefores.add(before)
+        if (before != null) olderPageGate?.await()
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
         val beforeInstant = before?.let { Instant.parse(it) }

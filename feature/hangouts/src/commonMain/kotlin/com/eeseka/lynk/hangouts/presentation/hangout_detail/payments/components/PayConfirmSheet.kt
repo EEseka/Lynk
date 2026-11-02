@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lock
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -103,7 +102,6 @@ private fun PayConfirmSheetContent(
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onConfirm()
             },
-            style = LynkButtonStyle.PRIMARY,
             leadingIcon = {
                 Icon(
                     imageVector = Lucide.Lock,

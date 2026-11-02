@@ -21,6 +21,7 @@ data class HangoutVotingState(
     val myLocation: LocationCoordinates? = null,
     val tiedSpotIds: ImmutableList<String> = persistentListOf(),
     val isClosingVoting: Boolean = false,
+    val isCastingVote: Boolean = false,
 
     // Propose-spot sheet
     val showProposeSpotSheet: Boolean = false,

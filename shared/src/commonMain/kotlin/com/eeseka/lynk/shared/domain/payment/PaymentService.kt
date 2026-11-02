@@ -5,6 +5,7 @@ import com.eeseka.lynk.shared.domain.payment.model.BankAccount
 import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
 import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
 import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
+import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
@@ -43,6 +44,14 @@ interface PaymentService {
         hangoutId: String,
         decision: DeadlineDecision,
         newDeadline: Instant? = null
+    ): EmptyResult<DataError.Remote>
+
+    suspend fun getPayoutAccount(hangoutId: String): Result<PayoutAccount, DataError.Remote>
+
+    suspend fun changePayoutAccount(
+        hangoutId: String,
+        accountNumber: String,
+        bankCode: String
     ): EmptyResult<DataError.Remote>
 
     suspend fun retryPayout(hangoutId: String): EmptyResult<DataError.Remote>

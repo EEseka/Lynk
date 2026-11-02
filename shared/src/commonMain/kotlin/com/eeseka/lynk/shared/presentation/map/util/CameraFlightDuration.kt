@@ -1,4 +1,4 @@
-package com.eeseka.lynk.discover.presentation.util
+package com.eeseka.lynk.shared.presentation.map.util
 
 import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
 import org.maplibre.compose.camera.CameraPosition

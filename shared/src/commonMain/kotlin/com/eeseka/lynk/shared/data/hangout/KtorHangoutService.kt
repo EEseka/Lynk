@@ -162,4 +162,10 @@ class KtorHangoutService(
             route = "/hangouts/$hangoutId/leave"
         )
     }
+
+    override suspend fun markArrived(hangoutId: String): EmptyResult<DataError.Remote> {
+        return httpClient.post<Unit>(
+            route = "/hangouts/$hangoutId/arrival"
+        )
+    }
 }

@@ -22,8 +22,6 @@
 
     <string name="participants_format">%1$d going</string>
     <string name="participants_max_format">%1$d / %2$d going</string>
-    <string name="participants_attended_format">%1$d attended</string>
-    <string name="participants_attended_max_format">%1$d / %2$d attended</string>
 
     <string name="empty_hangouts_upcoming_title">No Upcoming Hangouts</string>
     <string name="empty_hangouts_upcoming_message">Tap + to plan something with your crew.</string>
@@ -52,16 +50,35 @@
     <string name="detail_load_error_title">Couldn't Load This Hangout</string>
     <string name="detail_about">About</string>
     <string name="detail_going">Going</string>
+    <string name="detail_went">Went</string>
+    <string name="detail_was_going">Was Going</string>
+    <string name="detail_went_count">%1$d went</string>
     <string name="detail_going_count">%1$d going</string>
     <string name="detail_going_count_max">%1$d / %2$d going</string>
+    <string name="detail_going_count_here">%1$d going, %2$d here</string>
+    <string name="detail_going_count_max_here">%1$d / %2$d going, %3$d here</string>
+    <string name="detail_here_badge">Here</string>
+    <string name="detail_im_here">I'm Here</string>
+    <string name="detail_marking_arrived">Telling Everyone…</string>
+    <string name="detail_arrived_message">The others going can now see you're here</string>
     <string name="detail_see_all">See All</string>
     <string name="participants_sheet_title">Who's Going</string>
+    <string name="participants_sheet_title_went">Who Went</string>
+    <string name="participants_sheet_title_was_going">Who Was Going</string>
     <string name="detail_chosen_spot">Chosen Spot</string>
     <string name="detail_no_spot_title">No Spot Yet</string>
     <string name="detail_no_spot_message">A spot hasn't been set for this hangout.</string>
     <string name="detail_get_a_ride">Get a Ride</string>
     <string name="detail_address_copied">Address copied. Paste it as your destination in any ride app.</string>
     <string name="map_close">Close map</string>
+    <string name="map_locate_me">Locate me</string>
+    <string name="map_share_location">Share My Location</string>
+    <string name="map_share_location_hint">People going can see you while this map is open.</string>
+    <string name="map_share_location_denied">Allow location for Lynk in your phone settings to share where you are.</string>
+    <string name="map_share_location_off">Turn on location to share where you are.</string>
+    <string name="map_shared_just_now">Updated just now</string>
+    <string name="map_shared_minutes_ago">Updated %1$d min ago</string>
+    <string name="map_shared_minutes_short">%1$d min ago</string>
 
     <!-- Host actions -->
     <string name="detail_complete">Complete Hangout</string>
@@ -90,7 +107,6 @@
     <string name="detail_dialog_dismiss">Never Mind</string>
 
     <!-- Participants sheet groups -->
-    <string name="detail_group_going">Going</string>
     <string name="detail_group_pending">Pending</string>
     <string name="detail_group_declined">Declined</string>
     <string name="detail_withdraw">Withdraw</string>
@@ -163,11 +179,11 @@
     <string name="payment_account_number_label">Account Number</string>
     <string name="payment_account_number_placeholder">10 digits</string>
     <string name="payment_account_not_found">No account with that number at this bank. Check both.</string>
-    <string name="payment_account_check_limit">Checking too fast! Please wait a moment.</string>
+    <string name="payment_account_check_limit">Too many account checks. Try again in a while.</string>
     <string name="payment_account_required">Put in your 10-digit account number and wait for the name to show.</string>
     <string name="payment_enable_confirm">Turn On Payments</string>
     <string name="payment_enabling">Turning On…</string>
-    <string name="payment_enable_warning">Once payments are on, none of this can change. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out. Check the details.</string>
+    <string name="payment_enable_warning">The total can't change once payments are on, but the date and your payout account can. Everyone in now owes an equal share, and you can only invite someone new to replace a person who drops out.</string>
     <string name="payment_bank_picker_title">Choose Your Bank</string>
     <string name="payment_bank_search_hint">Search banks</string>
     <string name="payment_bank_empty">No bank matches that name.</string>
@@ -200,6 +216,13 @@
     <string name="payment_decision_cancel_confirm_message">Everyone who paid gets refunded and the hangout is called off.</string>
 
     <!-- Payout retry (host) -->
+    <string name="payment_paying_out_to">Paying Out To</string>
+    <string name="payment_account_masked">%1$s ••••••%2$s</string>
+    <string name="payment_change_account">Change Payout Account</string>
+    <string name="payment_change_account_hint">Your payout will go here instead. Nothing else changes.</string>
+    <string name="payment_change_account_confirm">Save Account</string>
+    <string name="payment_changing_account">Saving…</string>
+    <string name="payment_account_changed">Your payout account was changed</string>
     <string name="payment_retry_payout">Try the Payout Again</string>
     <string name="payment_retrying_payout">Queueing…</string>
     <string name="payment_payout_queued">Queued. We'll send it to your bank shortly.</string>

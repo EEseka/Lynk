@@ -25,6 +25,7 @@ import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
 import com.eeseka.lynk.hangouts.presentation.mappers.toUiText
+import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
@@ -41,6 +42,8 @@ import com.eeseka.lynk.shared.presentation.preview.previewPayment
 import com.eeseka.lynk.shared.presentation.util.toDateLabel
 import com.eeseka.lynk.shared.presentation.util.toNairaString
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.payment_account_masked
+import lynk.feature.hangouts.generated.resources.payment_change_account
 import lynk.feature.hangouts.generated.resources.payment_change_deadline
 import lynk.feature.hangouts.generated.resources.payment_check_action
 import lynk.feature.hangouts.generated.resources.payment_checking
@@ -48,6 +51,7 @@ import lynk.feature.hangouts.generated.resources.payment_decide_action
 import lynk.feature.hangouts.generated.resources.payment_deciding
 import lynk.feature.hangouts.generated.resources.payment_pay_action
 import lynk.feature.hangouts.generated.resources.payment_pay_by
+import lynk.feature.hangouts.generated.resources.payment_paying_out_to
 import lynk.feature.hangouts.generated.resources.payment_payout_on
 import lynk.feature.hangouts.generated.resources.payment_preparing
 import lynk.feature.hangouts.generated.resources.payment_retry_payout
@@ -75,11 +79,14 @@ fun PaymentSection(
     isDecidingAtDeadline: Boolean = false,
     canRetryPayout: Boolean = false,
     isRetryingPayout: Boolean = false,
+    payoutAccount: PayoutAccountUi? = null,
+    canChangePayoutAccount: Boolean = false,
     onPayClick: () -> Unit = {},
     onCheckPaymentClick: () -> Unit = {},
     onChangeDeadlineClick: () -> Unit = {},
     onDecideClick: () -> Unit = {},
-    onRetryPayoutClick: () -> Unit = {}
+    onRetryPayoutClick: () -> Unit = {},
+    onChangePayoutAccountClick: () -> Unit = {}
 ) {
     val hapticFeedback = rememberAppHaptic()
 
@@ -159,6 +166,10 @@ fun PaymentSection(
                     )
                 }
 
+                payoutAccount?.let { account ->
+                    PayoutAccountRow(account = account)
+                }
+
                 AnimatedVisibility(visible = hasCurrentUserPaid && !isHost) {
                     YouHavePaidRow()
                 }
@@ -203,6 +214,18 @@ fun PaymentSection(
                     )
                 }
 
+                AnimatedVisibility(visible = canChangePayoutAccount) {
+                    LynkButton(
+                        text = stringResource(Res.string.payment_change_account),
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onChangePayoutAccountClick()
+                        },
+                        style = LynkButtonStyle.TEXT,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 AnimatedVisibility(visible = isAwaitingPaymentReturn) {
                     LynkButton(
                         text = stringResource(Res.string.payment_check_action),
@@ -224,7 +247,6 @@ fun PaymentSection(
                             hapticFeedback(AppHaptic.ImpactMedium)
                             onPayClick()
                         },
-                        style = LynkButtonStyle.PRIMARY,
                         isLoading = isInitializingPayment,
                         loadingText = stringResource(Res.string.payment_preparing),
                         modifier = Modifier.fillMaxWidth()
@@ -252,6 +274,37 @@ private fun YouHavePaidRow(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.payment_you_paid),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.extended.success
+        )
+    }
+}
+
+@Composable
+internal fun PayoutAccountRow(
+    account: PayoutAccountUi,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        LynkText(
+            text = stringResource(Res.string.payment_paying_out_to),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        LynkText(
+            text = account.accountHolderName,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        LynkText(
+            text = stringResource(
+                Res.string.payment_account_masked,
+                account.bankName.orEmpty(),
+                account.accountNumberLast4
+            ).trim(),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -329,6 +382,8 @@ private fun PaymentSectionPreview(
             needsDeadlineDecision = needsDeadlineDecision,
             isDecidingAtDeadline = false,
             canRetryPayout = canRetryPayout,
+            payoutAccount = PayoutAccountUi("GTBank", "6789", "ADA OBI").takeIf { isHost },
+            canChangePayoutAccount = isHost,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp)

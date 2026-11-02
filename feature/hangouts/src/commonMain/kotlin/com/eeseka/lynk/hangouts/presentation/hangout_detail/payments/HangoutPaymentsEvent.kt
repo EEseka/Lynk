@@ -9,6 +9,7 @@ sealed interface HangoutPaymentsEvent {
     data object DeadlineChanged : HangoutPaymentsEvent
     data object DecisionSaved : HangoutPaymentsEvent
     data object PayoutQueued : HangoutPaymentsEvent
+    data object PayoutAccountChanged : HangoutPaymentsEvent
 
     data object PaymentPending : HangoutPaymentsEvent
     data object PaymentNotCompleted : HangoutPaymentsEvent

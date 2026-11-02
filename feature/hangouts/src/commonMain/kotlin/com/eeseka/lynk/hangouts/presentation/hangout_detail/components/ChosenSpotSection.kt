@@ -1,5 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +26,12 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
 import com.composables.icons.lucide.Copy
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Map
 import com.composables.icons.lucide.MapPin
+import com.composables.icons.lucide.MapPinCheck
 import com.composables.icons.lucide.Star
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
@@ -35,6 +40,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.design_system.theme.extended
 import com.eeseka.lynk.shared.presentation.preview.previewSpot
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
@@ -42,8 +48,11 @@ import kotlinx.collections.immutable.ImmutableList
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_chosen_spot
 import lynk.feature.hangouts.generated.resources.detail_get_a_ride
+import lynk.feature.hangouts.generated.resources.detail_im_here
+import lynk.feature.hangouts.generated.resources.detail_marking_arrived
 import lynk.feature.hangouts.generated.resources.detail_no_spot_message
 import lynk.feature.hangouts.generated.resources.detail_no_spot_title
+import lynk.feature.hangouts.generated.resources.voting_see_on_map
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -51,12 +60,18 @@ fun ChosenSpotSection(
     chosenSpot: SpotUi?,
     onSpotClick: () -> Unit,
     modifier: Modifier = Modifier,
-    canCopyAddress: Boolean = false,
-    onCopyAddressClick: () -> Unit = {}
+    canGetToSpot: Boolean = false,
+    onCopyAddressClick: () -> Unit = {},
+    onMapClick: () -> Unit = {},
+    canMarkArrived: Boolean = false,
+    isMarkingArrived: Boolean = false,
+    onMarkArrivedClick: () -> Unit = {}
 ) {
+    val hapticFeedback = rememberAppHaptic()
+
     DetailSection(
         title = stringResource(Res.string.detail_chosen_spot),
-        trailing = if (canCopyAddress) {
+        trailing = if (canGetToSpot) {
             {
                 Row(
                     modifier = Modifier
@@ -99,6 +114,51 @@ fun ChosenSpotSection(
                 iconTint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+
+        if (canGetToSpot) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                LynkButton(
+                    text = stringResource(Res.string.voting_see_on_map),
+                    onClick = {
+                        hapticFeedback(AppHaptic.ImpactLight)
+                        onMapClick()
+                    },
+                    style = LynkButtonStyle.TEXT,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Lucide.Map,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                AnimatedVisibility(visible = canMarkArrived) {
+                    LynkButton(
+                        text = stringResource(Res.string.detail_im_here),
+                        onClick = {
+                            hapticFeedback(AppHaptic.ImpactLight)
+                            onMarkArrivedClick()
+                        },
+                        style = LynkButtonStyle.SECONDARY,
+                        isLoading = isMarkingArrived,
+                        loadingText = stringResource(Res.string.detail_marking_arrived),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Lucide.MapPinCheck,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -137,7 +197,7 @@ private fun ChosenSpotCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(scheme.secondaryContainer),
+                    .background(scheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 // Photo when there is one; the pin icon is the fallback.
@@ -149,12 +209,7 @@ private fun ChosenSpotCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Icon(
-                        imageVector = Lucide.MapPin,
-                        contentDescription = null,
-                        tint = scheme.onSecondaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    SpotPhotoFallback(iconSize = 20.dp, modifier = Modifier.fillMaxSize())
                 }
             }
             Column(
@@ -209,7 +264,8 @@ private fun ChosenSpotSectionPreview(chosenSpot: SpotUi?) {
         ChosenSpotSection(
             chosenSpot = chosenSpot,
             onSpotClick = {},
-            canCopyAddress = chosenSpot != null,
+            canGetToSpot = chosenSpot != null,
+            canMarkArrived = chosenSpot != null,
             onCopyAddressClick = {},
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)

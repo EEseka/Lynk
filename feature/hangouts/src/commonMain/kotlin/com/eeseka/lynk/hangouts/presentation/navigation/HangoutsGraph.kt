@@ -37,6 +37,9 @@ fun NavGraphBuilder.hangoutsGraph(
                 navigateToNotifications = {
                     navController.navigate(HangoutsGraphRoutes.Notifications())
                 },
+                navigateToInvitePreview = { hangoutId ->
+                    navController.navigate(HangoutsGraphRoutes.Notifications(previewHangoutId = hangoutId))
+                },
                 navigateToAlbum = { hangoutId, initialPhotoId ->
                     navController.navigate(HangoutsGraphRoutes.HangoutAlbum(hangoutId, initialPhotoId))
                 },

@@ -114,6 +114,7 @@ class HangoutDetailViewModel(
             HangoutDetailAction.OnCompleteHangoutConfirmed -> completeHangout()
             HangoutDetailAction.OnCancelHangoutConfirmed -> cancelHangout()
             HangoutDetailAction.OnLeaveHangoutConfirmed -> leaveHangout()
+            HangoutDetailAction.OnMarkArrivedClick -> markArrived()
             is HangoutDetailAction.OnWithdrawParticipantInvite -> withdrawParticipantInvite(action.userId)
             HangoutDetailAction.OnInviteClick -> _state.update { it.copy(showInviteSheet = true) }
             HangoutDetailAction.OnDismissInviteSheet -> dismissInviteSheet()
@@ -167,7 +168,7 @@ class HangoutDetailViewModel(
 
             is LobbyEvent.RsvpUpdated -> refreshDetailAndShowSnackbar(
                 match = event.hangoutId == currentHangoutId,
-                snackbar = when (event.rsvpStatus) {
+                snackbar = if (event.userId == _state.value.currentUserId) null else when (event.rsvpStatus) {
                     RsvpStatus.ATTENDING -> UiText.Resource(
                         Res.string.event_rsvp_in,
                         arrayOf(event.displayName)
@@ -186,6 +187,12 @@ class HangoutDetailViewModel(
                     Res.string.event_updated,
                     arrayOf(event.hostDisplayName)
                 ) to LynkFlashType.Info
+            )
+
+            // The arrival push already told everyone still on the way.
+            is LobbyEvent.ParticipantArrived -> refreshDetailAndShowSnackbar(
+                match = event.hangoutId == currentHangoutId,
+                snackbar = null
             )
 
             // The "has started" push already told everyone who is going.
@@ -242,11 +249,7 @@ class HangoutDetailViewModel(
                 }
             )
 
-            is LobbyEvent.LobbyError -> {
-                eventChannel.send(HangoutDetailEvent.Error(event.toUiText()))
-            }
-
-            // The ballot events belong to HangoutVotingViewModel, the photo ones to HangoutMemoriesViewModel.
+            // The ballot events and lobby errors belong to HangoutVotingViewModel, the photo ones to HangoutMemoriesViewModel.
             else -> Unit
         }
     }
@@ -310,6 +313,7 @@ class HangoutDetailViewModel(
                 isCompleting = false,
                 isCancelling = false,
                 isLeaving = false,
+                isMarkingArrived = false,
                 error = null,
                 isLoading = hangoutId != null
             )
@@ -329,6 +333,12 @@ class HangoutDetailViewModel(
                 }
                 .onFailure { error ->
                     if (hangoutId != _hangoutId.value) return@onFailure
+                    // Someone who never accepted, like an invitee tapping "called off", can't open detail
+                    if (error == DataError.Remote.FORBIDDEN) {
+                        _state.update { it.copy(isLoading = false) }
+                        eventChannel.send(HangoutDetailEvent.NotAttending(hangoutId))
+                        return@onFailure
+                    }
                     _state.update { it.copy(isLoading = false, error = error.toUiText()) }
                 }
         }
@@ -367,9 +377,8 @@ class HangoutDetailViewModel(
                 hangoutDetailRepository.observeHangout(hangoutId)
                     .map { hangout -> hangout?.status }
                     .distinctUntilChanged()
-                    // Voting always shows the way into the chat; after it, only a chat with messages does
                     .onEach { status ->
-                        if (status != null && status != HangoutStatus.VOTING) {
+                        if (status == HangoutStatus.COMPLETED || status == HangoutStatus.CANCELLED) {
                             assistantMessageCountRepository.refreshMessageCount(hangoutId)
                         }
                     }
@@ -430,6 +439,23 @@ class HangoutDetailViewModel(
                     eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
                 }
             _state.update { it.copy(isLeaving = false) }
+        }
+    }
+
+    private fun markArrived() {
+        val hangoutId = _hangoutId.value ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(isMarkingArrived = true) }
+            hangoutService
+                .markArrived(hangoutId)
+                .onSuccess {
+                    hangoutDetailRepository.refreshHangout(hangoutId)
+                    eventChannel.send(HangoutDetailEvent.ArrivalMarked)
+                }
+                .onFailure { error ->
+                    eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
+                }
+            _state.update { it.copy(isMarkingArrived = false) }
         }
     }
 

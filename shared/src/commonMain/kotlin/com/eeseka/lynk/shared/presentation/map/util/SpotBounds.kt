@@ -4,17 +4,17 @@ import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import org.maplibre.spatialk.geojson.BoundingBox
 import org.maplibre.spatialk.geojson.Position
 
-// The smallest box around every spot and the extra point, so the camera can fit them all on screen; null when there's nothing to fit in the screen
-fun List<SpotUi>.toBoundingBox(including: Position? = null): BoundingBox? {
-    if (isEmpty() && including == null) return null
+fun List<SpotUi>.toBoundingBox(): BoundingBox? =
+    boundingBoxOf(map { Position(longitude = it.longitude, latitude = it.latitude) })
 
-    val longitudes = map { it.longitude } + listOfNotNull(including?.longitude)
-    val latitudes = map { it.latitude } + listOfNotNull(including?.latitude)
+// The smallest box around every position, so the camera can fit them all on screen; null when there's nothing to fit in the screen
+fun boundingBoxOf(positions: List<Position>): BoundingBox? {
+    if (positions.isEmpty()) return null
 
     return BoundingBox(
-        west = longitudes.min(),
-        south = latitudes.min(),
-        east = longitudes.max(),
-        north = latitudes.max()
+        west = positions.minOf { it.longitude },
+        south = positions.minOf { it.latitude },
+        east = positions.maxOf { it.longitude },
+        north = positions.maxOf { it.latitude }
     )
 }

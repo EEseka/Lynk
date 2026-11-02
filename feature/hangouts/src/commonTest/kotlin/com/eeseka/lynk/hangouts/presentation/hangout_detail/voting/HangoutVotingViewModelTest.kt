@@ -325,6 +325,45 @@ class HangoutVotingViewModelTest {
     }
 
     @Test
+    fun `a lobby error flashes when a vote is waiting on the server`() = runTest {
+        val hangoutId = createVotingHangout()
+        val viewModel = createViewModel(hangoutId)
+        viewModel.onAction(HangoutVotingAction.OnCastVote("spot_1"))
+
+        viewModel.events.test {
+            connectionClient.sendEvent(LobbyEvent.LobbyError(code = "NOT_A_CANDIDATE", message = "Nope"))
+
+            assertThat(awaitItem()).isInstanceOf(HangoutVotingEvent.Error::class)
+        }
+    }
+
+    @Test
+    fun `a lobby error stays quiet when nothing here is waiting on the server`() = runTest {
+        val hangoutId = createVotingHangout()
+        val viewModel = createViewModel(hangoutId)
+
+        viewModel.events.test {
+            connectionClient.sendEvent(LobbyEvent.LobbyError(code = "CANDIDATES_FULL", message = "Full"))
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `a counted vote leaves a later lobby error quiet`() = runTest {
+        val hangoutId = createVotingHangout()
+        val viewModel = createViewModel(hangoutId)
+        viewModel.onAction(HangoutVotingAction.OnCastVote("spot_1"))
+        connectionClient.sendEvent(LobbyEvent.VoteTally(hangoutId, mapOf(HOST_ID to "spot_1")))
+
+        viewModel.events.test {
+            connectionClient.sendEvent(LobbyEvent.LobbyError(code = "CANDIDATES_FULL", message = "Full"))
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
     fun `when voting ends the ballot is cleared and the suggest sheet closes`() = runTest {
         val hangoutId = createVotingHangout()
         val viewModel = createViewModel(hangoutId)

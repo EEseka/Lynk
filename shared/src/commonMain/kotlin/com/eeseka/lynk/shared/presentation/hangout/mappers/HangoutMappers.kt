@@ -145,7 +145,8 @@ fun HangoutUser.toHangoutUserUi() = HangoutUserUi(
 fun HangoutParticipant.toHangoutParticipantUi() = HangoutParticipantUi(
     user = user.toHangoutUserUi(),
     rsvpStatus = rsvpStatus,
-    hasPaid = hasPaid
+    hasPaid = hasPaid,
+    hasArrived = arrivedAt != null
 )
 
 private val whitespaceRegex = Regex("\\s+")

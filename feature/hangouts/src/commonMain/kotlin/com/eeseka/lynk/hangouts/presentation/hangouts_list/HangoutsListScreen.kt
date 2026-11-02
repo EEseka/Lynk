@@ -212,6 +212,12 @@ fun HangoutsListScreen(
         }
     ) { scaffoldPadding ->
         val listMaxWidth = if (configuration.isMobile) Dp.Unspecified else 640.dp
+        // The shell's bottom bar, or the system bars and keyboard when the rail replaces it.
+        // The larger of the two, not the sum: both can count the same system inset
+        val bottomInset = maxOf(
+            scaffoldPadding.calculateBottomPadding(),
+            mainShellPadding.calculateBottomPadding()
+        )
 
         Box(
             modifier = Modifier.fillMaxSize().clearFocusOnTap(),
@@ -241,7 +247,7 @@ fun HangoutsListScreen(
                     state = listState,
                     contentPadding = PaddingValues(
                         top = scaffoldPadding.calculateTopPadding() + 120.dp,
-                        bottom = mainShellPadding.calculateBottomPadding() + 80.dp,
+                        bottom = bottomInset + 80.dp,
                         start = 16.dp,
                         end = 16.dp,
                     ),
@@ -266,6 +272,7 @@ fun HangoutsListScreen(
                                     scheduledDate = hangout.scheduledAt.toDateTimeLabel(),
                                     isSelected = hangout.id == state.selectedHangoutId,
                                     isHost = hangout.hostId == state.currentUserId,
+                                    showStatus = state.selectedStatusFilter == HangoutStatusFilter.UPCOMING,
                                     onClick = {
                                         hapticFeedback(AppHaptic.ImpactLight)
                                         onAction(HangoutsListAction.OnSelectHangout(hangout.id))
@@ -421,7 +428,7 @@ fun HangoutsListScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(
-                        bottom = mainShellPadding.calculateBottomPadding() + 16.dp,
+                        bottom = bottomInset + 16.dp,
                         end = 16.dp
                     )
             ) {

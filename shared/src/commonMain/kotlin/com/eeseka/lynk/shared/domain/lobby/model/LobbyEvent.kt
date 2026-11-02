@@ -28,6 +28,10 @@ sealed interface LobbyEvent {
         val displayName: String
     ) : LobbyEvent
 
+    data class ParticipantArrived(
+        val hangoutId: String
+    ) : LobbyEvent
+
     data class PaymentReceived(
         val hangoutId: String,
         val userId: String,
@@ -116,6 +120,21 @@ sealed interface LobbyEvent {
     data class VotingTie(
         val hangoutId: String,
         val tiedSpotIds: List<String>
+    ) : LobbyEvent
+
+    data class LiveLocationUpdated(
+        val hangoutId: String,
+        val liveLocation: LiveLocation
+    ) : LobbyEvent
+
+    data class LiveLocationStopped(
+        val hangoutId: String,
+        val userId: String
+    ) : LobbyEvent
+
+    data class LiveLocationSnapshot(
+        val hangoutId: String,
+        val liveLocations: List<LiveLocation>
     ) : LobbyEvent
 
     data class LobbyError(

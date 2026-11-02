@@ -84,4 +84,6 @@ interface HangoutService {
     ): EmptyResult<DataError.Remote>
 
     suspend fun leaveHangout(hangoutId: String): EmptyResult<DataError.Remote>
+
+    suspend fun markArrived(hangoutId: String): EmptyResult<DataError.Remote>
 }

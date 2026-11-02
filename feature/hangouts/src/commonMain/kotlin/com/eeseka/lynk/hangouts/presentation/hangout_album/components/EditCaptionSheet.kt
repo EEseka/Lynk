@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
@@ -94,7 +93,6 @@ private fun EditCaptionSheetContent(
                 hapticFeedback(AppHaptic.ImpactMedium)
                 onSave()
             },
-            style = LynkButtonStyle.PRIMARY,
             enabled = canSave,
             isLoading = isSaving,
             loadingText = stringResource(Res.string.album_caption_saving),

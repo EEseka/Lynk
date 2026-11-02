@@ -15,6 +15,7 @@ sealed interface CreateHangoutAction {
     data class OnPickerToggled(val picker: PickerType) : CreateHangoutAction
     data class OnDateSelected(val epochMilliseconds: Long?) : CreateHangoutAction
     data class OnTimeSelected(val hour: Int, val minute: Int) : CreateHangoutAction
+    data class OnLimitGroupSizeToggled(val isOn: Boolean) : CreateHangoutAction
     data object IncrementAttendees : CreateHangoutAction
     data object DecrementAttendees : CreateHangoutAction
     data class OnLocationModeChanged(val isVotingMode: Boolean) : CreateHangoutAction

@@ -65,7 +65,7 @@ fun CollectPaymentsSetup(
                     deadlineError = state.paymentDeadlineError?.asString(),
                     selectedBankName = state.selectedBank?.name,
                     bankError = state.bankError?.asString(),
-                    resolvedAccountName = state.resolvedAccountName,
+                    resolvedAccountHolderName = state.resolvedAccountHolderName,
                     accountError = state.accountResolutionError?.asString() ?: state.accountNumberError?.asString(),
                     isResolvingAccount = state.isResolvingAccount,
                     isEnabling = state.isEnablingPayments,
@@ -103,7 +103,7 @@ private fun CollectPaymentsSetupOnPreview() {
                 isCollectPaymentsOn = true,
                 paymentDeadlineDate = LocalDate(2026, 9, 12),
                 selectedBank = BankUi("058", "Guaranty Trust Bank", null, "GT"),
-                resolvedAccountName = "EMMANUEL ESEKA"
+                resolvedAccountHolderName = "EMMANUEL ESEKA"
             ),
             onAction = {},
             modifier = Modifier

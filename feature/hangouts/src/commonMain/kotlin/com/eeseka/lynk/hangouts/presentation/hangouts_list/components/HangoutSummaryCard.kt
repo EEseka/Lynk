@@ -34,9 +34,8 @@ import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutSummaryUi
 import com.eeseka.lynk.shared.presentation.preview.previewHangoutSummaries
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.detail_went_count
 import lynk.feature.hangouts.generated.resources.host_badge_description
-import lynk.feature.hangouts.generated.resources.participants_attended_format
-import lynk.feature.hangouts.generated.resources.participants_attended_max_format
 import lynk.feature.hangouts.generated.resources.participants_format
 import lynk.feature.hangouts.generated.resources.participants_max_format
 import org.jetbrains.compose.resources.stringResource
@@ -47,17 +46,14 @@ fun HangoutSummaryCard(
     scheduledDate: String,
     isSelected: Boolean,
     isHost: Boolean,
+    showStatus: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scheme = MaterialTheme.colorScheme
 
     val participantsText = when (hangout.status) {
-        HangoutStatus.COMPLETED -> {
-            hangout.maxAttendees?.let { maxAttendees ->
-                stringResource(Res.string.participants_attended_max_format, hangout.participantCount, maxAttendees)
-            } ?: stringResource(Res.string.participants_attended_format, hangout.participantCount)
-        }
+        HangoutStatus.COMPLETED -> stringResource(Res.string.detail_went_count, hangout.participantCount)
 
         HangoutStatus.CANCELLED -> null
 
@@ -134,7 +130,9 @@ fun HangoutSummaryCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
-                    StatusChip(status = hangout.status)
+                    if (showStatus) {
+                        StatusChip(status = hangout.status)
+                    }
                 }
 
                 Row(
@@ -193,6 +191,7 @@ private fun HangoutSummaryCardPreview() {
                     scheduledDate = "Mon 15 Jun · 8:00 PM",
                     isSelected = index == 1,
                     isHost = index == 0,
+                    showStatus = true,
                     onClick = {}
                 )
             }

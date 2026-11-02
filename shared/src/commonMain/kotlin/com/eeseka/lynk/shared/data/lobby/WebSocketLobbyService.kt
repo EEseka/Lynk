@@ -35,6 +35,22 @@ class WebSocketLobbyService(
         )
     }
 
+    override suspend fun shareLiveLocation(
+        hangoutId: String,
+        latitude: Double,
+        longitude: Double
+    ): EmptyResult<DataError.Connection> {
+        return webSocketConnector.sendMessage(
+            OutgoingLobbyDto.LiveLocationShare(hangoutId, latitude, longitude).toJsonPayload()
+        )
+    }
+
+    override suspend fun stopLiveLocation(hangoutId: String): EmptyResult<DataError.Connection> {
+        return webSocketConnector.sendMessage(
+            OutgoingLobbyDto.LiveLocationStop(hangoutId).toJsonPayload()
+        )
+    }
+
     override suspend fun proposeSpot(
         hangoutId: String,
         spotId: String

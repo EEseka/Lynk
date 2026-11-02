@@ -215,7 +215,16 @@ class HangoutVotingViewModel(
         val isHost = hangout.value?.hostId == currentUserId
 
         when (event) {
-            is LobbyEvent.LobbyError -> _state.update { it.clearPendingVotingActions() }
+            is LobbyEvent.LobbyError -> {
+                val wasWaitingOnServer = _state.value.proposingSpotIds.isNotEmpty() ||
+                        _state.value.removingSpotIds.isNotEmpty() ||
+                        _state.value.isClosingVoting ||
+                        _state.value.isCastingVote
+                _state.update { it.clearPendingVotingActions() }
+                if (wasWaitingOnServer) {
+                    eventChannel.send(HangoutVotingEvent.Error(event.toUiText()))
+                }
+            }
 
             is LobbyEvent.VotingSnapshot -> {
                 if (event.hangoutId == currentHangoutId) {
@@ -266,7 +275,11 @@ class HangoutVotingViewModel(
                     // A fresh tally means the ballot moved (vote change or a removed candidate),
                     // so any previously announced tie is stale — clear it and re-evaluate on next close.
                     _state.update {
-                        it.copy(votes = event.votes.toImmutableMap(), tiedSpotIds = persistentListOf())
+                        it.copy(
+                            votes = event.votes.toImmutableMap(),
+                            tiedSpotIds = persistentListOf(),
+                            isCastingVote = false
+                        )
                     }
                 }
             }
@@ -298,8 +311,10 @@ class HangoutVotingViewModel(
     private fun castVote(spotId: String) {
         val hangoutId = _hangoutId.value ?: return
         viewModelScope.launch {
+            _state.update { it.copy(isCastingVote = true) }
             lobbyService.castVote(hangoutId, spotId)
                 .onFailure { error ->
+                    _state.update { it.copy(isCastingVote = false) }
                     eventChannel.send(HangoutVotingEvent.Error(error.toUiText()))
                 }
         }
@@ -552,12 +567,13 @@ class HangoutVotingViewModel(
         }
     }
 
-    // Suggesting, removing and closing voting all wait for the server to answer over the
-    // socket. Wherever that answer can no longer arrive, all three have to stop waiting
+    // Voting, suggesting, removing and closing voting all wait for the server to answer over
+    // the socket. Wherever that answer can no longer arrive, all four have to stop waiting
     // together — otherwise a spinner turns forever.
     private fun HangoutVotingState.clearPendingVotingActions() = copy(
         proposingSpotIds = persistentSetOf(),
         removingSpotIds = persistentSetOf(),
-        isClosingVoting = false
+        isClosingVoting = false,
+        isCastingVote = false
     )
 }

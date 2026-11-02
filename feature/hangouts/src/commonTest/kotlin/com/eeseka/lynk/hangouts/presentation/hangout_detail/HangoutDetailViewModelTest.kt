@@ -151,6 +151,24 @@ class HangoutDetailViewModelTest {
     }
 
     @Test
+    fun `saying I am here shows on the participant and confirms it`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnMarkArrivedClick)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.ArrivalMarked)
+            val state = viewModel.state.value
+            assertThat(state.isMarkingArrived).isFalse()
+            assertThat(state.hangout?.participants?.first { it.user.userId == HOST_ID }?.hasArrived).isEqualTo(true)
+        }
+    }
+
+    @Test
     fun `the map follows the app theme`() = runTest {
         val viewModel = createViewModel()
 
@@ -158,6 +176,23 @@ class HangoutDetailViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.mapTheme).isEqualTo(AppTheme.DARK)
+    }
+
+    @Test
+    fun `someone not going is sent away instead of shown an error`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        hangoutService.shouldReturnError = true
+        hangoutService.errorToReturn = DataError.Remote.FORBIDDEN
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.NotAttending(hangoutId))
+        }
+        assertThat(viewModel.state.value.error).isNull()
+        assertThat(viewModel.state.value.isLoading).isFalse()
     }
 
     @Test
@@ -258,6 +293,25 @@ class HangoutDetailViewModelTest {
 
             val event = awaitItem() as HangoutDetailEvent.LobbyAnnouncement
             assertThat(event.type).isEqualTo(LynkFlashType.Success)
+            assertThat(viewModel.state.value.hangout?.name).isEqualTo("Night Out Moved")
+        }
+    }
+
+    @Test
+    fun `your own rsvp refreshes the hangout without an announcement`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            renameOnServer(hangoutId, "Night Out Moved")
+            connectionClient.sendEvent(
+                LobbyEvent.RsvpUpdated(hangoutId, HOST_ID, "Ada", RsvpStatus.ATTENDING)
+            )
+            advanceUntilIdle()
+
+            expectNoEvents()
             assertThat(viewModel.state.value.hangout?.name).isEqualTo("Night Out Moved")
         }
     }

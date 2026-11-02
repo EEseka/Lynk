@@ -11,7 +11,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -74,6 +73,7 @@ import com.eeseka.lynk.shared.presentation.spot.components.SpotHighlightChips
 import com.eeseka.lynk.shared.presentation.spot.components.SpotInfoRow
 import com.eeseka.lynk.shared.presentation.spot.components.SpotLinkRow
 import com.eeseka.lynk.shared.presentation.spot.components.SpotOpenStatus
+import com.eeseka.lynk.shared.presentation.spot.components.SpotPhotoFallback
 import com.eeseka.lynk.shared.presentation.spot.mappers.getTitle
 import com.eeseka.lynk.shared.presentation.spot.model.SpotHighlight
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
@@ -240,22 +240,14 @@ private fun SpotDetailSheetContent(
                     }
                 }
             } else {
-                Box(
+                SpotPhotoFallback(
+                    iconSize = 48.dp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Lucide.MapPin,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                }
+                )
             }
 
             val distanceLabel = rememberSpotDistanceLabel(

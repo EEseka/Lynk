@@ -6,6 +6,8 @@ enum class OutgoingLobbyMessageType {
     ENTER_LOBBY,
     LEAVE_LOBBY,
     LOCATION_SHARE,
+    LIVE_LOCATION_SHARE,
+    LIVE_LOCATION_STOP,
     PROPOSE_SPOT,
     REMOVE_SPOT,
     CAST_VOTE,
@@ -32,6 +34,18 @@ sealed class OutgoingLobbyDto(
         val latitude: Double,
         val longitude: Double
     ) : OutgoingLobbyDto(OutgoingLobbyMessageType.LOCATION_SHARE)
+
+    @Serializable
+    data class LiveLocationShare(
+        val hangoutId: String,
+        val latitude: Double,
+        val longitude: Double
+    ) : OutgoingLobbyDto(OutgoingLobbyMessageType.LIVE_LOCATION_SHARE)
+
+    @Serializable
+    data class LiveLocationStop(
+        val hangoutId: String
+    ) : OutgoingLobbyDto(OutgoingLobbyMessageType.LIVE_LOCATION_STOP)
 
     @Serializable
     data class ProposeSpot(

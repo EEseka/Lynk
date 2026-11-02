@@ -55,7 +55,6 @@ import com.eeseka.lynk.discover.presentation.components.TopSpotsChip
 import com.eeseka.lynk.discover.presentation.components.rememberSpotMapInteractions
 import com.eeseka.lynk.discover.presentation.mappers.toUiText
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
-import com.eeseka.lynk.discover.presentation.util.flightDurationTo
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkAiButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -78,6 +77,7 @@ import com.eeseka.lynk.shared.presentation.components.SpotDetailSheet
 import com.eeseka.lynk.shared.presentation.location.rememberLocationController
 import com.eeseka.lynk.shared.presentation.map.components.MapAttributionMenu
 import com.eeseka.lynk.shared.presentation.map.components.UserLocationMapMarker
+import com.eeseka.lynk.shared.presentation.map.util.flightDurationTo
 import com.eeseka.lynk.shared.presentation.map.util.mapStyleUri
 import com.eeseka.lynk.shared.presentation.map.util.toBoundingBox
 import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect

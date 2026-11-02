@@ -25,9 +25,10 @@ Android and iOS against a live Spring Boot backend.
 |-------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | **Sign in**       | Google Sign-In or a guest account, then a profile with a live username availability check and an optional photo             |
 | **Discover**      | A map of trending spots and a Top 10 near you, search, a price filter, opening hours, and saving the ones you like          |
-| **Lynk AI**       | Ask for ideas on Discover or in a voting hangout; answers stream in with spot cards you can open, save or suggest           |
-| **Hangouts**      | Create one in two steps, invite friends by username, RSVP, edit, cancel, and filter your list by status                     |
+| **Lynk AI**       | Ask for ideas on Discover or in a hangout until it ends; answers stream in with spot cards you can open, save or suggest    |
+| **Hangouts**      | Create one in two steps, invite friends by username, RSVP, say when you arrive, edit, cancel, and filter your list by status |
 | **Live lobby**    | Propose spots, vote in real time, see who is in the room, and let the host break a tie                                      |
+| **Hangout map**   | See the spots or the chosen spot, and share your location with the group from an hour before until the hangout ends         |
 | **Payments**      | The host turns on bill-splitting, everyone pays their share through Paystack inside the app, the host gets paid out         |
 | **Albums**        | Everyone who went adds photos to one private album, with captions, saving and sharing                                       |
 | **Notifications** | Push notifications, an inbox with an unread badge, and invite previews you can accept or decline from the notification      |

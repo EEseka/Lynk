@@ -521,35 +521,52 @@ class CreateHangoutViewModelTest {
 
 
     @Test
-    fun `IncrementAttendees from null sets to 2`() = runTest {
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(CreateHangoutAction.IncrementAttendees)
-            val state = expectMostRecentItem()
-            assertThat(state.maxAttendees).isEqualTo(2)
-        }
+    fun `turning the group limit on starts at the minimum`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.OnLimitGroupSizeToggled(isOn = true))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.maxAttendees).isEqualTo(2)
+    }
+
+    @Test
+    fun `turning the group limit off clears it`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.OnLimitGroupSizeToggled(isOn = true))
+        viewModel.onAction(CreateHangoutAction.IncrementAttendees)
+        viewModel.onAction(CreateHangoutAction.OnLimitGroupSizeToggled(isOn = false))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.maxAttendees).isNull()
+    }
+
+    @Test
+    fun `IncrementAttendees when null does nothing`() = runTest {
+        collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.IncrementAttendees)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.maxAttendees).isNull()
     }
 
     @Test
     fun `IncrementAttendees at max 50 does not exceed limit`() = runTest {
         collectInBackground(viewModel.state)
+        viewModel.onAction(CreateHangoutAction.OnLimitGroupSizeToggled(isOn = true))
         repeat(49) { viewModel.onAction(CreateHangoutAction.IncrementAttendees) }
-        viewModel.onAction(CreateHangoutAction.IncrementAttendees)
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.maxAttendees).isEqualTo(50)
     }
 
     @Test
-    fun `DecrementAttendees from 2 sets to null`() = runTest {
+    fun `DecrementAttendees stops at the minimum`() = runTest {
         collectInBackground(viewModel.state)
-        viewModel.onAction(CreateHangoutAction.IncrementAttendees) // null → 2
-        viewModel.state.test {
-            awaitItem()
-            viewModel.onAction(CreateHangoutAction.DecrementAttendees)
-            val state = expectMostRecentItem()
-            assertThat(state.maxAttendees).isNull()
-        }
+        viewModel.onAction(CreateHangoutAction.OnLimitGroupSizeToggled(isOn = true))
+        viewModel.onAction(CreateHangoutAction.DecrementAttendees)
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.maxAttendees).isEqualTo(2)
     }
 
     @Test

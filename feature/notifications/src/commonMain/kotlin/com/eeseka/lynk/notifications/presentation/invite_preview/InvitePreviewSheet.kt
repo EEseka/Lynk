@@ -313,7 +313,6 @@ private fun InvitePreviewSheetContent(
                             hapticFeedback(AppHaptic.ImpactMedium)
                             onAction(InvitePreviewAction.OnAcceptClick)
                         },
-                        style = LynkButtonStyle.PRIMARY,
                         enabled = !isResponding,
                         isLoading = state.respondingTo == RsvpStatus.ATTENDING,
                         loadingText = stringResource(Res.string.invite_preview_accepting),

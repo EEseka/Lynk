@@ -12,6 +12,8 @@ sealed interface HangoutDetailAction {
     // Attendee action (host equivalent is cancel)
     data object OnLeaveHangoutConfirmed : HangoutDetailAction
 
+    data object OnMarkArrivedClick : HangoutDetailAction
+
     // Invite flow
     data object OnInviteClick : HangoutDetailAction
     data object OnDismissInviteSheet : HangoutDetailAction

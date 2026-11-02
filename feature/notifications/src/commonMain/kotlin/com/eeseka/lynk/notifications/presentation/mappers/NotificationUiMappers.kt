@@ -13,6 +13,7 @@ import com.composables.icons.lucide.Images
 import com.composables.icons.lucide.Landmark
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MapPin
+import com.composables.icons.lucide.MapPinCheck
 import com.composables.icons.lucide.MapPinOff
 import com.composables.icons.lucide.PartyPopper
 import com.composables.icons.lucide.Pencil
@@ -34,7 +35,9 @@ import lynk.feature.notifications.generated.resources.notification_hangout_cance
 import lynk.feature.notifications.generated.resources.notification_hangout_completed
 import lynk.feature.notifications.generated.resources.notification_hangout_completion_reminder
 import lynk.feature.notifications.generated.resources.notification_hangout_started
+import lynk.feature.notifications.generated.resources.notification_hangout_starting_soon
 import lynk.feature.notifications.generated.resources.notification_invite_cancelled
+import lynk.feature.notifications.generated.resources.notification_participant_arrived
 import lynk.feature.notifications.generated.resources.notification_participant_invited
 import lynk.feature.notifications.generated.resources.notification_participant_left
 import lynk.feature.notifications.generated.resources.notification_payment_deadline_changed
@@ -107,6 +110,16 @@ fun NotificationUi.toUiText(): UiText {
 
         NotificationType.PAYMENTS_ENABLED -> UiText.Resource(
             Res.string.notification_payments_enabled,
+            arrayOf(actor, hangoutName)
+        )
+
+        NotificationType.HANGOUT_STARTING_SOON -> UiText.Resource(
+            Res.string.notification_hangout_starting_soon,
+            arrayOf(hangoutName)
+        )
+
+        NotificationType.PARTICIPANT_ARRIVED -> UiText.Resource(
+            Res.string.notification_participant_arrived,
             arrayOf(actor, hangoutName)
         )
 
@@ -217,6 +230,8 @@ fun NotificationType.getIcon(): ImageVector {
         NotificationType.VOTING_REOPENED -> Lucide.Vote
         NotificationType.PAYMENTS_ENABLED -> Lucide.Wallet
 
+        NotificationType.HANGOUT_STARTING_SOON -> Lucide.Clock
+        NotificationType.PARTICIPANT_ARRIVED -> Lucide.MapPinCheck
         NotificationType.HANGOUT_STARTED -> Lucide.Play
         NotificationType.HANGOUT_COMPLETED -> Lucide.PartyPopper
         NotificationType.HANGOUT_COMPLETION_REMINDER -> Lucide.Hourglass

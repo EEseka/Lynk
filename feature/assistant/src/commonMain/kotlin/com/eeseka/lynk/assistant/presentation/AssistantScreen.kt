@@ -2,6 +2,8 @@ package com.eeseka.lynk.assistant.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -114,8 +116,10 @@ import lynk.feature.assistant.generated.resources.empty_message_discover
 import lynk.feature.assistant.generated.resources.empty_message_discover_area
 import lynk.feature.assistant.generated.resources.empty_message_hangout
 import lynk.feature.assistant.generated.resources.empty_message_hangout_read_only
+import lynk.feature.assistant.generated.resources.empty_message_hangout_spot_chosen
 import lynk.feature.assistant.generated.resources.empty_title_discover
 import lynk.feature.assistant.generated.resources.empty_title_hangout
+import lynk.feature.assistant.generated.resources.empty_title_hangout_spot_chosen
 import lynk.feature.assistant.generated.resources.history_load_error_title
 import lynk.feature.assistant.generated.resources.messages_left
 import lynk.feature.assistant.generated.resources.out_of_messages_message
@@ -123,7 +127,6 @@ import lynk.feature.assistant.generated.resources.out_of_messages_message_tomorr
 import lynk.feature.assistant.generated.resources.out_of_messages_title
 import lynk.feature.assistant.generated.resources.read_only_ended
 import lynk.feature.assistant.generated.resources.read_only_not_attending
-import lynk.feature.assistant.generated.resources.read_only_voting_closed
 import lynk.feature.assistant.generated.resources.spot_suggested
 import lynk.feature.assistant.generated.resources.starter_discover_birthday
 import lynk.feature.assistant.generated.resources.starter_discover_cheap
@@ -133,6 +136,13 @@ import lynk.feature.assistant.generated.resources.starter_hangout_budget
 import lynk.feature.assistant.generated.resources.starter_hangout_late
 import lynk.feature.assistant.generated.resources.starter_hangout_reach
 import lynk.feature.assistant.generated.resources.starter_hangout_vibe
+import lynk.feature.assistant.generated.resources.starter_ongoing_food
+import lynk.feature.assistant.generated.resources.starter_ongoing_late
+import lynk.feature.assistant.generated.resources.starter_ongoing_next
+import lynk.feature.assistant.generated.resources.starter_scheduled_after
+import lynk.feature.assistant.generated.resources.starter_scheduled_backup
+import lynk.feature.assistant.generated.resources.starter_scheduled_know
+import lynk.feature.assistant.generated.resources.starter_spot_parking
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -147,9 +157,9 @@ private sealed interface AssistantBodyState {
 }
 
 private enum class AssistantBottomBar {
+    NONE,
     NOT_ATTENDING,
     ENDED,
-    VOTING_CLOSED,
     OUT_OF_MESSAGES,
     INPUT
 }
@@ -244,7 +254,9 @@ fun AssistantScreen(
     val isVoting = state.hangoutStatus == HangoutStatus.VOTING
     val votingCenter = state.center?.takeIf { isVoting }
 
-    val isChatOpen = !isHangoutChat || (state.isAttending == true && isVoting) // !isHangoutChat is essentially discover chat
+    val isHangoutOpen = isVoting || state.hangoutStatus == HangoutStatus.SCHEDULED || state.hangoutStatus == HangoutStatus.ONGOING
+
+    val isChatOpen = !isHangoutChat || (state.isAttending == true && isHangoutOpen) // !isHangoutChat is essentially discover chat
     val isOutOfMessages = state.messagesLeft == 0
     val canAsk = isChatOpen && !isOutOfMessages && !isAnswerInProgress
     val isWaitingForHistory = state.messages.isEmpty() && (!state.isEndReached || state.loadError != null)
@@ -373,10 +385,15 @@ fun AssistantScreen(
             )
         },
         bottomBar = {
+            val isChatKnown = if (isHangoutChat) {
+                state.hangoutStatus != null && state.isAttending != null
+            } else {
+                state.searchCenter != null
+            }
             val bottomBar = when {
+                !isChatKnown -> AssistantBottomBar.NONE
                 isHangoutChat && state.isAttending == false -> AssistantBottomBar.NOT_ATTENDING
                 state.hangoutStatus == HangoutStatus.COMPLETED || state.hangoutStatus == HangoutStatus.CANCELLED -> AssistantBottomBar.ENDED
-                isHangoutChat && state.hangoutStatus != null && !isVoting -> AssistantBottomBar.VOTING_CLOSED
                 isOutOfMessages -> AssistantBottomBar.OUT_OF_MESSAGES
                 else -> AssistantBottomBar.INPUT
             }
@@ -389,7 +406,13 @@ fun AssistantScreen(
             ) {
                 AnimatedContent(
                     targetState = bottomBar,
-                    transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) },
+                    transitionSpec = {
+                        if (initialState == AssistantBottomBar.NONE) {
+                            EnterTransition.None togetherWith ExitTransition.None using null
+                        } else {
+                            fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                        }
+                    },
                     label = "assistant_bottom_bar",
                     modifier = Modifier
                         .widthIn(max = contentMaxWidth)
@@ -397,6 +420,8 @@ fun AssistantScreen(
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
                 ) { target ->
                     when (target) {
+                        AssistantBottomBar.NONE -> Unit
+
                         AssistantBottomBar.NOT_ATTENDING -> {
                             AssistantClosedNotice(
                                 title = null,
@@ -409,14 +434,6 @@ fun AssistantScreen(
                             AssistantClosedNotice(
                                 title = null,
                                 message = stringResource(Res.string.read_only_ended),
-                                isOutOfMessages = false
-                            )
-                        }
-
-                        AssistantBottomBar.VOTING_CLOSED -> {
-                            AssistantClosedNotice(
-                                title = null,
-                                message = stringResource(Res.string.read_only_voting_closed),
                                 isOutOfMessages = false
                             )
                         }
@@ -498,19 +515,33 @@ fun AssistantScreen(
                         }
 
                         AssistantBodyState.Empty -> {
-                            val starterPrompts = if (isHangoutChat) {
-                                persistentListOf(
+                            val starterPrompts = when {
+                                !isHangoutChat -> persistentListOf(
+                                    stringResource(Res.string.starter_discover_drinks),
+                                    stringResource(Res.string.starter_discover_birthday),
+                                    stringResource(Res.string.starter_discover_cheap),
+                                    stringResource(Res.string.starter_discover_music)
+                                )
+
+                                isVoting -> persistentListOf(
                                     stringResource(Res.string.starter_hangout_vibe),
                                     stringResource(Res.string.starter_hangout_reach),
                                     stringResource(Res.string.starter_hangout_budget),
                                     stringResource(Res.string.starter_hangout_late)
                                 )
-                            } else {
-                                persistentListOf(
-                                    stringResource(Res.string.starter_discover_drinks),
-                                    stringResource(Res.string.starter_discover_birthday),
-                                    stringResource(Res.string.starter_discover_cheap),
-                                    stringResource(Res.string.starter_discover_music)
+
+                                state.hangoutStatus == HangoutStatus.ONGOING -> persistentListOf(
+                                    stringResource(Res.string.starter_ongoing_next),
+                                    stringResource(Res.string.starter_ongoing_food),
+                                    stringResource(Res.string.starter_ongoing_late),
+                                    stringResource(Res.string.starter_spot_parking)
+                                )
+
+                                else -> persistentListOf(
+                                    stringResource(Res.string.starter_scheduled_know),
+                                    stringResource(Res.string.starter_spot_parking),
+                                    stringResource(Res.string.starter_scheduled_after),
+                                    stringResource(Res.string.starter_scheduled_backup)
                                 )
                             }
                             val areaName = state.areaName
@@ -519,12 +550,14 @@ fun AssistantScreen(
                             AssistantEmptyState(
                                 title = when {
                                     !isHangoutChat -> stringResource(Res.string.empty_title_discover)
-                                    hangoutName != null -> stringResource(Res.string.empty_title_hangout, hangoutName)
-                                    else -> stringResource(Res.string.assistant_title)
+                                    hangoutName == null || !isChatOpen -> stringResource(Res.string.assistant_title)
+                                    isVoting -> stringResource(Res.string.empty_title_hangout, hangoutName)
+                                    else -> stringResource(Res.string.empty_title_hangout_spot_chosen, hangoutName)
                                 },
                                 message = when {
                                     isHangoutChat && !isChatOpen -> stringResource(Res.string.empty_message_hangout_read_only)
-                                    isHangoutChat -> stringResource(Res.string.empty_message_hangout)
+                                    isVoting -> stringResource(Res.string.empty_message_hangout)
+                                    isHangoutChat -> stringResource(Res.string.empty_message_hangout_spot_chosen)
                                     areaName != null -> stringResource(Res.string.empty_message_discover_area, areaName)
                                     else -> stringResource(Res.string.empty_message_discover)
                                 },

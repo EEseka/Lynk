@@ -90,6 +90,8 @@ fun SpotDiscoverCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
+                } else {
+                    SpotPhotoFallback(iconSize = 40.dp, modifier = Modifier.fillMaxSize())
                 }
 
                 if (rankLabel != null) {
