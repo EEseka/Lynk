@@ -10,6 +10,9 @@ import lynk.shared.generated.resources.lobby_error_no_votes
 import lynk.shared.generated.resources.lobby_error_not_a_candidate
 import lynk.shared.generated.resources.lobby_error_not_attending
 import lynk.shared.generated.resources.lobby_error_not_host
+import lynk.shared.generated.resources.lobby_error_not_suggester
+import lynk.shared.generated.resources.lobby_error_note_not_one_line
+import lynk.shared.generated.resources.lobby_error_note_too_long
 import lynk.shared.generated.resources.lobby_error_spot_not_found
 import lynk.shared.generated.resources.lobby_error_voting_closed
 
@@ -20,6 +23,9 @@ fun LobbyEvent.LobbyError.toUiText(): UiText {
         "SPOT_NOT_FOUND" -> Res.string.lobby_error_spot_not_found
         "CANDIDATES_FULL" -> Res.string.lobby_error_candidates_full
         "NOT_HOST" -> Res.string.lobby_error_not_host
+        "NOT_SUGGESTER" -> Res.string.lobby_error_not_suggester
+        "NOTE_TOO_LONG" -> Res.string.lobby_error_note_too_long
+        "NOTE_NOT_ONE_LINE" -> Res.string.lobby_error_note_not_one_line
         "NOT_A_CANDIDATE" -> Res.string.lobby_error_not_a_candidate
         "INVALID_CHOICE" -> Res.string.lobby_error_invalid_choice
         "NO_VOTES" -> Res.string.lobby_error_no_votes

@@ -50,7 +50,8 @@ sealed class OutgoingLobbyDto(
     @Serializable
     data class ProposeSpot(
         val hangoutId: String,
-        val spotId: String
+        val spotId: String,
+        val note: String?
     ) : OutgoingLobbyDto(OutgoingLobbyMessageType.PROPOSE_SPOT)
 
     @Serializable

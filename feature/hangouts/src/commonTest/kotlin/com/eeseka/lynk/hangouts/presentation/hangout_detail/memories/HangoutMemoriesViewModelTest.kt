@@ -8,7 +8,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
-import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
@@ -50,7 +49,6 @@ class HangoutMemoriesViewModelTest {
     private lateinit var hangoutPhotoRepository: FakeHangoutPhotoRepository
     private lateinit var sessionStorage: FakeSessionStorage
     private lateinit var connectionClient: FakeLobbyConnectionClient
-    private lateinit var detailRepository: InMemoryHangoutDetailRepository
     private lateinit var photoStatsRepository: InMemoryHangoutPhotoStatsRepository
 
     @BeforeTest
@@ -68,24 +66,6 @@ class HangoutMemoriesViewModelTest {
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
-    }
-
-    @Test
-    fun `loads no photos until the hangout is completed`() = runTest {
-        val hangoutId = createHangout(attendees = listOf(GUEST_ID))
-        val viewModel = createViewModel(hangoutId)
-
-        assertThat(viewModel.state.value.photos).isEmpty()
-    }
-
-    @Test
-    fun `loads the photos once the host completes the hangout`() = runTest {
-        val hangoutId = createHangout(attendees = listOf(GUEST_ID))
-        val viewModel = createViewModel(hangoutId)
-
-        completeHangout(hangoutId)
-
-        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p1")
     }
 
     @Test
@@ -118,12 +98,13 @@ class HangoutMemoriesViewModelTest {
 
     @Test
     fun `shows the row as loading while the counts are still on their way`() = runTest {
+        val firstHangoutId = createHangout(attendees = listOf(GUEST_ID))
+        val viewModel = createViewModel(firstHangoutId)
         val hangoutId = createHangout(attendees = listOf(GUEST_ID))
-        val viewModel = createViewModel(hangoutId)
+        completeHangout(hangoutId)
         hangoutPhotoService.statsResponseDelay = 1.seconds
 
-        hangoutService.completeHangout(hangoutId)
-        detailRepository.refreshHangout(hangoutId)
+        viewModel.onAction(HangoutMemoriesAction.OnSelectHangout(hangoutId))
         runCurrent()
 
         assertThat(viewModel.state.value.isLoadingPhotos).isTrue()
@@ -146,27 +127,6 @@ class HangoutMemoriesViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.photos.single().urlsExpireAt).isEqualTo(Instant.fromEpochMilliseconds(FAR_FUTURE))
-    }
-
-    @Test
-    fun `loads no photos when nobody else went`() = runTest {
-        val hangoutId = createHangout(attendees = emptyList())
-        val viewModel = createViewModel(hangoutId)
-
-        completeHangout(hangoutId)
-
-        assertThat(viewModel.state.value.photos).isEmpty()
-    }
-
-    @Test
-    fun `loads no photos for someone who never accepted`() = runTest {
-        val hangoutId = createHangout(attendees = listOf(GUEST_ID), pendingInvitees = listOf(INVITEE_ID))
-        completeHangout(hangoutId)
-        signIn(INVITEE_ID)
-
-        val viewModel = createViewModel(hangoutId)
-
-        assertThat(viewModel.state.value.photos).isEmpty()
     }
 
     @Test
@@ -230,35 +190,27 @@ class HangoutMemoriesViewModelTest {
 
     // The real in-memory stores fed by the fake services, holding the hangout and album on screen
     private suspend fun TestScope.createViewModel(hangoutId: String): HangoutMemoriesViewModel {
-        detailRepository = InMemoryHangoutDetailRepository(hangoutService, sessionStorage, backgroundScope)
         photoStatsRepository = InMemoryHangoutPhotoStatsRepository(hangoutPhotoService, sessionStorage, backgroundScope)
         runCurrent()
         val viewModel = HangoutMemoriesViewModel(
-            detailRepository,
             hangoutPhotoService,
             hangoutPhotoRepository,
             photoStatsRepository,
-            connectionClient,
-            sessionStorage
+            connectionClient
         )
         collectInBackground(viewModel.state)
         viewModel.onAction(HangoutMemoriesAction.OnSelectHangout(hangoutId))
-        detailRepository.refreshHangout(hangoutId)
         advanceUntilIdle()
         return viewModel
     }
 
     private suspend fun TestScope.completeHangout(hangoutId: String) {
         hangoutService.completeHangout(hangoutId)
-        if (::detailRepository.isInitialized) detailRepository.refreshHangout(hangoutId)
         advanceUntilIdle()
     }
 
-    // The host creates it, everyone in [attendees] accepts and [pendingInvitees] never answer
-    private suspend fun createHangout(
-        attendees: List<String>,
-        pendingInvitees: List<String> = emptyList()
-    ): String {
+    // The host creates it and everyone in [attendees] accepts
+    private suspend fun createHangout(attendees: List<String>): String {
         signIn(HOST_ID)
         hangoutService.currentUserId = HOST_ID
         hangoutService.createHangout(
@@ -271,7 +223,7 @@ class HangoutMemoriesViewModelTest {
         )
         val hangoutId = hangoutService.hangouts.last().id
 
-        (attendees + pendingInvitees).forEach { hangoutService.inviteParticipant(hangoutId, it) }
+        attendees.forEach { hangoutService.inviteParticipant(hangoutId, it) }
         attendees.forEach { attendeeId ->
             hangoutService.currentUserId = attendeeId
             hangoutService.updateRsvp(hangoutId, RsvpStatus.ATTENDING)
@@ -309,7 +261,6 @@ class HangoutMemoriesViewModelTest {
     private companion object {
         const val HOST_ID = "host_1"
         const val GUEST_ID = "user_2"
-        const val INVITEE_ID = "user_3"
         const val FAR_FUTURE = 4102444800000L
     }
 }

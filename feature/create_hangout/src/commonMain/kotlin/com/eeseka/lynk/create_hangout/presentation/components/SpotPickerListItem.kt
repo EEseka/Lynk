@@ -100,9 +100,7 @@ fun SpotPickerListItem(
                 LynkText(
                     text = spotName,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
 
                 val metadata = buildString {

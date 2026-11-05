@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.album_photo_gone
 import lynk.feature.hangouts.generated.resources.album_save_failed
 import lynk.feature.hangouts.generated.resources.album_save_selected_failed
 import lynk.feature.hangouts.generated.resources.album_save_selected_partly
@@ -452,6 +453,15 @@ class HangoutAlbumViewModel(
                     eventChannel.send(HangoutAlbumEvent.CaptionUpdated)
                 }
                 .onFailure { error ->
+                    // Removed while the caption was being edited, from another device or by the host
+                    if (error == DataError.Remote.NOT_FOUND) {
+                        dismissCaptionSheet()
+                        removePhoto(photoId)
+                        eventChannel.send(HangoutAlbumEvent.Error(UiText.Resource(Res.string.album_photo_gone)))
+                        hangoutPhotoStatsRepository.refreshPhotoStats(hangoutId)
+                        return@onFailure
+                    }
+
                     eventChannel.send(HangoutAlbumEvent.Error(error.toUiText()))
                 }
             _state.update { it.copy(isSavingCaption = false) }
@@ -464,7 +474,7 @@ class HangoutAlbumViewModel(
         val photoId = currentState.pendingDeletePhotoId ?: return
 
         viewModelScope.launch {
-            _state.update { it.copy(deletingPhotoId = photoId) }
+            _state.update { it.copy(deletingPhotoIds = (it.deletingPhotoIds + photoId).toImmutableSet()) }
             hangoutPhotoService
                 .deletePhoto(hangoutId = hangoutId, photoId = photoId)
                 .onSuccess {
@@ -484,7 +494,7 @@ class HangoutAlbumViewModel(
 
                     eventChannel.send(HangoutAlbumEvent.Error(error.toUiText()))
                 }
-            _state.update { it.copy(deletingPhotoId = null) }
+            _state.update { it.copy(deletingPhotoIds = (it.deletingPhotoIds - photoId).toImmutableSet()) }
         }
     }
 

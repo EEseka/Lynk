@@ -54,9 +54,12 @@ import lynk.feature.hangouts.generated.resources.event_completed
 import lynk.feature.hangouts.generated.resources.event_invited
 import lynk.feature.hangouts.generated.resources.event_left
 import lynk.feature.hangouts.generated.resources.event_non_payer_removed
+import lynk.feature.hangouts.generated.resources.event_non_payer_removed_you
 import lynk.feature.hangouts.generated.resources.event_payment_received
 import lynk.feature.hangouts.generated.resources.event_payout_failed
 import lynk.feature.hangouts.generated.resources.event_payout_sent
+import lynk.feature.hangouts.generated.resources.event_removed
+import lynk.feature.hangouts.generated.resources.event_removed_you
 import lynk.feature.hangouts.generated.resources.event_rsvp_in
 import lynk.feature.hangouts.generated.resources.event_rsvp_out
 import lynk.feature.hangouts.generated.resources.event_updated
@@ -115,7 +118,13 @@ class HangoutDetailViewModel(
             HangoutDetailAction.OnCancelHangoutConfirmed -> cancelHangout()
             HangoutDetailAction.OnLeaveHangoutConfirmed -> leaveHangout()
             HangoutDetailAction.OnMarkArrivedClick -> markArrived()
-            is HangoutDetailAction.OnWithdrawParticipantInvite -> withdrawParticipantInvite(action.userId)
+            is HangoutDetailAction.OnWithdrawParticipantInvite -> removeParticipant(
+                userId = action.userId,
+                removedEvent = HangoutDetailEvent.InviteWithdrawn
+            )
+            is HangoutDetailAction.OnRemoveParticipantClick -> _state.update { it.copy(pendingRemoveUserId = action.userId) }
+            HangoutDetailAction.OnDismissRemoveDialog -> _state.update { it.copy(pendingRemoveUserId = null) }
+            HangoutDetailAction.OnRemoveParticipantConfirmed -> confirmRemoveParticipant()
             HangoutDetailAction.OnInviteClick -> _state.update { it.copy(showInviteSheet = true) }
             HangoutDetailAction.OnDismissInviteSheet -> dismissInviteSheet()
             is HangoutDetailAction.OnInviteUser -> inviteParticipant(action.userId)
@@ -226,13 +235,52 @@ class HangoutDetailViewModel(
                 ) to LynkFlashType.Success
             )
 
-            is LobbyEvent.NonPayerRemoved -> refreshDetailAndShowSnackbar(
-                match = event.hangoutId == currentHangoutId,
-                snackbar = UiText.Resource(
-                    Res.string.event_non_payer_removed,
-                    arrayOf(event.displayName)
-                ) to LynkFlashType.Warning
-            )
+            is LobbyEvent.NonPayerRemoved -> when {
+                event.hangoutId != currentHangoutId -> Unit
+
+                // They were taken out, so nothing here is theirs to see anymore
+                event.userId == currentState.currentUserId -> {
+                    eventChannel.send(
+                        HangoutDetailEvent.LobbyAnnouncement(
+                            UiText.Resource(Res.string.event_non_payer_removed_you),
+                            LynkFlashType.Warning
+                        )
+                    )
+                    eventChannel.send(HangoutDetailEvent.NavigateBack)
+                }
+
+                else -> refreshDetailAndShowSnackbar(
+                    match = true,
+                    snackbar = UiText.Resource(
+                        Res.string.event_non_payer_removed,
+                        arrayOf(event.displayName)
+                    ) to LynkFlashType.Warning
+                )
+            }
+
+            is LobbyEvent.ParticipantRemoved -> when {
+                event.hangoutId != currentHangoutId -> Unit
+
+                // They were taken out, so nothing here is theirs to see anymore
+                event.userId == currentState.currentUserId -> {
+                    eventChannel.send(
+                        HangoutDetailEvent.LobbyAnnouncement(
+                            UiText.Resource(Res.string.event_removed_you),
+                            LynkFlashType.Warning
+                        )
+                    )
+                    eventChannel.send(HangoutDetailEvent.NavigateBack)
+                }
+
+                else -> refreshDetailAndShowSnackbar(
+                    match = true,
+                    // Host triggered this via REST and already saw a confirmation.
+                    snackbar = if (isHost) null else UiText.Resource(
+                        Res.string.event_removed,
+                        arrayOf(event.displayName)
+                    ) to LynkFlashType.Info
+                )
+            }
 
             is LobbyEvent.PaymentDeadlineResolved -> refreshDetailAndShowSnackbar(
                 match = event.hangoutId == currentHangoutId,
@@ -308,7 +356,8 @@ class HangoutDetailViewModel(
         _state.update {
             it.copy(
                 presentUserIds = persistentSetOf(),
-                withdrawingUserIds = persistentSetOf(),
+                removingUserIds = persistentSetOf(),
+                pendingRemoveUserId = null,
                 isInviting = false,
                 isCompleting = false,
                 isCancelling = false,
@@ -364,6 +413,15 @@ class HangoutDetailViewModel(
                         hangout?.status == HangoutStatus.ONGOING
                 if (hangout != null && _state.value.showInviteSheet && !areInvitesOpen) {
                     dismissInviteSheet()
+                }
+
+                // Whoever the host was asked about left or was removed elsewhere, so the question is gone too
+                val pendingRemoveUserId = _state.value.pendingRemoveUserId
+                val isStillGoing = hangout?.participants?.any {
+                    it.user.userId == pendingRemoveUserId && it.rsvpStatus == RsvpStatus.ATTENDING
+                } == true
+                if (pendingRemoveUserId != null && !isStillGoing) {
+                    _state.update { it.copy(pendingRemoveUserId = null) }
                 }
             }
             .launchIn(viewModelScope)
@@ -488,30 +546,39 @@ class HangoutDetailViewModel(
         }
     }
 
-    private fun withdrawParticipantInvite(userId: String) {
+    private fun confirmRemoveParticipant() {
+        val userId = _state.value.pendingRemoveUserId ?: return
+        _state.update { it.copy(pendingRemoveUserId = null) }
+        removeParticipant(
+            userId = userId,
+            removedEvent = HangoutDetailEvent.ParticipantRemoved
+        )
+    }
+
+    private fun removeParticipant(userId: String, removedEvent: HangoutDetailEvent) {
         val hangoutId = _hangoutId.value ?: return
         viewModelScope.launch {
             _state.update {
-                it.copy(withdrawingUserIds = (it.withdrawingUserIds + userId).toImmutableSet())
+                it.copy(removingUserIds = (it.removingUserIds + userId).toImmutableSet())
             }
             hangoutService
                 .removeParticipant(hangoutId, userId)
                 .onSuccess {
                     hangoutDetailRepository.refreshHangout(hangoutId)
-                    eventChannel.send(HangoutDetailEvent.InviteWithdrawn)
+                    eventChannel.send(removedEvent)
                 }
                 .onFailure { error ->
-                    // Already withdrawn from another device, which is what was asked for
+                    // Already removed from another device, which is what was asked for
                     if (error == DataError.Remote.NOT_FOUND) {
                         hangoutDetailRepository.refreshHangout(hangoutId)
-                        eventChannel.send(HangoutDetailEvent.InviteWithdrawn)
+                        eventChannel.send(removedEvent)
                         return@onFailure
                     }
 
                     eventChannel.send(HangoutDetailEvent.Error(error.toUiText()))
                 }
             _state.update {
-                it.copy(withdrawingUserIds = (it.withdrawingUserIds - userId).toImmutableSet())
+                it.copy(removingUserIds = (it.removingUserIds - userId).toImmutableSet())
             }
         }
     }

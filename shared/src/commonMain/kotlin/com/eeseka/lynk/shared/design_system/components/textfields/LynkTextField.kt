@@ -11,9 +11,11 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.then
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -43,6 +45,14 @@ fun LynkTextField(
     val isError = errorMessage != null
     val scheme = MaterialTheme.colorScheme
 
+    val fieldInputTransformation = remember(singleLine, inputTransformation) {
+        when {
+            !singleLine -> inputTransformation
+            inputTransformation == null -> SingleLineInputTransformation
+            else -> SingleLineInputTransformation.then(inputTransformation)
+        }
+    }
+
     LynkTextFieldLayout(
         title = label,
         errorMessage = errorMessage,
@@ -59,7 +69,7 @@ fun LynkTextField(
                 color = if (enabled) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.5f)
             ),
             keyboardOptions = keyboardOptions,
-            inputTransformation = inputTransformation,
+            inputTransformation = fieldInputTransformation,
             outputTransformation = outputTransformation,
             cursorBrush = SolidColor(if (isError) scheme.error else scheme.primary),
             interactionSource = interactionSource,

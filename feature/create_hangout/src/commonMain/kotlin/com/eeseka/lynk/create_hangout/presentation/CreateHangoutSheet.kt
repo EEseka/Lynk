@@ -282,7 +282,7 @@ private fun CreateHangoutSheetContent(
                             timeErrorMessage = state.hangoutTimeError?.asString(),
                             expandedPicker = state.expandedPicker,
                             maxAttendees = state.maxAttendees,
-                            minAttendees = state.minAttendees,
+                            minMaxAttendees = state.minMaxAttendees,
                             onVibeSelected = { onAction(CreateHangoutAction.OnVibeSelected(it)) },
                             onPickerToggled = { onAction(CreateHangoutAction.OnPickerToggled(it)) },
                             onDateSelected = { onAction(CreateHangoutAction.OnDateSelected(it)) },

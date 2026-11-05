@@ -6,4 +6,5 @@ sealed interface HangoutVotingEvent {
     data class Error(val message: UiText) : HangoutVotingEvent
     data object SpotSuggested : HangoutVotingEvent
     data object VotingTied : HangoutVotingEvent
+    data class VotedSpotRemoved(val spotName: String) : HangoutVotingEvent
 }

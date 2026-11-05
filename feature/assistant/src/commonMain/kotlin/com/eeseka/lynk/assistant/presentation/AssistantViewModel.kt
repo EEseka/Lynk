@@ -121,6 +121,12 @@ class AssistantViewModel(
             )
 
             is AssistantAction.OnSuggestSpot -> suggestSpot(action.spotId)
+            is AssistantAction.OnHangoutCreationSelected -> _state.update {
+                it.copy(
+                    selectedSpot = null,
+                    hangoutCreationSpot = it.selectedSpot?.takeIf { spot -> spot.id == action.spotId }
+                )
+            }
         }
     }
 
@@ -194,7 +200,7 @@ class AssistantViewModel(
         ballotRepository
             .observeCandidates(hangoutId)
             .onEach { candidates ->
-                val ballotSpotIds = candidates.map { it.id }.toSet()
+                val ballotSpotIds = candidates.map { it.spot.id }.toSet()
                 val suggestedSpotIds = _state.value.suggestingSpotIds.filter { it in ballotSpotIds }
 
                 _state.update {
@@ -441,9 +447,12 @@ class AssistantViewModel(
                 .getSpotDetails(spotId)
                 .onSuccess { spot ->
                     replaceCardSpot(spot)
+                    // Another spot was tapped while this one loaded, and the last tap is the one that opens
+                    if (_state.value.loadingSpotId != spotId) return@onSuccess
                     _state.update { it.copy(selectedSpot = spot.toSpotUi(), loadingSpotId = null) }
                 }
                 .onFailure { error ->
+                    if (_state.value.loadingSpotId != spotId) return@onFailure
                     _state.update { it.copy(loadingSpotId = null) }
                     eventChannel.send(AssistantEvent.Error(error.toUiText()))
                 }
@@ -528,7 +537,7 @@ class AssistantViewModel(
                 it.copy(suggestingSpotIds = (it.suggestingSpotIds + spotId).toImmutableSet())
             }
             lobbyService
-                .proposeSpot(hangoutId, spotId)
+                .proposeSpot(hangoutId = hangoutId, spotId = spotId, note = null)
                 .onFailure { error ->
                     _state.update {
                         it.copy(suggestingSpotIds = (it.suggestingSpotIds - spotId).toImmutableSet())

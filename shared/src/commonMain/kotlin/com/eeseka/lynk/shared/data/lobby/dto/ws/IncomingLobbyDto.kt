@@ -10,8 +10,10 @@ enum class IncomingLobbyMessageType {
     RSVP_UPDATED,
     INVITE_WITHDRAWN,
     NON_PAYER_REMOVED,
+    PARTICIPANT_REMOVED,
     PARTICIPANT_LEFT,
     PARTICIPANT_ARRIVED,
+    NOTES_CHANGED,
     PAYMENT_RECEIVED,
     PAYMENT_DEADLINE_RESOLVED,
     PAYOUT_OUTCOME,
@@ -88,9 +90,17 @@ sealed interface IncomingLobbyDto {
     ) : IncomingLobbyDto
 
     @Serializable
+    data class VotingCandidateDto(
+        val spot: SpotDto,
+        val suggestedById: String,
+        val suggestedByDisplayName: String,
+        val note: String?
+    )
+
+    @Serializable
     data class VotingSnapshotDto(
         val hangoutId: String,
-        val candidates: List<SpotDto>,
+        val candidates: List<VotingCandidateDto>,
         val votes: Map<String, String>,
         val latitude: Double? = null,
         val longitude: Double? = null
@@ -99,7 +109,7 @@ sealed interface IncomingLobbyDto {
     @Serializable
     data class CandidateAddedDto(
         val hangoutId: String,
-        val spot: SpotDto
+        val candidate: VotingCandidateDto
     ) : IncomingLobbyDto
 
     @Serializable

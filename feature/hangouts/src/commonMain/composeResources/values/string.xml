@@ -111,6 +111,11 @@
     <string name="detail_group_declined">Declined</string>
     <string name="detail_withdraw">Withdraw</string>
     <string name="detail_withdrawn_message">Invite withdrawn</string>
+    <string name="detail_remove">Remove</string>
+    <string name="detail_removed_message">Removed from the hangout</string>
+    <string name="detail_remove_confirm_title">Remove %1$s?</string>
+    <string name="detail_remove_confirm_message">They'll be told and will need a new invite to rejoin. Anything they paid is refunded.</string>
+    <string name="detail_remove_confirm_action">Remove</string>
 
     <!-- Invite flow -->
     <string name="detail_invite">Invite participants</string>
@@ -136,6 +141,9 @@
     <string name="event_cancelled">%1$s cancelled the hangout</string>
     <string name="event_payment_received">%1$s has paid</string>
     <string name="event_non_payer_removed">%1$s was removed for not paying</string>
+    <string name="event_non_payer_removed_you">You were removed because your share went unpaid</string>
+    <string name="event_removed">%1$s was removed from the hangout</string>
+    <string name="event_removed_you">You were removed from this hangout</string>
     <string name="event_payout_sent">Your payout is on its way to your bank</string>
     <string name="event_payout_failed">Your payout didn't go through. You can try again.</string>
 
@@ -248,6 +256,9 @@
     <string name="voting_tie_banner_guest">It's a tie. The host is picking the winner</string>
     <string name="voting_tie_flash">It's a tie. Pick the winner</string>
     <string name="spot_suggested_message">Spot suggested</string>
+    <string name="voting_suggested_by">Suggested by %1$s</string>
+    <string name="voting_suggested_by_you">Suggested by you</string>
+    <string name="voting_voted_spot_removed">%1$s was removed. Vote again</string>
 
     <!-- Propose-spot sheet -->
     <string name="propose_sheet_title">Propose a Spot</string>
@@ -255,11 +266,48 @@
     <string name="propose_favorite_search_hint">Search favorite spots…</string>
     <string name="propose_suggest_action">Suggest Spot</string>
     <string name="propose_proposed">Added</string>
+    <string name="propose_suggesting">Suggesting…</string>
+    <string name="propose_back">Back to search</string>
+    <string name="propose_note_title">Why This Spot?</string>
+    <string name="propose_note_label">Note (Optional)</string>
+    <string name="propose_note_hint">e.g. Live music on Fridays</string>
+    <string name="propose_note_counter">%1$d / %2$d</string>
     <string name="propose_empty_message">No spots found.</string>
     <string name="propose_empty_favorite_message">No favorite spots found.</string>
     <string name="all_spots">All Spots</string>
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point, near everyone.</string>
+
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="notes_title_with_count">Notes · %1$d</string>
+    <string name="notes_empty_title">No Notes Yet</string>
+    <string name="notes_empty_message">Running late or already there? Leave a note for the group.</string>
+    <string name="notes_field_placeholder">Leave a note for everyone…</string>
+    <string name="notes_host">Host</string>
+    <string name="notes_edited">Edited</string>
+    <string name="notes_more_actions">Note actions</string>
+    <string name="notes_edit">Edit</string>
+    <string name="notes_delete">Delete</string>
+    <string name="notes_new_title">New Note</string>
+    <string name="notes_edit_title">Edit Note</string>
+    <string name="notes_hint">e.g. Running 10 minutes late</string>
+    <string name="notes_counter">%1$d / %2$d</string>
+    <string name="notes_tell_title">Who Gets Notified</string>
+    <string name="notes_tell_helper">Everyone going can read your note. This only picks who gets a notification.</string>
+    <string name="notes_tell_everyone">Everyone</string>
+    <string name="notes_tell_host">Just the Host</string>
+    <string name="notes_post">Post Note</string>
+    <string name="notes_posting">Posting…</string>
+    <string name="notes_save">Save Note</string>
+    <string name="notes_saving">Saving…</string>
+    <string name="notes_posted">Note posted</string>
+    <string name="notes_updated">Note updated</string>
+    <string name="notes_deleted">Note deleted</string>
+    <string name="notes_note_gone">This note was deleted.</string>
+    <string name="notes_delete_confirm_title">Delete this note?</string>
+    <string name="notes_delete_confirm_message">It will be gone for everyone going. This can't be undone.</string>
+    <string name="notes_delete_confirm_action">Delete</string>
 
     <!-- Memories -->
     <string name="memories_title">Memories</string>
@@ -294,6 +342,7 @@
     <string name="album_delete_confirm_message">It will be gone from the album for everyone who went. This can't be undone.</string>
     <string name="album_delete_confirm_action">Remove</string>
     <string name="album_photo_deleted">Photo removed</string>
+    <string name="album_photo_gone">This photo was removed.</string>
     <string name="album_new_photos">New photos were added</string>
     <string name="album_show_new_photos">Show</string>
     <string name="album_select">Select</string>

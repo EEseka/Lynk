@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
+import com.eeseka.lynk.hangouts.presentation.mappers.toVotingCandidateUi
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
@@ -118,7 +119,9 @@ class HangoutVotingViewModel(
             is HangoutVotingAction.OnTabSelected -> _state.update { it.copy(activeProposeSpotSheetSearchTab = action.tab) }
             HangoutVotingAction.LoadNextSpotPage -> loadNextSpotSearchPage()
             HangoutVotingAction.LoadNextFavoriteSpotPage -> loadNextFavoriteSpotSearchPage()
-            is HangoutVotingAction.OnProposeSpot -> proposeSpot(action.spotId)
+            is HangoutVotingAction.OnSuggestSpotClick -> _state.update { it.copy(spotToSuggest = action.spot) }
+            HangoutVotingAction.OnBackToSpotSearch -> clearSpotToSuggest()
+            HangoutVotingAction.OnProposeSpot -> proposeSpot()
             is HangoutVotingAction.OnRemoveSpot -> removeSpot(action.spotId)
         }
     }
@@ -178,7 +181,7 @@ class HangoutVotingViewModel(
             }
             .onEach { candidates ->
                 _state.update {
-                    it.copy(candidates = candidates.map { spot -> spot.toSpotUi() }.toImmutableList())
+                    it.copy(candidates = candidates.map { candidate -> candidate.toVotingCandidateUi() }.toImmutableList())
                 }
             }
             .launchIn(viewModelScope)
@@ -247,12 +250,14 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CandidateAdded -> {
                 if (event.hangoutId == currentHangoutId) {
-                    val wasOurs = _state.value.proposingSpotIds.contains(event.spot.id)
-                    ballotRepository.addCandidate(currentHangoutId, event.spot)
+                    val spotId = event.candidate.spot.id
+                    val wasOurs = _state.value.proposingSpotIds.contains(spotId)
+                    ballotRepository.addCandidate(currentHangoutId, event.candidate)
                     _state.update {
-                        it.copy(proposingSpotIds = (it.proposingSpotIds - event.spot.id).toImmutableSet())
+                        it.copy(proposingSpotIds = (it.proposingSpotIds - spotId).toImmutableSet())
                     }
                     if (wasOurs) {
+                        if (_state.value.spotToSuggest?.id == spotId) clearSpotToSuggest()
                         eventChannel.send(HangoutVotingEvent.SpotSuggested)
                     }
                 }
@@ -260,12 +265,20 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CandidateRemoved -> {
                 if (event.hangoutId == currentHangoutId) {
+                    val currentState = _state.value
+                    val removedSpotName = currentState.candidates.find { it.spot.id == event.spotId }?.spot?.name
+                    val wasMyVote = currentUserId?.let { currentState.votes[it] } == event.spotId
+                    val removedByMe = event.spotId in currentState.removingSpotIds
+
                     ballotRepository.removeCandidate(currentHangoutId, event.spotId)
                     _state.update { state ->
                         state.copy(
                             votes = state.votes.filterValues { it != event.spotId }.toImmutableMap(),
                             removingSpotIds = (state.removingSpotIds - event.spotId).toImmutableSet()
                         )
+                    }
+                    if (wasMyVote && !removedByMe && removedSpotName != null) {
+                        eventChannel.send(HangoutVotingEvent.VotedSpotRemoved(removedSpotName))
                     }
                 }
             }
@@ -332,13 +345,15 @@ class HangoutVotingViewModel(
         }
     }
 
-    private fun proposeSpot(spotId: String) {
+    private fun proposeSpot() {
         val hangoutId = _hangoutId.value ?: return
+        val spotId = _state.value.spotToSuggest?.id ?: return
+        val note = _state.value.spotNoteState.text.toString().trim().ifEmpty { null }
         viewModelScope.launch {
             _state.update {
                 it.copy(proposingSpotIds = (it.proposingSpotIds + spotId).toImmutableSet())
             }
-            lobbyService.proposeSpot(hangoutId, spotId)
+            lobbyService.proposeSpot(hangoutId = hangoutId, spotId = spotId, note = note)
                 .onFailure { error ->
                     _state.update {
                         it.copy(proposingSpotIds = (it.proposingSpotIds - spotId).toImmutableSet())
@@ -378,6 +393,7 @@ class HangoutVotingViewModel(
 
     private fun dismissProposeSpotSheet() {
         _state.value.proposeSpotSheetSearchTextState.clearText()
+        clearSpotToSuggest()
         _state.update {
             it.copy(
                 showProposeSpotSheet = false,
@@ -392,6 +408,11 @@ class HangoutVotingViewModel(
                 favoriteSpotSearchEndReached = false
             )
         }
+    }
+
+    private fun clearSpotToSuggest() {
+        _state.value.spotNoteState.clearText()
+        _state.update { it.copy(spotToSuggest = null) }
     }
 
     private fun observeTrendingSpots() {

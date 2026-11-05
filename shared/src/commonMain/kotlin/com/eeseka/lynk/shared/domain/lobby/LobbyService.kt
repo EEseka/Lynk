@@ -28,10 +28,10 @@ interface LobbyService {
     /** Takes this user off the hangout's map. */
     suspend fun stopLiveLocation(hangoutId: String): EmptyResult<DataError.Connection>
 
-    /** Add a spot to the candidate list for voting. */
-    suspend fun proposeSpot(hangoutId: String, spotId: String): EmptyResult<DataError.Connection>
+    /** Add a spot to the candidate list for voting, with an optional [note] on why. */
+    suspend fun proposeSpot(hangoutId: String, spotId: String, note: String?): EmptyResult<DataError.Connection>
 
-    /** Host-only: pull a spot off the candidate list (moderation). */
+    /** The host takes any spot off the candidate list, everyone else only the ones they suggested. */
     suspend fun removeSpot(hangoutId: String, spotId: String): EmptyResult<DataError.Connection>
 
     /** Cast (or move) this user's single vote to [spotId]. */

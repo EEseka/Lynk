@@ -15,6 +15,7 @@ class FakeLobbyService : LobbyService {
     var sharedLiveLocations = mutableListOf<Pair<Double, Double>>()
     var stoppedLiveLocationIds = mutableListOf<String>()
     var proposedSpotIds = mutableListOf<String>()
+    var proposedSpotNotes = mutableListOf<String?>()
     var removedSpotIds = mutableListOf<String>()
     var votedSpotIds = mutableListOf<String>()
     var closedVotingChosenSpotIds = mutableListOf<String?>()
@@ -57,9 +58,14 @@ class FakeLobbyService : LobbyService {
         return Result.Success(Unit)
     }
 
-    override suspend fun proposeSpot(hangoutId: String, spotId: String): EmptyResult<DataError.Connection> {
+    override suspend fun proposeSpot(
+        hangoutId: String,
+        spotId: String,
+        note: String?
+    ): EmptyResult<DataError.Connection> {
         if (shouldReturnError) return Result.Failure(errorToReturn)
         proposedSpotIds.add(spotId)
+        proposedSpotNotes.add(note)
         return Result.Success(Unit)
     }
 

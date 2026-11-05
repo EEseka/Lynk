@@ -102,6 +102,21 @@ class HangoutAlbumViewModelTest {
     }
 
     @Test
+    fun `captioning a photo deleted on another phone closes the sheet and drops it`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutAlbumAction.OnEditCaptionClick("p2"))
+        viewModel.state.value.captionState.typeText("Suya run")
+        hangoutPhotoService.photos.removeAll { it.id == "p2" }
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutAlbumAction.OnSaveCaptionClick)
+            assertThat(awaitItem()).isInstanceOf(HangoutAlbumEvent.Error::class)
+        }
+        assertThat(viewModel.state.value.captionEditPhotoId).isNull()
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p3", "p1")
+    }
+
+    @Test
     fun `save wakes only when the caption differs from the saved one`() = runTest {
         val viewModel = createViewModel()
         viewModel.onAction(HangoutAlbumAction.OnEditCaptionClick("p2"))
@@ -153,13 +168,31 @@ class HangoutAlbumViewModelTest {
             viewModel.onAction(HangoutAlbumAction.OnDeleteConfirmed)
             runCurrent()
 
-            assertThat(viewModel.state.value.deletingPhotoId).isEqualTo("p2")
+            assertThat(viewModel.state.value.deletingPhotoIds).containsOnly("p2")
 
             assertThat(awaitItem()).isEqualTo(HangoutAlbumEvent.PhotoDeleted)
             advanceUntilIdle()
 
-            assertThat(viewModel.state.value.deletingPhotoId).isNull()
+            assertThat(viewModel.state.value.deletingPhotoIds).isEmpty()
         }
+    }
+
+    @Test
+    fun `two photos deleted one after the other both stay marked until each is done`() = runTest {
+        val viewModel = createViewModel(initialPhotoId = "p2")
+        collectInBackground(viewModel.events)
+        hangoutPhotoService.deleteResponseDelay = 1.seconds
+
+        viewModel.onAction(HangoutAlbumAction.OnDeleteClick("p2"))
+        viewModel.onAction(HangoutAlbumAction.OnDeleteConfirmed)
+        viewModel.onAction(HangoutAlbumAction.OnDeleteClick("p3"))
+        viewModel.onAction(HangoutAlbumAction.OnDeleteConfirmed)
+        runCurrent()
+        assertThat(viewModel.state.value.deletingPhotoIds).containsOnly("p2", "p3")
+
+        advanceUntilIdle()
+        assertThat(viewModel.state.value.deletingPhotoIds).isEmpty()
+        assertThat(viewModel.state.value.photos.map { it.id }).containsExactly("p1")
     }
 
     @Test

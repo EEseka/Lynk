@@ -9,6 +9,8 @@ import com.eeseka.lynk.shared.domain.spot.model.TrendingSpots
 import com.eeseka.lynk.shared.domain.util.DataError
 import com.eeseka.lynk.shared.domain.util.EmptyResult
 import com.eeseka.lynk.shared.domain.util.Result
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 class FakeSpotService : SpotService {
@@ -26,6 +28,8 @@ class FakeSpotService : SpotService {
     // What Google would say about a place right now, when it differs from a saved snapshot
     var spotDetailsList = mutableListOf<Spot>()
     val detailsRequestIds = mutableListOf<String>()
+    // How long each place takes to load, so two loads can finish in either order
+    val detailsResponseDelays = mutableMapOf<String, Duration>()
 
     override suspend fun getTrendingSpots(
         latitude: Double,
@@ -65,6 +69,7 @@ class FakeSpotService : SpotService {
 
     override suspend fun getSpotDetails(spotId: String): Result<Spot, DataError.Remote> {
         detailsRequestIds.add(spotId)
+        delay(detailsResponseDelays[spotId] ?: Duration.ZERO)
         if (shouldReturnError) return Result.Failure(errorToReturn)
 
         val spot = (spotDetailsList + trendingSpotsList + topSpotsList + searchSpotsList + savedSpotsList).find { it.id == spotId }

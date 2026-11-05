@@ -3,7 +3,7 @@ package com.eeseka.lynk.shared.data.lobby
 import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.lobby.BallotRepository
-import com.eeseka.lynk.shared.domain.spot.model.Spot
+import com.eeseka.lynk.shared.domain.lobby.model.VotingCandidate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ class InMemoryBallotRepository(
 ) : BallotRepository {
 
     // Kept per hangout id, so one hangout's ballot can never show on another.
-    private val candidates = MutableStateFlow<Map<String, List<Spot>>>(emptyMap())
+    private val candidates = MutableStateFlow<Map<String, List<VotingCandidate>>>(emptyMap())
     private val centers = MutableStateFlow<Map<String, LocationCoordinates>>(emptyMap())
 
     init {
@@ -35,28 +35,28 @@ class InMemoryBallotRepository(
             .launchIn(applicationScope)
     }
 
-    override fun observeCandidates(hangoutId: String): Flow<List<Spot>> {
+    override fun observeCandidates(hangoutId: String): Flow<List<VotingCandidate>> {
         return candidates
             .map { it[hangoutId].orEmpty() }
             .distinctUntilChanged()
     }
 
-    override fun replaceCandidates(hangoutId: String, candidates: List<Spot>) {
+    override fun replaceCandidates(hangoutId: String, candidates: List<VotingCandidate>) {
         this.candidates.update { it + (hangoutId to candidates) }
     }
 
-    override fun addCandidate(hangoutId: String, spot: Spot) {
+    override fun addCandidate(hangoutId: String, candidate: VotingCandidate) {
         candidates.update { ballots ->
             val ballot = ballots[hangoutId].orEmpty()
-            if (ballot.any { it.id == spot.id }) ballots
-            else ballots + (hangoutId to ballot + spot)
+            if (ballot.any { it.spot.id == candidate.spot.id }) ballots
+            else ballots + (hangoutId to ballot + candidate)
         }
     }
 
     override fun removeCandidate(hangoutId: String, spotId: String) {
         candidates.update { ballots ->
             val ballot = ballots[hangoutId] ?: return@update ballots
-            ballots + (hangoutId to ballot.filterNot { it.id == spotId })
+            ballots + (hangoutId to ballot.filterNot { it.spot.id == spotId })
         }
     }
 

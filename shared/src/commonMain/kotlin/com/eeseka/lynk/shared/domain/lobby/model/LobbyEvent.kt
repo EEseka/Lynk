@@ -1,7 +1,6 @@
 package com.eeseka.lynk.shared.domain.lobby.model
 
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.spot.model.Spot
 
 sealed interface LobbyEvent {
     data class ParticipantInvited(
@@ -22,6 +21,12 @@ sealed interface LobbyEvent {
         val displayName: String
     ) : LobbyEvent
 
+    data class ParticipantRemoved(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
     data class ParticipantLeft(
         val hangoutId: String,
         val userId: String,
@@ -29,6 +34,10 @@ sealed interface LobbyEvent {
     ) : LobbyEvent
 
     data class ParticipantArrived(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class NotesChanged(
         val hangoutId: String
     ) : LobbyEvent
 
@@ -90,7 +99,7 @@ sealed interface LobbyEvent {
 
     data class VotingSnapshot(
         val hangoutId: String,
-        val candidates: List<Spot>,
+        val candidates: List<VotingCandidate>,
         val votes: Map<String, String>,
         val latitude: Double?,
         val longitude: Double?
@@ -98,7 +107,7 @@ sealed interface LobbyEvent {
 
     data class CandidateAdded(
         val hangoutId: String,
-        val spot: Spot
+        val candidate: VotingCandidate
     ) : LobbyEvent
 
     data class CandidateRemoved(

@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
 
             implementation(projects.shared)
+            implementation(projects.feature.createHangout)
         }
 
         commonTest.dependencies {

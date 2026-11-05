@@ -32,6 +32,9 @@
     <string name="lobby_error_spot_not_found">We couldn't load that spot. Please try another.</string>
     <string name="lobby_error_candidates_full">This hangout already has the maximum number of spots.</string>
     <string name="lobby_error_not_host">Only the host can do that.</string>
+    <string name="lobby_error_not_suggester">Only the host or whoever suggested that spot can remove it.</string>
+    <string name="lobby_error_note_too_long">That note is too long.</string>
+    <string name="lobby_error_note_not_one_line">A note has to fit on one line.</string>
     <string name="lobby_error_not_a_candidate">That spot isn't up for voting.</string>
     <string name="lobby_error_invalid_choice">Please pick one of the tied spots.</string>
     <string name="lobby_error_no_votes">No votes have been cast yet.</string>

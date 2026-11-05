@@ -8,6 +8,9 @@ sealed interface HangoutDetailAction {
     data object OnCompleteHangoutConfirmed : HangoutDetailAction
     data object OnCancelHangoutConfirmed : HangoutDetailAction
     data class OnWithdrawParticipantInvite(val userId: String) : HangoutDetailAction
+    data class OnRemoveParticipantClick(val userId: String) : HangoutDetailAction
+    data object OnDismissRemoveDialog : HangoutDetailAction
+    data object OnRemoveParticipantConfirmed : HangoutDetailAction
 
     // Attendee action (host equivalent is cancel)
     data object OnLeaveHangoutConfirmed : HangoutDetailAction

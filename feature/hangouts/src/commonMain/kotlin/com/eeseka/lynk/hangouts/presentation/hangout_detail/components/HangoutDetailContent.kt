@@ -38,6 +38,8 @@ import com.composables.icons.lucide.UserRoundPlus
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.components.PaymentSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components.VotingSection
 import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
+import com.eeseka.lynk.hangouts.presentation.model.VotingCandidateUi
+import com.eeseka.lynk.hangouts.presentation.preview.previewVotingCandidates
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
@@ -50,8 +52,6 @@ import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
 import com.eeseka.lynk.shared.presentation.preview.PREVIEW_GUEST_ID
 import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
 import com.eeseka.lynk.shared.presentation.preview.previewHangout
-import com.eeseka.lynk.shared.presentation.preview.previewSpots
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.spot.util.SpotPhotoUrlBuilder
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
@@ -79,7 +79,7 @@ fun HangoutDetailContent(
     isHost: Boolean,
     currentUserId: String?,
     presentUserIds: ImmutableSet<String>,
-    candidates: ImmutableList<SpotUi>,
+    candidates: ImmutableList<VotingCandidateUi>,
     votes: ImmutableMap<String, String>,
     removingSpotIds: ImmutableSet<String>,
     tiedSpotIds: ImmutableList<String>,
@@ -109,6 +109,7 @@ fun HangoutDetailContent(
     onCopyAddressClick: () -> Unit,
     onMarkArrivedClick: () -> Unit,
     paymentSetup: @Composable () -> Unit,
+    notes: @Composable () -> Unit,
     memories: @Composable () -> Unit,
     onPayClick: () -> Unit,
     onCheckPaymentClick: () -> Unit,
@@ -240,6 +241,8 @@ fun HangoutDetailContent(
                 }
             }
 
+            notes()
+
             paymentSetup()
 
             AnimatedVisibility(visible = hangout.payment != null) {
@@ -308,7 +311,7 @@ private fun HangoutDetailContentScheduledPreview() = HangoutDetailContentPreview
 @Composable
 private fun HangoutDetailContentVotingPreview() = HangoutDetailContentPreview(
     hangout = previewHangout(status = HangoutStatus.VOTING, withSpot = false),
-    candidates = previewSpots,
+    candidates = previewVotingCandidates,
     votes = persistentMapOf("user-2" to "s1", "user-3" to "s1", "user-4" to "s2", PREVIEW_HOST_ID to "s3")
 )
 
@@ -324,7 +327,7 @@ private fun HangoutDetailContentGuestOwesPreview() = HangoutDetailContentPreview
 private fun HangoutDetailContentPreview(
     hangout: HangoutUi = previewHangout(),
     isHost: Boolean = true,
-    candidates: ImmutableList<SpotUi> = persistentListOf(),
+    candidates: ImmutableList<VotingCandidateUi> = persistentListOf(),
     votes: ImmutableMap<String, String> = persistentMapOf(),
     canPay: Boolean = false
 ) {
@@ -369,6 +372,7 @@ private fun HangoutDetailContentPreview(
             onCopyAddressClick = {},
             onMarkArrivedClick = {},
             paymentSetup = {},
+            notes = {},
             memories = {},
             onPayClick = {},
             onCheckPaymentClick = {},

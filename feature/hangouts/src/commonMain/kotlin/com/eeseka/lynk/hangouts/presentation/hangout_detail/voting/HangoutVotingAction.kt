@@ -1,6 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting
 
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
+import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 
 sealed interface HangoutVotingAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutVotingAction
@@ -17,6 +18,8 @@ sealed interface HangoutVotingAction {
     data class OnTabSelected(val tab: SearchTab) : HangoutVotingAction
     data object LoadNextSpotPage : HangoutVotingAction
     data object LoadNextFavoriteSpotPage : HangoutVotingAction
-    data class OnProposeSpot(val spotId: String) : HangoutVotingAction
+    data class OnSuggestSpotClick(val spot: SpotUi) : HangoutVotingAction
+    data object OnBackToSpotSearch : HangoutVotingAction
+    data object OnProposeSpot : HangoutVotingAction
     data class OnRemoveSpot(val spotId: String) : HangoutVotingAction
 }

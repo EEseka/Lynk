@@ -3,6 +3,7 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
+import com.eeseka.lynk.hangouts.presentation.model.VotingCandidateUi
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.UiText
@@ -15,7 +16,7 @@ import kotlinx.collections.immutable.persistentSetOf
 
 @Stable
 data class HangoutVotingState(
-    val candidates: ImmutableList<SpotUi> = persistentListOf(),
+    val candidates: ImmutableList<VotingCandidateUi> = persistentListOf(),
     val votes: ImmutableMap<String, String> = persistentMapOf(), // userId -> spotId
     val center: LocationCoordinates? = null,
     val myLocation: LocationCoordinates? = null,
@@ -27,6 +28,9 @@ data class HangoutVotingState(
     val showProposeSpotSheet: Boolean = false,
     val activeProposeSpotSheetSearchTab: SearchTab = SearchTab.ALL_SPOTS,
     val proposeSpotSheetSearchTextState: TextFieldState = TextFieldState(),
+
+    val spotToSuggest: SpotUi? = null,
+    val spotNoteState: TextFieldState = TextFieldState(),
 
     val trendingSpots: ImmutableList<SpotUi> = persistentListOf(),
     val isTrendingLoading: Boolean = false,

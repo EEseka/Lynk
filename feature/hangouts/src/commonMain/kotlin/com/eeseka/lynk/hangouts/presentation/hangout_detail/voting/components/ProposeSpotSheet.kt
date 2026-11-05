@@ -1,10 +1,13 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,15 +24,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.text.input.then
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.UsersRound
@@ -37,30 +49,43 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.HangoutVoting
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
 import com.eeseka.lynk.hangouts.presentation.mappers.getIcon
 import com.eeseka.lynk.hangouts.presentation.mappers.getTitle
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkSearchField
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
+import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
+import com.eeseka.lynk.shared.design_system.components.textfields.SingleLineInputTransformation
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_SPOT_NOTE_LENGTH
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.presentation.preview.previewSpots
 import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
 import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
+import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import lynk.feature.hangouts.generated.resources.Res
+import lynk.feature.hangouts.generated.resources.propose_back
 import lynk.feature.hangouts.generated.resources.propose_center_caption
 import lynk.feature.hangouts.generated.resources.propose_empty_favorite_message
 import lynk.feature.hangouts.generated.resources.propose_empty_message
 import lynk.feature.hangouts.generated.resources.propose_favorite_search_hint
+import lynk.feature.hangouts.generated.resources.propose_note_counter
+import lynk.feature.hangouts.generated.resources.propose_note_hint
+import lynk.feature.hangouts.generated.resources.propose_note_label
+import lynk.feature.hangouts.generated.resources.propose_note_title
+import lynk.feature.hangouts.generated.resources.propose_suggest_action
+import lynk.feature.hangouts.generated.resources.propose_suggesting
 import lynk.feature.hangouts.generated.resources.propose_search_hint
 import lynk.feature.hangouts.generated.resources.propose_sheet_title
 import org.jetbrains.compose.resources.stringResource
@@ -69,7 +94,9 @@ import org.jetbrains.compose.resources.stringResource
 fun ProposeSpotSheet(
     state: HangoutVotingState,
     onTabSelected: (SearchTab) -> Unit,
-    onPropose: (String) -> Unit,
+    onSuggestSpotClick: (SpotUi) -> Unit,
+    onBackToSpotSearch: () -> Unit,
+    onPropose: () -> Unit,
     onLoadNextSpotPage: () -> Unit,
     onLoadNextFavoritePage: () -> Unit,
     onDismiss: () -> Unit,
@@ -79,13 +106,30 @@ fun ProposeSpotSheet(
         onDismissRequest = onDismiss,
         modifier = modifier
     ) {
-        ProposeSpotSheetContent(
-            state = state,
-            onTabSelected = onTabSelected,
-            onPropose = onPropose,
-            onLoadNextSpotPage = onLoadNextSpotPage,
-            onLoadNextFavoritePage = onLoadNextFavoritePage
-        )
+        AnimatedContent(
+            targetState = state.spotToSuggest,
+            contentKey = { it == null },
+            transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) },
+            label = "propose_spot_step"
+        ) { spotToSuggest ->
+            if (spotToSuggest == null) {
+                ProposeSpotSheetContent(
+                    state = state,
+                    onTabSelected = onTabSelected,
+                    onSuggestSpotClick = onSuggestSpotClick,
+                    onLoadNextSpotPage = onLoadNextSpotPage,
+                    onLoadNextFavoritePage = onLoadNextFavoritePage
+                )
+            } else {
+                SpotNoteContent(
+                    spot = spotToSuggest,
+                    noteState = state.spotNoteState,
+                    isProposing = spotToSuggest.id in state.proposingSpotIds,
+                    onBack = onBackToSpotSearch,
+                    onPropose = onPropose
+                )
+            }
+        }
     }
 }
 
@@ -93,7 +137,7 @@ fun ProposeSpotSheet(
 private fun ProposeSpotSheetContent(
     state: HangoutVotingState,
     onTabSelected: (SearchTab) -> Unit,
-    onPropose: (String) -> Unit,
+    onSuggestSpotClick: (SpotUi) -> Unit,
     onLoadNextSpotPage: () -> Unit,
     onLoadNextFavoritePage: () -> Unit,
     modifier: Modifier = Modifier
@@ -106,7 +150,7 @@ private fun ProposeSpotSheetContent(
     val originLng = state.center?.longitude ?: state.myLocation?.longitude
 
     val candidateSpotIds = remember(state.candidates) {
-        state.candidates.mapTo(mutableSetOf()) { it.id }.toImmutableSet()
+        state.candidates.mapTo(mutableSetOf()) { it.spot.id }.toImmutableSet()
     }
 
     val isSearchActive = state.proposeSpotSheetSearchTextState.text.toString().isNotBlank()
@@ -187,7 +231,7 @@ private fun ProposeSpotSheetContent(
                         emptyStateMessage = stringResource(Res.string.propose_empty_message),
                         proposingSpotIds = state.proposingSpotIds,
                         candidateSpotIds = candidateSpotIds,
-                        onSuggest = { spot -> onPropose(spot.id) }
+                        onSuggest = onSuggestSpotClick
                     )
                 }
 
@@ -206,7 +250,7 @@ private fun ProposeSpotSheetContent(
                         emptyStateMessage = stringResource(Res.string.propose_empty_favorite_message),
                         proposingSpotIds = state.proposingSpotIds,
                         candidateSpotIds = candidateSpotIds,
-                        onSuggest = { spot -> onPropose(spot.id) }
+                        onSuggest = onSuggestSpotClick
                     )
                 }
             }
@@ -315,6 +359,91 @@ private fun SuggestSpotList(
 }
 
 @Composable
+private fun SpotNoteContent(
+    spot: SpotUi,
+    noteState: TextFieldState,
+    isProposing: Boolean,
+    onBack: () -> Unit,
+    onPropose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val hapticFeedback = rememberAppHaptic()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clearFocusOnTap()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            LynkTonalIconButton(
+                onClick = {
+                    hapticFeedback(AppHaptic.ImpactLight)
+                    onBack()
+                }
+            ) {
+                Icon(
+                    imageVector = Lucide.ArrowLeft,
+                    contentDescription = stringResource(Res.string.propose_back)
+                )
+            }
+            LynkText(
+                text = stringResource(Res.string.propose_note_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            LynkText(
+                text = spot.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            spot.shortAddress?.let {
+                LynkText(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        LynkTextField(
+            state = noteState,
+            label = stringResource(Res.string.propose_note_label),
+            placeholder = stringResource(Res.string.propose_note_hint),
+            singleLine = false,
+            maxLines = 4,
+            helperText = stringResource(Res.string.propose_note_counter, noteState.text.length, MAX_SPOT_NOTE_LENGTH),
+            inputTransformation = SingleLineInputTransformation.then(InputTransformation.maxLength(MAX_SPOT_NOTE_LENGTH)),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            )
+        )
+
+        LynkButton(
+            text = stringResource(Res.string.propose_suggest_action),
+            onClick = {
+                hapticFeedback(AppHaptic.ImpactMedium)
+                onPropose()
+            },
+            isLoading = isProposing,
+            loadingText = stringResource(Res.string.propose_suggesting),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
 private fun EmptySearchState(message: String) {
     Box(
         modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
@@ -367,13 +496,28 @@ private fun ProposeSpotSheetLoadingPreview() = ProposeSpotSheetPreview(
     )
 )
 
+@PreviewLightDark
+@Composable
+private fun SpotNoteContentPreview() {
+    LynkTheme {
+        SpotNoteContent(
+            spot = previewSpots.first(),
+            noteState = TextFieldState("Live band on Fridays and the jollof is unreal"),
+            isProposing = false,
+            onBack = {},
+            onPropose = {},
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+        )
+    }
+}
+
 @Composable
 private fun ProposeSpotSheetPreview(state: HangoutVotingState) {
     LynkTheme {
         ProposeSpotSheetContent(
             state = state,
             onTabSelected = {},
-            onPropose = {},
+            onSuggestSpotClick = {},
             onLoadNextSpotPage = {},
             onLoadNextFavoritePage = {},
             modifier = Modifier

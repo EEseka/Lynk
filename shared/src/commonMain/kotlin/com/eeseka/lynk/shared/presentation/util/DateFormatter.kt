@@ -55,9 +55,9 @@ fun LocalTime.toTimeLabel(): String {
     )
 }
 
-// "8:00 PM" later today, "Sat 5 Sep · 8:00 PM" any other day; a place's hours pass its own clock, as Google Maps shows them
+// "8:00 PM" when it's today, "Sat 5 Sep · 8:00 PM" any other day, on the phone's clock unless a place's clock is given
 @Composable
-fun Instant.toUpcomingTimeLabel(timeZone: TimeZone): String {
+fun Instant.toShortDateTimeLabel(timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
     val isToday = toLocalDateTime(timeZone).date == Clock.System.now().toLocalDateTime(timeZone).date
     return if (isToday) {
         toLocalDateTime(timeZone).time.toTimeLabel()

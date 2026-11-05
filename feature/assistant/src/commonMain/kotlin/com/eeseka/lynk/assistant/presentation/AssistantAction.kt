@@ -26,4 +26,5 @@ sealed interface AssistantAction {
     data object OnDismissSpotSheet : AssistantAction
     data class OnToggleSaveSpot(val spotId: String, val isCurrentlySaved: Boolean) : AssistantAction
     data class OnSuggestSpot(val spotId: String) : AssistantAction
+    data class OnHangoutCreationSelected(val spotId: String?) : AssistantAction
 }

@@ -19,6 +19,8 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.shared.domain.lobby.model.VotingCandidate
+import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
@@ -87,7 +89,7 @@ class HangoutVotingViewModelTest {
         connectionClient.sendEvent(
             LobbyEvent.VotingSnapshot(
                 hangoutId = hangoutId,
-                candidates = listOf(lounge, rooftop),
+                candidates = listOf(candidate(lounge), candidate(rooftop)),
                 votes = mapOf(HOST_ID to "spot_1"),
                 latitude = 6.5,
                 longitude = 3.3
@@ -96,7 +98,7 @@ class HangoutVotingViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertThat(state.candidates.map { it.id }).containsExactly("spot_1", "spot_2")
+        assertThat(state.candidates.map { it.spot.id }).containsExactly("spot_1", "spot_2")
         assertThat(state.votes).isEqualTo(mapOf(HOST_ID to "spot_1"))
         assertThat(state.center).isEqualTo(LocationCoordinates(6.5, 3.3))
     }
@@ -115,22 +117,38 @@ class HangoutVotingViewModelTest {
     }
 
     @Test
-    fun `a suggested spot waits for the server and is confirmed once it arrives`() = runTest {
+    fun `a suggested spot goes with its note and is confirmed once it arrives`() = runTest {
         val hangoutId = createVotingHangout()
         val viewModel = createViewModel(hangoutId)
 
         viewModel.events.test {
-            viewModel.onAction(HangoutVotingAction.OnProposeSpot("spot_1"))
+            viewModel.onAction(HangoutVotingAction.OnSuggestSpotClick(lounge.toSpotUi()))
+            viewModel.state.value.spotNoteState.typeText("  Live band on Fridays ")
+            viewModel.onAction(HangoutVotingAction.OnProposeSpot)
             assertThat(viewModel.state.value.proposingSpotIds).isEqualTo(setOf("spot_1"))
             assertThat(lobbyService.proposedSpotIds).containsExactly("spot_1")
+            assertThat(lobbyService.proposedSpotNotes).containsExactly("Live band on Fridays")
 
-            connectionClient.sendEvent(LobbyEvent.CandidateAdded(hangoutId, lounge))
+            connectionClient.sendEvent(LobbyEvent.CandidateAdded(hangoutId, candidate(lounge)))
             advanceUntilIdle()
 
             assertThat(awaitItem()).isEqualTo(HangoutVotingEvent.SpotSuggested)
-            assertThat(viewModel.state.value.proposingSpotIds).isEmpty()
-            assertThat(viewModel.state.value.candidates.map { it.id }).containsExactly("spot_1")
+            val state = viewModel.state.value
+            assertThat(state.proposingSpotIds).isEmpty()
+            assertThat(state.candidates.map { it.spot.id }).containsExactly("spot_1")
+            assertThat(state.spotToSuggest).isNull()
+            assertThat(state.spotNoteState.text.toString()).isEmpty()
         }
+    }
+
+    @Test
+    fun `a suggestion with a blank note sends no note`() = runTest {
+        val hangoutId = createVotingHangout()
+        val viewModel = createViewModel(hangoutId)
+
+        suggest(viewModel, lounge)
+
+        assertThat(lobbyService.proposedSpotNotes).containsExactly(null)
     }
 
     @Test
@@ -139,11 +157,11 @@ class HangoutVotingViewModelTest {
         val viewModel = createViewModel(hangoutId)
 
         viewModel.events.test {
-            connectionClient.sendEvent(LobbyEvent.CandidateAdded(hangoutId, lounge))
+            connectionClient.sendEvent(LobbyEvent.CandidateAdded(hangoutId, candidate(lounge)))
             advanceUntilIdle()
 
             expectNoEvents()
-            assertThat(viewModel.state.value.candidates.map { it.id }).containsExactly("spot_1")
+            assertThat(viewModel.state.value.candidates.map { it.spot.id }).containsExactly("spot_1")
         }
     }
 
@@ -154,7 +172,7 @@ class HangoutVotingViewModelTest {
         lobbyService.shouldReturnError = true
 
         viewModel.events.test {
-            viewModel.onAction(HangoutVotingAction.OnProposeSpot("spot_1"))
+            suggest(viewModel, lounge)
             advanceUntilIdle()
 
             assertThat(awaitItem()).isInstanceOf(HangoutVotingEvent.Error::class)
@@ -182,9 +200,30 @@ class HangoutVotingViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertThat(state.candidates.map { it.id }).containsExactly("spot_2")
+        assertThat(state.candidates.map { it.spot.id }).containsExactly("spot_2")
         assertThat(state.votes).isEqualTo(mapOf(GUEST_ID to "spot_2"))
         assertThat(state.removingSpotIds).isEmpty()
+    }
+
+    @Test
+    fun `someone whose vote goes with a spot another person removed is told to vote again`() = runTest {
+        val hangoutId = createVotingHangout()
+        val viewModel = createViewModel(hangoutId)
+        connectionClient.sendEvent(
+            snapshot(hangoutId, candidates = listOf(lounge, rooftop), votes = mapOf(HOST_ID to "spot_1"))
+        )
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            connectionClient.sendEvent(LobbyEvent.CandidateRemoved(hangoutId, "spot_2"))
+            advanceUntilIdle()
+            expectNoEvents()
+
+            connectionClient.sendEvent(LobbyEvent.CandidateRemoved(hangoutId, "spot_1"))
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutVotingEvent.VotedSpotRemoved("The Lounge"))
+        }
     }
 
     @Test
@@ -297,7 +336,7 @@ class HangoutVotingViewModelTest {
         val hangoutId = createVotingHangout()
         connectionClient.connectionState.value = ConnectionState.CONNECTED
         val viewModel = createViewModel(hangoutId)
-        viewModel.onAction(HangoutVotingAction.OnProposeSpot("spot_1"))
+        suggest(viewModel, lounge)
         viewModel.onAction(HangoutVotingAction.OnRemoveSpot("spot_2"))
         viewModel.onAction(HangoutVotingAction.OnCloseVotingClick)
 
@@ -314,7 +353,7 @@ class HangoutVotingViewModelTest {
     fun `a lobby error stops every action still waiting on the server`() = runTest {
         val hangoutId = createVotingHangout()
         val viewModel = createViewModel(hangoutId)
-        viewModel.onAction(HangoutVotingAction.OnProposeSpot("spot_1"))
+        suggest(viewModel, lounge)
         viewModel.onAction(HangoutVotingAction.OnCloseVotingClick)
 
         connectionClient.sendEvent(LobbyEvent.LobbyError(code = "FORBIDDEN", message = "Nope"))
@@ -408,7 +447,7 @@ class HangoutVotingViewModelTest {
         repository.refreshHangout(hangoutId)
         advanceUntilIdle()
 
-        assertThat(viewModel.state.value.candidates.map { it.id }).containsExactly("spot_1")
+        assertThat(viewModel.state.value.candidates.map { it.spot.id }).containsExactly("spot_1")
     }
 
     @Test
@@ -571,10 +610,22 @@ class HangoutVotingViewModelTest {
         votes: Map<String, String> = emptyMap()
     ) = LobbyEvent.VotingSnapshot(
         hangoutId = hangoutId,
-        candidates = candidates,
+        candidates = candidates.map { candidate(it) },
         votes = votes,
         latitude = null,
         longitude = null
+    )
+
+    private fun suggest(viewModel: HangoutVotingViewModel, spot: Spot) {
+        viewModel.onAction(HangoutVotingAction.OnSuggestSpotClick(spot.toSpotUi()))
+        viewModel.onAction(HangoutVotingAction.OnProposeSpot)
+    }
+
+    private fun candidate(spot: Spot) = VotingCandidate(
+        spot = spot,
+        suggestedById = GUEST_ID,
+        suggestedByDisplayName = "Bola",
+        note = null
     )
 
     private fun spot(id: String, name: String) = Spot(

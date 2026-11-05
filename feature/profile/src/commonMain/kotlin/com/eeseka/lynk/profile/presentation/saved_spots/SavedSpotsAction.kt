@@ -7,4 +7,5 @@ sealed interface SavedSpotsAction {
     data class OnToggleSaveSpot(val spotId: String, val isCurrentlySaved: Boolean) : SavedSpotsAction
     data object LoadNextPage : SavedSpotsAction
     data object OnRetryClick : SavedSpotsAction
+    data class OnHangoutCreationSelected(val spotId: String?) : SavedSpotsAction
 }

@@ -221,7 +221,12 @@ private fun MainShellNavHost(
         )
         profileGraph(
             navController = navController,
-            mainShellPadding = paddingValues
+            mainShellPadding = paddingValues,
+            onNavigateToHangouts = { hangoutId ->
+                navController.navigate(HangoutsGraphRoutes.HangoutsListDetail(hangoutId)) {
+                    popUpTo<HangoutsGraphRoutes.HangoutsListDetail> { inclusive = true }
+                }
+            }
         )
     }
 }

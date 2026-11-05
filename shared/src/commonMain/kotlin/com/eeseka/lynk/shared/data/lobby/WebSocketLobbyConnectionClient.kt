@@ -5,7 +5,6 @@ import com.eeseka.lynk.shared.data.lobby.dto.ws.IncomingLobbyMessageType
 import com.eeseka.lynk.shared.data.lobby.dto.ws.WebSocketMessageDto
 import com.eeseka.lynk.shared.data.lobby.mappers.toDomain
 import com.eeseka.lynk.shared.data.lobby.network.KtorLobbyWebSocketConnector
-import com.eeseka.lynk.shared.data.spot.mappers.toDomain
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +57,11 @@ class WebSocketLobbyConnectionClient(
                 LobbyEvent.NonPayerRemoved(dto.hangoutId, dto.userId, dto.displayName)
             }
 
+            IncomingLobbyMessageType.PARTICIPANT_REMOVED -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LobbyParticipantDto>(payload)
+                LobbyEvent.ParticipantRemoved(dto.hangoutId, dto.userId, dto.displayName)
+            }
+
             IncomingLobbyMessageType.PARTICIPANT_LEFT -> {
                 val dto = json.decodeFromString<IncomingLobbyDto.LobbyParticipantDto>(payload)
                 LobbyEvent.ParticipantLeft(dto.hangoutId, dto.userId, dto.displayName)
@@ -66,6 +70,11 @@ class WebSocketLobbyConnectionClient(
             IncomingLobbyMessageType.PARTICIPANT_ARRIVED -> {
                 val dto = json.decodeFromString<IncomingLobbyDto.LobbyHangoutDto>(payload)
                 LobbyEvent.ParticipantArrived(dto.hangoutId)
+            }
+
+            IncomingLobbyMessageType.NOTES_CHANGED -> {
+                val dto = json.decodeFromString<IncomingLobbyDto.LobbyHangoutDto>(payload)
+                LobbyEvent.NotesChanged(dto.hangoutId)
             }
 
             IncomingLobbyMessageType.PAYMENT_RECEIVED -> {
@@ -136,7 +145,7 @@ class WebSocketLobbyConnectionClient(
 
             IncomingLobbyMessageType.CANDIDATE_ADDED -> {
                 val dto = json.decodeFromString<IncomingLobbyDto.CandidateAddedDto>(payload)
-                LobbyEvent.CandidateAdded(dto.hangoutId, dto.spot.toDomain())
+                LobbyEvent.CandidateAdded(dto.hangoutId, dto.candidate.toDomain())
             }
 
             IncomingLobbyMessageType.CANDIDATE_REMOVED -> {

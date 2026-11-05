@@ -31,5 +31,5 @@ data class HangoutAlbumState(
     val isSavingCaption: Boolean = false,
 
     val pendingDeletePhotoId: String? = null,
-    val deletingPhotoId: String? = null
+    val deletingPhotoIds: ImmutableSet<String> = persistentSetOf()
 )

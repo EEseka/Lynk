@@ -50,7 +50,7 @@ import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_DESCRIPTION_LENGTH
-import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getIcon
 import com.eeseka.lynk.shared.presentation.hangout.mappers.getTitle
@@ -88,7 +88,7 @@ fun CreateHangoutStepOne(
     timeErrorMessage: String?,
     expandedPicker: PickerType?,
     maxAttendees: Int?,
-    minAttendees: Int,
+    minMaxAttendees: Int,
     onVibeSelected: (HangoutVibe) -> Unit,
     onPickerToggled: (PickerType) -> Unit,
     onDateSelected: (epochMilliseconds: Long?) -> Unit,
@@ -271,7 +271,7 @@ fun CreateHangoutStepOne(
                                 hapticFeedback(AppHaptic.Selection)
                                 onDecrementAttendees()
                             },
-                            enabled = limit > minAttendees
+                            enabled = limit > minMaxAttendees
                         ) {
                             Icon(
                                 imageVector = Lucide.Minus,
@@ -322,7 +322,7 @@ private fun CreateHangoutStepOnePreview(
             timeErrorMessage = timeErrorMessage,
             expandedPicker = null,
             maxAttendees = maxAttendees,
-            minAttendees = MIN_ATTENDEES,
+            minMaxAttendees = MIN_MAX_ATTENDEES,
             onVibeSelected = {},
             onPickerToggled = {},
             onDateSelected = {},

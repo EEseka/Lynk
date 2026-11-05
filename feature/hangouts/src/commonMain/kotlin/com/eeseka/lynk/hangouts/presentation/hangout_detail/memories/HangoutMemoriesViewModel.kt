@@ -3,16 +3,10 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.memories
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.hangouts.presentation.mappers.toHangoutPhotoUi
-import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_PHOTOS_PER_UPLOADER
-import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES_FOR_PHOTOS
-import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoStatsRepository
-import com.eeseka.lynk.shared.domain.hangout.model.Hangout
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
 import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
@@ -26,14 +20,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -47,12 +39,10 @@ import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HangoutMemoriesViewModel(
-    private val hangoutDetailRepository: HangoutDetailRepository,
     private val hangoutPhotoService: HangoutPhotoService,
     private val hangoutPhotoRepository: HangoutPhotoRepository,
     private val hangoutPhotoStatsRepository: HangoutPhotoStatsRepository,
-    private val connectionClient: LobbyConnectionClient,
-    private val sessionStorage: SessionStorage
+    private val connectionClient: LobbyConnectionClient
 ) : ViewModel() {
     private val eventChannel = Channel<HangoutMemoriesEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -87,7 +77,6 @@ class HangoutMemoriesViewModel(
 
     private fun selectHangout(hangoutId: String?) {
         if (hangoutId == _hangoutId.value) return
-        _hangoutId.update { hangoutId }
 
         _state.update {
             it.copy(
@@ -98,21 +87,13 @@ class HangoutMemoriesViewModel(
                 isUploadingPhotos = false
             )
         }
+        _hangoutId.update { hangoutId }
     }
 
-    // Loads the album as soon as it opens, including when the host completes the hangout while it is on screen
     private fun observeAlbum() {
-        val hangout = _hangoutId.flatMapLatest { hangoutId ->
-            hangoutId?.let(hangoutDetailRepository::observeHangout) ?: flowOf(null)
-        }
-        val currentUserId = sessionStorage.observeAuthInfo().map { it?.user?.id }
-
-        combine(hangout, currentUserId) { hangout, userId ->
-            hangout?.takeIf { it.isAlbumOpenFor(userId) }?.id
-        }
-            .distinctUntilChanged()
-            .flatMapLatest { albumHangoutId ->
-                albumHangoutId?.let(::observePhotoStats) ?: emptyFlow()
+        _hangoutId
+            .flatMapLatest { hangoutId ->
+                hangoutId?.let(::observePhotoStats) ?: emptyFlow()
             }
             .launchIn(viewModelScope)
     }
@@ -142,29 +123,6 @@ class HangoutMemoriesViewModel(
             .map { stats -> stats.photoCount }
             .distinctUntilChanged()
             .onEach { loadPhotos(hangoutId) }
-    }
-
-    private fun loadPhotos(hangoutId: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoadingPhotos = true) }
-            hangoutPhotoService
-                .getPhotos(hangoutId = hangoutId, before = null)
-                .onSuccess { photos ->
-                    // A late answer for a hangout the user already left must not land on the next one
-                    if (hangoutId != _hangoutId.value) return@onSuccess
-                    _state.update {
-                        it.copy(
-                            photos = photos.map { photo -> photo.toHangoutPhotoUi() }.toImmutableList(),
-                            isLoadingPhotos = false
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    if (hangoutId != _hangoutId.value) return@onFailure
-                    _state.update { it.copy(isLoadingPhotos = false) }
-                    eventChannel.send(HangoutMemoriesEvent.Error(error.toUiText()))
-                }
-        }
     }
 
     private fun observeLobbyEvents() {
@@ -235,10 +193,26 @@ class HangoutMemoriesViewModel(
         loadPhotos(hangoutId)
     }
 
-    private fun Hangout.isAlbumOpenFor(userId: String?): Boolean {
-        val attending = participants.filter { it.rsvpStatus == RsvpStatus.ATTENDING }
-        return status == HangoutStatus.COMPLETED &&
-                attending.size >= MIN_ATTENDEES_FOR_PHOTOS &&
-                attending.any { it.user.userId == userId }
+    private fun loadPhotos(hangoutId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingPhotos = true) }
+            hangoutPhotoService
+                .getPhotos(hangoutId = hangoutId, before = null)
+                .onSuccess { photos ->
+                    // A late answer for a hangout the user already left must not land on the next one
+                    if (hangoutId != _hangoutId.value) return@onSuccess
+                    _state.update {
+                        it.copy(
+                            photos = photos.map { photo -> photo.toHangoutPhotoUi() }.toImmutableList(),
+                            isLoadingPhotos = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    if (hangoutId != _hangoutId.value) return@onFailure
+                    _state.update { it.copy(isLoadingPhotos = false) }
+                    eventChannel.send(HangoutMemoriesEvent.Error(error.toUiText()))
+                }
+        }
     }
 }
