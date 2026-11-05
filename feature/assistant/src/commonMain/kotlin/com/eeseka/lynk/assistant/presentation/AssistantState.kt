@@ -48,5 +48,8 @@ data class AssistantState(
 
     // Spot sheet
     val selectedSpot: SpotUi? = null,
-    val loadingSpotId: String? = null
+    val loadingSpotId: String? = null,
+
+    // Create hangout sheet, Discover chat only
+    val hangoutCreationSpot: SpotUi? = null
 )

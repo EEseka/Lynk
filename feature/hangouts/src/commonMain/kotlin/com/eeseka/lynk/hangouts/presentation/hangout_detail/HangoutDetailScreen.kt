@@ -49,6 +49,13 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemo
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesState
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.HangoutMemoriesViewModel
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.memories.components.MemoriesSection
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.HangoutNotesAction
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.HangoutNotesEvent
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.HangoutNotesState
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.HangoutNotesViewModel
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.components.NoteComposerSheet
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.components.NotesSection
+import com.eeseka.lynk.hangouts.presentation.hangout_detail.notes.components.NotesSheet
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsAction
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsEvent
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.HangoutPaymentsState
@@ -122,6 +129,12 @@ import lynk.feature.hangouts.generated.resources.detail_left_message
 import lynk.feature.hangouts.generated.resources.detail_load_error_title
 import lynk.feature.hangouts.generated.resources.detail_withdrawn_message
 import lynk.feature.hangouts.generated.resources.memories_photos_added
+import lynk.feature.hangouts.generated.resources.notes_delete_confirm_action
+import lynk.feature.hangouts.generated.resources.notes_delete_confirm_message
+import lynk.feature.hangouts.generated.resources.notes_delete_confirm_title
+import lynk.feature.hangouts.generated.resources.notes_deleted
+import lynk.feature.hangouts.generated.resources.notes_posted
+import lynk.feature.hangouts.generated.resources.notes_updated
 import lynk.feature.hangouts.generated.resources.payment_deadline_changed
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_message
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel_confirm_title
@@ -162,13 +175,15 @@ fun HangoutDetailRoot(
     votingViewModel: HangoutVotingViewModel = koinViewModel(),
     liveLocationViewModel: HangoutLiveLocationViewModel = koinViewModel(),
     paymentsViewModel: HangoutPaymentsViewModel = koinViewModel(),
-    memoriesViewModel: HangoutMemoriesViewModel = koinViewModel()
+    memoriesViewModel: HangoutMemoriesViewModel = koinViewModel(),
+    notesViewModel: HangoutNotesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val votingState by votingViewModel.state.collectAsStateWithLifecycle()
     val liveLocationState by liveLocationViewModel.state.collectAsStateWithLifecycle()
     val paymentsState by paymentsViewModel.state.collectAsStateWithLifecycle()
     val memoriesState by memoriesViewModel.state.collectAsStateWithLifecycle()
+    val notesState by notesViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     ObserveAsEvents(viewModel.events) { event ->
@@ -295,12 +310,37 @@ fun HangoutDetailRoot(
         }
     }
 
+    ObserveAsEvents(notesViewModel.events) { event ->
+        when (event) {
+            is HangoutNotesEvent.Error -> snackbarHostState.showFlashMessage(
+                message = event.message.asStringAsync(),
+                type = LynkFlashType.Error
+            )
+
+            HangoutNotesEvent.NotePosted -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.notes_posted),
+                type = LynkFlashType.Success
+            )
+
+            HangoutNotesEvent.NoteEdited -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.notes_updated),
+                type = LynkFlashType.Success
+            )
+
+            HangoutNotesEvent.NoteDeleted -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.notes_deleted),
+                type = LynkFlashType.Info
+            )
+        }
+    }
+
     LaunchedEffect(hangoutId) {
         viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
         votingViewModel.onAction(HangoutVotingAction.OnSelectHangout(hangoutId))
         liveLocationViewModel.onAction(HangoutLiveLocationAction.OnSelectHangout(hangoutId))
         paymentsViewModel.onAction(HangoutPaymentsAction.OnSelectHangout(hangoutId))
         memoriesViewModel.onAction(HangoutMemoriesAction.OnSelectHangout(hangoutId))
+        notesViewModel.onAction(HangoutNotesAction.OnSelectHangout(hangoutId))
     }
 
     HangoutDetailScreen(
@@ -314,6 +354,8 @@ fun HangoutDetailRoot(
         onPaymentsAction = paymentsViewModel::onAction,
         memoriesState = memoriesState,
         onMemoriesAction = memoriesViewModel::onAction,
+        notesState = notesState,
+        onNotesAction = notesViewModel::onAction,
         snackbarHostState = snackbarHostState,
         isDetailPaneFullScreen = isDetailPaneFullScreen,
         mainShellPadding = mainShellPadding,
@@ -336,6 +378,8 @@ fun HangoutDetailScreen(
     onPaymentsAction: (HangoutPaymentsAction) -> Unit,
     memoriesState: HangoutMemoriesState,
     onMemoriesAction: (HangoutMemoriesAction) -> Unit,
+    notesState: HangoutNotesState,
+    onNotesAction: (HangoutNotesAction) -> Unit,
     snackbarHostState: SnackbarHostState,
     isDetailPaneFullScreen: Boolean,
     mainShellPadding: PaddingValues,
@@ -412,6 +456,9 @@ fun HangoutDetailScreen(
             attendees.any { it.user.userId == state.currentUserId && !it.hasArrived }
     val canShareLocation = isArrivalOpen && !isSolo &&
             attendees.any { it.user.userId == state.currentUserId }
+    val canAddNote = isArrivalOpen && !isSolo &&
+            attendees.any { it.user.userId == state.currentUserId }
+    val showNotes = canAddNote || notesState.notes.isNotEmpty()
 
     val isWithinPaymentDeadline = hangout?.payment?.let { Clock.System.now() < it.deadline } == true
 
@@ -627,6 +674,26 @@ fun HangoutDetailScreen(
                                         )
                                     }
                                 },
+                                notes = {
+                                    AnimatedVisibility(visible = showNotes) {
+                                        NotesSection(
+                                            notes = notesState.notes,
+                                            noteCount = notesState.noteCount,
+                                            currentUserId = state.currentUserId,
+                                            hostId = target.hangout.hostId,
+                                            canAddNote = canAddNote,
+                                            deletingNoteIds = notesState.deletingNoteIds,
+                                            onAddNoteClick = { onNotesAction(HangoutNotesAction.OnAddNoteClick) },
+                                            onSeeAllClick = { onNotesAction(HangoutNotesAction.OnSeeAllNotesClick) },
+                                            onEditNoteClick = { noteId ->
+                                                onNotesAction(HangoutNotesAction.OnEditNoteClick(noteId))
+                                            },
+                                            onDeleteNoteClick = { noteId ->
+                                                onNotesAction(HangoutNotesAction.OnDeleteNoteClick(noteId))
+                                            }
+                                        )
+                                    }
+                                },
                                 memories = {
                                     if (showMemories) {
                                         MemoriesSection(
@@ -755,6 +822,50 @@ fun HangoutDetailScreen(
             presentUserIds = state.presentUserIds,
             arePaymentsOn = state.hangout.payment != null,
             hostId = state.hangout.hostId
+        )
+    }
+
+    if (notesState.isAllNotesShowing && state.hangout != null) {
+        NotesSheet(
+            notes = notesState.notes,
+            noteCount = notesState.noteCount,
+            isLoadingNotes = notesState.isLoadingNotes,
+            isEndReached = notesState.isEndReached,
+            notesResetEpoch = notesState.notesResetEpoch,
+            currentUserId = state.currentUserId,
+            hostId = state.hangout.hostId,
+            canEditNotes = canAddNote,
+            onLoadNextPage = { onNotesAction(HangoutNotesAction.LoadNextPage) },
+            deletingNoteIds = notesState.deletingNoteIds,
+            onEditNoteClick = { noteId -> onNotesAction(HangoutNotesAction.OnEditNoteClick(noteId)) },
+            onDeleteNoteClick = { noteId -> onNotesAction(HangoutNotesAction.OnDeleteNoteClick(noteId)) },
+            onDismiss = { onNotesAction(HangoutNotesAction.OnDismissAllNotes) }
+        )
+    }
+
+    if (notesState.isComposerShowing) {
+        NoteComposerSheet(
+            noteState = notesState.noteState,
+            isEditing = notesState.editingNoteId != null,
+            canChooseAudience = !isHost,
+            audience = notesState.audience,
+            canPost = notesState.canPostNote,
+            isPosting = notesState.isPostingNote,
+            onAudienceChange = { audience -> onNotesAction(HangoutNotesAction.OnAudienceChange(audience)) },
+            onPost = { onNotesAction(HangoutNotesAction.OnPostNoteClick) },
+            onDismiss = { onNotesAction(HangoutNotesAction.OnDismissComposer) }
+        )
+    }
+
+    if (notesState.pendingDeleteNoteId != null) {
+        LynkDialog(
+            onDismissRequest = { onNotesAction(HangoutNotesAction.OnDismissDeleteDialog) },
+            title = stringResource(Res.string.notes_delete_confirm_title),
+            message = stringResource(Res.string.notes_delete_confirm_message),
+            confirmText = stringResource(Res.string.notes_delete_confirm_action),
+            dismissText = stringResource(Res.string.detail_dialog_dismiss),
+            isDestructive = true,
+            onConfirm = { onNotesAction(HangoutNotesAction.OnDeleteNoteConfirmed) }
         )
     }
 

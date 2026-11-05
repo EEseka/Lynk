@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ChevronLeft
 import com.composables.icons.lucide.Lucide
+import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
 import com.eeseka.lynk.profile.presentation.saved_spots.components.SavedSpotListItem
 import com.eeseka.lynk.profile.presentation.saved_spots.components.SavedSpotsEmptyState
 import com.eeseka.lynk.profile.presentation.saved_spots.components.SavedSpotsSearchEmptyState
@@ -71,6 +72,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SavedSpotsRoot(
     navigateBack: () -> Unit,
+    navigateToHangouts: (String) -> Unit,
     viewModel: SavedSpotsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -91,7 +93,8 @@ fun SavedSpotsRoot(
         state = state,
         onAction = viewModel::onAction,
         snackbarHostState = snackbarHostState,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        navigateToHangouts = navigateToHangouts
     )
 }
 
@@ -101,7 +104,8 @@ fun SavedSpotsScreen(
     state: SavedSpotsState,
     onAction: (SavedSpotsAction) -> Unit,
     snackbarHostState: SnackbarHostState,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToHangouts: (String) -> Unit
 ) {
     val hapticFeedback = rememberAppHaptic()
     val listState = rememberLazyListState()
@@ -280,8 +284,23 @@ fun SavedSpotsScreen(
             userLat = userLocation?.latitude,
             userLng = userLocation?.longitude,
             onDismissRequest = { onAction(SavedSpotsAction.OnDismissSpotDetail) },
+            onCreateHangoutClick = { spotId ->
+                onAction(SavedSpotsAction.OnHangoutCreationSelected(spotId))
+            },
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(SavedSpotsAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
+            }
+        )
+    }
+
+    state.spots.find { it.id == state.hangoutCreationSpotId }?.let { hangoutSpot ->
+        CreateHangoutRoot(
+            visible = true,
+            spot = hangoutSpot,
+            onDismiss = { onAction(SavedSpotsAction.OnHangoutCreationSelected(null)) },
+            onSuccess = { newHangoutId ->
+                onAction(SavedSpotsAction.OnHangoutCreationSelected(null))
+                navigateToHangouts(newHangoutId)
             }
         )
     }
@@ -317,7 +336,8 @@ private fun SavedSpotsScreenPreview(state: SavedSpotsState) {
             state = state,
             onAction = {},
             snackbarHostState = remember { SnackbarHostState() },
-            navigateBack = {}
+            navigateBack = {},
+            navigateToHangouts = {}
         )
     }
 }

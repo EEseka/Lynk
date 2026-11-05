@@ -13,7 +13,7 @@ import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidator
 import com.eeseka.lynk.create_hangout.presentation.mappers.toUiText
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
 import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_ATTENDEES
-import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
 import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
@@ -209,7 +209,7 @@ class CreateHangoutViewModel(
             }
 
             is CreateHangoutAction.OnLimitGroupSizeToggled -> {
-                _state.update { it.copy(maxAttendees = if (action.isOn) it.minAttendees else null) }
+                _state.update { it.copy(maxAttendees = if (action.isOn) it.minMaxAttendees else null) }
             }
 
             CreateHangoutAction.IncrementAttendees -> {
@@ -219,7 +219,7 @@ class CreateHangoutViewModel(
 
             CreateHangoutAction.DecrementAttendees -> {
                 val current = _state.value.maxAttendees ?: return
-                if (current > _state.value.minAttendees) _state.update { it.copy(maxAttendees = current - 1) }
+                if (current > _state.value.minMaxAttendees) _state.update { it.copy(maxAttendees = current - 1) }
             }
 
             CreateHangoutAction.LoadNextSpotSearchPage -> loadNextSpotSearchPage()
@@ -256,7 +256,7 @@ class CreateHangoutViewModel(
                 hangoutDate = localDateTime.date,
                 hangoutTime = localDateTime.time,
                 maxAttendees = hangout.maxAttendees,
-                minAttendees = maxOf(MIN_ATTENDEES, activeCount),
+                minMaxAttendees = maxOf(MIN_MAX_ATTENDEES, activeCount),
                 isVotingMode = hangout.chosenSpot == null,
                 selectedSpot = hangout.chosenSpot
             )

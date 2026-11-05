@@ -69,6 +69,9 @@ class SavedSpotsViewModel(
                 action.spotId,
                 action.isCurrentlySaved
             )
+            is SavedSpotsAction.OnHangoutCreationSelected -> _state.update {
+                it.copy(selectedSpotId = null, hangoutCreationSpotId = action.spotId)
+            }
             SavedSpotsAction.LoadNextPage -> loadNextPage()
             SavedSpotsAction.OnRetryClick -> retryLoad()
         }
@@ -81,9 +84,12 @@ class SavedSpotsViewModel(
                 .getSpotDetails(spotId)
                 .onSuccess { spot ->
                     replaceSpot(spot)
+                    // Another spot was tapped while this one loaded, and the last tap is the one that opens
+                    if (_state.value.loadingSpotId != spotId) return@onSuccess
                     _state.update { it.copy(selectedSpotId = spotId, loadingSpotId = null) }
                 }
                 .onFailure { error ->
+                    if (_state.value.loadingSpotId != spotId) return@onFailure
                     _state.update { it.copy(loadingSpotId = null) }
                     eventChannel.send(SavedSpotsEvent.Error(error.toUiText()))
                 }

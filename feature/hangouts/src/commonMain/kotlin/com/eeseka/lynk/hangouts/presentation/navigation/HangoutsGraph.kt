@@ -57,7 +57,8 @@ fun NavGraphBuilder.hangoutsGraph(
                 latitude = null,
                 longitude = null,
                 areaName = null,
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                navigateToHangouts = null
             )
         }
 

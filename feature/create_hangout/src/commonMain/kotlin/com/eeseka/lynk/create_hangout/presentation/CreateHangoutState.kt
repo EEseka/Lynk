@@ -4,7 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
-import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_ATTENDEES
+import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MIN_MAX_ATTENDEES
 import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
@@ -38,7 +38,7 @@ data class CreateHangoutState(
     val expandedPicker: PickerType? = null,
 
     val maxAttendees: Int? = null,
-    val minAttendees: Int = MIN_ATTENDEES,
+    val minMaxAttendees: Int = MIN_MAX_ATTENDEES,
 
     val isVotingMode: Boolean = true,
     val selectedSpot: SpotUi? = null,

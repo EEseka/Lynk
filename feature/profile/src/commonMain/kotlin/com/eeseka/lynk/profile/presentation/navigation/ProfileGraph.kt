@@ -10,7 +10,8 @@ import com.eeseka.lynk.profile.presentation.saved_spots.SavedSpotsRoot
 
 fun NavGraphBuilder.profileGraph(
     navController: NavController,
-    mainShellPadding: PaddingValues
+    mainShellPadding: PaddingValues,
+    onNavigateToHangouts: (String) -> Unit
 ) {
     navigation<ProfileGraphRoutes.Graph>(
         startDestination = ProfileGraphRoutes.Profile
@@ -26,7 +27,8 @@ fun NavGraphBuilder.profileGraph(
 
         composable<ProfileGraphRoutes.SavedSpots> {
             SavedSpotsRoot(
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                navigateToHangouts = onNavigateToHangouts
             )
         }
     }

@@ -44,6 +44,7 @@ import com.eeseka.lynk.testing.typeText
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -563,6 +565,52 @@ class AssistantViewModelTest {
         assertThat(spotService.detailsRequestIds).containsExactly("spot_1")
         assertThat(viewModel.state.value.selectedSpot?.rating).isEqualTo(4.8)
         assertThat(viewModel.state.value.loadingSpotId).isNull()
+    }
+
+    @Test
+    fun `tapping another card while one loads opens only the last one tapped`() = runTest {
+        spotService.spotDetailsList = mutableListOf(lounge, rooftop)
+        spotService.detailsResponseDelays["spot_1"] = 1.seconds
+        spotService.detailsResponseDelays["spot_2"] = 2.seconds
+        assistantService.hangoutMessages = mutableListOf(
+            message(
+                "a1",
+                AssistantMessageRole.ASSISTANT,
+                createdAtMillis = 2_000,
+                recommendations = listOf(AssistantRecommendation(lounge, "Fits"), AssistantRecommendation(rooftop, "Views"))
+            )
+        )
+        val viewModel = createHangoutChat()
+
+        viewModel.onAction(AssistantAction.OnRecommendationClick("spot_1"))
+        viewModel.onAction(AssistantAction.OnRecommendationClick("spot_2"))
+
+        // The first card finishes first, but the second is still loading and is the one wanted
+        advanceTimeBy(1.5.seconds)
+        assertThat(viewModel.state.value.selectedSpot).isNull()
+        assertThat(viewModel.state.value.loadingSpotId).isEqualTo("spot_2")
+
+        advanceUntilIdle()
+        assertThat(viewModel.state.value.selectedSpot?.id).isEqualTo("spot_2")
+        assertThat(viewModel.state.value.loadingSpotId).isNull()
+    }
+
+    @Test
+    fun `creating a hangout from an open card closes the sheet and dismissing the form clears it`() = runTest {
+        spotService.spotDetailsList = mutableListOf(lounge)
+        assistantService.hangoutMessages = mutableListOf(
+            message("a1", AssistantMessageRole.ASSISTANT, createdAtMillis = 2_000, recommendations = listOf(AssistantRecommendation(lounge, "Fits")))
+        )
+        val viewModel = createHangoutChat()
+        viewModel.onAction(AssistantAction.OnRecommendationClick("spot_1"))
+        advanceUntilIdle()
+
+        viewModel.onAction(AssistantAction.OnHangoutCreationSelected("spot_1"))
+        assertThat(viewModel.state.value.selectedSpot).isNull()
+        assertThat(viewModel.state.value.hangoutCreationSpot?.id).isEqualTo("spot_1")
+
+        viewModel.onAction(AssistantAction.OnHangoutCreationSelected(null))
+        assertThat(viewModel.state.value.hangoutCreationSpot).isNull()
     }
 
     @Test

@@ -84,7 +84,7 @@ import com.eeseka.lynk.shared.presentation.spot.util.rememberSpotDistanceLabel
 import com.eeseka.lynk.shared.presentation.spot.util.toPriceRangeLabel
 import com.eeseka.lynk.shared.presentation.spot.util.toWebsiteLabel
 import com.eeseka.lynk.shared.presentation.util.placeTimeZone
-import com.eeseka.lynk.shared.presentation.util.toUpcomingTimeLabel
+import com.eeseka.lynk.shared.presentation.util.toShortDateTimeLabel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
@@ -169,7 +169,7 @@ private fun SpotDetailSheetContent(
     // Said out loud when it differs from the phone's, or "Closes 8:30 PM" reads as the viewer's evening
     val isOnAnotherClock = spotTimeZone.offsetAt(now) != TimeZone.currentSystemDefault().offsetAt(now)
     val nextChangeTime = spot.openingHours?.let { OpeningHoursCheck.nextChangeAt(it, now) }
-    val nextChangeTimeLabel = nextChangeTime?.toUpcomingTimeLabel(spotTimeZone)?.let { label ->
+    val nextChangeTimeLabel = nextChangeTime?.toShortDateTimeLabel(spotTimeZone)?.let { label ->
         if (isOnAnotherClock) stringResource(Res.string.spot_local_time, label) else label
     }
     val opensOrClosesLabel = nextChangeTimeLabel?.let { label ->

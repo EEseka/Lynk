@@ -66,8 +66,10 @@ import com.eeseka.lynk.shared.presentation.components.ZoomableImagePage
 import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
 import com.eeseka.lynk.shared.presentation.preview.PREVIEW_GUEST_ID
 import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
-import com.eeseka.lynk.shared.presentation.util.toDateTimeLabel
+import com.eeseka.lynk.shared.presentation.util.toShortDateTimeLabel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.album_close_viewer
 import lynk.feature.hangouts.generated.resources.album_delete_photo
@@ -84,7 +86,7 @@ fun HangoutPhotoViewer(
     currentUserId: String?,
     hostId: String?,
     isExporting: Boolean,
-    deletingPhotoId: String?,
+    deletingPhotoIds: ImmutableSet<String>,
     isEndReached: Boolean,
     snackbarHostState: SnackbarHostState,
     onPageChanged: (Int) -> Unit,
@@ -122,7 +124,7 @@ fun HangoutPhotoViewer(
                     currentUserId = currentUserId,
                     hostId = hostId,
                     isExporting = isExporting,
-                    deletingPhotoId = deletingPhotoId,
+                    deletingPhotoIds = deletingPhotoIds,
                     onPhotoLoadFailed = onPhotoLoadFailed,
                     onSaveClick = onSaveClick,
                     onShareClick = onShareClick,
@@ -142,7 +144,7 @@ private fun HangoutPhotoViewerContent(
     currentUserId: String?,
     hostId: String?,
     isExporting: Boolean,
-    deletingPhotoId: String?,
+    deletingPhotoIds: ImmutableSet<String>,
     onPhotoLoadFailed: () -> Unit,
     onSaveClick: (HangoutPhotoUi) -> Unit,
     onShareClick: (HangoutPhotoUi) -> Unit,
@@ -216,7 +218,7 @@ private fun HangoutPhotoViewerContent(
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         LynkText(
-                            text = photo.createdAt.toDateTimeLabel(),
+                            text = photo.createdAt.toShortDateTimeLabel(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -310,14 +312,14 @@ private fun HangoutPhotoViewerContent(
                             exit = fadeOut() + shrinkHorizontally()
                         ) {
                             LynkTonalIconButton(
-                                enabled = deletingPhotoId == null,
+                                enabled = photo.id !in deletingPhotoIds,
                                 onClick = {
                                     hapticFeedback(AppHaptic.ImpactLight)
                                     onDeleteClick(photo.id)
                                 },
                                 contentColor = MaterialTheme.colorScheme.error
                             ) {
-                                if (photo.id == deletingPhotoId) {
+                                if (photo.id in deletingPhotoIds) {
                                     LynkProgressIndicator(
                                         modifier = Modifier.size(20.dp),
                                         color = MaterialTheme.colorScheme.error,
@@ -364,7 +366,7 @@ private fun HangoutPhotoViewerPreview(currentUserId: String) {
             currentUserId = currentUserId,
             hostId = PREVIEW_HOST_ID,
             isExporting = false,
-            deletingPhotoId = null,
+            deletingPhotoIds = persistentSetOf(),
             onPhotoLoadFailed = {},
             onSaveClick = {},
             onShareClick = {},

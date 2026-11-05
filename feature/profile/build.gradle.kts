@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.kotlinx.collections.immutable)
 
             implementation(projects.shared)
+            implementation(projects.feature.createHangout)
         }
 
         commonTest.dependencies {

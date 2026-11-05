@@ -19,6 +19,7 @@
     <string name="notification_removed_for_non_payment">You were removed from %1$s because your share was not paid in time</string>
     <string name="notification_participant_left">%1$s left %2$s</string>
     <string name="notification_participant_arrived">%1$s arrived at %2$s</string>
+    <string name="notification_note_added">%1$s left a note in %2$s</string>
 
     <!-- The hangout changed -->
     <string name="notification_details_edited">%1$s updated %2$s</string>

@@ -64,6 +64,7 @@ import com.eeseka.lynk.assistant.presentation.components.UserMessageBubble
 import com.eeseka.lynk.assistant.presentation.mappers.getTitle
 import com.eeseka.lynk.assistant.presentation.preview.previewAssistantMessages
 import com.eeseka.lynk.assistant.presentation.model.SpotSuggestState
+import com.eeseka.lynk.create_hangout.presentation.CreateHangoutRoot
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkTonalIconButton
 import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
@@ -96,11 +97,10 @@ import com.eeseka.lynk.shared.presentation.util.PaginationScrollListener
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.clearFocusOnTap
 import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.toUpcomingTimeLabel
+import com.eeseka.lynk.shared.presentation.util.toShortDateTimeLabel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
 import lynk.feature.assistant.generated.resources.Res
 import lynk.feature.assistant.generated.resources.jump_to_latest
 import lynk.feature.assistant.generated.resources.assistant_title
@@ -171,6 +171,7 @@ fun AssistantRoot(
     longitude: Double?,
     areaName: String?,
     navigateBack: () -> Unit,
+    navigateToHangouts: ((String) -> Unit)?,
     viewModel: AssistantViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -215,7 +216,8 @@ fun AssistantRoot(
         state = state,
         onAction = viewModel::onAction,
         snackbarHostState = snackbarHostState,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        navigateToHangouts = navigateToHangouts
     )
 }
 
@@ -225,7 +227,8 @@ fun AssistantScreen(
     state: AssistantState,
     onAction: (AssistantAction) -> Unit,
     snackbarHostState: SnackbarHostState,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToHangouts: ((String) -> Unit)?
 ) {
     val hapticFeedback = rememberAppHaptic()
     val listState = rememberLazyListState()
@@ -444,7 +447,7 @@ fun AssistantScreen(
                                 message = state.usageResetsAt?.let { resetsAt ->
                                     stringResource(
                                         Res.string.out_of_messages_message,
-                                        resetsAt.toUpcomingTimeLabel(TimeZone.currentSystemDefault())
+                                        resetsAt.toShortDateTimeLabel()
                                     )
                                 } ?: stringResource(Res.string.out_of_messages_message_tomorrow),
                                 isOutOfMessages = true
@@ -670,10 +673,25 @@ fun AssistantScreen(
             userLat = votingCenter?.latitude ?: userLocation?.latitude,
             userLng = votingCenter?.longitude ?: userLocation?.longitude,
             isDistanceFromMiddle = votingCenter != null,
+            onCreateHangoutClick = if (isHangoutChat) null else { spotId ->
+                onAction(AssistantAction.OnHangoutCreationSelected(spotId))
+            },
             onToggleSave = { spotId, isCurrentlySaved ->
                 onAction(AssistantAction.OnToggleSaveSpot(spotId, isCurrentlySaved))
             },
             onDismissRequest = { onAction(AssistantAction.OnDismissSpotSheet) }
+        )
+    }
+
+    state.hangoutCreationSpot?.let { hangoutSpot ->
+        CreateHangoutRoot(
+            visible = true,
+            spot = hangoutSpot,
+            onDismiss = { onAction(AssistantAction.OnHangoutCreationSelected(null)) },
+            onSuccess = { newHangoutId ->
+                onAction(AssistantAction.OnHangoutCreationSelected(null))
+                navigateToHangouts?.invoke(newHangoutId)
+            }
         )
     }
 
@@ -760,7 +778,8 @@ private fun AssistantScreenPreview(state: AssistantState) {
             state = state,
             onAction = {},
             snackbarHostState = remember { SnackbarHostState() },
-            navigateBack = {}
+            navigateBack = {},
+            navigateToHangouts = {}
         )
     }
 }

@@ -7,6 +7,7 @@ import com.eeseka.lynk.shared.data.auth.DataStoreSessionStorage
 import com.eeseka.lynk.shared.data.auth.KtorAuthService
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutDetailRepository
 import com.eeseka.lynk.shared.data.hangout.InMemoryHangoutPhotoStatsRepository
+import com.eeseka.lynk.shared.data.hangout.KtorHangoutNoteService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutParticipantService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutPhotoService
 import com.eeseka.lynk.shared.data.hangout.KtorHangoutService
@@ -36,6 +37,7 @@ import com.eeseka.lynk.shared.domain.auth.SessionStorage
 import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoRepository
+import com.eeseka.lynk.shared.domain.hangout.HangoutNoteService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
 import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoStatsRepository
 import com.eeseka.lynk.shared.domain.hangout.HangoutService
@@ -78,6 +80,7 @@ val sharedDataModule = module {
     singleOf(::KtorHangoutService) bind HangoutService::class
     singleOf(::KtorHangoutParticipantService) bind HangoutParticipantService::class
     singleOf(::KtorHangoutPhotoService) bind HangoutPhotoService::class
+    singleOf(::KtorHangoutNoteService) bind HangoutNoteService::class
     singleOf(::SignedUrlHangoutPhotoRepository) bind HangoutPhotoRepository::class
     singleOf(::KtorPaymentService) bind PaymentService::class
     singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class

@@ -32,6 +32,10 @@ sealed interface LobbyEvent {
         val hangoutId: String
     ) : LobbyEvent
 
+    data class NotesChanged(
+        val hangoutId: String
+    ) : LobbyEvent
+
     data class PaymentReceived(
         val hangoutId: String,
         val userId: String,

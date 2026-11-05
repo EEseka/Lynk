@@ -26,6 +26,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -181,6 +182,41 @@ class SavedSpotsViewModelTest {
 
         viewModel.onAction(SavedSpotsAction.OnDismissSpotDetail)
         assertThat(viewModel.state.value.selectedSpotId).isNull()
+    }
+
+    @Test
+    fun `tapping another spot while one loads opens only the last one tapped`() = runTest {
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+        spotService.detailsResponseDelays["spot_1"] = 1.seconds
+        spotService.detailsResponseDelays["spot_2"] = 2.seconds
+
+        viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_1"))
+        viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_2"))
+
+        // The first spot finishes first, but the second is still loading and is the one wanted
+        advanceTimeBy(1.5.seconds)
+        assertThat(viewModel.state.value.selectedSpotId).isNull()
+        assertThat(viewModel.state.value.loadingSpotId).isEqualTo("spot_2")
+
+        advanceUntilIdle()
+        assertThat(viewModel.state.value.selectedSpotId).isEqualTo("spot_2")
+        assertThat(viewModel.state.value.loadingSpotId).isNull()
+    }
+
+    @Test
+    fun `creating a hangout from a spot closes its detail and dismissing the form clears it`() = runTest {
+        collectInBackground(viewModel.state)
+        advanceUntilIdle()
+
+        viewModel.onAction(SavedSpotsAction.OnSpotSelected("spot_1"))
+        advanceUntilIdle()
+        viewModel.onAction(SavedSpotsAction.OnHangoutCreationSelected("spot_1"))
+        assertThat(viewModel.state.value.selectedSpotId).isNull()
+        assertThat(viewModel.state.value.hangoutCreationSpotId).isEqualTo("spot_1")
+
+        viewModel.onAction(SavedSpotsAction.OnHangoutCreationSelected(null))
+        assertThat(viewModel.state.value.hangoutCreationSpotId).isNull()
     }
 
     @Test

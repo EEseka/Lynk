@@ -109,6 +109,7 @@ fun HangoutDetailContent(
     onCopyAddressClick: () -> Unit,
     onMarkArrivedClick: () -> Unit,
     paymentSetup: @Composable () -> Unit,
+    notes: @Composable () -> Unit,
     memories: @Composable () -> Unit,
     onPayClick: () -> Unit,
     onCheckPaymentClick: () -> Unit,
@@ -240,6 +241,8 @@ fun HangoutDetailContent(
                 }
             }
 
+            notes()
+
             paymentSetup()
 
             AnimatedVisibility(visible = hangout.payment != null) {
@@ -369,6 +372,7 @@ private fun HangoutDetailContentPreview(
             onCopyAddressClick = {},
             onMarkArrivedClick = {},
             paymentSetup = {},
+            notes = {},
             memories = {},
             onPayClick = {},
             onCheckPaymentClick = {},

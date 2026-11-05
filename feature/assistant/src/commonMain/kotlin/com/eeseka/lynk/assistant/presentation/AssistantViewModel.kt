@@ -121,6 +121,12 @@ class AssistantViewModel(
             )
 
             is AssistantAction.OnSuggestSpot -> suggestSpot(action.spotId)
+            is AssistantAction.OnHangoutCreationSelected -> _state.update {
+                it.copy(
+                    selectedSpot = null,
+                    hangoutCreationSpot = it.selectedSpot?.takeIf { spot -> spot.id == action.spotId }
+                )
+            }
         }
     }
 
@@ -441,9 +447,12 @@ class AssistantViewModel(
                 .getSpotDetails(spotId)
                 .onSuccess { spot ->
                     replaceCardSpot(spot)
+                    // Another spot was tapped while this one loaded, and the last tap is the one that opens
+                    if (_state.value.loadingSpotId != spotId) return@onSuccess
                     _state.update { it.copy(selectedSpot = spot.toSpotUi(), loadingSpotId = null) }
                 }
                 .onFailure { error ->
+                    if (_state.value.loadingSpotId != spotId) return@onFailure
                     _state.update { it.copy(loadingSpotId = null) }
                     eventChannel.send(AssistantEvent.Error(error.toUiText()))
                 }

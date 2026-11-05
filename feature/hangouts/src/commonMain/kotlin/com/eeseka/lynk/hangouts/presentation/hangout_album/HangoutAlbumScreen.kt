@@ -507,7 +507,7 @@ fun HangoutAlbumScreen(
             currentUserId = state.currentUserId,
             hostId = state.hostId,
             isExporting = isExporting,
-            deletingPhotoId = state.deletingPhotoId,
+            deletingPhotoIds = state.deletingPhotoIds,
             isEndReached = state.isEndReached,
             snackbarHostState = snackbarHostState,
             onPageChanged = { onAction(HangoutAlbumAction.OnViewerPageChanged(it)) },

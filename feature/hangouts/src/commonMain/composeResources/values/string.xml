@@ -261,6 +261,37 @@
     <string name="favorites">Favorites</string>
     <string name="propose_center_caption">Distances are from the group's center point, near everyone.</string>
 
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="notes_title_with_count">Notes · %1$d</string>
+    <string name="notes_empty_title">No Notes Yet</string>
+    <string name="notes_empty_message">Running late or already there? Leave a note for the group.</string>
+    <string name="notes_field_placeholder">Leave a note for everyone…</string>
+    <string name="notes_host">Host</string>
+    <string name="notes_edited">Edited</string>
+    <string name="notes_more_actions">Note actions</string>
+    <string name="notes_edit">Edit</string>
+    <string name="notes_delete">Delete</string>
+    <string name="notes_new_title">New Note</string>
+    <string name="notes_edit_title">Edit Note</string>
+    <string name="notes_hint">e.g. Running 10 minutes late</string>
+    <string name="notes_counter">%1$d / %2$d</string>
+    <string name="notes_tell_title">Who Gets Notified</string>
+    <string name="notes_tell_helper">Everyone going can read your note. This only picks who gets a notification.</string>
+    <string name="notes_tell_everyone">Everyone</string>
+    <string name="notes_tell_host">Just the Host</string>
+    <string name="notes_post">Post Note</string>
+    <string name="notes_posting">Posting…</string>
+    <string name="notes_save">Save Note</string>
+    <string name="notes_saving">Saving…</string>
+    <string name="notes_posted">Note posted</string>
+    <string name="notes_updated">Note updated</string>
+    <string name="notes_deleted">Note deleted</string>
+    <string name="notes_note_gone">This note was deleted.</string>
+    <string name="notes_delete_confirm_title">Delete this note?</string>
+    <string name="notes_delete_confirm_message">It will be gone for everyone going. This can't be undone.</string>
+    <string name="notes_delete_confirm_action">Delete</string>
+
     <!-- Memories -->
     <string name="memories_title">Memories</string>
     <string name="memories_title_with_count">Memories · %1$d</string>
@@ -294,6 +325,7 @@
     <string name="album_delete_confirm_message">It will be gone from the album for everyone who went. This can't be undone.</string>
     <string name="album_delete_confirm_action">Remove</string>
     <string name="album_photo_deleted">Photo removed</string>
+    <string name="album_photo_gone">This photo was removed.</string>
     <string name="album_new_photos">New photos were added</string>
     <string name="album_show_new_photos">Show</string>
     <string name="album_select">Select</string>

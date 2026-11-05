@@ -35,7 +35,8 @@ fun NavGraphBuilder.discoverGraph(
                 latitude = route.latitude,
                 longitude = route.longitude,
                 areaName = route.areaName,
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                navigateToHangouts = onNavigateToHangouts
             )
         }
     }
