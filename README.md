@@ -24,7 +24,8 @@ Android and iOS against a live Spring Boot backend.
 | Feature           | What it does                                                                                                                                     |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Sign in**       | Google Sign-In or a guest account, then a profile with a live username availability check and an optional photo                                  |
-| **Discover**      | A map of trending spots and a Top 10 near you, search, a price filter, opening hours, and saving the ones you like                               |
+| **Discover**      | A map of trending spots and a Top 10 near you, with search and a price filter                                                                    |
+| **Spot sheet**    | One sheet for every spot: rating, opening hours in local time, distance, directions, saving it, and outside a hangout, planning one there        |
 | **Lynk AI**       | Ask for ideas on Discover or in a hangout until it ends; answers stream in with spot cards you can open, save, suggest or plan a hangout at      |
 | **Hangouts**      | Create one in three steps, invite friends by username, RSVP, edit, cancel, and browse by status with search and a vibe filter                    |
 | **Host tools**    | Withdraw an invite, remove someone going and refund what they paid, take a spot off the ballot, and break a tie                                  |
@@ -44,23 +45,23 @@ and detail side by side, open dialogs instead of sheets, and use a navigation ra
 <table>
   <tr>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" width="44" height="44" alt="Kotlin" /><br><b>Kotlin</b><br>2.4</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jetpackcompose/jetpackcompose-original.svg" width="44" height="44" alt="Compose Multiplatform" /><br><b>Compose Multiplatform</b><br>1.12</td>
+    <td align="center" width="110"><img src="https://raw.githubusercontent.com/JetBrains/compose-multiplatform/master/artwork/compose-logo.svg" width="44" height="44" alt="Compose Multiplatform" /><br><b>Compose Multiplatform</b><br>1.12</td>
     <td align="center" width="110"><img src="https://mohamedrejeb.github.io/Calf/images/logo.svg" width="44" height="44" alt="Calf" /><br><b>Calf</b><br>Material 3 on Android, UIKit on iOS</td>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ktor/ktor-original.svg" width="44" height="44" alt="Ktor" /><br><b>Ktor</b><br>REST, WebSocket, SSE</td>
-    <td align="center" width="110"><img src="https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://insert-koin.io&size=128" width="44" height="44" alt="Koin" /><br><b>Koin</b><br>dependency injection</td>
+    <td align="center" width="110"><img src="https://insert-koin.io/img/koin_new_logo.png" width="44" height="44" alt="Koin" /><br><b>Koin</b><br>dependency injection</td>
   </tr>
   <tr>
     <td align="center" width="110"><img src="https://cdn.simpleicons.org/maplibre" width="44" height="44" alt="MapLibre" /><br><b>MapLibre</b><br>maps</td>
-    <td align="center" width="110"><img src="https://coil-kt.github.io/coil/logo.svg" width="44" height="44" alt="Coil" /><br><b>Coil</b><br>images</td>
-    <td align="center" width="110"><img src="https://cdn.simpleicons.org/google" width="44" height="44" alt="KMPAuth" /><br><b>KMPAuth</b><br>Google Sign-In</td>
+    <td align="center" width="110"><img src="https://coil-kt.github.io/coil/images/coil_logo_colored.svg" width="44" height="44" alt="Coil" /><br><b>Coil</b><br>images</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/google" width="44" height="44" alt="Google Sign-In" /><br><b>Google Sign-In</b><br>through KMPAuth</td>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-original.svg" width="44" height="44" alt="Firebase" /><br><b>Firebase</b><br>push</td>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg" width="44" height="44" alt="GitHub Actions" /><br><b>GitHub Actions</b><br>CI, releases</td>
   </tr>
 </table>
 
 Also: Material 3 Adaptive · kotlinx.serialization · kotlinx.coroutines · kotlinx-datetime · Navigation Compose ·
-DataStore · MapTiler tiles · Chrome Custom Tabs · moko-permissions · moko-geo · Kermit · Compottie ·
-Multiplatform Markdown Renderer · ZoomImage · Lucide icons · BuildKonfig · Turbine · AssertK
+DataStore · moko-permissions · moko-geo · Kermit · Compottie · Multiplatform Markdown Renderer · ZoomImage ·
+Lucide icons · BuildKonfig · Turbine · AssertK
 
 ## Architecture
 
@@ -89,10 +90,9 @@ flowchart TB
 
     API["<b>Lynk API</b><br/>REST, WebSocket,<br/>Server-Sent Events"]
     GOOGLE["Google Places<br/>photos"]
-    MAP["MapTiler<br/>map tiles"]
     PAYSTACK["Paystack<br/>checkout page"]
     FCM["Firebase<br/>push"]
-    STORAGE["Supabase Storage<br/>photo uploads"]
+    STORAGE["Supabase<br/>photo storage"]
 
     ANDROID --> COMPOSE
     IOS --> COMPOSE
@@ -101,7 +101,6 @@ flowchart TB
     TESTING -.-> SHARED
     SHARED -->|Ktor| API
     SHARED -->|Coil| GOOGLE
-    SHARED --> MAP
     SHARED --> FCM
     SHARED -->|signed links| STORAGE
     HANG --> PAYSTACK
@@ -117,7 +116,7 @@ flowchart TB
     class ONB,AUTH,SETUP,SHELL,DISC,CREATE,HANG,NOTIF,PROF,AI unit
     class SHARED common
     class TESTING test
-    class API,GOOGLE,MAP,PAYSTACK,FCM,STORAGE ext
+    class API,GOOGLE,PAYSTACK,FCM,STORAGE ext
     style APPS fill:#FFF8F0,stroke:#D9822B,color:#1F2937
 ```
 
@@ -145,7 +144,7 @@ feature/
   auth           Google and guest sign-in
   profile_setup  username, display name and photo for a new account
   main_shell     tab navigation and the unread notification badge
-  discover       map, trending spots, Top 10, search, saving a spot
+  discover       map, trending spots, Top 10, search, price filter
   create_hangout the three-step sheet that creates and edits a hangout
   hangouts       hangout list, detail, live voting, notes, the live map, payments, albums
   notifications  inbox and invite previews
@@ -180,27 +179,11 @@ of it, so markers animate and theme like the rest of the app.
 
 **Native where it matters.** On iOS the top bar, tab bar, buttons, switches, sliders, spinners, menus, dialogs and
 action sheets are real UIKit controls, through Calf. Dates and times are picked in UIKit's own calendar and wheels,
-in a popover UIKit presents above the app; Android uses Material's date and time dialogs. Haptics follow one token per
-kind of interaction, and layouts avoid fixed heights so they grow with the system font size.
+in a popover UIKit presents above the app; Android uses Material's date and time dialogs.
 
 ## Testing
 
 Every test lives in `commonTest`, so the same test code runs on the **JVM** and on the **iOS simulator**.
-
-```
-hangouts          detail, lobby voting, notes, live locations, payments, albums, list, list-detail
-shared            stores, paginator, unread counter, mappers, opening hours, date and money formatting, validators
-create_hangout    the three-step flow and its validators
-assistant         sending, streaming, failures, daily limits, chat history
-profile           profile, settings, saved spots
-notifications     inbox and invite previews
-profile_setup     username checks, photo upload, submission
-discover          trending, Top 10, search, filters, saving spots
-composeApp        session, theme and first-run state
-auth              Google and guest sign-in
-main_shell        tabs and the unread badge
-onboarding        first run
-```
 
 Every ViewModel is tested against every one of its actions, plus the logic that sits outside ViewModels: validators,
 mappers, the lobby store, the paginator and the payment amount field. Every service in `shared` has one fake in the
