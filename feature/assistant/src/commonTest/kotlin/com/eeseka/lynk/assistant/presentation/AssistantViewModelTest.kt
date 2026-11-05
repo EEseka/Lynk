@@ -28,6 +28,7 @@ import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
 import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.shared.domain.lobby.model.VotingCandidate
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.shared.domain.util.DataError
@@ -639,7 +640,10 @@ class AssistantViewModelTest {
             assertThat(viewModel.state.value.suggestingSpotIds).isEqualTo(setOf("spot_2"))
 
             // What the voting section does when the lobby reports the new candidate
-            ballotRepository.addCandidate(hangoutId, rooftop)
+            ballotRepository.addCandidate(
+                hangoutId,
+                VotingCandidate(spot = rooftop, suggestedById = "user_1", suggestedByDisplayName = "Ada", note = null)
+            )
 
             assertThat(awaitItem()).isEqualTo(AssistantEvent.SpotSuggested)
             assertThat(viewModel.state.value.suggestingSpotIds).isEmpty()

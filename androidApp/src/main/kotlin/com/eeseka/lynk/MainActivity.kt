@@ -53,7 +53,8 @@ class MainActivity : ComponentActivity() {
         val deepLinkUri = when (type) {
             NotificationType.PARTICIPANT_INVITED.name -> "lynk://notifications/$hangoutId"
             NotificationType.INVITE_CANCELLED.name,
-            NotificationType.REMOVED_FOR_NON_PAYMENT.name -> return
+            NotificationType.REMOVED_FOR_NON_PAYMENT.name,
+            NotificationType.PARTICIPANT_REMOVED.name -> return
 
             else -> "lynk://hangout_detail/$hangoutId"
         }

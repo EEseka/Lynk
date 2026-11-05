@@ -113,6 +113,7 @@ class HangoutsListDetailViewModel(
             .onEach { event ->
                 val affectsList = when (event) {
                     is LobbyEvent.NonPayerRemoved,
+                    is LobbyEvent.ParticipantRemoved,
                     is LobbyEvent.ParticipantLeft,
                     is LobbyEvent.RsvpUpdated,
                     is LobbyEvent.HangoutUpdated,

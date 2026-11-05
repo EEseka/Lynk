@@ -108,6 +108,9 @@ import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
 import com.eeseka.lynk.shared.presentation.util.UiText
 import com.eeseka.lynk.shared.presentation.util.toPickerDate
 import com.eeseka.lynk.shared.presentation.util.toPickerMillis
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.launch
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_address_copied
@@ -127,6 +130,10 @@ import lynk.feature.hangouts.generated.resources.detail_leave_confirm_message
 import lynk.feature.hangouts.generated.resources.detail_leave_confirm_title
 import lynk.feature.hangouts.generated.resources.detail_left_message
 import lynk.feature.hangouts.generated.resources.detail_load_error_title
+import lynk.feature.hangouts.generated.resources.detail_remove_confirm_action
+import lynk.feature.hangouts.generated.resources.detail_remove_confirm_message
+import lynk.feature.hangouts.generated.resources.detail_remove_confirm_title
+import lynk.feature.hangouts.generated.resources.detail_removed_message
 import lynk.feature.hangouts.generated.resources.detail_withdrawn_message
 import lynk.feature.hangouts.generated.resources.memories_photos_added
 import lynk.feature.hangouts.generated.resources.notes_delete_confirm_action
@@ -146,6 +153,7 @@ import lynk.feature.hangouts.generated.resources.payment_payout_queued
 import lynk.feature.hangouts.generated.resources.payment_still_processing
 import lynk.feature.hangouts.generated.resources.spot_suggested_message
 import lynk.feature.hangouts.generated.resources.voting_tie_flash
+import lynk.feature.hangouts.generated.resources.voting_voted_spot_removed
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -218,6 +226,11 @@ fun HangoutDetailRoot(
                 type = LynkFlashType.Info
             )
 
+            HangoutDetailEvent.ParticipantRemoved -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.detail_removed_message),
+                type = LynkFlashType.Info
+            )
+
             HangoutDetailEvent.ArrivalMarked -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.detail_arrived_message),
                 type = LynkFlashType.Success
@@ -247,6 +260,11 @@ fun HangoutDetailRoot(
 
             HangoutVotingEvent.VotingTied -> snackbarHostState.showFlashMessage(
                 message = getString(Res.string.voting_tie_flash),
+                type = LynkFlashType.Warning
+            )
+
+            is HangoutVotingEvent.VotedSpotRemoved -> snackbarHostState.showFlashMessage(
+                message = getString(Res.string.voting_voted_spot_removed, event.spotName),
                 type = LynkFlashType.Warning
             )
         }
@@ -440,6 +458,18 @@ fun HangoutDetailScreen(
     val showSoloHint = showInvite && isSolo
 
     val attendees = hangout?.participants?.filter { it.rsvpStatus == RsvpStatus.ATTENDING }.orEmpty()
+
+    val isPaidOut = hangout?.payment?.state == PaymentState.PAYING_OUT ||
+            hangout?.payment?.state == PaymentState.PAID_OUT
+    val removableUserIds = if (isHost && isUpcoming) {
+        attendees
+            .filter { it.user.userId != hangout.hostId && !(isPaidOut && it.hasPaid) }
+            .map { it.user.userId }
+            .toImmutableSet()
+    } else persistentSetOf()
+    val pendingRemoveDisplayName = hangout?.participants
+        ?.find { it.user.userId == state.pendingRemoveUserId }
+        ?.user?.displayName
     val showMemories = hangout?.status == HangoutStatus.COMPLETED &&
             attendees.size >= MIN_ATTENDEES_FOR_PHOTOS &&
             attendees.any { it.user.userId == state.currentUserId }
@@ -816,12 +846,26 @@ fun HangoutDetailScreen(
             hangoutStatus = state.hangout.status,
             isHost = isHost,
             canWithdraw = canWithdraw,
+            removableUserIds = removableUserIds,
+            removingUserIds = state.removingUserIds,
             onDismiss = { showParticipantsSheet = false },
             onWithdraw = { onAction(HangoutDetailAction.OnWithdrawParticipantInvite(it)) },
-            withdrawingUserIds = state.withdrawingUserIds,
+            onRemove = { onAction(HangoutDetailAction.OnRemoveParticipantClick(it)) },
             presentUserIds = state.presentUserIds,
             arePaymentsOn = state.hangout.payment != null,
             hostId = state.hangout.hostId
+        )
+    }
+
+    if (pendingRemoveDisplayName != null) {
+        LynkDialog(
+            onDismissRequest = { onAction(HangoutDetailAction.OnDismissRemoveDialog) },
+            title = stringResource(Res.string.detail_remove_confirm_title, pendingRemoveDisplayName),
+            message = stringResource(Res.string.detail_remove_confirm_message),
+            confirmText = stringResource(Res.string.detail_remove_confirm_action),
+            dismissText = stringResource(Res.string.detail_dialog_dismiss),
+            isDestructive = true,
+            onConfirm = { onAction(HangoutDetailAction.OnRemoveParticipantConfirmed) }
         )
     }
 
@@ -883,8 +927,11 @@ fun HangoutDetailScreen(
     }
 
     if (isMapShowing) {
+        val candidateSpots = remember(votingState.candidates) {
+            votingState.candidates.map { it.spot }.toImmutableList()
+        }
         HangoutMapDialog(
-            candidates = votingState.candidates,
+            candidates = candidateSpots,
             chosenSpot = hangout.chosenSpot,
             votes = votingState.votes,
             participants = hangout.participants,
@@ -938,7 +985,9 @@ fun HangoutDetailScreen(
         ProposeSpotSheet(
             state = votingState,
             onTabSelected = { onVotingAction(HangoutVotingAction.OnTabSelected(it)) },
-            onPropose = { onVotingAction(HangoutVotingAction.OnProposeSpot(it)) },
+            onSuggestSpotClick = { onVotingAction(HangoutVotingAction.OnSuggestSpotClick(it)) },
+            onBackToSpotSearch = { onVotingAction(HangoutVotingAction.OnBackToSpotSearch) },
+            onPropose = { onVotingAction(HangoutVotingAction.OnProposeSpot) },
             onLoadNextSpotPage = { onVotingAction(HangoutVotingAction.LoadNextSpotPage) },
             onLoadNextFavoritePage = { onVotingAction(HangoutVotingAction.LoadNextFavoriteSpotPage) },
             onDismiss = { onVotingAction(HangoutVotingAction.OnDismissProposeSpotSheet) }

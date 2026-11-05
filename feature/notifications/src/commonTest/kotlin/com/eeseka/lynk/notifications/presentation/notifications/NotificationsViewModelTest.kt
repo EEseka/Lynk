@@ -189,7 +189,8 @@ class NotificationsViewModelTest {
     fun `tapping a notification for a hangout you are no longer in opens nothing`() = runTest {
         notificationService.notifications = mutableListOf(
             notification("n1", NotificationType.INVITE_CANCELLED),
-            notification("n2", NotificationType.REMOVED_FOR_NON_PAYMENT)
+            notification("n2", NotificationType.REMOVED_FOR_NON_PAYMENT),
+            notification("n3", NotificationType.PARTICIPANT_REMOVED)
         )
         collectInBackground(viewModel.state)
         advanceUntilIdle()
@@ -198,6 +199,9 @@ class NotificationsViewModelTest {
             viewModel.onAction(NotificationsAction.OnNotificationClick("n1", HANGOUT_ID, NotificationType.INVITE_CANCELLED))
             viewModel.onAction(
                 NotificationsAction.OnNotificationClick("n2", HANGOUT_ID, NotificationType.REMOVED_FOR_NON_PAYMENT)
+            )
+            viewModel.onAction(
+                NotificationsAction.OnNotificationClick("n3", HANGOUT_ID, NotificationType.PARTICIPANT_REMOVED)
             )
             advanceUntilIdle()
 

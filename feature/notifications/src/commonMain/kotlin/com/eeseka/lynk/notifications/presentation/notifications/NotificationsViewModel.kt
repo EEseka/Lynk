@@ -76,7 +76,9 @@ class NotificationsViewModel(
 
         when (type) {
             NotificationType.PARTICIPANT_INVITED -> _state.update { it.copy(previewHangoutId = hangoutId) }
-            NotificationType.INVITE_CANCELLED, NotificationType.REMOVED_FOR_NON_PAYMENT -> Unit
+            NotificationType.INVITE_CANCELLED,
+            NotificationType.REMOVED_FOR_NON_PAYMENT,
+            NotificationType.PARTICIPANT_REMOVED -> Unit
             else -> viewModelScope.launch {
                 eventChannel.send(NotificationsEvent.NavigateToHangout(hangoutId))
             }

@@ -42,6 +42,7 @@ import lynk.feature.notifications.generated.resources.notification_note_added
 import lynk.feature.notifications.generated.resources.notification_participant_arrived
 import lynk.feature.notifications.generated.resources.notification_participant_invited
 import lynk.feature.notifications.generated.resources.notification_participant_left
+import lynk.feature.notifications.generated.resources.notification_participant_removed
 import lynk.feature.notifications.generated.resources.notification_payment_deadline_changed
 import lynk.feature.notifications.generated.resources.notification_payment_deadline_needs_decision
 import lynk.feature.notifications.generated.resources.notification_payment_deadline_resolved
@@ -83,6 +84,11 @@ fun NotificationUi.toUiText(): UiText {
         NotificationType.REMOVED_FOR_NON_PAYMENT -> UiText.Resource(
             Res.string.notification_removed_for_non_payment,
             arrayOf(hangoutName)
+        )
+
+        NotificationType.PARTICIPANT_REMOVED -> UiText.Resource(
+            Res.string.notification_participant_removed,
+            arrayOf(actor, hangoutName)
         )
 
         NotificationType.PARTICIPANT_LEFT -> UiText.Resource(
@@ -229,6 +235,7 @@ fun NotificationType.getIcon(): ImageVector {
         NotificationType.PARTICIPANT_INVITED -> Lucide.UserPlus
         NotificationType.INVITE_CANCELLED -> Lucide.Ban
         NotificationType.REMOVED_FOR_NON_PAYMENT -> Lucide.UserMinus
+        NotificationType.PARTICIPANT_REMOVED -> Lucide.UserMinus
         NotificationType.PARTICIPANT_LEFT -> Lucide.UserMinus
 
         NotificationType.DETAILS_EDITED -> Lucide.Pencil

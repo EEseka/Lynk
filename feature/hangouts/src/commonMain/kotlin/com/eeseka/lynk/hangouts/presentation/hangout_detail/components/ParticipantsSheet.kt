@@ -36,10 +36,12 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.detail_going
 import lynk.feature.hangouts.generated.resources.detail_group_declined
 import lynk.feature.hangouts.generated.resources.detail_group_pending
+import lynk.feature.hangouts.generated.resources.detail_remove
 import lynk.feature.hangouts.generated.resources.detail_was_going
 import lynk.feature.hangouts.generated.resources.detail_went
 import lynk.feature.hangouts.generated.resources.detail_withdraw
@@ -54,9 +56,11 @@ fun ParticipantsSheet(
     hangoutStatus: HangoutStatus,
     isHost: Boolean,
     canWithdraw: Boolean,
+    removableUserIds: ImmutableSet<String>,
+    removingUserIds: ImmutableSet<String>,
     onDismiss: () -> Unit,
     onWithdraw: (String) -> Unit,
-    withdrawingUserIds: ImmutableSet<String>,
+    onRemove: (String) -> Unit,
     modifier: Modifier = Modifier,
     presentUserIds: ImmutableSet<String> = persistentSetOf(),
     arePaymentsOn: Boolean = false,
@@ -72,8 +76,10 @@ fun ParticipantsSheet(
             hangoutStatus = hangoutStatus,
             isHost = isHost,
             canWithdraw = canWithdraw,
+            removableUserIds = removableUserIds,
+            removingUserIds = removingUserIds,
             onWithdraw = onWithdraw,
-            withdrawingUserIds = withdrawingUserIds,
+            onRemove = onRemove,
             presentUserIds = presentUserIds,
             arePaymentsOn = arePaymentsOn,
             hostId = hostId
@@ -87,8 +93,10 @@ private fun ParticipantsSheetContent(
     hangoutStatus: HangoutStatus,
     isHost: Boolean,
     canWithdraw: Boolean,
+    removableUserIds: ImmutableSet<String>,
+    removingUserIds: ImmutableSet<String>,
     onWithdraw: (String) -> Unit,
-    withdrawingUserIds: ImmutableSet<String>,
+    onRemove: (String) -> Unit,
     presentUserIds: ImmutableSet<String>,
     arePaymentsOn: Boolean,
     hostId: String?,
@@ -136,7 +144,18 @@ private fun ParticipantsSheetContent(
                 showHeader = isHost,
                 arePaymentsOn = arePaymentsOn,
                 hostId = hostId,
-                showHereBadges = !hasEnded
+                showHereBadges = !hasEnded,
+                trailing = if (removableUserIds.isNotEmpty()) {
+                    { participant ->
+                        if (participant.user.userId in removableUserIds) {
+                            HostActionControl(
+                                text = stringResource(Res.string.detail_remove),
+                                isLoading = participant.user.userId in removingUserIds,
+                                onClick = { onRemove(participant.user.userId) }
+                            )
+                        }
+                    }
+                } else null
             )
 
             if (isHost && pending.isNotEmpty()) {
@@ -145,8 +164,9 @@ private fun ParticipantsSheetContent(
                     participants = pending,
                     trailing = if (canWithdraw) {
                         { participant ->
-                            WithdrawControl(
-                                isLoading = participant.user.userId in withdrawingUserIds,
+                            HostActionControl(
+                                text = stringResource(Res.string.detail_withdraw),
+                                isLoading = participant.user.userId in removingUserIds,
                                 onClick = { onWithdraw(participant.user.userId) }
                             )
                         }
@@ -203,7 +223,8 @@ private fun LazyListScope.participantGroup(
 }
 
 @Composable
-private fun WithdrawControl(
+private fun HostActionControl(
+    text: String,
     isLoading: Boolean,
     onClick: () -> Unit
 ) {
@@ -216,7 +237,7 @@ private fun WithdrawControl(
         )
     } else {
         LynkText(
-            text = stringResource(Res.string.detail_withdraw),
+            text = text,
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.error,
             fontWeight = FontWeight.Bold,
@@ -261,8 +282,15 @@ private fun ParticipantsSheetPreview(isHost: Boolean) {
             hangoutStatus = HangoutStatus.SCHEDULED,
             isHost = isHost,
             canWithdraw = isHost,
+            removableUserIds = if (isHost) {
+                previewRoster
+                    .filter { it.rsvpStatus == RsvpStatus.ATTENDING && it.user.userId != PREVIEW_HOST_ID }
+                    .map { it.user.userId }
+                    .toImmutableSet()
+            } else persistentSetOf(),
+            removingUserIds = persistentSetOf(),
             onWithdraw = {},
-            withdrawingUserIds = persistentSetOf(),
+            onRemove = {},
             presentUserIds = persistentSetOf(PREVIEW_HOST_ID, "user-2"),
             arePaymentsOn = true,
             hostId = PREVIEW_HOST_ID,

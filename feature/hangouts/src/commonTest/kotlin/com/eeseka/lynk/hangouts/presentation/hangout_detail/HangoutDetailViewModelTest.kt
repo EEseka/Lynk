@@ -567,7 +567,7 @@ class HangoutDetailViewModelTest {
             assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.InviteWithdrawn)
             val invitee = viewModel.state.value.hangout?.participants?.find { it.user.userId == GUEST_ID }
             assertThat(invitee).isNull()
-            assertThat(viewModel.state.value.withdrawingUserIds).isEmpty()
+            assertThat(viewModel.state.value.removingUserIds).isEmpty()
         }
     }
 
@@ -587,7 +587,70 @@ class HangoutDetailViewModelTest {
             assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.InviteWithdrawn)
             val invitee = viewModel.state.value.hangout?.participants?.find { it.user.userId == GUEST_ID }
             assertThat(invitee).isNull()
-            assertThat(viewModel.state.value.withdrawingUserIds).isEmpty()
+            assertThat(viewModel.state.value.removingUserIds).isEmpty()
+        }
+    }
+
+    @Test
+    fun `removing someone going asks first and then takes them out`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        joinAsGuest(hangoutId)
+        signInAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.onAction(HangoutDetailAction.OnRemoveParticipantClick(GUEST_ID))
+            assertThat(viewModel.state.value.pendingRemoveUserId).isEqualTo(GUEST_ID)
+            expectNoEvents()
+
+            viewModel.onAction(HangoutDetailAction.OnRemoveParticipantConfirmed)
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.ParticipantRemoved)
+            val state = viewModel.state.value
+            assertThat(state.hangout?.participants?.find { it.user.userId == GUEST_ID }).isNull()
+            assertThat(state.hangout?.participantCount).isEqualTo(1)
+            assertThat(state.pendingRemoveUserId).isNull()
+            assertThat(state.removingUserIds).isEmpty()
+        }
+    }
+
+    @Test
+    fun `the remove question goes away when that person leaves first`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        joinAsGuest(hangoutId)
+        signInAsHost()
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+        viewModel.onAction(HangoutDetailAction.OnRemoveParticipantClick(GUEST_ID))
+
+        hangoutService.currentUserId = GUEST_ID
+        hangoutService.leaveHangout(hangoutId)
+        hangoutService.currentUserId = HOST_ID
+        connectionClient.sendEvent(LobbyEvent.ParticipantLeft(hangoutId, GUEST_ID, GUEST_ID))
+        advanceUntilIdle()
+
+        assertThat(viewModel.state.value.pendingRemoveUserId).isNull()
+    }
+
+    @Test
+    fun `someone the host removes is told and sent away`() = runTest {
+        val hangoutId = createHangoutAsHost()
+        joinAsGuest(hangoutId)
+        val viewModel = createViewModel()
+        viewModel.onAction(HangoutDetailAction.OnSelectHangout(hangoutId))
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            connectionClient.sendEvent(LobbyEvent.ParticipantRemoved(hangoutId, GUEST_ID, GUEST_ID))
+            advanceUntilIdle()
+
+            val announcement = awaitItem() as HangoutDetailEvent.LobbyAnnouncement
+            assertThat(announcement.type).isEqualTo(LynkFlashType.Warning)
+            assertThat(awaitItem()).isEqualTo(HangoutDetailEvent.NavigateBack)
         }
     }
 
@@ -710,6 +773,11 @@ class HangoutDetailViewModelTest {
         hangoutService.currentUserId = GUEST_ID
         hangoutService.updateRsvp(hangoutId, RsvpStatus.ATTENDING)
         signIn(GUEST_ID)
+    }
+
+    private suspend fun signInAsHost() {
+        hangoutService.currentUserId = HOST_ID
+        signIn(HOST_ID)
     }
 
     private suspend fun renameOnServer(hangoutId: String, name: String) {

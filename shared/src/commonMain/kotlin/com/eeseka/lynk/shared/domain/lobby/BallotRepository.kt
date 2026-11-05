@@ -1,7 +1,7 @@
 package com.eeseka.lynk.shared.domain.lobby
 
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
-import com.eeseka.lynk.shared.domain.spot.model.Spot
+import com.eeseka.lynk.shared.domain.lobby.model.VotingCandidate
 import kotlinx.coroutines.flow.Flow
 
 interface BallotRepository {
@@ -10,11 +10,11 @@ interface BallotRepository {
      * The spots on this hangout's ballot as the lobby last reported them, empty until it reports any.
      * The voting section writes what the lobby says; the Lynk chat reads the same copy, so neither asks twice.
      */
-    fun observeCandidates(hangoutId: String): Flow<List<Spot>>
+    fun observeCandidates(hangoutId: String): Flow<List<VotingCandidate>>
 
-    fun replaceCandidates(hangoutId: String, candidates: List<Spot>)
+    fun replaceCandidates(hangoutId: String, candidates: List<VotingCandidate>)
 
-    fun addCandidate(hangoutId: String, spot: Spot)
+    fun addCandidate(hangoutId: String, candidate: VotingCandidate)
 
     fun removeCandidate(hangoutId: String, spotId: String)
 

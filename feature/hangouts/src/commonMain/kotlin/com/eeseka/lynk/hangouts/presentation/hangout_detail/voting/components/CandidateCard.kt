@@ -70,6 +70,8 @@ fun CandidateCard(
     spotName: String,
     spotAddress: String?,
     photoUrls: ImmutableList<String>,
+    suggestedByLabel: String,
+    note: String?,
     voteCount: Int,
     totalVotes: Int,
     isMyVote: Boolean,
@@ -232,6 +234,26 @@ fun CandidateCard(
                 }
             }
         }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            LynkText(
+                text = suggestedByLabel,
+                style = MaterialTheme.typography.labelMedium,
+                color = scheme.onSurfaceVariant
+            )
+            note?.let {
+                LynkText(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = scheme.onSurface
+                )
+            }
+        }
     }
 }
 
@@ -379,10 +401,10 @@ private fun CandidateCardPreview() {
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp)
         ) {
-            PreviewCandidateCard()
+            PreviewCandidateCard(note = "Live band on Fridays and the jollof is unreal")
             PreviewCandidateCard(isMyVote = true, isLeading = true, voteCount = 4, totalVotes = 6)
             PreviewCandidateCard(isTiebreakTarget = true, voteCount = 3, totalVotes = 6)
-            PreviewCandidateCard(canRemove = true, voteCount = 1)
+            PreviewCandidateCard(canRemove = true, voteCount = 1, suggestedByLabel = "Suggested by you")
         }
     }
 }
@@ -394,12 +416,16 @@ private fun PreviewCandidateCard(
     isMyVote: Boolean = false,
     isLeading: Boolean = false,
     isTiebreakTarget: Boolean = false,
-    canRemove: Boolean = false
+    canRemove: Boolean = false,
+    suggestedByLabel: String = "Suggested by Bola",
+    note: String? = null
 ) {
     CandidateCard(
         spotName = "Nok by Alara",
         spotAddress = "Victoria Island, Lagos",
         photoUrls = persistentListOf(),
+        suggestedByLabel = suggestedByLabel,
+        note = note,
         voteCount = voteCount,
         totalVotes = totalVotes,
         isMyVote = isMyVote,

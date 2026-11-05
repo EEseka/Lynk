@@ -8,6 +8,7 @@ import assertk.assertions.isNull
 import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
 import com.eeseka.lynk.shared.domain.auth.model.User
 import com.eeseka.lynk.shared.domain.location.LocationCoordinates
+import com.eeseka.lynk.shared.domain.lobby.model.VotingCandidate
 import com.eeseka.lynk.shared.domain.spot.model.Spot
 import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
 import com.eeseka.lynk.testing.data.FakeSessionStorage
@@ -23,8 +24,8 @@ class InMemoryBallotRepositoryTest {
 
     private lateinit var sessionStorage: FakeSessionStorage
 
-    private val lounge = spot(id = "spot_1")
-    private val rooftop = spot(id = "spot_2")
+    private val lounge = candidate(spotId = "spot_1")
+    private val rooftop = candidate(spotId = "spot_2")
 
     @BeforeTest
     fun setUp() {
@@ -45,7 +46,7 @@ class InMemoryBallotRepositoryTest {
 
         repository.replaceCandidates(HANGOUT_ID, listOf(rooftop))
 
-        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.id }).containsExactly("spot_2")
+        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.spot.id }).containsExactly("spot_2")
     }
 
     @Test
@@ -56,7 +57,7 @@ class InMemoryBallotRepositoryTest {
         repository.addCandidate(HANGOUT_ID, lounge)
         repository.addCandidate(HANGOUT_ID, rooftop)
 
-        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.id }).containsExactly("spot_1", "spot_2")
+        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.spot.id }).containsExactly("spot_1", "spot_2")
     }
 
     @Test
@@ -66,7 +67,7 @@ class InMemoryBallotRepositoryTest {
 
         repository.removeCandidate(HANGOUT_ID, "spot_1")
 
-        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.id }).containsExactly("spot_2")
+        assertThat(repository.observeCandidates(HANGOUT_ID).first().map { it.spot.id }).containsExactly("spot_2")
     }
 
     @Test
@@ -117,6 +118,13 @@ class InMemoryBallotRepositoryTest {
         accessToken = "access",
         refreshToken = "refresh",
         user = User.Guest(id = userId)
+    )
+
+    private fun candidate(spotId: String) = VotingCandidate(
+        spot = spot(id = spotId),
+        suggestedById = "user_a",
+        suggestedByDisplayName = "Ada",
+        note = null
     )
 
     private fun spot(id: String) = Spot(

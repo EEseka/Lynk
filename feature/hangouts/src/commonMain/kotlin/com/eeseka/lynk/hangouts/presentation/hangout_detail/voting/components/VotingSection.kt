@@ -29,14 +29,15 @@ import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Scale
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.DetailSection
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.components.PlaceholderCard
+import com.eeseka.lynk.hangouts.presentation.model.VotingCandidateUi
+import com.eeseka.lynk.hangouts.presentation.preview.previewVotingCandidates
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
 import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
 import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.presentation.preview.previewSpots
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.shared.presentation.preview.PREVIEW_GUEST_ID
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -50,6 +51,8 @@ import lynk.feature.hangouts.generated.resources.voting_empty_message
 import lynk.feature.hangouts.generated.resources.voting_empty_title
 import lynk.feature.hangouts.generated.resources.voting_propose
 import lynk.feature.hangouts.generated.resources.voting_see_on_map
+import lynk.feature.hangouts.generated.resources.voting_suggested_by
+import lynk.feature.hangouts.generated.resources.voting_suggested_by_you
 import lynk.feature.hangouts.generated.resources.voting_tie_banner
 import lynk.feature.hangouts.generated.resources.voting_tie_banner_guest
 import lynk.feature.hangouts.generated.resources.voting_title
@@ -57,7 +60,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun VotingSection(
-    candidates: ImmutableList<SpotUi>,
+    candidates: ImmutableList<VotingCandidateUi>,
     votes: ImmutableMap<String, String>,
     removingSpotIds: ImmutableSet<String>,
     currentUserId: String?,
@@ -78,8 +81,9 @@ fun VotingSection(
     val myVote = currentUserId?.let { votes[it] }
     val tie = tiedSpotIds.isNotEmpty()
     val orderedCandidates = remember(candidates, counts) {
-        candidates.sortedByDescending { counts[it.id] ?: 0 }
+        candidates.sortedByDescending { counts[it.spot.id] ?: 0 }
     }
+    val suggestedByYouLabel = stringResource(Res.string.voting_suggested_by_you)
 
     val hapticFeedback = rememberAppHaptic()
 
@@ -137,19 +141,26 @@ fun VotingSection(
                 // LookaheadScope + animateBounds slides each card to its new rank when the leaderboard reorders
                 LookaheadScope {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        orderedCandidates.forEach { spot ->
+                        orderedCandidates.forEach { candidate ->
+                            val spot = candidate.spot
                             key(spot.id) {
                                 val voteCount = counts[spot.id] ?: 0
+                                val isMine = candidate.suggestedById == currentUserId
                                 CandidateCard(
                                     spotName = spot.name,
                                     spotAddress = spot.shortAddress,
                                     photoUrls = spot.photoUrls,
+                                    suggestedByLabel = if (isMine) suggestedByYouLabel else stringResource(
+                                        Res.string.voting_suggested_by,
+                                        candidate.suggestedByDisplayName
+                                    ),
+                                    note = candidate.note,
                                     voteCount = voteCount,
                                     totalVotes = totalVotes,
                                     isMyVote = myVote == spot.id,
                                     isLeading = voteCount > 0 && voteCount == maxCount,
                                     isTiebreakTarget = tie && isHost && spot.id in tiedSpotIds,
-                                    canRemove = isHost && !tie,  // Host can pull a spot off the ballot, but not mid-tiebreak.
+                                    canRemove = (isHost || isMine) && !tie,
                                     isRemoving = spot.id in removingSpotIds,
                                     onRemove = { onRemoveSpot(spot.id) },
                                     onClick = {
@@ -218,6 +229,10 @@ private fun VotingSectionHostPreview() = VotingSectionPreview()
 
 @PreviewLightDark
 @Composable
+private fun VotingSectionGuestPreview() = VotingSectionPreview(isHost = false)
+
+@PreviewLightDark
+@Composable
 private fun VotingSectionEmptyPreview() = VotingSectionPreview(
     candidates = persistentListOf(),
     votes = persistentMapOf()
@@ -232,17 +247,18 @@ private fun VotingSectionTiePreview() = VotingSectionPreview(
 
 @Composable
 private fun VotingSectionPreview(
-    candidates: ImmutableList<SpotUi> = previewSpots,
-    votes: ImmutableMap<String, String> = persistentMapOf("0" to "s1", "1" to "s1", "2" to "s2", "me" to "s3"),
-    tiedSpotIds: ImmutableList<String> = persistentListOf()
+    candidates: ImmutableList<VotingCandidateUi> = previewVotingCandidates,
+    votes: ImmutableMap<String, String> = persistentMapOf("0" to "s1", "1" to "s1", "2" to "s2", PREVIEW_GUEST_ID to "s3"),
+    tiedSpotIds: ImmutableList<String> = persistentListOf(),
+    isHost: Boolean = true
 ) {
     LynkTheme {
         VotingSection(
             candidates = candidates,
             votes = votes,
             removingSpotIds = persistentSetOf(),
-            currentUserId = "me",
-            isHost = true,
+            currentUserId = PREVIEW_GUEST_ID,
+            isHost = isHost,
             tiedSpotIds = tiedSpotIds,
             isClosingVoting = false,
             onCastVote = {},

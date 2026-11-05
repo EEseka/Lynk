@@ -124,7 +124,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     //     // The user is out of this hangout by the time these arrive, so the detail screen
     //     // would only answer 403. Same rule the inbox row follows: open the app and go
     //     // nowhere in particular.
-    //     case "INVITE_CANCELLED", "REMOVED_FOR_NON_PAYMENT":
+    //     case "INVITE_CANCELLED", "REMOVED_FOR_NON_PAYMENT", "PARTICIPANT_REMOVED":
     //       break
     //     default:
     //       ExternalUriHandlerBridge.shared.onNewUri(uri: "lynk://hangout_detail/\(hangoutId)")

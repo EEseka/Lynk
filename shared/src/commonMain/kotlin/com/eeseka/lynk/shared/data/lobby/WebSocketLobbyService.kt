@@ -53,10 +53,11 @@ class WebSocketLobbyService(
 
     override suspend fun proposeSpot(
         hangoutId: String,
-        spotId: String
+        spotId: String,
+        note: String?
     ): EmptyResult<DataError.Connection> {
         return webSocketConnector.sendMessage(
-            OutgoingLobbyDto.ProposeSpot(hangoutId, spotId).toJsonPayload()
+            OutgoingLobbyDto.ProposeSpot(hangoutId, spotId, note).toJsonPayload()
         )
     }
 

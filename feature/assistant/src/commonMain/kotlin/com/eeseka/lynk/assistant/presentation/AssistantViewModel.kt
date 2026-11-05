@@ -200,7 +200,7 @@ class AssistantViewModel(
         ballotRepository
             .observeCandidates(hangoutId)
             .onEach { candidates ->
-                val ballotSpotIds = candidates.map { it.id }.toSet()
+                val ballotSpotIds = candidates.map { it.spot.id }.toSet()
                 val suggestedSpotIds = _state.value.suggestingSpotIds.filter { it in ballotSpotIds }
 
                 _state.update {
@@ -537,7 +537,7 @@ class AssistantViewModel(
                 it.copy(suggestingSpotIds = (it.suggestingSpotIds + spotId).toImmutableSet())
             }
             lobbyService
-                .proposeSpot(hangoutId, spotId)
+                .proposeSpot(hangoutId = hangoutId, spotId = spotId, note = null)
                 .onFailure { error ->
                     _state.update {
                         it.copy(suggestingSpotIds = (it.suggestingSpotIds - spotId).toImmutableSet())

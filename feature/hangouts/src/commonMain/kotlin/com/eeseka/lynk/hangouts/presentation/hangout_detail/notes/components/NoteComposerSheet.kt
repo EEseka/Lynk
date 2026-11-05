@@ -7,13 +7,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.text.input.then
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Crown
@@ -23,6 +27,7 @@ import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
 import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkAdaptiveSheet
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
 import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
+import com.eeseka.lynk.shared.design_system.components.textfields.SingleLineInputTransformation
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedControl
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedItem
 import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSegmentedStyle
@@ -114,7 +119,11 @@ private fun NoteComposerSheetContent(
             singleLine = false,
             maxLines = 4,
             helperText = stringResource(Res.string.notes_counter, noteState.text.length, MAX_NOTE_LENGTH),
-            inputTransformation = InputTransformation.maxLength(MAX_NOTE_LENGTH)
+            inputTransformation = SingleLineInputTransformation.then(InputTransformation.maxLength(MAX_NOTE_LENGTH)),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            )
         )
 
         if (canChooseAudience && !isEditing) {

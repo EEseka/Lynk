@@ -22,7 +22,8 @@ data class HangoutDetailState(
     val isCancelling: Boolean = false,
     val isLeaving: Boolean = false,
     val isMarkingArrived: Boolean = false,
-    val withdrawingUserIds: ImmutableSet<String> = persistentSetOf(),
+    val removingUserIds: ImmutableSet<String> = persistentSetOf(),
+    val pendingRemoveUserId: String? = null,
     val mapTheme: AppTheme = AppTheme.SYSTEM,
     val hasAssistantChat: Boolean = false,
 
