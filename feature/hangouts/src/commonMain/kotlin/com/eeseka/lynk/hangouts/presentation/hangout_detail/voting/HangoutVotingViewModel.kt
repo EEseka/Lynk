@@ -299,7 +299,13 @@ class HangoutVotingViewModel(
 
             is LobbyEvent.CenterUpdate -> {
                 if (event.hangoutId == currentHangoutId) {
-                    ballotRepository.replaceCenter(currentHangoutId, LocationCoordinates(event.latitude, event.longitude))
+                    val latitude = event.latitude
+                    val longitude = event.longitude
+
+                    ballotRepository.replaceCenter(
+                        currentHangoutId,
+                        if (latitude != null && longitude != null) LocationCoordinates(latitude, longitude) else null
+                    )
                 }
             }
 

@@ -127,8 +127,8 @@ sealed interface IncomingLobbyDto {
     @Serializable
     data class CenterUpdateDto(
         val hangoutId: String,
-        val latitude: Double,
-        val longitude: Double
+        val latitude: Double? = null,
+        val longitude: Double? = null
     ) : IncomingLobbyDto
 
     @Serializable

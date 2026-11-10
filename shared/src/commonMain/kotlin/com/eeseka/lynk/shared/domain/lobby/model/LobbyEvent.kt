@@ -122,8 +122,8 @@ sealed interface LobbyEvent {
 
     data class CenterUpdate(
         val hangoutId: String,
-        val latitude: Double,
-        val longitude: Double
+        val latitude: Double?,
+        val longitude: Double?
     ) : LobbyEvent
 
     data class VotingTie(

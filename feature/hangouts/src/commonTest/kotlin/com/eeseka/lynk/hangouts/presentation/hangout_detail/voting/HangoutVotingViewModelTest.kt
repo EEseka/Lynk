@@ -438,6 +438,19 @@ class HangoutVotingViewModelTest {
     }
 
     @Test
+    fun `the group center goes away when the server says there is none`() = runTest {
+        val hangoutId = createVotingHangout()
+        createViewModel(hangoutId)
+        connectionClient.sendEvent(LobbyEvent.CenterUpdate(hangoutId, 6.5, 3.3))
+        advanceUntilIdle()
+
+        connectionClient.sendEvent(LobbyEvent.CenterUpdate(hangoutId, null, null))
+        advanceUntilIdle()
+
+        assertThat(ballotRepository.observeCenter(hangoutId).first()).isNull()
+    }
+
+    @Test
     fun `a refresh that stays in voting keeps the ballot`() = runTest {
         val hangoutId = createVotingHangout()
         val viewModel = createViewModel(hangoutId)

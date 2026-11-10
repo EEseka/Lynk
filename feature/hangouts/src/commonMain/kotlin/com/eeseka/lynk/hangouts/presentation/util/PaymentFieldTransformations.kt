@@ -7,14 +7,13 @@ import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.then
 import com.eeseka.lynk.shared.domain.payment.PaymentConstants.NUBAN_LENGTH
 
-// 999999999.99 — far past any hangout bill, and short enough that the amount can never overflow.
-private const val MAX_AMOUNT_LENGTH = 12
+private const val MAX_WHOLE_NAIRA_DIGITS = 9
 
 val accountNumberInput = InputTransformation { keepDigitsOnly() }
     .then(InputTransformation.maxLength(NUBAN_LENGTH))
 
 val amountInput = InputTransformation { keepAmountCharactersOnly() }
-    .then(InputTransformation.maxLength(MAX_AMOUNT_LENGTH))
+    .then { limitWholeNaira() }
 
 val amountOutput = OutputTransformation { groupWholeNaira() }
 
@@ -44,6 +43,12 @@ private fun TextFieldBuffer.keepAmountCharactersOnly() {
         }
     }
     if (cleaned != original) replace(0, length, cleaned)
+}
+
+private fun TextFieldBuffer.limitWholeNaira() {
+    val decimalPointIndex = asCharSequence().indexOf('.')
+    val wholeNairaLength = if (decimalPointIndex == -1) length else decimalPointIndex
+    if (wholeNairaLength > MAX_WHOLE_NAIRA_DIGITS) revertAllChanges()
 }
 
 private fun TextFieldBuffer.groupWholeNaira() {

@@ -34,8 +34,13 @@ class PaymentFieldTransformationsTest {
     }
 
     @Test
-    fun `amount stops at twelve characters`() {
-        assertThat(type(amountInput, before = "999999999999", typed = "9")).isEqualTo("999999999999")
+    fun `amount stops at nine naira digits`() {
+        assertThat(type(amountInput, before = "999999999", typed = "9")).isEqualTo("999999999")
+    }
+
+    @Test
+    fun `amount still takes kobo after nine naira digits`() {
+        assertThat(type(amountInput, before = "999999999", typed = ".99")).isEqualTo("999999999.99")
     }
 
     @Test
