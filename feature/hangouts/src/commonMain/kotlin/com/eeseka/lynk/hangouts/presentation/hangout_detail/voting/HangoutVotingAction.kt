@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.voting
 
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
 
 sealed interface HangoutVotingAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutVotingAction

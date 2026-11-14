@@ -22,11 +22,11 @@ import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.SquarePen
 import com.composables.icons.lucide.UserRoundPlus
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownItem
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkDropDownMenu
-import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkDropDownItem
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkDropDownMenu
+import com.eeseka.lynk.core.design_system.components.util.AppHaptic
+import com.eeseka.lynk.core.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.hangouts.generated.resources.Res

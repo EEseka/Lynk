@@ -11,8 +11,8 @@ import com.eeseka.lynk.main_shell.presentation.mappers.getIcon
 import com.eeseka.lynk.main_shell.presentation.mappers.toSfSymbolName
 import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration

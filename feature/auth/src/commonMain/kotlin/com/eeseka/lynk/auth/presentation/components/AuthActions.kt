@@ -15,11 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButtonStyle
-import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.core.design_system.components.buttons.LynkButtonStyle
+import com.eeseka.lynk.core.design_system.components.util.AppHaptic
+import com.eeseka.lynk.core.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import com.mmk.kmpauth.core.auth.KMPAuthUserCancelledException
 import com.mmk.kmpauth.google.rememberGoogleSignInState
 import lynk.feature.auth.generated.resources.Res

@@ -4,9 +4,9 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.voting.model.SearchTab
 import com.eeseka.lynk.hangouts.presentation.model.VotingCandidateUi
-import com.eeseka.lynk.shared.domain.location.LocationCoordinates
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.location.LocationCoordinates
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet

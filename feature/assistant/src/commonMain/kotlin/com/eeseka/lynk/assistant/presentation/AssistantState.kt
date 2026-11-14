@@ -3,11 +3,11 @@ package com.eeseka.lynk.assistant.presentation
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.assistant.presentation.model.AssistantMessageUi
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantStatusKind
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.location.LocationCoordinates
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.assistant.model.AssistantStatusKind
+import com.eeseka.lynk.core.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.core.domain.location.LocationCoordinates
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf

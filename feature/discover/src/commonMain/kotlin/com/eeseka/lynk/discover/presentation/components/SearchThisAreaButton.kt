@@ -23,10 +23,10 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.RefreshCw
-import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.presentation.spot.util.DistanceCalculator
+import com.eeseka.lynk.core.design_system.components.progress_indicator.LynkProgressIndicator
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.presentation.spot.util.DistanceCalculator
 import lynk.feature.discover.generated.resources.Res
 import lynk.feature.discover.generated.resources.search_this_area
 import org.jetbrains.compose.resources.stringResource

@@ -1,7 +1,7 @@
 package com.eeseka.lynk.notifications.presentation.notifications
 
-import com.eeseka.lynk.shared.presentation.notification.model.NotificationUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.notification.model.NotificationUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

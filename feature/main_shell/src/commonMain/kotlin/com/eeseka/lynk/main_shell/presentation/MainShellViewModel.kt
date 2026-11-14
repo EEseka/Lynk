@@ -2,10 +2,10 @@ package com.eeseka.lynk.main_shell.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.shared.domain.auth.SessionStorage
-import com.eeseka.lynk.shared.domain.auth.model.User
-import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
-import com.eeseka.lynk.shared.domain.settings.AppPreferences
+import com.eeseka.lynk.core.domain.auth.SessionStorage
+import com.eeseka.lynk.core.domain.auth.model.User
+import com.eeseka.lynk.core.domain.notification.UnreadNotificationCounter
+import com.eeseka.lynk.core.domain.settings.AppPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.launchIn

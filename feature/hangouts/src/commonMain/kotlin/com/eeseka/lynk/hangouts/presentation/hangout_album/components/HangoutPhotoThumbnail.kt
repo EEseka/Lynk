@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.util.rememberHangoutPhotoRequest
-import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
-import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.images.LynkAsyncImage
+import com.eeseka.lynk.core.design_system.components.util.AppHaptic
+import com.eeseka.lynk.core.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.album_select
 import lynk.feature.hangouts.generated.resources.memories_photo

@@ -1,6 +1,6 @@
 package com.eeseka.lynk.notifications.presentation.invite_preview
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface InvitePreviewEvent {
     data class Error(val message: UiText) : InvitePreviewEvent

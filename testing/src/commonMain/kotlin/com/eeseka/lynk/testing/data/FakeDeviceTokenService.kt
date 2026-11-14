@@ -1,10 +1,10 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.notification.DeviceTokenService
-import com.eeseka.lynk.shared.domain.notification.model.DevicePlatform
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.notification.DeviceTokenService
+import com.eeseka.lynk.core.domain.notification.model.DevicePlatform
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 
 class FakeDeviceTokenService : DeviceTokenService {
     var shouldReturnError = false

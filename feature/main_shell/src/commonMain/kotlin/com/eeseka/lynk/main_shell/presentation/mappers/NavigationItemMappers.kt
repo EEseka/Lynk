@@ -6,7 +6,7 @@ import com.composables.icons.lucide.CircleUser
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Map
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 import lynk.feature.main_shell.generated.resources.Res
 import lynk.feature.main_shell.generated.resources.discover
 import lynk.feature.main_shell.generated.resources.hangouts

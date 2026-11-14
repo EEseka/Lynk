@@ -4,9 +4,9 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
-import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
-import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.core.domain.auth.model.AuthInfo
+import com.eeseka.lynk.core.domain.auth.model.AuthProvider
+import com.eeseka.lynk.core.domain.auth.model.User
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAppPreferences
 import com.eeseka.lynk.testing.data.FakeSessionStorage

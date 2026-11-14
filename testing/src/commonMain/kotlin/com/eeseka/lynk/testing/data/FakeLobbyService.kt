@@ -1,9 +1,9 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.lobby.LobbyService
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.lobby.LobbyService
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 
 // Every call is only a message down the socket, so the fake records what was sent
 class FakeLobbyService : LobbyService {

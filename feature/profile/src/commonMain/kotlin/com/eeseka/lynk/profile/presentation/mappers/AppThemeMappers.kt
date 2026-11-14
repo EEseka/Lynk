@@ -6,7 +6,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Moon
 import com.composables.icons.lucide.Smartphone
 import com.composables.icons.lucide.Sun
-import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.core.domain.settings.AppTheme
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.theme_dark
 import lynk.feature.profile.generated.resources.theme_light

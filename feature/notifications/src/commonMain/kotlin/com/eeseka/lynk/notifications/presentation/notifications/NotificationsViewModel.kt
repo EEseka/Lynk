@@ -2,16 +2,16 @@ package com.eeseka.lynk.notifications.presentation.notifications
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.shared.domain.notification.NotificationService
-import com.eeseka.lynk.shared.domain.notification.model.Notification
-import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
-import com.eeseka.lynk.shared.domain.notification.model.NotificationType
-import com.eeseka.lynk.shared.domain.util.DataErrorException
-import com.eeseka.lynk.shared.domain.util.Paginator
-import com.eeseka.lynk.shared.domain.util.onFailure
-import com.eeseka.lynk.shared.domain.util.onSuccess
-import com.eeseka.lynk.shared.presentation.notification.mappers.toNotificationUi
-import com.eeseka.lynk.shared.presentation.util.toUiText
+import com.eeseka.lynk.core.domain.notification.NotificationService
+import com.eeseka.lynk.core.domain.notification.model.Notification
+import com.eeseka.lynk.core.domain.notification.UnreadNotificationCounter
+import com.eeseka.lynk.core.domain.notification.model.NotificationType
+import com.eeseka.lynk.core.domain.util.DataErrorException
+import com.eeseka.lynk.core.domain.util.Paginator
+import com.eeseka.lynk.core.domain.util.onFailure
+import com.eeseka.lynk.core.domain.util.onSuccess
+import com.eeseka.lynk.core.presentation.notification.mappers.toNotificationUi
+import com.eeseka.lynk.core.presentation.util.toUiText
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

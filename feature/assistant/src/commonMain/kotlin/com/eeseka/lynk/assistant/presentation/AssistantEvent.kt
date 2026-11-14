@@ -1,6 +1,6 @@
 package com.eeseka.lynk.assistant.presentation
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface AssistantEvent {
     data class Error(val message: UiText) : AssistantEvent

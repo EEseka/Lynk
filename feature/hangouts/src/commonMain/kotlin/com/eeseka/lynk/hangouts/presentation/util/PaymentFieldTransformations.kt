@@ -5,7 +5,7 @@ import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.then
-import com.eeseka.lynk.shared.domain.payment.PaymentConstants.NUBAN_LENGTH
+import com.eeseka.lynk.core.domain.payment.PaymentConstants.NUBAN_LENGTH
 
 private const val MAX_WHOLE_NAIRA_DIGITS = 9
 

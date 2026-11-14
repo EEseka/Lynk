@@ -1,0 +1,55 @@
+package com.eeseka.lynk.core.presentation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.X
+import com.eeseka.lynk.core.design_system.components.buttons.LynkTonalIconButton
+import com.eeseka.lynk.core.design_system.components.layouts.safeArea
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkFullScreenDialog
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import lynk.core.generated.resources.Res
+import lynk.core.generated.resources.close_image
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun FullScreenAvatarViewer(
+    model: String,
+    onDismiss: () -> Unit
+) {
+    LynkFullScreenDialog(onDismissRequest = onDismiss) {
+        // Photos read best on black, so the viewer is dark whatever the app theme
+        LynkTheme(darkTheme = true) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                ZoomableImagePage(model = model)
+
+                LynkTonalIconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .windowInsetsPadding(WindowInsets.safeArea)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Lucide.X,
+                        contentDescription = stringResource(Res.string.close_image)
+                    )
+                }
+            }
+        }
+    }
+}

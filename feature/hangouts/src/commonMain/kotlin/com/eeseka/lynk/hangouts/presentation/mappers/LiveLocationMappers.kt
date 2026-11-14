@@ -2,9 +2,9 @@ package com.eeseka.lynk.hangouts.presentation.mappers
 
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.model.LiveLocationUi
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.model.LiveParticipantUi
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.lobby.model.LiveLocation
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.core.domain.lobby.model.LiveLocation
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutParticipantUi
 import kotlin.time.Instant
 
 fun LiveLocation.toLiveLocationUi() = LiveLocationUi(

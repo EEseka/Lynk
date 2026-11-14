@@ -1,6 +1,6 @@
 package com.eeseka.lynk.notifications.presentation.notifications
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface NotificationsEvent {
     data class Error(val message: UiText) : NotificationsEvent

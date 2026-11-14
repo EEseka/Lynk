@@ -2,14 +2,14 @@ package com.eeseka.lynk.notifications.presentation.invite_preview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.shared.domain.hangout.HangoutService
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.onFailure
-import com.eeseka.lynk.shared.domain.util.onSuccess
-import com.eeseka.lynk.shared.presentation.hangout.mappers.toHangoutPreviewUi
-import com.eeseka.lynk.shared.presentation.util.UiText
-import com.eeseka.lynk.shared.presentation.util.toUiText
+import com.eeseka.lynk.core.domain.hangout.HangoutService
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.onFailure
+import com.eeseka.lynk.core.domain.util.onSuccess
+import com.eeseka.lynk.core.presentation.hangout.mappers.toHangoutPreviewUi
+import com.eeseka.lynk.core.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.toUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

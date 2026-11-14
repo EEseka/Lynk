@@ -12,10 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.layouts.LynkCard
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.components.toggles_and_control.LynkSwitch
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.map_share_location
 import lynk.feature.hangouts.generated.resources.map_share_location_hint

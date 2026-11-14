@@ -1,0 +1,41 @@
+package com.eeseka.lynk.core.domain.spot
+
+import com.eeseka.lynk.core.domain.spot.model.PaginatedSpots
+import com.eeseka.lynk.core.domain.spot.model.PriceLevel
+import com.eeseka.lynk.core.domain.spot.model.Spot
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.domain.spot.model.TrendingSpots
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
+
+interface SpotService {
+
+    suspend fun getTrendingSpots(
+        latitude: Double,
+        longitude: Double,
+        limit: Int = 20
+    ): Result<TrendingSpots, DataError.Remote>
+
+    suspend fun getTopSpots(city: String): Result<List<Spot>, DataError.Remote>
+
+    suspend fun searchSpots(
+        latitude: Double,
+        longitude: Double,
+        query: String? = null,
+        category: SpotCategory? = null,
+        priceLevel: PriceLevel? = null,
+        nextPageToken: String? = null // For Google Places pagination
+    ): Result<PaginatedSpots, DataError.Remote>
+
+    suspend fun getSpotDetails(spotId: String): Result<Spot, DataError.Remote>
+
+    suspend fun saveSpot(spotId: String): EmptyResult<DataError.Remote>
+
+    suspend fun unsaveSpot(spotId: String): EmptyResult<DataError.Remote>
+
+    suspend fun getSavedSpots(
+        query: String? = null,
+        before: String? = null
+    ): Result<List<Spot>, DataError.Remote>
+}

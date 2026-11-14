@@ -1,10 +1,10 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.notification.NotificationService
-import com.eeseka.lynk.shared.domain.notification.model.Notification
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.notification.NotificationService
+import com.eeseka.lynk.core.domain.notification.model.Notification
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlin.time.Instant
 
 class FakeNotificationService : NotificationService {

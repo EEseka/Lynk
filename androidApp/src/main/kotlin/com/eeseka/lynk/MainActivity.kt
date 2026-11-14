@@ -6,8 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.eeseka.lynk.shared.domain.notification.model.NotificationType
-import com.eeseka.lynk.shared.presentation.navigation.ExternalUriHandler
+import com.eeseka.lynk.core.domain.notification.model.NotificationType
+import com.eeseka.lynk.core.presentation.navigation.ExternalUriHandler
 
 class MainActivity : ComponentActivity() {
 

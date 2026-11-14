@@ -2,12 +2,12 @@ package com.eeseka.lynk.discover.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
-import com.eeseka.lynk.shared.domain.location.LocationCoordinates
-import com.eeseka.lynk.shared.domain.settings.AppTheme
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.location.LocationCoordinates
+import com.eeseka.lynk.core.domain.settings.AppTheme
+import com.eeseka.lynk.core.domain.spot.model.PriceLevel
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

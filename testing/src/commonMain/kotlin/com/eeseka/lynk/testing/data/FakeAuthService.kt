@@ -1,11 +1,11 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.auth.AuthService
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
-import com.eeseka.lynk.shared.domain.auth.model.User
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.auth.AuthService
+import com.eeseka.lynk.core.domain.auth.model.AuthInfo
+import com.eeseka.lynk.core.domain.auth.model.User
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 
 class FakeAuthService : AuthService {
     var shouldReturnError = false

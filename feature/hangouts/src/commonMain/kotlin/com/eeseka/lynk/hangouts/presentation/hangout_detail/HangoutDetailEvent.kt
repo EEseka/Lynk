@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail
 
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkFlashType
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkFlashType
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface HangoutDetailEvent {
     data class Error(val message: UiText) : HangoutDetailEvent

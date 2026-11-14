@@ -1,9 +1,9 @@
 package com.eeseka.lynk.hangouts.presentation.preview
 
 import com.eeseka.lynk.hangouts.presentation.model.VotingCandidateUi
-import com.eeseka.lynk.shared.presentation.preview.PREVIEW_GUEST_ID
-import com.eeseka.lynk.shared.presentation.preview.PREVIEW_HOST_ID
-import com.eeseka.lynk.shared.presentation.preview.previewSpots
+import com.eeseka.lynk.core.presentation.preview.PREVIEW_GUEST_ID
+import com.eeseka.lynk.core.presentation.preview.PREVIEW_HOST_ID
+import com.eeseka.lynk.core.presentation.preview.previewSpots
 import kotlinx.collections.immutable.toImmutableList
 
 val previewVotingCandidates = previewSpots.mapIndexed { index, spot ->

@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.main_shell.presentation.mappers.getIcon
 import com.eeseka.lynk.main_shell.presentation.mappers.toTitle
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 
 @Composable
 fun LynkNavigationRail(

@@ -1,0 +1,15 @@
+package com.eeseka.lynk.core.domain.notification
+
+import kotlinx.coroutines.flow.StateFlow
+
+interface UnreadNotificationCounter {
+    val count: StateFlow<Long>
+
+    suspend fun refresh()
+
+    fun increment()
+
+    fun decrement()
+
+    fun clear()
+}

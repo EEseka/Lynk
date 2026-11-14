@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.mappers
 
-import com.eeseka.lynk.shared.domain.hangout.model.PaymentState
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.hangout.model.PaymentState
+import com.eeseka.lynk.core.presentation.util.UiText
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_state_awaiting_decision_guest
 import lynk.feature.hangouts.generated.resources.payment_state_awaiting_decision_host

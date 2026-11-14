@@ -1,18 +1,18 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.hangout.HangoutService
-import com.eeseka.lynk.shared.domain.hangout.model.Hangout
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutParticipant
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutPreview
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStats
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutSummary
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.hangout.HangoutService
+import com.eeseka.lynk.core.domain.hangout.model.Hangout
+import com.eeseka.lynk.core.domain.hangout.model.HangoutParticipant
+import com.eeseka.lynk.core.domain.hangout.model.HangoutPreview
+import com.eeseka.lynk.core.domain.hangout.model.HangoutStats
+import com.eeseka.lynk.core.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.core.domain.hangout.model.HangoutSummary
+import com.eeseka.lynk.core.domain.hangout.model.HangoutUser
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlin.time.Instant
 
 class FakeHangoutService : HangoutService {

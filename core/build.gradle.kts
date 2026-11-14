@@ -1,0 +1,167 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import java.util.Properties
+
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidMultiplatformLibrary) // It is a Library, not an App
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)  // Needed for Room
+    alias(libs.plugins.room) // Needed for Room
+    alias(libs.plugins.buildkonfig) // Storing secrets in local.properties
+}
+
+// SECURELY READ THE KEY
+val localProperties = Properties()
+val localFile = rootProject.file("local.properties")
+if (localFile.exists()) {
+    localProperties.load(localFile.inputStream())
+}
+
+// Try to get from local.properties, fallback to System Environment (good for CI/CD)
+val webClientId: String = localProperties.getProperty("WEB_CLIENT_ID")
+    ?: System.getenv("WEB_CLIENT_ID")
+    ?: throw GradleException("🚨 FATAL: WEB_CLIENT_ID not found in local.properties or environment variables!")
+
+val apiKey: String = localProperties.getProperty("API_KEY")
+    ?: System.getenv("API_KEY")
+    ?: throw GradleException("🚨 FATAL: API_KEY not found in local.properties or environment variables!")
+
+val mapTilerApiKey: String = localProperties.getProperty("MAP_TILER_API_KEY")
+    ?: System.getenv("MAP_TILER_API_KEY")
+    ?: throw GradleException("🚨 FATAL: MAP_TILER_API_KEY not found in local.properties or environment variables!")
+
+val googlePlacesAndroidApiKey: String = localProperties.getProperty("GOOGLE_PLACES_ANDROID_API_KEY")
+    ?: System.getenv("GOOGLE_PLACES_ANDROID_API_KEY")
+    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_ANDROID_API_KEY not found in local.properties or environment variables!")
+
+val googlePlacesIosApiKey: String = localProperties.getProperty("GOOGLE_PLACES_IOS_API_KEY")
+    ?: System.getenv("GOOGLE_PLACES_IOS_API_KEY")
+    ?: throw GradleException("🚨 FATAL: GOOGLE_PLACES_IOS_API_KEY not found in local.properties or environment variables!")
+
+val isDebug: String = localProperties.getProperty("IS_DEBUG")
+    ?: System.getenv("IS_DEBUG")
+    ?: "false"
+
+// GENERATE THE CONFIG
+buildkonfig {
+    packageName = "com.eeseka.lynk"
+    objectName = "AppConfig"
+    exposeObjectWithName = "AppConfig"
+
+    defaultConfigs {
+        buildConfigField(STRING, "WEB_CLIENT_ID", webClientId)
+        buildConfigField(STRING, "API_KEY", apiKey)
+        buildConfigField(STRING, "MAP_TILER_API_KEY", mapTilerApiKey)
+        buildConfigField(STRING, "GOOGLE_PLACES_ANDROID_API_KEY", googlePlacesAndroidApiKey)
+        buildConfigField(STRING, "GOOGLE_PLACES_IOS_API_KEY", googlePlacesIosApiKey)
+        buildConfigField(STRING, "APP_VERSION", libs.versions.app.versionName.get())
+        buildConfigField(STRING, "APP_VERSION_CODE", libs.versions.app.versionCode.get())
+        buildConfigField(BOOLEAN, "IS_DEBUG", isDebug)
+    }
+}
+
+kotlin {
+    android {
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        namespace = "com.eeseka.lynk.core"
+        androidResources { enable = true }
+
+        withHostTest {}
+    }
+
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.compose.uiTooling)
+            implementation(libs.androidx.lifecycle.process)
+            implementation(libs.androidx.exifinterface)
+
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.messaging)
+            implementation(libs.koin.android)
+
+            implementation(libs.play.services.location)
+        }
+        commonMain.dependencies {
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
+
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            // Permission handling
+            implementation(libs.moko.permissions)
+            implementation(libs.moko.permissions.compose)
+            implementation(libs.moko.permissions.notifications)
+            implementation(libs.moko.permissions.location)
+
+            // Geo Location
+            implementation(libs.moko.geo)
+            implementation(libs.moko.geo.compose)
+
+            // Logging
+            implementation(libs.touchlab.kermit)
+
+            implementation(libs.bundles.koin.common)
+            implementation(libs.bundles.ktor.common)
+
+            implementation(libs.icons.lucide.cmp)
+            implementation(libs.jetbrains.compose.material.icons.extended)
+
+            implementation(libs.kotlinx.coroutines.core)
+
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.collections.immutable)
+            implementation(libs.touchlab.kermit)
+
+            implementation(libs.datastore)
+            implementation(libs.datastore.preferences)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+            implementation(libs.zoomimage.compose.coil)
+
+            implementation(libs.maplibre.compose)
+
+            implementation(libs.jetbrains.compose.navigation)
+
+            implementation(libs.material3.adaptive)
+
+            // Database (Room)
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
+
+            // Adaptive Ui (Material3, Cupertino and Liquid Glass)
+            implementation(libs.adaptive.ui)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+        commonTest.dependencies {
+            implementation(projects.testing)
+        }
+    }
+}
+
+// Room Schema Setup
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
+// KSP Configuration for Room (Must be in the module that uses Room)
+dependencies {
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
+}

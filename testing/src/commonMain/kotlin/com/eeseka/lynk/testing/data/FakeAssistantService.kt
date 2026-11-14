@@ -1,13 +1,13 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.data.assistant.AssistantConstants
-import com.eeseka.lynk.shared.domain.assistant.AssistantService
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessage
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantStreamEvent
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantUsage
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.data.assistant.AssistantConstants
+import com.eeseka.lynk.core.domain.assistant.AssistantService
+import com.eeseka.lynk.core.domain.assistant.model.AssistantMessage
+import com.eeseka.lynk.core.domain.assistant.model.AssistantStreamEvent
+import com.eeseka.lynk.core.domain.assistant.model.AssistantUsage
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Instant
 

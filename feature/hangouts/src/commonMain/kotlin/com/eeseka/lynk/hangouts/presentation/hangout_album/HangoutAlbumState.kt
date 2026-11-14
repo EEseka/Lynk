@@ -2,7 +2,7 @@ package com.eeseka.lynk.hangouts.presentation.hangout_album
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.eeseka.lynk.hangouts.presentation.model.HangoutPhotoUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf

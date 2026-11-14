@@ -1,6 +1,6 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.notification.UnreadNotificationCounter
+import com.eeseka.lynk.core.domain.notification.UnreadNotificationCounter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 

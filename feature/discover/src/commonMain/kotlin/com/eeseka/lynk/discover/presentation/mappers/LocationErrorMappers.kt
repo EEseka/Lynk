@@ -1,7 +1,7 @@
 package com.eeseka.lynk.discover.presentation.mappers
 
-import com.eeseka.lynk.shared.domain.location.LocationError
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.location.LocationError
+import com.eeseka.lynk.core.presentation.util.UiText
 import lynk.feature.discover.generated.resources.Res
 import lynk.feature.discover.generated.resources.location_not_found
 import lynk.feature.discover.generated.resources.location_permission_needed

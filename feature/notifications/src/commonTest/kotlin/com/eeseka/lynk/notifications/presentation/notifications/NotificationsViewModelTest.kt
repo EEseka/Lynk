@@ -10,8 +10,8 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import com.eeseka.lynk.shared.domain.notification.model.Notification
-import com.eeseka.lynk.shared.domain.notification.model.NotificationType
+import com.eeseka.lynk.core.domain.notification.model.Notification
+import com.eeseka.lynk.core.domain.notification.model.NotificationType
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeNotificationService
 import com.eeseka.lynk.testing.data.FakeUnreadNotificationCounter

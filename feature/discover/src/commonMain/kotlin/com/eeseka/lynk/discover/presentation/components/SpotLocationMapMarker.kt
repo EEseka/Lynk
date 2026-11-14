@@ -34,9 +34,9 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
-import com.eeseka.lynk.shared.presentation.spot.mappers.getIcon
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.presentation.spot.mappers.getIcon
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch

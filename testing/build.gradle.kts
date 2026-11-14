@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKmpLibrary) // It is a Library, not an App
+    alias(libs.plugins.androidMultiplatformLibrary) // It is a Library, not an App
 }
 
 kotlin {
@@ -21,9 +21,9 @@ kotlin {
             api(libs.assertk)
             api(libs.kotlinx.coroutines.test)
 
-            implementation(libs.foundation)
+            implementation(libs.compose.foundation)
 
-            implementation(projects.shared)
+            implementation(projects.core)
         }
 
         androidMain.dependencies {

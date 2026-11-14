@@ -2,11 +2,11 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
-import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
-import com.eeseka.lynk.shared.domain.settings.AppTheme
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.core.domain.settings.AppTheme
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 

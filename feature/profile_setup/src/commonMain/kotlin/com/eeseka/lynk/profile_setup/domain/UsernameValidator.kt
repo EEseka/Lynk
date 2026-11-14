@@ -1,7 +1,7 @@
 package com.eeseka.lynk.profile_setup.domain
 
-import com.eeseka.lynk.shared.domain.profile.ProfileConstants.MAX_USERNAME_LENGTH
-import com.eeseka.lynk.shared.domain.profile.ProfileConstants.MIN_USERNAME_LENGTH
+import com.eeseka.lynk.core.domain.profile.ProfileConstants.MAX_USERNAME_LENGTH
+import com.eeseka.lynk.core.domain.profile.ProfileConstants.MIN_USERNAME_LENGTH
 
 object UsernameValidator {
 

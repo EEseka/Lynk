@@ -18,9 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.presentation.hangout.components.ParticipantAvatar
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.presentation.hangout.components.ParticipantAvatar
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUserUi
 import org.maplibre.compose.overlay.MapOverlayScope
 import org.maplibre.spatialk.geojson.Position
 

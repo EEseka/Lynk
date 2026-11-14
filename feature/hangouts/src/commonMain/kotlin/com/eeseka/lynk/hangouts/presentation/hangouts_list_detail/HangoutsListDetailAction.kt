@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list_detail
 
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUi
 
 sealed interface HangoutsListDetailAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutsListDetailAction

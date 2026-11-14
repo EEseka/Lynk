@@ -1,12 +1,12 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoService
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhoto
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhotoStats
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutPhotoUploadUrls
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.hangout.HangoutPhotoService
+import com.eeseka.lynk.core.domain.hangout.model.HangoutPhoto
+import com.eeseka.lynk.core.domain.hangout.model.HangoutPhotoStats
+import com.eeseka.lynk.core.domain.hangout.model.HangoutPhotoUploadUrls
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Instant

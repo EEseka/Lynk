@@ -1,6 +1,6 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.media.ImageCompressionService
+import com.eeseka.lynk.core.domain.media.ImageCompressionService
 
 class FakeImageCompressionService : ImageCompressionService {
     var shouldFailCompress = false

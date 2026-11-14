@@ -11,7 +11,7 @@ import com.composables.icons.lucide.AtSign
 import com.composables.icons.lucide.Bookmark
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Mail
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.account
 import lynk.feature.profile.generated.resources.email

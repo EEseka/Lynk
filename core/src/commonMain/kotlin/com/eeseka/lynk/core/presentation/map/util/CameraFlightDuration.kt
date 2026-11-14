@@ -1,0 +1,21 @@
+package com.eeseka.lynk.core.presentation.map.util
+
+import com.eeseka.lynk.core.presentation.spot.util.DistanceCalculator
+import org.maplibre.compose.camera.CameraPosition
+import kotlin.math.abs
+import kotlin.math.log10
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+
+fun CameraPosition.flightDurationTo(destination: CameraPosition): Duration {
+    val distanceMeters = DistanceCalculator.calculateDistanceInMeters(
+        userLat = center.latitude,
+        userLng = center.longitude,
+        spotLat = destination.center.latitude,
+        spotLng = destination.center.longitude
+    )
+    val kilometres = distanceMeters / 1000.0
+    val zoomChange = abs(destination.zoom - zoom)
+    val millis = 800 + 500 * log10(1 + kilometres) + 50 * zoomChange
+    return millis.coerceIn(800.0, 3000.0).milliseconds
+}

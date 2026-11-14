@@ -6,10 +6,10 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.domain.util.DataError
+import com.eeseka.lynk.core.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.core.domain.util.DataError
 import com.eeseka.lynk.testing.data.FakeHangoutService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

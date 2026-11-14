@@ -6,8 +6,8 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import com.eeseka.lynk.shared.domain.lobby.model.LiveLocation
-import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.core.domain.lobby.model.LiveLocation
+import com.eeseka.lynk.core.domain.lobby.model.LobbyEvent
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeLobbyConnectionClient
 import com.eeseka.lynk.testing.data.FakeLobbyService

@@ -1,6 +1,6 @@
 package com.eeseka.lynk.profile_setup.presentation
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface ProfileSetupEvent {
     data object Success : ProfileSetupEvent

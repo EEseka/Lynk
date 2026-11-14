@@ -1,6 +1,6 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.notification.PushNotificationService
+import com.eeseka.lynk.core.domain.notification.PushNotificationService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
