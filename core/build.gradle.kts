@@ -80,7 +80,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.compose.ui.tooling)
+            implementation(libs.compose.uiTooling)
             implementation(libs.androidx.lifecycle.process)
             implementation(libs.androidx.exifinterface)
 
