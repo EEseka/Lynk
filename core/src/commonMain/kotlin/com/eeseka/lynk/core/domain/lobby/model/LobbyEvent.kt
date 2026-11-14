@@ -1,0 +1,153 @@
+package com.eeseka.lynk.core.domain.lobby.model
+
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+
+sealed interface LobbyEvent {
+    data class ParticipantInvited(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class ParticipantInviteWithdrawn(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class NonPayerRemoved(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class ParticipantRemoved(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class ParticipantLeft(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class ParticipantArrived(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class NotesChanged(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class PaymentReceived(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : LobbyEvent
+
+    data class PaymentDeadlineResolved(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class PayoutOutcome(
+        val hangoutId: String,
+        val succeeded: Boolean
+    ) : LobbyEvent
+
+    data class RsvpUpdated(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String,
+        val rsvpStatus: RsvpStatus
+    ) : LobbyEvent
+
+    data class HangoutUpdated(
+        val hangoutId: String,
+        val hostDisplayName: String
+    ) : LobbyEvent
+
+    data class HangoutStarted(
+        val hangoutId: String
+    ) : LobbyEvent
+
+    data class HangoutCompleted(
+        val hangoutId: String,
+        val hostDisplayName: String
+    ) : LobbyEvent
+
+    data class HangoutCancelled(
+        val hangoutId: String,
+        val hostDisplayName: String
+    ) : LobbyEvent
+
+    data class PhotosAdded(
+        val hangoutId: String,
+        val uploaderIds: Set<String>
+    ) : LobbyEvent
+
+    data class PhotoDeleted(
+        val hangoutId: String,
+        val photoId: String
+    ) : LobbyEvent
+
+    data class PresenceUpdate(
+        val hangoutId: String,
+        val presentUserIds: Set<String>
+    ) : LobbyEvent
+
+    data class VotingSnapshot(
+        val hangoutId: String,
+        val candidates: List<VotingCandidate>,
+        val votes: Map<String, String>,
+        val latitude: Double?,
+        val longitude: Double?
+    ) : LobbyEvent
+
+    data class CandidateAdded(
+        val hangoutId: String,
+        val candidate: VotingCandidate
+    ) : LobbyEvent
+
+    data class CandidateRemoved(
+        val hangoutId: String,
+        val spotId: String
+    ) : LobbyEvent
+
+    data class VoteTally(
+        val hangoutId: String,
+        val votes: Map<String, String>
+    ) : LobbyEvent
+
+    data class CenterUpdate(
+        val hangoutId: String,
+        val latitude: Double?,
+        val longitude: Double?
+    ) : LobbyEvent
+
+    data class VotingTie(
+        val hangoutId: String,
+        val tiedSpotIds: List<String>
+    ) : LobbyEvent
+
+    data class LiveLocationUpdated(
+        val hangoutId: String,
+        val liveLocation: LiveLocation
+    ) : LobbyEvent
+
+    data class LiveLocationStopped(
+        val hangoutId: String,
+        val userId: String
+    ) : LobbyEvent
+
+    data class LiveLocationSnapshot(
+        val hangoutId: String,
+        val liveLocations: List<LiveLocation>
+    ) : LobbyEvent
+
+    data class LobbyError(
+        val code: String,
+        val message: String
+    ) : LobbyEvent
+}

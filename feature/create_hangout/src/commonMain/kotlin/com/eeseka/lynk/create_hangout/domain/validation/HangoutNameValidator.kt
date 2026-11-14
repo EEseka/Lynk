@@ -1,6 +1,6 @@
 package com.eeseka.lynk.create_hangout.domain.validation
 
-import com.eeseka.lynk.shared.domain.hangout.HangoutConstants.MAX_NAME_LENGTH
+import com.eeseka.lynk.core.domain.hangout.HangoutConstants.MAX_NAME_LENGTH
 
 object HangoutNameValidator {
 

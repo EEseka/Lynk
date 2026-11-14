@@ -4,7 +4,7 @@ import GoogleSignIn
 // Push notifications — uncomment together with the blocks below once the paid Apple
 // Developer account exists. Add FirebaseCore + FirebaseMessaging as Swift Package
 // dependencies on the iosApp target at the same time.
-// import ComposeApp
+// import Shared
 // import UserNotifications
 // import FirebaseCore
 // import FirebaseMessaging
@@ -96,7 +96,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     // }
     //
     // Show the banner even while the app is open. iOS draws that banner itself, but nothing
-    // tells the unread badge, so the bridge object in composeApp/iosMain does, exactly as
+    // tells the unread badge, so the bridge object in shared/iosMain does, exactly as
     // onMessageReceived does on Android.
     // func userNotificationCenter(
     //   _ center: UNUserNotificationCenter,
@@ -108,8 +108,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     // }
     //
     // A tapped banner becomes a deep link, the same one MainActivity builds on Android.
-    // ExternalUriHandler lives in :shared, which the ComposeApp framework does not export,
-    // so Swift goes through the bridge object in composeApp/iosMain instead.
+    // ExternalUriHandler lives in :core, which the Shared framework does not export,
+    // so Swift goes through the bridge object in shared/iosMain instead.
     // func userNotificationCenter(
     //   _ center: UNUserNotificationCenter,
     //   didReceive response: UNNotificationResponse,

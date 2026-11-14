@@ -21,11 +21,11 @@ import com.composables.icons.lucide.Building2
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.Lucide
 import com.eeseka.lynk.hangouts.presentation.util.accountNumberInput
-import com.eeseka.lynk.shared.design_system.components.progress_indicator.LynkProgressIndicator
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkTextField
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.core.design_system.components.progress_indicator.LynkProgressIndicator
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.components.textfields.LynkTextField
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.theme.extended
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_account_number_label
 import lynk.feature.hangouts.generated.resources.payment_account_number_placeholder

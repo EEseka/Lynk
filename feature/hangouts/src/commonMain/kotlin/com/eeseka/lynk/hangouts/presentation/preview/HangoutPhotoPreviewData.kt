@@ -1,8 +1,8 @@
 package com.eeseka.lynk.hangouts.presentation.preview
 
 import com.eeseka.lynk.hangouts.presentation.model.HangoutPhotoUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
-import com.eeseka.lynk.shared.presentation.preview.previewUser
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.core.presentation.preview.previewUser
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.time.Instant
 

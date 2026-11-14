@@ -7,10 +7,10 @@ import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.CircleX
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.UserRoundMinus
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheet
-import com.eeseka.lynk.shared.design_system.components.modals_and_overlays.LynkActionSheetItem
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkActionSheet
+import com.eeseka.lynk.core.design_system.components.modals_and_overlays.LynkActionSheetItem
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.domain.payment.model.DeadlineDecision
 import kotlinx.collections.immutable.persistentListOf
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_decision_cancel

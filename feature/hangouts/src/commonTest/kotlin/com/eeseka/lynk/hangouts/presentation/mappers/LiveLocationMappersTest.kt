@@ -4,9 +4,9 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location.model.LiveLocationUi
-import com.eeseka.lynk.shared.domain.hangout.model.RsvpStatus
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutParticipantUi
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUserUi
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutParticipantUi
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUserUi
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant

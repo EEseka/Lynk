@@ -1,6 +1,6 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.onboarding.OnboardingStorage
+import com.eeseka.lynk.core.domain.onboarding.OnboardingStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

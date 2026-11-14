@@ -12,9 +12,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.presentation.util.LegalUrls
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.presentation.util.LegalUrls
 import lynk.feature.auth.generated.resources.Res
 import lynk.feature.auth.generated.resources.auth_disclosure_conjunction
 import lynk.feature.auth.generated.resources.auth_disclosure_prefix

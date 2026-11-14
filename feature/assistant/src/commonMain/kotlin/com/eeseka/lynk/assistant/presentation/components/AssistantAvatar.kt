@@ -14,8 +14,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Sparkles
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.design_system.theme.extended
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.theme.extended
 
 @Composable
 fun AssistantAvatar(modifier: Modifier = Modifier) {

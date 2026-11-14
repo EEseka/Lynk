@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.notes
 
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutNoteAudience
+import com.eeseka.lynk.core.domain.hangout.model.HangoutNoteAudience
 
 sealed interface HangoutNotesAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutNotesAction

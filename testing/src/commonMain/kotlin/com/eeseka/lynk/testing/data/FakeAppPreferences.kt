@@ -1,7 +1,7 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.settings.AppPreferences
-import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.core.domain.settings.AppPreferences
+import com.eeseka.lynk.core.domain.settings.AppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

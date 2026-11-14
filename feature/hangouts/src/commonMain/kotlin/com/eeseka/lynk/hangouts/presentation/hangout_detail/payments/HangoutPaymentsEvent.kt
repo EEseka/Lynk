@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface HangoutPaymentsEvent {
     data class Error(val message: UiText) : HangoutPaymentsEvent

@@ -7,9 +7,9 @@ import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
-import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
-import com.eeseka.lynk.shared.domain.auth.model.User
+import com.eeseka.lynk.core.domain.auth.model.AuthInfo
+import com.eeseka.lynk.core.domain.auth.model.AuthProvider
+import com.eeseka.lynk.core.domain.auth.model.User
 import com.eeseka.lynk.testing.data.FakeImageCompressionService
 import com.eeseka.lynk.testing.data.FakeSessionStorage
 import com.eeseka.lynk.testing.collectInBackground

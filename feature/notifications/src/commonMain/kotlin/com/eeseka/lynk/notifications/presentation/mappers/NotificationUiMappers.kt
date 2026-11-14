@@ -26,10 +26,10 @@ import com.composables.icons.lucide.UserRoundPlus
 import com.composables.icons.lucide.Undo2
 import com.composables.icons.lucide.Vote
 import com.composables.icons.lucide.Wallet
-import com.eeseka.lynk.shared.domain.notification.model.NotificationType
-import com.eeseka.lynk.shared.presentation.notification.model.NotificationUi
-import com.eeseka.lynk.shared.presentation.util.UiText
-import com.eeseka.lynk.shared.presentation.util.toNairaString
+import com.eeseka.lynk.core.domain.notification.model.NotificationType
+import com.eeseka.lynk.core.presentation.notification.model.NotificationUi
+import com.eeseka.lynk.core.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.toNairaString
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.notification_details_edited
 import lynk.feature.notifications.generated.resources.notification_hangout_cancelled

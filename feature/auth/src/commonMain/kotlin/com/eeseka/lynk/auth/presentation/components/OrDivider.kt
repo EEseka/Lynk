@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.auth.generated.resources.Res
 import lynk.feature.auth.generated.resources.or
 import org.jetbrains.compose.resources.stringResource

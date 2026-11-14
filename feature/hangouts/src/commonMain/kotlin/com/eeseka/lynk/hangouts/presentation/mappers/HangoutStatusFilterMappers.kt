@@ -2,7 +2,7 @@ package com.eeseka.lynk.hangouts.presentation.mappers
 
 import androidx.compose.runtime.Composable
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutStatus
+import com.eeseka.lynk.core.domain.hangout.model.HangoutStatus
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.cancelled
 import lynk.feature.hangouts.generated.resources.completed

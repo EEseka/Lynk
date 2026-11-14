@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_detail.payments
 
-import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
+import com.eeseka.lynk.core.domain.payment.model.DeadlineDecision
 import kotlinx.datetime.LocalDate
 
 sealed interface HangoutPaymentsAction {

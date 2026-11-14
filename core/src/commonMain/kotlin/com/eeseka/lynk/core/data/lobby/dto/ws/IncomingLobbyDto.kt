@@ -1,0 +1,166 @@
+package com.eeseka.lynk.core.data.lobby.dto.ws
+
+import com.eeseka.lynk.core.data.spot.dto.SpotDto
+import com.eeseka.lynk.core.domain.hangout.model.RsvpStatus
+import kotlinx.serialization.Serializable
+import kotlin.time.Instant
+
+enum class IncomingLobbyMessageType {
+    PARTICIPANT_INVITED,
+    RSVP_UPDATED,
+    INVITE_WITHDRAWN,
+    NON_PAYER_REMOVED,
+    PARTICIPANT_REMOVED,
+    PARTICIPANT_LEFT,
+    PARTICIPANT_ARRIVED,
+    NOTES_CHANGED,
+    PAYMENT_RECEIVED,
+    PAYMENT_DEADLINE_RESOLVED,
+    PAYOUT_OUTCOME,
+    HANGOUT_UPDATED,
+    HANGOUT_STARTED,
+    HANGOUT_COMPLETED,
+    HANGOUT_CANCELLED,
+    PHOTOS_ADDED,
+    PHOTO_DELETED,
+    PRESENCE_UPDATE,
+    VOTING_SNAPSHOT,
+    CANDIDATE_ADDED,
+    CANDIDATE_REMOVED,
+    VOTE_TALLY,
+    CENTER_UPDATE,
+    VOTING_TIE,
+    LIVE_LOCATION_UPDATE,
+    LIVE_LOCATION_STOPPED,
+    LIVE_LOCATION_SNAPSHOT,
+    ERROR
+}
+
+@Serializable
+sealed interface IncomingLobbyDto {
+
+    @Serializable
+    data class LobbyParticipantDto(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyHangoutDto(
+        val hangoutId: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyPayoutDto(
+        val hangoutId: String,
+        val succeeded: Boolean
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyRsvpDto(
+        val hangoutId: String,
+        val userId: String,
+        val displayName: String,
+        val rsvpStatus: RsvpStatus
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyHostActionDto(
+        val hangoutId: String,
+        val hostDisplayName: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyPhotosAddedDto(
+        val hangoutId: String,
+        val uploaderIds: Set<String>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LobbyPhotoDto(
+        val hangoutId: String,
+        val photoId: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class PresenceDto(
+        val hangoutId: String,
+        val presentUserIds: Set<String>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class VotingCandidateDto(
+        val spot: SpotDto,
+        val suggestedById: String,
+        val suggestedByDisplayName: String,
+        val note: String?
+    )
+
+    @Serializable
+    data class VotingSnapshotDto(
+        val hangoutId: String,
+        val candidates: List<VotingCandidateDto>,
+        val votes: Map<String, String>,
+        val latitude: Double? = null,
+        val longitude: Double? = null
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class CandidateAddedDto(
+        val hangoutId: String,
+        val candidate: VotingCandidateDto
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class CandidateRemovedDto(
+        val hangoutId: String,
+        val spotId: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class VoteTallyDto(
+        val hangoutId: String,
+        val votes: Map<String, String>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class CenterUpdateDto(
+        val hangoutId: String,
+        val latitude: Double? = null,
+        val longitude: Double? = null
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class VotingTieDto(
+        val hangoutId: String,
+        val tiedSpotIds: List<String>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationDto(
+        val hangoutId: String,
+        val userId: String,
+        val latitude: Double,
+        val longitude: Double,
+        val sharedAt: Instant
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationStoppedDto(
+        val hangoutId: String,
+        val userId: String
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class LiveLocationSnapshotDto(
+        val hangoutId: String,
+        val locations: List<LiveLocationDto>
+    ) : IncomingLobbyDto
+
+    @Serializable
+    data class ErrorDto(
+        val code: String,
+        val message: String
+    ) : IncomingLobbyDto
+}

@@ -1,6 +1,6 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.lifecycle.AppLifecycleObserver
+import com.eeseka.lynk.core.domain.lifecycle.AppLifecycleObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeAppLifecycleObserver : AppLifecycleObserver {

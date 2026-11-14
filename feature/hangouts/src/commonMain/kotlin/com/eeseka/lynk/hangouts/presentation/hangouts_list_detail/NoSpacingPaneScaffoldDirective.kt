@@ -5,8 +5,8 @@ import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import com.eeseka.lynk.core.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.core.presentation.util.currentDeviceConfiguration
 
 @Composable
 fun createNoSpacingPaneScaffoldDirective(): PaneScaffoldDirective {

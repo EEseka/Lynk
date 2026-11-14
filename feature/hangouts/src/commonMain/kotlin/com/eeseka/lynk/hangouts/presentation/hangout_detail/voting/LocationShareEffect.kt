@@ -6,10 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.eeseka.lynk.shared.domain.util.onSuccess
-import com.eeseka.lynk.shared.presentation.location.rememberLocationController
-import com.eeseka.lynk.shared.presentation.permissions.LocationPermissionEffect
-import com.eeseka.lynk.shared.presentation.permissions.PermissionState
+import com.eeseka.lynk.core.domain.util.onSuccess
+import com.eeseka.lynk.core.presentation.location.rememberLocationController
+import com.eeseka.lynk.core.presentation.permissions.LocationPermissionEffect
+import com.eeseka.lynk.core.presentation.permissions.PermissionState
 
 @Composable
 fun LocationShareEffect(

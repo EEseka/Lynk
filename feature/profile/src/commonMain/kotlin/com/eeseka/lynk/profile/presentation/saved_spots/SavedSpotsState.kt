@@ -1,8 +1,8 @@
 package com.eeseka.lynk.profile.presentation.saved_spots
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

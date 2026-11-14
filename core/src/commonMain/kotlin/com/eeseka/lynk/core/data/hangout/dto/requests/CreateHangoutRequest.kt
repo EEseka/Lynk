@@ -1,0 +1,15 @@
+package com.eeseka.lynk.core.data.hangout.dto.requests
+
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
+import kotlin.time.Instant
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class CreateHangoutRequest(
+    val name: String,
+    val description: String?,
+    val vibe: HangoutVibe,
+    val scheduledAt: Instant,
+    val maxAttendees: Int?,
+    val spotId: String?
+)

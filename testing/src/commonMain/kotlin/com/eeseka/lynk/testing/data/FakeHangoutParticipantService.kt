@@ -1,9 +1,9 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.hangout.HangoutParticipantService
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutUser
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.hangout.HangoutParticipantService
+import com.eeseka.lynk.core.domain.hangout.model.HangoutUser
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.Result
 
 class FakeHangoutParticipantService : HangoutParticipantService {
     var shouldReturnError = false

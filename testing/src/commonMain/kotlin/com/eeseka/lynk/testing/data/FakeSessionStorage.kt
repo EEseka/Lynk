@@ -1,7 +1,7 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.auth.SessionStorage
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
+import com.eeseka.lynk.core.domain.auth.SessionStorage
+import com.eeseka.lynk.core.domain.auth.model.AuthInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

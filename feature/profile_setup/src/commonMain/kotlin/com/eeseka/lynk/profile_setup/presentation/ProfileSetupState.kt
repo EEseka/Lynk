@@ -1,7 +1,7 @@
 package com.eeseka.lynk.profile_setup.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 data class ProfileSetupState(
     val email: String = "",

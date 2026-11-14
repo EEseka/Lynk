@@ -1,9 +1,9 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.hangout.HangoutPhotoRepository
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.hangout.HangoutPhotoRepository
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 
 class FakeHangoutPhotoRepository : HangoutPhotoRepository {
     var shouldReturnError = false

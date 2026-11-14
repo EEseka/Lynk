@@ -1,7 +1,7 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.location.LastKnownLocationStorage
-import com.eeseka.lynk.shared.domain.location.LocationCoordinates
+import com.eeseka.lynk.core.domain.location.LastKnownLocationStorage
+import com.eeseka.lynk.core.domain.location.LocationCoordinates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

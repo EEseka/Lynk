@@ -1,15 +1,15 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.payment.PaymentService
-import com.eeseka.lynk.shared.domain.payment.model.Bank
-import com.eeseka.lynk.shared.domain.payment.model.BankAccount
-import com.eeseka.lynk.shared.domain.payment.model.DeadlineDecision
-import com.eeseka.lynk.shared.domain.payment.model.PaymentInitialization
-import com.eeseka.lynk.shared.domain.payment.model.PaymentStatus
-import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.payment.PaymentService
+import com.eeseka.lynk.core.domain.payment.model.Bank
+import com.eeseka.lynk.core.domain.payment.model.BankAccount
+import com.eeseka.lynk.core.domain.payment.model.DeadlineDecision
+import com.eeseka.lynk.core.domain.payment.model.PaymentInitialization
+import com.eeseka.lynk.core.domain.payment.model.PaymentStatus
+import com.eeseka.lynk.core.domain.payment.model.PayoutAccount
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Instant

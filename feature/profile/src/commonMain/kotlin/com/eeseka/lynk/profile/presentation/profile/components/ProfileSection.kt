@@ -24,13 +24,13 @@ import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Mail
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkCard
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkCardStyle
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.components.toggles_and_control.LynkSwitch
-import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.layouts.LynkCard
+import com.eeseka.lynk.core.design_system.components.layouts.LynkCardStyle
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.components.toggles_and_control.LynkSwitch
+import com.eeseka.lynk.core.design_system.components.util.AppHaptic
+import com.eeseka.lynk.core.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 
 @Composable
 fun ProfileSection(

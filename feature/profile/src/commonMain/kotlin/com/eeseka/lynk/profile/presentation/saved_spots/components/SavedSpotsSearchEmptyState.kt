@@ -20,8 +20,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.profile.generated.resources.Res
 import lynk.feature.profile.generated.resources.saved_spots_search_empty_message
 import lynk.feature.profile.generated.resources.saved_spots_search_empty_title

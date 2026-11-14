@@ -1,7 +1,7 @@
 package com.eeseka.lynk.notifications.presentation.util
 
 import androidx.compose.runtime.Composable
-import com.eeseka.lynk.shared.presentation.util.toDateLabel
+import com.eeseka.lynk.core.presentation.util.toDateLabel
 import lynk.feature.notifications.generated.resources.Res
 import lynk.feature.notifications.generated.resources.time_days_ago
 import lynk.feature.notifications.generated.resources.time_hours_ago

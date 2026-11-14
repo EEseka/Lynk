@@ -3,7 +3,7 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.notes
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Stable
 import com.eeseka.lynk.hangouts.presentation.model.HangoutNoteUi
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutNoteAudience
+import com.eeseka.lynk.core.domain.hangout.model.HangoutNoteAudience
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf

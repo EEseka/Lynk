@@ -2,9 +2,9 @@ package com.eeseka.lynk.create_hangout.presentation
 
 import com.eeseka.lynk.create_hangout.presentation.model.PickerType
 import com.eeseka.lynk.create_hangout.presentation.model.SearchTab
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
-import com.eeseka.lynk.shared.presentation.spot.model.SpotUi
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.core.presentation.spot.model.SpotUi
 
 sealed interface CreateHangoutAction {
     data class InitCreateMode(val spot: SpotUi? = null) : CreateHangoutAction

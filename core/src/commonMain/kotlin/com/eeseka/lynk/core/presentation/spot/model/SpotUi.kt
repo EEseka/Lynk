@@ -1,0 +1,37 @@
+package com.eeseka.lynk.core.presentation.spot.model
+
+import androidx.compose.runtime.Immutable
+import com.eeseka.lynk.core.domain.spot.model.BusinessStatus
+import com.eeseka.lynk.core.domain.spot.model.PriceLevel
+import com.eeseka.lynk.core.domain.spot.model.SpotAiSummary
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.domain.spot.model.SpotOpeningHours
+import com.eeseka.lynk.core.domain.spot.model.SpotPriceRange
+import kotlinx.collections.immutable.ImmutableList
+
+@Immutable
+data class SpotUi(
+    val id: String,
+    val name: String,
+    val typeLabel: String?,
+    val description: String?,
+    val aiSummary: SpotAiSummary?,
+    val photoUrls: ImmutableList<String>,
+    val category: SpotCategory,
+    val priceLevel: PriceLevel?,
+    val priceRange: SpotPriceRange?,
+    val rating: Double?,
+    val reviewCount: Int?,
+    val businessStatus: BusinessStatus?,
+    val openingHours: SpotOpeningHours?,
+    val weekHours: ImmutableList<SpotDayHoursUi>,
+    val highlights: ImmutableList<SpotHighlight>,
+    val shortAddress: String?,
+    val latitude: Double,
+    val longitude: Double,
+    val phoneNumber: String?,
+    val websiteUrl: String?,
+    val googleMapsUrl: String?,
+    val directionsUrl: String?,
+    val isSaved: Boolean
+)

@@ -24,7 +24,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.HangoutDetailRoot
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListAction
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListRoot
 import com.eeseka.lynk.hangouts.presentation.hangouts_list.HangoutsListViewModel
-import com.eeseka.lynk.shared.presentation.util.ObserveAsEvents
+import com.eeseka.lynk.core.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 

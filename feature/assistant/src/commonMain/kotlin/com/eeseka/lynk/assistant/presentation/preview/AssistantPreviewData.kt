@@ -2,10 +2,10 @@ package com.eeseka.lynk.assistant.presentation.preview
 
 import com.eeseka.lynk.assistant.presentation.model.AssistantMessageUi
 import com.eeseka.lynk.assistant.presentation.model.AssistantRecommendationUi
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantFailureReason
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageRole
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageStatus
-import com.eeseka.lynk.shared.presentation.preview.previewSpots
+import com.eeseka.lynk.core.domain.assistant.model.AssistantFailureReason
+import com.eeseka.lynk.core.domain.assistant.model.AssistantMessageRole
+import com.eeseka.lynk.core.domain.assistant.model.AssistantMessageStatus
+import com.eeseka.lynk.core.presentation.preview.previewSpots
 import kotlinx.collections.immutable.persistentListOf
 
 val previewAssistantMessages = persistentListOf(

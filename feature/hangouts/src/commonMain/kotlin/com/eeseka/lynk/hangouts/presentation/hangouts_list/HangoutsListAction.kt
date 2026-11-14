@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list
 
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
 
 sealed interface HangoutsListAction {
     data class OnSelectHangout(val hangoutId: String?) : HangoutsListAction

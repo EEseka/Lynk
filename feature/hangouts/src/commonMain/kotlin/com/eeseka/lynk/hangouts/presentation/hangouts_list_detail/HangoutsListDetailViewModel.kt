@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.hangouts.presentation.mappers.toHangoutStatusFilter
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
-import com.eeseka.lynk.shared.domain.hangout.HangoutDetailRepository
-import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
-import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
-import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.core.domain.hangout.HangoutDetailRepository
+import com.eeseka.lynk.core.domain.lobby.LobbyConnectionClient
+import com.eeseka.lynk.core.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.core.domain.lobby.model.LobbyEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

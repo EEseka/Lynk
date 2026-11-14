@@ -1,0 +1,43 @@
+package com.eeseka.lynk.core.presentation.util
+
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.runtime.Composable
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_EXPANDED_LOWER_BOUND
+import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+
+@Composable
+fun currentDeviceConfiguration(): DeviceConfiguration {
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    return DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
+}
+
+enum class DeviceConfiguration {
+    MOBILE_PORTRAIT,
+    MOBILE_LANDSCAPE,
+    TABLET_PORTRAIT,
+    TABLET_LANDSCAPE,
+    DESKTOP;
+
+    val isMobile: Boolean
+        get() = this == MOBILE_PORTRAIT || this == MOBILE_LANDSCAPE
+
+    val isWideScreen: Boolean
+        get() = this == TABLET_LANDSCAPE || this == DESKTOP
+
+    companion object {
+        fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceConfiguration {
+            return with(windowSizeClass) {
+                when {
+                    !isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) -> MOBILE_PORTRAIT
+                    !isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND) -> MOBILE_LANDSCAPE
+                    !isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> TABLET_PORTRAIT
+                    !isHeightAtLeastBreakpoint(HEIGHT_DP_EXPANDED_LOWER_BOUND) -> TABLET_LANDSCAPE
+                    else -> DESKTOP
+                }
+            }
+        }
+    }
+}

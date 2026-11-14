@@ -2,11 +2,11 @@ package com.eeseka.lynk.hangouts.presentation.mappers
 
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
-import com.eeseka.lynk.shared.domain.payment.model.Bank
-import com.eeseka.lynk.shared.domain.payment.model.PayoutAccount
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.presentation.util.UiText
-import com.eeseka.lynk.shared.presentation.util.toUiText
+import com.eeseka.lynk.core.domain.payment.model.Bank
+import com.eeseka.lynk.core.domain.payment.model.PayoutAccount
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.toUiText
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.payment_account_check_limit
 import lynk.feature.hangouts.generated.resources.payment_account_not_found

@@ -2,7 +2,7 @@ package com.eeseka.lynk.onboarding.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eeseka.lynk.shared.domain.onboarding.OnboardingStorage
+import com.eeseka.lynk.core.domain.onboarding.OnboardingStorage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch

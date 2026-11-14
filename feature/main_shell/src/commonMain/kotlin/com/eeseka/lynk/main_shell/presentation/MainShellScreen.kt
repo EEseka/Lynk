@@ -38,12 +38,12 @@ import com.eeseka.lynk.main_shell.presentation.components.LynkNavigationRail
 import com.eeseka.lynk.main_shell.presentation.model.LynkNavigationItem
 import com.eeseka.lynk.profile.presentation.navigation.ProfileGraphRoutes
 import com.eeseka.lynk.profile.presentation.navigation.profileGraph
-import com.eeseka.lynk.shared.design_system.components.layouts.LynkScaffold
-import com.eeseka.lynk.shared.domain.util.PlatformUtils.isIOS
-import com.eeseka.lynk.shared.presentation.navigation.DeepLinkListener
-import com.eeseka.lynk.shared.presentation.permissions.NotificationPermissionEffect
-import com.eeseka.lynk.shared.presentation.permissions.PermissionState
-import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import com.eeseka.lynk.core.design_system.components.layouts.LynkScaffold
+import com.eeseka.lynk.core.domain.util.PlatformUtils.isIOS
+import com.eeseka.lynk.core.presentation.navigation.DeepLinkListener
+import com.eeseka.lynk.core.presentation.permissions.NotificationPermissionEffect
+import com.eeseka.lynk.core.presentation.permissions.PermissionState
+import com.eeseka.lynk.core.presentation.util.currentDeviceConfiguration
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

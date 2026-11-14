@@ -3,7 +3,7 @@ package com.eeseka.lynk.create_hangout.presentation.mappers
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutDateValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutNameValidationState
 import com.eeseka.lynk.create_hangout.domain.validation.HangoutTimeValidationState
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 import lynk.feature.create_hangout.generated.resources.Res
 import lynk.feature.create_hangout.generated.resources.error_hangout_date_missing
 import lynk.feature.create_hangout.generated.resources.error_hangout_date_past

@@ -1,6 +1,6 @@
 package com.eeseka.lynk.profile.presentation.profile
 
-import com.eeseka.lynk.shared.domain.settings.AppTheme
+import com.eeseka.lynk.core.domain.settings.AppTheme
 
 sealed interface ProfileAction {
     data object OnImageClick : ProfileAction

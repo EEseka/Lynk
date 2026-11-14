@@ -21,10 +21,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.presentation.util.DeviceConfiguration
-import com.eeseka.lynk.shared.presentation.util.currentDeviceConfiguration
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.presentation.util.DeviceConfiguration
+import com.eeseka.lynk.core.presentation.util.currentDeviceConfiguration
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition

@@ -1,8 +1,8 @@
 package com.eeseka.lynk.assistant.presentation.mappers
 
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.presentation.util.UiText
-import com.eeseka.lynk.shared.presentation.util.toUiText
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.toUiText
 import lynk.feature.assistant.generated.resources.Res
 import lynk.feature.assistant.generated.resources.error_hangout_busy
 import lynk.feature.assistant.generated.resources.error_not_attending

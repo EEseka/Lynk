@@ -1,8 +1,8 @@
 package com.eeseka.lynk.profile.presentation.profile
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.eeseka.lynk.shared.domain.settings.AppTheme
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.settings.AppTheme
+import com.eeseka.lynk.core.presentation.util.UiText
 
 data class ProfileState(
     val isGuest: Boolean = false,

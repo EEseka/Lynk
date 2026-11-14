@@ -6,7 +6,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
-import com.eeseka.lynk.shared.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.DataError
 import com.eeseka.lynk.testing.data.FakeAuthService
 import com.eeseka.lynk.testing.data.FakeSessionStorage
 import kotlinx.coroutines.Dispatchers

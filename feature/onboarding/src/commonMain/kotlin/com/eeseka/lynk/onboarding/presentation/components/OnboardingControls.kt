@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkButton
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.buttons.LynkButton
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.onboarding.generated.resources.Res
 import lynk.feature.onboarding.generated.resources.get_started
 import lynk.feature.onboarding.generated.resources.next

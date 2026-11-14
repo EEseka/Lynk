@@ -6,7 +6,7 @@ import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.Deadl
 import com.eeseka.lynk.hangouts.presentation.hangout_detail.payments.model.PaymentQuoteUi
 import com.eeseka.lynk.hangouts.presentation.model.BankUi
 import com.eeseka.lynk.hangouts.presentation.model.PayoutAccountUi
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.LocalDate

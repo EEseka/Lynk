@@ -3,11 +3,11 @@ package com.eeseka.lynk.assistant.presentation.mappers
 import androidx.compose.runtime.Composable
 import com.eeseka.lynk.assistant.presentation.model.AssistantMessageUi
 import com.eeseka.lynk.assistant.presentation.model.AssistantRecommendationUi
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantFailureReason
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessage
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantRecommendation
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantStatusKind
-import com.eeseka.lynk.shared.presentation.spot.mappers.toSpotUi
+import com.eeseka.lynk.core.domain.assistant.model.AssistantFailureReason
+import com.eeseka.lynk.core.domain.assistant.model.AssistantMessage
+import com.eeseka.lynk.core.domain.assistant.model.AssistantRecommendation
+import com.eeseka.lynk.core.domain.assistant.model.AssistantStatusKind
+import com.eeseka.lynk.core.presentation.spot.mappers.toSpotUi
 import kotlinx.collections.immutable.toImmutableList
 import lynk.feature.assistant.generated.resources.Res
 import lynk.feature.assistant.generated.resources.failure_error

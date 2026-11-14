@@ -1,7 +1,7 @@
 package com.eeseka.lynk.hangouts.presentation.hangouts_list_detail
 
 import androidx.compose.runtime.Immutable
-import com.eeseka.lynk.shared.presentation.hangout.model.HangoutUi
+import com.eeseka.lynk.core.presentation.hangout.model.HangoutUi
 
 @Immutable
 data class HangoutsListDetailState(

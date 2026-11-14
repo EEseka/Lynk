@@ -25,9 +25,9 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Lucide
-import com.eeseka.lynk.shared.design_system.components.buttons.LynkIconButton
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.components.buttons.LynkIconButton
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
 import lynk.feature.hangouts.generated.resources.Res
 import lynk.feature.hangouts.generated.resources.notifications
 import lynk.feature.hangouts.generated.resources.notifications_with_unread

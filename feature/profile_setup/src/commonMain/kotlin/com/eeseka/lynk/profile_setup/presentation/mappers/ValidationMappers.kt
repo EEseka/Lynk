@@ -1,8 +1,8 @@
 package com.eeseka.lynk.profile_setup.presentation.mappers
 
 import com.eeseka.lynk.profile_setup.domain.UsernameValidationState
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.presentation.util.UiText
 import lynk.feature.profile_setup.generated.resources.Res
 import lynk.feature.profile_setup.generated.resources.error_username_blank
 import lynk.feature.profile_setup.generated.resources.error_username_consecutive_underscores

@@ -74,7 +74,7 @@ flowchart TB
         IOS["<b>iosApp</b><br/>SwiftUI App, AppDelegate"]
     end
 
-    COMPOSE["<b>composeApp</b><br/>navigation graph, session, theme"]
+    SHARED["<b>shared</b><br/>navigation graph, session, theme"]
 
     subgraph FEATURES ["Feature modules"]
         direction TB
@@ -85,7 +85,7 @@ flowchart TB
         NOTIF["notifications"] ~~~ PROF["profile"]
     end
 
-    SHARED["<b>shared</b><br/>domain, data, design system"]
+    CORE["<b>core</b><br/>domain, data, design system"]
     TESTING["<b>testing</b><br/>fakes and test helpers, tests only"]
 
     API["<b>Lynk API</b><br/>REST, WebSocket,<br/>Server-Sent Events"]
@@ -94,15 +94,15 @@ flowchart TB
     FCM["Firebase<br/>push"]
     STORAGE["Supabase<br/>photo storage"]
 
-    ANDROID --> COMPOSE
-    IOS --> COMPOSE
-    COMPOSE ==> FEATURES
-    FEATURES ==> SHARED
-    TESTING -.-> SHARED
-    SHARED -->|Ktor| API
-    SHARED -->|Coil| GOOGLE
-    SHARED --> FCM
-    SHARED -->|signed links| STORAGE
+    ANDROID --> SHARED
+    IOS --> SHARED
+    SHARED ==> FEATURES
+    FEATURES ==> CORE
+    TESTING -.-> CORE
+    CORE -->|Ktor| API
+    CORE -->|Coil| GOOGLE
+    CORE --> FCM
+    CORE -->|signed links| STORAGE
     HANG --> PAYSTACK
 
     classDef client fill:#FFE2BF,stroke:#D9822B,color:#1F2937,stroke-width:2px
@@ -112,9 +112,9 @@ flowchart TB
     classDef test fill:#EEF0F3,stroke:#7C8798,color:#1F2937,stroke-width:1px,stroke-dasharray: 4 3
     classDef ext fill:#DCEBFA,stroke:#3F86C2,color:#1F2937,stroke-width:2px
     class ANDROID,IOS client
-    class COMPOSE app
+    class SHARED app
     class ONB,AUTH,SETUP,SHELL,DISC,CREATE,HANG,NOTIF,PROF,AI unit
-    class SHARED common
+    class CORE common
     class TESTING test
     class API,GOOGLE,PAYSTACK,FCM,STORAGE ext
     style APPS fill:#FFF8F0,stroke:#D9822B,color:#1F2937
@@ -122,22 +122,22 @@ flowchart TB
 
 A feature depends on another only to embed one of its screens: `main_shell` hosts the Discover, Hangouts and Profile
 tabs; `discover`, `hangouts`, `profile` and `assistant` open the `create_hangout` sheet; `discover` and `hangouts` open
-the Lynk AI chat; and `hangouts` shows the notifications inbox. Logic two features share always lives in `shared`.
+the Lynk AI chat; and `hangouts` shows the notifications inbox. Logic two features share always lives in `core`.
 
 Every screen follows the same **MVI** shape: an immutable `State`, `Action`s in, one-off `Event`s out, a `Root`
 composable that wires the ViewModel and a `Screen` composable that only draws. Data flows through interfaces declared in
-`shared/domain` and implemented in `shared/data`, so no ViewModel ever touches Ktor, DataStore or a platform API.
+`core/domain` and implemented in `core/data`, so no ViewModel ever touches Ktor, DataStore or a platform API.
 
 ### Modules
 
 ```
 androidApp       Android entry point: starts the app, opens a tapped notification, builds the installable APK
 iosApp           iOS entry point: starts the app, hands returning links to Google Sign-In or to Lynk
-composeApp       the app itself: navigation graph, session, theme and first-run state
-shared           domain models and interfaces, Ktor services, the lobby WebSocket, DataStore,
+shared           the app itself: navigation graph, session, theme and first-run state
+core             domain models and interfaces, Ktor services, the lobby WebSocket, DataStore,
                  design system, maps, deep links, date and money formatting,
                  platform code (location, media, permissions)
-testing          one fake per shared interface plus test helpers; only ever a test dependency
+testing          one fake per core interface plus test helpers; only ever a test dependency
 
 feature/
   onboarding     first-run introduction
@@ -166,7 +166,7 @@ returns, the app does not mark anything as paid: it asks Lynk API, which checks 
 **One screen, six ViewModels.** Hangout detail is split by domain: `HangoutDetailViewModel` for the hangout itself,
 `HangoutVotingViewModel` for the lobby, `HangoutPaymentsViewModel` for money, and `HangoutNotesViewModel`,
 `HangoutLiveLocationViewModel` and `HangoutMemoriesViewModel` for notes, the live map and the album. The first three
-share one in-memory `HangoutDetailRepository` in `shared`, so an update from any of them reaches the others without
+share one in-memory `HangoutDetailRepository` in `core`, so an update from any of them reaches the others without
 passing data through the UI; the other three keep their own state and follow the lobby for live changes. Opening a
 different hangout starts all six from a clean slate.
 
@@ -186,7 +186,7 @@ in a popover UIKit presents above the app; Android uses Material's date and time
 Every test lives in `commonTest`, so the same test code runs on the **JVM** and on the **iOS simulator**.
 
 Every ViewModel is tested against every one of its actions, plus the logic that sits outside ViewModels: validators,
-mappers, the lobby store, the paginator and the payment amount field. Every service in `shared` has one fake in the
+mappers, the lobby store, the paginator and the payment amount field. Every service in `core` has one fake in the
 `testing` module that all features reuse, and the in-memory stores run in tests as they are.
 
 The suite tests behaviour, not pixels: screens only draw state that the ViewModel tests already cover, and the UI is

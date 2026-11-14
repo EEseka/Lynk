@@ -39,8 +39,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.eeseka.lynk.shared.design_system.components.images.LynkAsyncImage
-import com.eeseka.lynk.shared.presentation.spot.util.rememberGoogleImageRequest
+import com.eeseka.lynk.core.design_system.components.images.LynkAsyncImage
+import com.eeseka.lynk.core.presentation.spot.util.rememberGoogleImageRequest
 
 // How far the page scrolls before its text reaches the top bar, which then needs its own background
 private val BAR_SOLID_AFTER_SCROLL = 240.dp

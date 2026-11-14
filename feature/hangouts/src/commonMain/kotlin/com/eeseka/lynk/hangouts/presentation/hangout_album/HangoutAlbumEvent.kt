@@ -1,6 +1,6 @@
 package com.eeseka.lynk.hangouts.presentation.hangout_album
 
-import com.eeseka.lynk.shared.presentation.util.UiText
+import com.eeseka.lynk.core.presentation.util.UiText
 
 sealed interface HangoutAlbumEvent {
     data class Error(val message: UiText) : HangoutAlbumEvent

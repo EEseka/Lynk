@@ -1,14 +1,14 @@
 package com.eeseka.lynk.testing.data
 
-import com.eeseka.lynk.shared.domain.spot.SpotService
-import com.eeseka.lynk.shared.domain.spot.model.PaginatedSpots
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.Spot
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
-import com.eeseka.lynk.shared.domain.spot.model.TrendingSpots
-import com.eeseka.lynk.shared.domain.util.DataError
-import com.eeseka.lynk.shared.domain.util.EmptyResult
-import com.eeseka.lynk.shared.domain.util.Result
+import com.eeseka.lynk.core.domain.spot.SpotService
+import com.eeseka.lynk.core.domain.spot.model.PaginatedSpots
+import com.eeseka.lynk.core.domain.spot.model.PriceLevel
+import com.eeseka.lynk.core.domain.spot.model.Spot
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.domain.spot.model.TrendingSpots
+import com.eeseka.lynk.core.domain.util.DataError
+import com.eeseka.lynk.core.domain.util.EmptyResult
+import com.eeseka.lynk.core.domain.util.Result
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
 import kotlin.time.Instant

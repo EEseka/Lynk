@@ -12,10 +12,10 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.eeseka.lynk.hangouts.presentation.model.HangoutStatusFilter
-import com.eeseka.lynk.shared.domain.auth.model.AuthInfo
-import com.eeseka.lynk.shared.domain.auth.model.AuthProvider
-import com.eeseka.lynk.shared.domain.auth.model.User
-import com.eeseka.lynk.shared.domain.hangout.model.HangoutVibe
+import com.eeseka.lynk.core.domain.auth.model.AuthInfo
+import com.eeseka.lynk.core.domain.auth.model.AuthProvider
+import com.eeseka.lynk.core.domain.auth.model.User
+import com.eeseka.lynk.core.domain.hangout.model.HangoutVibe
 import com.eeseka.lynk.testing.collectInBackground
 import com.eeseka.lynk.testing.data.FakeAuthService
 import com.eeseka.lynk.testing.data.FakeHangoutService

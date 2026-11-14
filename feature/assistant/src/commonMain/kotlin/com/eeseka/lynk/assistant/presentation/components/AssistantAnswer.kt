@@ -25,11 +25,11 @@ import com.eeseka.lynk.assistant.presentation.model.AssistantMessageUi
 import com.eeseka.lynk.assistant.presentation.model.SpotSuggestState
 import com.eeseka.lynk.assistant.presentation.preview.previewAssistantMessages
 import com.eeseka.lynk.assistant.presentation.util.rememberRevealedText
-import com.eeseka.lynk.shared.design_system.components.util.AppHaptic
-import com.eeseka.lynk.shared.design_system.components.util.rememberAppHaptic
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantMessageStatus
-import com.eeseka.lynk.shared.domain.assistant.model.AssistantStatusKind
+import com.eeseka.lynk.core.design_system.components.util.AppHaptic
+import com.eeseka.lynk.core.design_system.components.util.rememberAppHaptic
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.domain.assistant.model.AssistantMessageStatus
+import com.eeseka.lynk.core.domain.assistant.model.AssistantStatusKind
 
 @Composable
 fun AssistantAnswer(

@@ -23,10 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eeseka.lynk.hangouts.presentation.mappers.toUiText
-import com.eeseka.lynk.shared.design_system.components.textfields.LynkText
-import com.eeseka.lynk.shared.design_system.theme.LynkTheme
-import com.eeseka.lynk.shared.design_system.theme.extended
-import com.eeseka.lynk.shared.domain.lobby.model.ConnectionState
+import com.eeseka.lynk.core.design_system.components.textfields.LynkText
+import com.eeseka.lynk.core.design_system.theme.LynkTheme
+import com.eeseka.lynk.core.design_system.theme.extended
+import com.eeseka.lynk.core.domain.lobby.model.ConnectionState
 
 @Composable
 fun ConnectionBanner(

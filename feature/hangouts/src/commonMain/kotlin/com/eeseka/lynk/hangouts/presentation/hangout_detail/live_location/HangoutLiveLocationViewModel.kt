@@ -3,9 +3,9 @@ package com.eeseka.lynk.hangouts.presentation.hangout_detail.live_location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eeseka.lynk.hangouts.presentation.mappers.toLiveLocationUi
-import com.eeseka.lynk.shared.domain.lobby.LobbyConnectionClient
-import com.eeseka.lynk.shared.domain.lobby.LobbyService
-import com.eeseka.lynk.shared.domain.lobby.model.LobbyEvent
+import com.eeseka.lynk.core.domain.lobby.LobbyConnectionClient
+import com.eeseka.lynk.core.domain.lobby.LobbyService
+import com.eeseka.lynk.core.domain.lobby.model.LobbyEvent
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.MutableStateFlow

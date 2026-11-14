@@ -1,8 +1,8 @@
 package com.eeseka.lynk.discover.presentation
 
 import com.eeseka.lynk.discover.presentation.model.GuestPromptContext
-import com.eeseka.lynk.shared.domain.spot.model.PriceLevel
-import com.eeseka.lynk.shared.domain.spot.model.SpotCategory
+import com.eeseka.lynk.core.domain.spot.model.PriceLevel
+import com.eeseka.lynk.core.domain.spot.model.SpotCategory
 
 sealed interface DiscoverAction {
     data class ShowGuestPrompt(val context: GuestPromptContext) : DiscoverAction
