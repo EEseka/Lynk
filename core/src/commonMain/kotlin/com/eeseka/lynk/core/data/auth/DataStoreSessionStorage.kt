@@ -17,7 +17,9 @@ class DataStoreSessionStorage(
     private val dataStore: DataStore<Preferences>
 ) : SessionStorage {
 
-    private val authInfoKey = stringPreferencesKey("KEY_AUTH_INFO")
+    private companion object {
+        val AUTH_INFO_KEY = stringPreferencesKey("KEY_AUTH_INFO")
+    }
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -25,7 +27,7 @@ class DataStoreSessionStorage(
 
     override fun observeAuthInfo(): Flow<AuthInfo?> {
         return dataStore.data.map { preferences ->
-            val serializedJson = preferences[authInfoKey]
+            val serializedJson = preferences[AUTH_INFO_KEY]
             serializedJson?.let {
                 try {
                     json.decodeFromString<AuthInfoSerializable>(it).toDomain()
@@ -39,14 +41,14 @@ class DataStoreSessionStorage(
     override suspend fun set(info: AuthInfo?) {
         if (info == null) {
             dataStore.edit {
-                it.remove(authInfoKey)
+                it.remove(AUTH_INFO_KEY)
             }
             return
         }
 
         val serialized = json.encodeToString(info.toSerializable())
         dataStore.edit { prefs ->
-            prefs[authInfoKey] = serialized
+            prefs[AUTH_INFO_KEY] = serialized
         }
     }
 }

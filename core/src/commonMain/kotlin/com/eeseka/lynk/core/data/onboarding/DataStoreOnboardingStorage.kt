@@ -12,15 +12,17 @@ class DataStoreOnboardingStorage(
     private val dataStore: DataStore<Preferences>
 ) : OnboardingStorage {
 
-    private val hasSeenOnboardingKey = booleanPreferencesKey("KEY_HAS_SEEN_ONBOARDING")
+    private companion object {
+        val HAS_SEEN_ONBOARDING_KEY = booleanPreferencesKey("KEY_HAS_SEEN_ONBOARDING")
+    }
 
     override val hasSeenOnboarding: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[hasSeenOnboardingKey] ?: false
+        preferences[HAS_SEEN_ONBOARDING_KEY] ?: false
     }
 
     override suspend fun setOnboardingCompleted() {
         dataStore.edit { preferences ->
-            preferences[hasSeenOnboardingKey] = true
+            preferences[HAS_SEEN_ONBOARDING_KEY] = true
         }
     }
 }

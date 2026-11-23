@@ -14,13 +14,15 @@ class DataStoreAppPreferences(
     private val dataStore: DataStore<Preferences>
 ) : AppPreferences {
 
-    private val themePreferenceKey = stringPreferencesKey("KEY_THEME_PREFERENCE")
-    private val isPureBlackEnabledKey = booleanPreferencesKey("KEY_PURE_BLACK_ENABLED")
-    private val arePushNotificationsEnabledKey = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
-    private val areHapticsEnabledKey = booleanPreferencesKey("KEY_HAPTICS_ENABLED")
+    private companion object {
+        val THEME_PREFERENCE_KEY = stringPreferencesKey("KEY_THEME_PREFERENCE")
+        val PURE_BLACK_ENABLED_KEY = booleanPreferencesKey("KEY_PURE_BLACK_ENABLED")
+        val PUSH_NOTIFICATIONS_ENABLED_KEY = booleanPreferencesKey("KEY_PUSH_NOTIFICATIONS_ENABLED")
+        val HAPTICS_ENABLED_KEY = booleanPreferencesKey("KEY_HAPTICS_ENABLED")
+    }
 
     override val theme: Flow<AppTheme> = dataStore.data.map { preferences ->
-        val currentPreference = preferences[themePreferenceKey] ?: AppTheme.SYSTEM.name
+        val currentPreference = preferences[THEME_PREFERENCE_KEY] ?: AppTheme.SYSTEM.name
         try {
             AppTheme.valueOf(currentPreference)
         } catch (_: Exception) {
@@ -29,38 +31,38 @@ class DataStoreAppPreferences(
     }
 
     override val isPureBlackEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[isPureBlackEnabledKey] ?: false
+        preferences[PURE_BLACK_ENABLED_KEY] ?: false
     }
 
     override val arePushNotificationsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[arePushNotificationsEnabledKey] ?: true
+        preferences[PUSH_NOTIFICATIONS_ENABLED_KEY] ?: true
     }
 
     override val areHapticsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[areHapticsEnabledKey] ?: true
+        preferences[HAPTICS_ENABLED_KEY] ?: true
     }
 
     override suspend fun setTheme(theme: AppTheme) {
         dataStore.edit { preferences ->
-            preferences[themePreferenceKey] = theme.name
+            preferences[THEME_PREFERENCE_KEY] = theme.name
         }
     }
 
     override suspend fun setPureBlackEnabled(isEnabled: Boolean) {
         dataStore.edit { preferences ->
-            preferences[isPureBlackEnabledKey] = isEnabled
+            preferences[PURE_BLACK_ENABLED_KEY] = isEnabled
         }
     }
 
     override suspend fun setPushNotificationsEnabled(isEnabled: Boolean) {
         dataStore.edit { preferences ->
-            preferences[arePushNotificationsEnabledKey] = isEnabled
+            preferences[PUSH_NOTIFICATIONS_ENABLED_KEY] = isEnabled
         }
     }
 
     override suspend fun setHapticsEnabled(isEnabled: Boolean) {
         dataStore.edit { preferences ->
-            preferences[areHapticsEnabledKey] = isEnabled
+            preferences[HAPTICS_ENABLED_KEY] = isEnabled
         }
     }
 }

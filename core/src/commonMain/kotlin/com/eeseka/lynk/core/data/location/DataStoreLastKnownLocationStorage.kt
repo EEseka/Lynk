@@ -13,12 +13,14 @@ class DataStoreLastKnownLocationStorage(
     private val dataStore: DataStore<Preferences>
 ) : LastKnownLocationStorage {
 
-    private val latitudeKey = doublePreferencesKey("KEY_LAST_KNOWN_LATITUDE")
-    private val longitudeKey = doublePreferencesKey("KEY_LAST_KNOWN_LONGITUDE")
+    private companion object {
+        val LAST_KNOWN_LATITUDE_KEY = doublePreferencesKey("KEY_LAST_KNOWN_LATITUDE")
+        val LAST_KNOWN_LONGITUDE_KEY = doublePreferencesKey("KEY_LAST_KNOWN_LONGITUDE")
+    }
 
     override val lastKnownLocation: Flow<LocationCoordinates?> = dataStore.data.map { preferences ->
-        val latitude = preferences[latitudeKey]
-        val longitude = preferences[longitudeKey]
+        val latitude = preferences[LAST_KNOWN_LATITUDE_KEY]
+        val longitude = preferences[LAST_KNOWN_LONGITUDE_KEY]
 
         if (latitude == null || longitude == null) {
             null
@@ -29,8 +31,8 @@ class DataStoreLastKnownLocationStorage(
 
     override suspend fun setLastKnownLocation(latitude: Double, longitude: Double) {
         dataStore.edit { preferences ->
-            preferences[latitudeKey] = latitude
-            preferences[longitudeKey] = longitude
+            preferences[LAST_KNOWN_LATITUDE_KEY] = latitude
+            preferences[LAST_KNOWN_LONGITUDE_KEY] = longitude
         }
     }
 }
