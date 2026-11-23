@@ -17,7 +17,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-actual val platformSharedDataModule = module {
+actual val platformCoreDataModule = module {
     single<HttpClientEngine> { OkHttp.create() }
     single<DataStore<Preferences>> {
         createDataStore(androidContext())

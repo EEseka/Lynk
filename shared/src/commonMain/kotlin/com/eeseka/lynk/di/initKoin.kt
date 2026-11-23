@@ -10,8 +10,8 @@ import com.eeseka.lynk.notifications.presentation.di.notificationsPresentationMo
 import com.eeseka.lynk.onboarding.presentation.di.onboardingPresentationModule
 import com.eeseka.lynk.profile.presentation.di.profilePresentationModule
 import com.eeseka.lynk.profile_setup.presentation.di.profileSetupPresentationModule
-import com.eeseka.lynk.core.data.di.sharedDataModule
-import com.eeseka.lynk.core.presentation.di.sharedPresentationModule
+import com.eeseka.lynk.core.data.di.coreDataModule
+import com.eeseka.lynk.core.presentation.di.corePresentationModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
@@ -20,8 +20,8 @@ fun initKoin(config: KoinAppDeclaration? = null) {
         config?.invoke(this)
         modules(
             appModule,
-            sharedDataModule,
-            sharedPresentationModule,
+            coreDataModule,
+            corePresentationModule,
             onboardingPresentationModule,
             authPresentationModule,
             profileSetupPresentationModule,

@@ -61,10 +61,10 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-expect val platformSharedDataModule: Module
+expect val platformCoreDataModule: Module
 
-val sharedDataModule = module {
-    includes(platformSharedDataModule)
+val coreDataModule = module {
+    includes(platformCoreDataModule)
     single<LynkLogger> { KermitLogger }
     single {
         HttpClientFactory(get(), get()).create(get())
